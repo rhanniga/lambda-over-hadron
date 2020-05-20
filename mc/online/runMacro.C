@@ -5,8 +5,8 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
   //Starting and ending index of the array containing the run numbers, specifies which range to run over
   int startIndex = 0;
-  /* int endIndex = 29; */
-  int endIndex = 14;
+  int endIndex = 12;
+  // int endIndex = 14;
 
   //If we want to download test files from grid then run in one swoop:
   bool gridTest = false;
@@ -68,8 +68,8 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
     alienHandler->SetRunPrefix("000");
 
     // addding runs
-    int runArray[] = {265525, 265521, 265501, 265499, 265435, 265427, 265426, 265425, 265424, 265422, 265421, 265420, 265419, 265388, 265387, 265385, 265384, 265383, 265381, 265378, 265377, 265344, 265343, 265342, 265339, 265338, 265336, 265334, 265332, 265309};
-    // int runArray[] = {265521, 265501, 265499, 265435, 265427, 265426, 265425, 265424, 265422, 265421, 265420, 265419, 265388, 265387, 265385, 265384, 265383, 265381, 265378, 265377, 265344, 265343, 265342, 265339, 265338, 265336, 265334, 265332, 265309};
+    // int runArray[] = {265525, 265521, 265501, 265499, 265435, 265427, 265426, 265425, 265424, 265422, 265421, 265420, 265419, 265388, 265387, 265385, 265384, 265383, 265381, 265378, 265377, 265344, 265343, 265342, 265339, 265338, 265336, 265334, 265332, 265309};
+    int runArray[] = {265521, 265501, 265499, 265435, 265427, 265426, 265425, 265424, 265422, 265421, 265420, 265419, 265388, 265387, 265385, 265384, 265383, 265381, 265378, 265377, 265344, 265343, 265342, 265339, 265338, 265336, 265334, 265332, 265309};
 
     int runArrayLength = (int)(sizeof(runArray)/sizeof(runArray[0]));
 
@@ -104,7 +104,7 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
     // define the output folders
     alienHandler->SetGridWorkingDir("lambda_hadron_ratio");
-    alienHandler->SetGridOutputDir("full_stat_50_100");
+    alienHandler->SetGridOutputDir("two_triggers_0_20");
 
     // connect the alien plugin to the manager
     manage->SetGridHandler(alienHandler);

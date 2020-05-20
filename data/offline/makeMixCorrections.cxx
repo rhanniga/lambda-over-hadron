@@ -77,6 +77,10 @@ TH2D* makehhCorrections(TH3D* same3D, TH3D* mix3D){
         mix2D[zbin] = (TH2D*)mix3D->Project3D("xye");
         mix2D[zbin]->SetName(Form("mix2droj_zbin%i", zbin));
 
+        mix3D->GetZaxis()->SetRange(zbin+1, zbin+1);
+        mix2D[zbin] = (TH2D*)mix3D->Project3D("xye");
+        mix2D[zbin]->SetName(Form("mix2droj_zbin%i", zbin));
+
         scale = 0.5*(float)(mix2D[zbin]->GetBinContent(mix2D[zbin]->GetXaxis()->FindBin(0.01), mix2D[zbin]->GetYaxis()->FindBin(0.0)) + mix2D[zbin]->GetBinContent(mix2D[zbin]->GetXaxis()->FindBin(-0.01), mix2D[zbin]->GetYaxis()->FindBin(0.0)));
         printf("scale: %e \n", scale);
         same2D[zbin]->Divide(mix2D[zbin]);
@@ -96,10 +100,10 @@ TH2D* makehhCorrections(TH3D* same3D, TH3D* mix3D){
 
 //--------------------------------------------------------------------------------------------
 void makeMixCorrections(float trigPTLow, float trigPTHigh, float assocPTLow, float assocPTHigh){
-    TFile *histoFile = new TFile("~/data/lambda_0_20.root");
+    TFile *histoFile = new TFile("~/alice/research/lambda-over-hadron/data/online/output/fixed_filter_50_100.root");
     TList* list = (TList*) histoFile->Get("h-lambda");
-    int centLow = 0;
-    int centHigh = 20;
+    int centLow = 50;
+    int centHigh = 100;
 
     THnSparseF*triggerDist = (THnSparseF*)list->FindObject("fTriggerDist");
     TH2D *trigSameUSDist = (TH2D*)triggerDist->Projection(0, 3);
@@ -116,55 +120,55 @@ void makeMixCorrections(float trigPTLow, float trigPTHigh, float assocPTLow, flo
     float totalTrigSameUS = (float)trigSameUSDist->Integral(trigSameUSDist->GetXaxis()->FindBin(trigPTLow), trigSameUSDist->GetXaxis()->FindBin(trigPTHigh), 1, trigSameUSDist->GetYaxis()->GetNbins());
     float totalTrigSameLS = (float)trigSameLSDist->Integral(trigSameLSDist->GetXaxis()->FindBin(trigPTLow), trigSameLSDist->GetXaxis()->FindBin(trigPTHigh), 1, trigSameLSDist->GetYaxis()->GetNbins());
 
-    THnSparseF *dphiHStrangePart = (THnSparseF *)list->FindObject("fDphiHStrangePart");
-    THnSparseF *dphiHStrangePartMixed = (THnSparseF *)list->FindObject("fDphiHStrangePartMixed");
-    THnSparseF *dphiHStrangePartLS = (THnSparseF *)list->FindObject("fDphiHStrangePartLS");
-    THnSparseF *dphiHStrangePartLSMixed = (THnSparseF *)list->FindObject("fDphiHStrangePartLSMixed");
+    THnSparseF *dphiHLambda = (THnSparseF *)list->FindObject("fDphiHLambda");
+    THnSparseF *dphiHLambdaMixed = (THnSparseF *)list->FindObject("fDphiHLambdaMixed");
+    THnSparseF *dphiHLambdaLS = (THnSparseF *)list->FindObject("fDphiHLambdaLS");
+    THnSparseF *dphiHLambdaLSMixed = (THnSparseF *)list->FindObject("fDphiHLambdaLSMixed");
 
     THnSparseF *dphiHH = (THnSparseF*)list->FindObject("fDphiHH");
     THnSparseF *dphiHHMixed = (THnSparseF*)list->FindObject("fDphiHHMixed");
 
     //make 4D THnProjections projection to do mixed event corrections
-    dphiHStrangePart->GetAxis(0)->SetRangeUser(trigPTLow, trigPTHigh);
-    dphiHStrangePart->GetAxis(1)->SetRangeUser(assocPTLow,assocPTHigh);
-    dphiHStrangePartLS->GetAxis(0)->SetRangeUser(trigPTLow, trigPTHigh);
-    dphiHStrangePartLS->GetAxis(1)->SetRangeUser(assocPTLow,assocPTHigh);
+    dphiHLambda->GetAxis(0)->SetRangeUser(trigPTLow, trigPTHigh);
+    dphiHLambda->GetAxis(1)->SetRangeUser(assocPTLow,assocPTHigh);
+    dphiHLambdaLS->GetAxis(0)->SetRangeUser(trigPTLow, trigPTHigh);
+    dphiHLambdaLS->GetAxis(1)->SetRangeUser(assocPTLow,assocPTHigh);
     dphiHH->GetAxis(0)->SetRangeUser(trigPTLow,trigPTHigh);
     dphiHH->GetAxis(1)->SetRangeUser(assocPTLow,assocPTHigh);
 
-    dphiHStrangePartMixed->GetAxis(0)->SetRangeUser(trigPTLow, trigPTHigh);
-    dphiHStrangePartMixed->GetAxis(1)->SetRangeUser(assocPTLow,assocPTHigh);
-    dphiHStrangePartLSMixed->GetAxis(0)->SetRangeUser(trigPTLow, trigPTHigh);
-    dphiHStrangePartLSMixed->GetAxis(1)->SetRangeUser(assocPTLow,assocPTHigh);
+    dphiHLambdaMixed->GetAxis(0)->SetRangeUser(trigPTLow, trigPTHigh);
+    dphiHLambdaMixed->GetAxis(1)->SetRangeUser(assocPTLow,assocPTHigh);
+    dphiHLambdaLSMixed->GetAxis(0)->SetRangeUser(trigPTLow, trigPTHigh);
+    dphiHLambdaLSMixed->GetAxis(1)->SetRangeUser(assocPTLow,assocPTHigh);
     dphiHHMixed->GetAxis(0)->SetRangeUser(trigPTLow,trigPTHigh);
     dphiHHMixed->GetAxis(1)->SetRangeUser(assocPTLow,assocPTHigh);
 
 
-    dphiHStrangePart->GetAxis(4)->SetRange(1,dphiHStrangePart->GetAxis(4)->GetNbins());
-    dphiHStrangePart->GetAxis(5)->SetRangeUser(-10.0, 10.0);
+    dphiHLambda->GetAxis(4)->SetRange(1,dphiHLambda->GetAxis(4)->GetNbins());
+    dphiHLambda->GetAxis(5)->SetRangeUser(-10.0, 10.0);
 
-    dphiHStrangePartLS->GetAxis(4)->SetRange(1,dphiHStrangePartLS->GetAxis(4)->GetNbins());
-    dphiHStrangePartLS->GetAxis(5)->SetRangeUser(-10.0, 10.0);
+    dphiHLambdaLS->GetAxis(4)->SetRange(1,dphiHLambdaLS->GetAxis(4)->GetNbins());
+    dphiHLambdaLS->GetAxis(5)->SetRangeUser(-10.0, 10.0);
 
-    dphiHStrangePartMixed->GetAxis(4)->SetRange(1,dphiHStrangePartMixed->GetAxis(4)->GetNbins());
-    dphiHStrangePartMixed->GetAxis(5)->SetRangeUser(-10.0, 10.0);
+    dphiHLambdaMixed->GetAxis(4)->SetRange(1,dphiHLambdaMixed->GetAxis(4)->GetNbins());
+    dphiHLambdaMixed->GetAxis(5)->SetRangeUser(-10.0, 10.0);
 
-    dphiHStrangePartLSMixed->GetAxis(4)->SetRange(1,dphiHStrangePartLSMixed->GetAxis(4)->GetNbins());
-    dphiHStrangePartLSMixed->GetAxis(5)->SetRangeUser(-10.0, 10.0);
+    dphiHLambdaLSMixed->GetAxis(4)->SetRange(1,dphiHLambdaLSMixed->GetAxis(4)->GetNbins());
+    dphiHLambdaLSMixed->GetAxis(5)->SetRangeUser(-10.0, 10.0);
 
     dphiHH->GetAxis(4)->SetRangeUser(-10.0, 10.0);
     dphiHHMixed->GetAxis(4)->SetRangeUser(-10.0, 10.0);
 
     Int_t axes[] = {2,3,4,5};
 
-    THnSparseF* hStrangePart = (THnSparseF*)dphiHStrangePart->Projection(4, axes);
-    THnSparseF* hStrangePartLS = (THnSparseF*)dphiHStrangePartLS->Projection(4, axes);
+    THnSparseF* hLambda = (THnSparseF*)dphiHLambda->Projection(4, axes);
+    THnSparseF* hLambdaLS = (THnSparseF*)dphiHLambdaLS->Projection(4, axes);
 
     TH3D* hh = (TH3D*)dphiHH->Projection(2,3,4);
     hh->Sumw2();
 
-    THnSparseF* hStrangePartMixed = (THnSparseF*)dphiHStrangePartMixed->Projection(4, axes);
-    THnSparseF* hStrangePartLSMixed = (THnSparseF*)dphiHStrangePartMixed->Projection(4, axes);
+    THnSparseF* hLambdaMixed = (THnSparseF*)dphiHLambdaMixed->Projection(4, axes);
+    THnSparseF* hLambdaLSMixed = (THnSparseF*)dphiHLambdaMixed->Projection(4, axes);
 
     TH3D* hhMixed = (TH3D*)dphiHHMixed->Projection(2,3,4);
     hhMixed->Sumw2();
@@ -182,42 +186,79 @@ void makeMixCorrections(float trigPTLow, float trigPTHigh, float assocPTLow, flo
     TH1D* sameLSLsideEta[10];
     TH1D* mixedLSLsideEta[10];
 
-    TH2D* hStrangePart2Dpeak = makeCorrections(hStrangePart, hStrangePartMixed, 1.11, 1.12, sameUSPeakEta, mixedUSPeakEta, trigMixScalesUS, totalTrigSameUS);
-    hStrangePart2Dpeak->SetName("hStrangePart2Dpeak");
+    TH2D* hLambda2Dpeak = makeCorrections(hLambda, hLambdaMixed, 1.11, 1.12, sameUSPeakEta, mixedUSPeakEta, trigMixScalesUS, totalTrigSameUS);
+    hLambda2Dpeak->SetName("hLambda2Dpeak");
     for(int i = 0; i<10; i++){
         sameUSPeakEta[i]->SetName(Form("sameUSPeakEta_zvtx_%i", i));
         mixedUSPeakEta[i]->SetName(Form("mixedUSPeakEta_zvtx_%i", i));
     }
-    TH2D* hStrangePartLS2Dpeak = makeCorrections(hStrangePartLS, hStrangePartLSMixed, 1.11, 1.12,  sameLSPeakEta, mixedLSPeakEta, trigMixScalesLS, totalTrigSameLS);
-    hStrangePartLS2Dpeak->SetName("hStrangePartLS2Dpeak");
+    TH2D* hLambdaLS2Dpeak = makeCorrections(hLambdaLS, hLambdaLSMixed, 1.11, 1.12,  sameLSPeakEta, mixedLSPeakEta, trigMixScalesLS, totalTrigSameLS);
+    hLambdaLS2Dpeak->SetName("hLambdaLS2Dpeak");
     for(int i = 0; i<10; i++){
         sameLSPeakEta[i]->SetName(Form("sameLSPeakEta_zvtx_%i", i));
         mixedLSPeakEta[i]->SetName(Form("mixedLSPeakEta_zvtx_%i", i));
     }
-    TH2D* hStrangePart2DRside = makeCorrections(hStrangePart, hStrangePartMixed, 1.132, 1.14, sameUSRsideEta, mixedUSRsideEta, trigMixScalesUS, totalTrigSameUS);
-    hStrangePart2DRside->SetName("hStrangePart2DRside");
+    TH2D* hLambda2DRside = makeCorrections(hLambda, hLambdaMixed, 1.14, 1.15, sameUSRsideEta, mixedUSRsideEta, trigMixScalesUS, totalTrigSameUS);
+    hLambda2DRside->SetName("hLambda2DRside");
     for(int i = 0; i<10; i++){
         sameUSRsideEta[i]->SetName(Form("sameUSRsideEta_zvtx_%i", i));
         mixedUSRsideEta[i]->SetName(Form("mixedUSRsideEta_zvtx_%i", i));
     }
-    TH2D* hStrangePartLS2DRside = makeCorrections(hStrangePartLS, hStrangePartLSMixed, 1.132, 1.14, sameLSRsideEta, mixedLSRsideEta, trigMixScalesLS, totalTrigSameLS);
-    hStrangePartLS2DRside->SetName("hStrangePartLS2DRside");
+    TH2D* hLambdaLS2DRside = makeCorrections(hLambdaLS, hLambdaLSMixed, 1.14, 1.15, sameLSRsideEta, mixedLSRsideEta, trigMixScalesLS, totalTrigSameLS);
+    hLambdaLS2DRside->SetName("hLambdaLS2DRside");
     for(int i = 0; i<10; i++){
         sameLSRsideEta[i]->SetName(Form("sameLSRsideEta_zvtx_%i", i));
         mixedLSRsideEta[i]->SetName(Form("mixedLSRsideEta_zvtx_%i", i));
     }
-    TH2D* hStrangePart2DLside = makeCorrections(hStrangePart, hStrangePartMixed, 1.09, 1.1, sameUSLsideEta, mixedUSLsideEta, trigMixScalesUS, totalTrigSameUS);
-    hStrangePart2DLside->SetName("hStrangePart2DLside");
+    TH2D* hLambda2DLside = makeCorrections(hLambda, hLambdaMixed, 1.08, 1.09, sameUSLsideEta, mixedUSLsideEta, trigMixScalesUS, totalTrigSameUS);
+    hLambda2DLside->SetName("hLambda2DLside");
     for(int i = 0; i<10; i++){
         sameUSLsideEta[i]->SetName(Form("sameUSLsideEta_zvtx_%i", i));
         mixedUSLsideEta[i]->SetName(Form("mixedUSLsideEta_zvtx_%i", i));
     }
-    TH2D* hStrangePartLS2DLside = makeCorrections(hStrangePartLS, hStrangePartLSMixed, 1.09, 1.1, sameLSLsideEta, mixedLSLsideEta, trigMixScalesLS, totalTrigSameLS);
-    hStrangePartLS2DLside->SetName("hStrangePartLS2DLside");
+    TH2D* hLambdaLS2DLside = makeCorrections(hLambdaLS, hLambdaLSMixed, 1.08, 1.09, sameLSLsideEta, mixedLSLsideEta, trigMixScalesLS, totalTrigSameLS);
+    hLambdaLS2DLside->SetName("hLambdaLS2DLside");
     for(int i = 0; i<10; i++){
         sameLSLsideEta[i]->SetName(Form("sameLSLsideEta_zvtx_%i", i));
         mixedLSLsideEta[i]->SetName(Form("mixedLSLsideEta_zvtx_%i", i));
     }
+
+    // TH2D* hLambda2Dpeak = makeCorrections(hLambda, hLambdaMixed, 1.105, 1.125, sameUSPeakEta, mixedUSPeakEta, trigMixScalesUS, totalTrigSameUS);
+    // hLambda2Dpeak->SetName("hLambda2Dpeak");
+    // for(int i = 0; i<10; i++){
+    //     sameUSPeakEta[i]->SetName(Form("sameUSPeakEta_zvtx_%i", i));
+    //     mixedUSPeakEta[i]->SetName(Form("mixedUSPeakEta_zvtx_%i", i));
+    // }
+    // TH2D* hLambdaLS2Dpeak = makeCorrections(hLambdaLS, hLambdaLSMixed, 1.105, 1.125,  sameLSPeakEta, mixedLSPeakEta, trigMixScalesLS, totalTrigSameLS);
+    // hLambdaLS2Dpeak->SetName("hLambdaLS2Dpeak");
+    // for(int i = 0; i<10; i++){
+    //     sameLSPeakEta[i]->SetName(Form("sameLSPeakEta_zvtx_%i", i));
+    //     mixedLSPeakEta[i]->SetName(Form("mixedLSPeakEta_zvtx_%i", i));
+    // }
+    // TH2D* hLambda2DRside = makeCorrections(hLambda, hLambdaMixed, 1.14, 1.155, sameUSRsideEta, mixedUSRsideEta, trigMixScalesUS, totalTrigSameUS);
+    // hLambda2DRside->SetName("hLambda2DRside");
+    // for(int i = 0; i<10; i++){
+    //     sameUSRsideEta[i]->SetName(Form("sameUSRsideEta_zvtx_%i", i));
+    //     mixedUSRsideEta[i]->SetName(Form("mixedUSRsideEta_zvtx_%i", i));
+    // }
+    // TH2D* hLambdaLS2DRside = makeCorrections(hLambdaLS, hLambdaLSMixed, 1.14, 1.155, sameLSRsideEta, mixedLSRsideEta, trigMixScalesLS, totalTrigSameLS);
+    // hLambdaLS2DRside->SetName("hLambdaLS2DRside");
+    // for(int i = 0; i<10; i++){
+    //     sameLSRsideEta[i]->SetName(Form("sameLSRsideEta_zvtx_%i", i));
+    //     mixedLSRsideEta[i]->SetName(Form("mixedLSRsideEta_zvtx_%i", i));
+    // }
+    // TH2D* hLambda2DLside = makeCorrections(hLambda, hLambdaMixed, 1.08, 1.095, sameUSLsideEta, mixedUSLsideEta, trigMixScalesUS, totalTrigSameUS);
+    // hLambda2DLside->SetName("hLambda2DLside");
+    // for(int i = 0; i<10; i++){
+    //     sameUSLsideEta[i]->SetName(Form("sameUSLsideEta_zvtx_%i", i));
+    //     mixedUSLsideEta[i]->SetName(Form("mixedUSLsideEta_zvtx_%i", i));
+    // }
+    // TH2D* hLambdaLS2DLside = makeCorrections(hLambdaLS, hLambdaLSMixed, 1.08, 1.095, sameLSLsideEta, mixedLSLsideEta, trigMixScalesLS, totalTrigSameLS);
+    // hLambdaLS2DLside->SetName("hLambdaLS2DLside");
+    // for(int i = 0; i<10; i++){
+    //     sameLSLsideEta[i]->SetName(Form("sameLSLsideEta_zvtx_%i", i));
+    //     mixedLSLsideEta[i]->SetName(Form("mixedLSLsideEta_zvtx_%i", i));
+    // }
 
     TH2D* hh2D = makehhCorrections(hh, hhMixed);
     hh2D->SetName("hh2D");
@@ -234,71 +275,71 @@ void makeMixCorrections(float trigPTLow, float trigPTHigh, float assocPTLow, flo
 
 
     //Create some uncorrected same/mixed event 2D histos
-    hStrangePart->GetAxis(2)->SetRangeUser(1.11, 1.12);
-    hStrangePartMixed->GetAxis(2)->SetRangeUser(1.11, 1.12);
-    TH2D* uncorrhStrangePart2Dpeak = hStrangePart->Projection(0,1);
-    uncorrhStrangePart2Dpeak->Sumw2();
-    uncorrhStrangePart2Dpeak->SetName("uncorrhStrangePart2Dpeak");
-    TH2D* uncorrhStrangePartMixed2Dpeak = hStrangePartMixed->Projection(0,1);
-    uncorrhStrangePartMixed2Dpeak->Sumw2();
-    uncorrhStrangePartMixed2Dpeak->SetName("uncorrhStrangePartMixed2Dpeak");
+    hLambda->GetAxis(2)->SetRangeUser(1.11, 1.12);
+    hLambdaMixed->GetAxis(2)->SetRangeUser(1.11, 1.12);
+    TH2D* uncorrhLambda2Dpeak = hLambda->Projection(0,1);
+    uncorrhLambda2Dpeak->Sumw2();
+    uncorrhLambda2Dpeak->SetName("uncorrhLambda2Dpeak");
+    TH2D* uncorrhLambdaMixed2Dpeak = hLambdaMixed->Projection(0,1);
+    uncorrhLambdaMixed2Dpeak->Sumw2();
+    uncorrhLambdaMixed2Dpeak->SetName("uncorrhLambdaMixed2Dpeak");
 
-    hStrangePart->GetAxis(2)->SetRangeUser(1.132, 1.14);
-    hStrangePartMixed->GetAxis(2)->SetRangeUser(1.132, 1.14);
-    TH2D* uncorrhStrangePart2DRside = hStrangePart->Projection(0,1);
-    uncorrhStrangePart2DRside->Sumw2();
-    uncorrhStrangePart2DRside->SetName("uncorrhStrangePart2DRside");
-    TH2D* uncorrhStrangePartMixed2DRside = hStrangePartMixed->Projection(0,1);
-    uncorrhStrangePartMixed2DRside->Sumw2();
-    uncorrhStrangePartMixed2DRside->SetName("uncorrhStrangePartMixed2DRside");
+    hLambda->GetAxis(2)->SetRangeUser(1.132, 1.14);
+    hLambdaMixed->GetAxis(2)->SetRangeUser(1.132, 1.14);
+    TH2D* uncorrhLambda2DRside = hLambda->Projection(0,1);
+    uncorrhLambda2DRside->Sumw2();
+    uncorrhLambda2DRside->SetName("uncorrhLambda2DRside");
+    TH2D* uncorrhLambdaMixed2DRside = hLambdaMixed->Projection(0,1);
+    uncorrhLambdaMixed2DRside->Sumw2();
+    uncorrhLambdaMixed2DRside->SetName("uncorrhLambdaMixed2DRside");
 
-    hStrangePart->GetAxis(2)->SetRangeUser(1.09, 1.1);
-    hStrangePartMixed->GetAxis(2)->SetRangeUser(1.09, 1.1);
-    TH2D* uncorrhStrangePart2DLside = hStrangePart->Projection(0,1);
-    uncorrhStrangePart2DLside->Sumw2();
-    uncorrhStrangePart2DLside->SetName("uncorrhStrangePart2DLside");
-    TH2D* uncorrhStrangePartMixed2DLside = hStrangePartMixed->Projection(0,1);
-    uncorrhStrangePartMixed2DLside->Sumw2();
+    hLambda->GetAxis(2)->SetRangeUser(1.09, 1.1);
+    hLambdaMixed->GetAxis(2)->SetRangeUser(1.09, 1.1);
+    TH2D* uncorrhLambda2DLside = hLambda->Projection(0,1);
+    uncorrhLambda2DLside->Sumw2();
+    uncorrhLambda2DLside->SetName("uncorrhLambda2DLside");
+    TH2D* uncorrhLambdaMixed2DLside = hLambdaMixed->Projection(0,1);
+    uncorrhLambdaMixed2DLside->Sumw2();
 
 
     //make ratio plot of just 1 zvtx bin as a check:
-    hStrangePartMixed->GetAxis(2)->SetRangeUser(1.01, 1.03);
-    hStrangePartMixed->GetAxis(3)->SetRange(6,6);
-    TH2D* mixedratioPeakZ2 = hStrangePartMixed->Projection(0,1);
-    TH2D* hist = hStrangePartLSMixed->Projection(0,1);
+    hLambdaMixed->GetAxis(2)->SetRangeUser(1.01, 1.03);
+    hLambdaMixed->GetAxis(3)->SetRange(6,6);
+    TH2D* mixedratioPeakZ2 = hLambdaMixed->Projection(0,1);
+    TH2D* hist = hLambdaLSMixed->Projection(0,1);
     mixedratioPeakZ2->Divide(hist);
     TH1D* mixedratioPeakZ2deta = mixedratioPeakZ2->ProjectionX("mixedratioPeakZ2deta");
 
 
-    //project just zvtx distributions for hStrangePartMixed points and hStrangePartLSMixed points in peak region:
-    hStrangePartMixed->GetAxis(3)->SetRange(0,0);
-    hStrangePartLSMixed->GetAxis(3)->SetRange(0,0);
-    TH1D* mixedUSzvtx = hStrangePartMixed->Projection(3);
+    //project just zvtx distributions for hLambdaMixed points and hLambdaLSMixed points in peak region:
+    hLambdaMixed->GetAxis(3)->SetRange(0,0);
+    hLambdaLSMixed->GetAxis(3)->SetRange(0,0);
+    TH1D* mixedUSzvtx = hLambdaMixed->Projection(3);
     mixedUSzvtx->SetName("mixedUSzvtx");
-    TH1D* mixedLSzvtx = hStrangePartLSMixed->Projection(3);
+    TH1D* mixedLSzvtx = hLambdaLSMixed->Projection(3);
     mixedLSzvtx->SetName("mixedLSzvtx");
 
-    TFile* output = new TFile(Form("trig_%i_%i_assoc_%i_%i_cent_%i_%i_mixcorr_hStrangePart.root", (int)trigPTLow, (int)trigPTHigh, (int)assocPTLow, (int)assocPTHigh, (int)centLow, (int)centHigh), "RECREATE");
+    TFile* output = new TFile(Form("trig_%i_%i_assoc_%i_%i_cent_%i_%i_mixcorr_hLambda.root", (int)trigPTLow, (int)trigPTHigh, (int)assocPTLow, (int)assocPTHigh, (int)centLow, (int)centHigh), "RECREATE");
     
-    hStrangePart2Dpeak->Scale(1.0/totalTrigSameUS);
-    hStrangePart2DRside->Scale(1.0/totalTrigSameUS);
-    hStrangePart2DLside->Scale(1.0/totalTrigSameUS);
-    hStrangePartLS2Dpeak->Scale(1.0/totalTrigSameUS);
-    hStrangePartLS2DRside->Scale(1.0/totalTrigSameUS);
-    hStrangePartLS2DLside->Scale(1.0/totalTrigSameUS);
+    hLambda2Dpeak->Scale(1.0/totalTrigSameUS);
+    hLambda2DRside->Scale(1.0/totalTrigSameUS);
+    hLambda2DLside->Scale(1.0/totalTrigSameUS);
+    hLambdaLS2Dpeak->Scale(1.0/totalTrigSameUS);
+    hLambdaLS2DRside->Scale(1.0/totalTrigSameUS);
+    hLambdaLS2DLside->Scale(1.0/totalTrigSameUS);
 
-    hStrangePart2Dpeak->Write();
-    hStrangePart2DRside->Write();
-    hStrangePart2DLside->Write();
-    hStrangePartLS2Dpeak->Write();
-    hStrangePartLS2DRside->Write();
-    hStrangePartLS2DLside->Write();
-    uncorrhStrangePart2Dpeak->Write();
-    uncorrhStrangePartMixed2Dpeak->Write();
-    uncorrhStrangePart2DRside->Write();
-    uncorrhStrangePartMixed2DRside->Write();
-    uncorrhStrangePart2DLside->Write();
-    uncorrhStrangePartMixed2DLside->Write();
+    hLambda2Dpeak->Write();
+    hLambda2DRside->Write();
+    hLambda2DLside->Write();
+    hLambdaLS2Dpeak->Write();
+    hLambdaLS2DRside->Write();
+    hLambdaLS2DLside->Write();
+    uncorrhLambda2Dpeak->Write();
+    uncorrhLambdaMixed2Dpeak->Write();
+    uncorrhLambda2DRside->Write();
+    uncorrhLambdaMixed2DRside->Write();
+    uncorrhLambda2DLside->Write();
+    uncorrhLambdaMixed2DLside->Write();
 
     mixedratioPeakZ2->Write();
     mixedratioPeakZ2deta->Write();

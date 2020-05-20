@@ -1,18 +1,18 @@
 void pure_mass(){
     gStyle->SetOptStat(0);
 
-    TFile* file = new TFile("~/data/lambda_0_20.root");
+    TFile* file = new TFile("../online/output/lambda_0_20.root");
     TList* list = (TList*) file->Get("h-lambda");
-    THnSparseF* kStarUSDist= (THnSparseF*)list->FindObject("fDphiHKStar");
-    THnSparseF* kStarLSDist= (THnSparseF*)list->FindObject("fDphiHKStarLS");
+    THnSparseF* lambdaUSDist= (THnSparseF*)list->FindObject("fDphiHLambda");
+    THnSparseF* lambdaLSDist= (THnSparseF*)list->FindObject("fDphiHLambdaLS");
 
-    kStarUSDist->GetAxis(0)->SetRangeUser(4, 8);
-    kStarLSDist->GetAxis(0)->SetRangeUser(4, 8);
-    kStarUSDist->GetAxis(1)->SetRangeUser(2.0, 4.0);
-    kStarLSDist->GetAxis(1)->SetRangeUser(2.0, 4.0);
+    lambdaUSDist->GetAxis(0)->SetRangeUser(4, 8);
+    lambdaLSDist->GetAxis(0)->SetRangeUser(4, 8);
+    lambdaUSDist->GetAxis(1)->SetRangeUser(2.0, 4.0);
+    lambdaLSDist->GetAxis(1)->SetRangeUser(2.0, 4.0);
 
-    TH1D* USInvMass = kStarUSDist->Projection(4);
-    TH1D* LSInvMass = kStarLSDist->Projection(4);
+    TH1D* USInvMass = lambdaUSDist->Projection(4);
+    TH1D* LSInvMass = lambdaLSDist->Projection(4);
 
     USInvMass->Sumw2();
     LSInvMass->Sumw2();
@@ -86,7 +86,6 @@ void pure_mass(){
     c->cd();
     USInvMass->Draw();
     LSInvMass->Draw("SAME");
-    c->SaveAs("lambda/US_LS_inv_mass.png");
 
     TLegend *corrleg = new TLegend(0.46, 0.39, 0.88, 0.57);
     corrleg->AddEntry(corrected, "Corrected US Inv. Mass", "p");
@@ -98,6 +97,5 @@ void pure_mass(){
     corrected->Draw();
     bgFit->Draw("SAME");
     corrleg->Draw();
-    c2->SaveAs("lambda/pure_mass_fit.png");
 
 }

@@ -1,6 +1,6 @@
 #include <iostream>
 
-AliAnalysisTaskStrangeCor* AddStrangeCorTask(TString name = "name") {
+AliAnalysisTaskLambdaHadronRatio* AddLambdaHadronRatioTask(TString name = "lambdaHadronRatio") {
 
   AliAnalysisManager *manage = AliAnalysisManager::GetAnalysisManager();
 
@@ -12,7 +12,7 @@ AliAnalysisTaskStrangeCor* AddStrangeCorTask(TString name = "name") {
 
   TString file_name = AliAnalysisManager::GetCommonFileName();
 
-  AliAnalysisTaskStrangeCor* task = new AliAnalysisTaskStrangeCor(name.Data());
+  AliAnalysisTaskLambdaHadronRatio* task = new AliAnalysisTaskLambdaHadronRatio(name.Data());
 
   if(!task) return 0x0;
 

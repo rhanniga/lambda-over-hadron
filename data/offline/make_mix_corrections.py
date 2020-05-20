@@ -84,16 +84,16 @@ def set_sparse_pt_ranges():
     object_list.FindObject("fTriggerDist").GetAxis(0).SetRangeUser(trig_pt_low, trig_pt_high)
 
     #setting trigger pt range on relevant dphi distributions
-    object_list.FindObject("fDphiHStrangePart").GetAxis(0).SetRangeUser(trig_pt_low, trig_pt_high)
-    object_list.FindObject("fDphiHStrangePartMixed").GetAxis(0).SetRangeUser(trig_pt_low, trig_pt_high)
-    object_list.FindObject("fDphiHStrangePartLS").GetAxis(0).SetRangeUser(trig_pt_low, trig_pt_high)
-    object_list.FindObject("fDphiHStrangePartLSMixed").GetAxis(0).SetRangeUser(trig_pt_low, trig_pt_high)
+    object_list.FindObject("fDphiHLambda").GetAxis(0).SetRangeUser(trig_pt_low, trig_pt_high)
+    object_list.FindObject("fDphiHLambdaMixed").GetAxis(0).SetRangeUser(trig_pt_low, trig_pt_high)
+    object_list.FindObject("fDphiHLambdaLS").GetAxis(0).SetRangeUser(trig_pt_low, trig_pt_high)
+    object_list.FindObject("fDphiHLambdaLSMixed").GetAxis(0).SetRangeUser(trig_pt_low, trig_pt_high)
 
     #setting associated pt range on relevant dphi distributions
-    object_list.FindObject("fDphiHStrangePart").GetAxis(1).SetRangeUser(assoc_pt_low, assoc_pt_high)
-    object_list.FindObject("fDphiHStrangePartMixed").GetAxis(1).SetRangeUser(assoc_pt_low, assoc_pt_high)
-    object_list.FindObject("fDphiHStrangePartLS").GetAxis(1).SetRangeUser(assoc_pt_low, assoc_pt_high)
-    object_list.FindObject("fDphiHStrangePartLSMixed").GetAxis(1).SetRangeUser(assoc_pt_low, assoc_pt_high)
+    object_list.FindObject("fDphiHLambda").GetAxis(1).SetRangeUser(assoc_pt_low, assoc_pt_high)
+    object_list.FindObject("fDphiHLambdaMixed").GetAxis(1).SetRangeUser(assoc_pt_low, assoc_pt_high)
+    object_list.FindObject("fDphiHLambdaLS").GetAxis(1).SetRangeUser(assoc_pt_low, assoc_pt_high)
+    object_list.FindObject("fDphiHLambdaLSMixed").GetAxis(1).SetRangeUser(assoc_pt_low, assoc_pt_high)
 
 def setup():
 
@@ -105,10 +105,10 @@ def setup():
 
     #need to pass an actual array to projection (not a list)
     axes = arr.array('i', [2, 3, 4, 5])
-    hist_dict["dphi_h_strange"] = object_list.FindObject("fDphiHStrangePart").Projection(4, axes)
-    hist_dict["dphi_h_strange_mixed"] = object_list.FindObject("fDphiHStrangePartMixed").Projection(4, axes)
-    hist_dict["dphi_h_strange_LS"] = object_list.FindObject("fDphiHStrangePartLS").Projection(4, axes)
-    hist_dict["dphi_h_strange_LS_mixed"] = object_list.FindObject("fDphiHStrangePartLSMixed").Projection(4, axes)
+    hist_dict["dphi_h_strange"] = object_list.FindObject("fDphiHLambda").Projection(4, axes)
+    hist_dict["dphi_h_strange_mixed"] = object_list.FindObject("fDphiHLambdaMixed").Projection(4, axes)
+    hist_dict["dphi_h_strange_LS"] = object_list.FindObject("fDphiHLambdaLS").Projection(4, axes)
+    hist_dict["dphi_h_strange_LS_mixed"] = object_list.FindObject("fDphiHLambdaLSMixed").Projection(4, axes)
     hist_dict["dphi_h_h"] = object_list.FindObject("fDphiHH").Projection(2, 3, 4)
     hist_dict["dphi_h_h"].Sumw2()
     hist_dict["dphi_h_h_mixed"] = object_list.FindObject("fDphiHHMixed").Projection(2, 3, 4)
@@ -141,12 +141,12 @@ def output_to_file(output_file_string, output_list):
 hist_dict = setup()
 
 #making the corrections, appending corrected stuff to dictionary
-hist_dict["hStrangePart2Dpeak"] = make_mixed_corrections(hist_dict["dphi_h_strange"], hist_dict["dphi_h_strange_mixed"], peak_low, peak_high)
-hist_dict["hStrangePartLS2Dpeak"] = make_mixed_corrections(hist_dict["dphi_h_strange_LS"], hist_dict["dphi_h_strange_LS_mixed"], peak_low, peak_high)
-hist_dict["hStrangePart2DLside"] = make_mixed_corrections(hist_dict["dphi_h_strange"], hist_dict["dphi_h_strange_mixed"], lsb_low, lsb_high)
-hist_dict["hStrangePartLS2DLside"] = make_mixed_corrections(hist_dict["dphi_h_strange_LS"], hist_dict["dphi_h_strange_LS_mixed"], lsb_low, lsb_high)
-hist_dict["hStrangePart2DRside"] = make_mixed_corrections(hist_dict["dphi_h_strange"], hist_dict["dphi_h_strange_mixed"], rsb_low, rsb_high)
-hist_dict["hStrangePartLS2DRside"] = make_mixed_corrections(hist_dict["dphi_h_strange_LS"], hist_dict["dphi_h_strange_LS_mixed"], rsb_low, rsb_high)
+hist_dict["hLambda2Dpeak"] = make_mixed_corrections(hist_dict["dphi_h_strange"], hist_dict["dphi_h_strange_mixed"], peak_low, peak_high)
+hist_dict["hLambdaLS2Dpeak"] = make_mixed_corrections(hist_dict["dphi_h_strange_LS"], hist_dict["dphi_h_strange_LS_mixed"], peak_low, peak_high)
+hist_dict["hLambda2DLside"] = make_mixed_corrections(hist_dict["dphi_h_strange"], hist_dict["dphi_h_strange_mixed"], lsb_low, lsb_high)
+hist_dict["hLambdaLS2DLside"] = make_mixed_corrections(hist_dict["dphi_h_strange_LS"], hist_dict["dphi_h_strange_LS_mixed"], lsb_low, lsb_high)
+hist_dict["hLambda2DRside"] = make_mixed_corrections(hist_dict["dphi_h_strange"], hist_dict["dphi_h_strange_mixed"], rsb_low, rsb_high)
+hist_dict["hLambdaLS2DRside"] = make_mixed_corrections(hist_dict["dphi_h_strange_LS"], hist_dict["dphi_h_strange_LS_mixed"], rsb_low, rsb_high)
 hist_dict["hh2D"] = make_mixed_corrections(hist_dict["dphi_h_h"], hist_dict["dphi_h_h_mixed"], is_hh=True) 
 
 #list containing stuff to be written to output file

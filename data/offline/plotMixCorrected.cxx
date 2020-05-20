@@ -1,17 +1,18 @@
 void plotMixCorrected(string inputfile){
+    gStyle->SetOptStat(0);
     TFile* eta20File = new TFile(inputfile.c_str());
 
-    TH2D* hStrangePart2Dpeak = (TH2D*)eta20File->Get("hStrangePart2Dpeak");
-    TH2D* hStrangePart2DRside = (TH2D*)eta20File->Get("hStrangePart2DRside");
-    TH2D* hStrangePart2DLside = (TH2D*)eta20File->Get("hStrangePart2DLside");
+    TH2D* hLambda2Dpeak = (TH2D*)eta20File->Get("hLambda2Dpeak");
+    TH2D* hLambda2DRside = (TH2D*)eta20File->Get("hLambda2DRside");
+    TH2D* hLambda2DLside = (TH2D*)eta20File->Get("hLambda2DLside");
 
-    TH2D* uncorrhStrangePart2DPeak = (TH2D*)eta20File->Get("uncorrhStrangePart2Dpeak");
+    TH2D* uncorrhLambda2DPeak = (TH2D*)eta20File->Get("uncorrhLambda2Dpeak");
 
-    TH2D* eta20peak = (TH2D*)hStrangePart2Dpeak->Clone("eta20peak");
-    TH2D* eta20RSB = (TH2D*)hStrangePart2DRside->Clone("eta20RSB");
-    TH2D* eta20LSB = (TH2D*)hStrangePart2DLside->Clone("eta20LSB");
+    TH2D* eta20peak = (TH2D*)hLambda2Dpeak->Clone("eta20peak");
+    TH2D* eta20RSB = (TH2D*)hLambda2DRside->Clone("eta20RSB");
+    TH2D* eta20LSB = (TH2D*)hLambda2DLside->Clone("eta20LSB");
 
-    TH2D* uncoreta20peak = (TH2D*)uncorrhStrangePart2DPeak->Clone("uncoreta20peak");
+    TH2D* uncoreta20peak = (TH2D*)uncorrhLambda2DPeak->Clone("uncoreta20peak");
     eta20peak->GetXaxis()->SetTitle("#Delta#eta");
     eta20peak->GetXaxis()->SetTitleSize(0.05);
     eta20peak->GetXaxis()->SetTitleOffset(1.3);
