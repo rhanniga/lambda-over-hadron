@@ -36,7 +36,7 @@ TH1D* getHisto(TString filename, TString histotype, TString histoname, TString m
     histo2D->Sumw2();
     TString histoname1D = histotype + "dphi_" + mult;
     TH1D* histo1D = (TH1D*)histo2D->ProjectionY(histoname1D.Data(), histo2D->GetXaxis()->FindBin(etamin+ 0.001), histo2D->GetXaxis()->FindBin(etamax - 0.001));
-    if(histotype == "hh" && mult == "50_100"){
+    if(histotype == "hh" && mult == "50_80"){
         //histo1D->Rebin();
     }
     histo1D->SetLineWidth(2);
@@ -113,7 +113,7 @@ TF1* setupFit(TString fitname, TH1D* hist, Int_t color, Int_t linestyle, Int_t b
     return basefit;
 }
 
-void calculateRatios(TString input_0_20 = "", TString input_20_50 = "", TString input_50_100 = "", TString scaleSuffix = "avgscale", Int_t bgMethod=0){
+void calculateRatios(TString input_0_20 = "", TString input_20_50 = "", TString input_50_80 = "", TString scaleSuffix = "avgscale", Int_t bgMethod=0){
     //canvas for probing problems
 
     TString outputstring = "lambda_hadron_ratios";
@@ -126,7 +126,7 @@ void calculateRatios(TString input_0_20 = "", TString input_20_50 = "", TString 
 
     if(input_0_20.EqualTo("")) input_0_20 = "US_syst_trig_4_8_assoc_2_4_cent_0_20_mixcorr_hLambda.root";
     if(input_20_50.EqualTo("")) input_20_50 = "US_syst_trig_4_8_assoc_2_4_cent_20_50_mixcorr_hLambda.root";
-    if(input_50_100.EqualTo("")) input_50_100 = "US_syst_trig_4_8_assoc_2_4_cent_50_100_mixcorr_hLambda.root";
+    if(input_50_80.EqualTo("")) input_50_80 = "US_syst_trig_4_8_assoc_2_4_cent_50_80_mixcorr_hLambda.root";
 
     TH1D* hhdphi_0_20 = getHisto("trig_4_8_assoc_2_4_cent_0_20_mixcorr_hLambda.root", "hh", "hh2D", "Eff_0_20", -1.2, 1.2, kBlue+2, 21);
     TH1D* hLambdadphi_0_20 = getHisto(input_0_20, "hLambda", Form("RSUSsubhLambda2Dpeak%s", scaleSuffix.Data()), "Eff_0_20", -1.2, 1.2, kRed+2, 22);
@@ -302,69 +302,69 @@ void calculateRatios(TString input_0_20 = "", TString input_20_50 = "", TString 
     paperfit2050->SetParameter(0, hLambdaBG_20_50->GetParameter(0));
 
     //50-100 section
-    TH1D* hhdphi_50_100 = getHisto("trig_4_8_assoc_2_4_cent_50_100_mixcorr_hLambda.root", "hh", "hh2D", "Eff_50_100", -1.2, 1.2, kBlue+2, 21);
-    TH1D* hLambdadphi_50_100 = getHisto(input_50_100, "hLambda", Form("RSUSsubhLambda2Dpeak%s", scaleSuffix.Data()), "Eff_50_100", -1.2, 1.2, kRed+2, 22);
+    TH1D* hhdphi_50_80 = getHisto("trig_4_8_assoc_2_4_cent_50_80_mixcorr_hLambda.root", "hh", "hh2D", "Eff_50_80", -1.2, 1.2, kBlue+2, 21);
+    TH1D* hLambdadphi_50_80 = getHisto(input_50_80, "hLambda", Form("RSUSsubhLambda2Dpeak%s", scaleSuffix.Data()), "Eff_50_80", -1.2, 1.2, kRed+2, 22);
 
 
 
     //scale for inv. mass range
-    //hLambdadphi_50_100->Scale(1.0/0.897); //wide mass
-    //hLambdadphi_50_100->Scale(1.0/0.803); //narrow mass
+    //hLambdadphi_50_80->Scale(1.0/0.897); //wide mass
+    //hLambdadphi_50_80->Scale(1.0/0.803); //narrow mass
 
-    TF1 *corrFit50100 = setupFit("corrFit50100", hhdphi_50_100, kBlue, 7, bgMethod);
+    TF1 *corrFit50100 = setupFit("corrFit50100", hhdphi_50_80, kBlue, 7, bgMethod);
 
-    TF1 *corrFit2_50100 = setupFit("corrFit2_50100", hLambdadphi_50_100, kRed, 7, bgMethod);
+    TF1 *corrFit2_50100 = setupFit("corrFit2_50100", hLambdadphi_50_80, kRed, 7, bgMethod);
 
-    hhdphi_50_100->Fit("corrFit50100", "R0");
-    hLambdadphi_50_100->Fit("corrFit2_50100", "R0");
+    hhdphi_50_80->Fit("corrFit50100", "R0");
+    hLambdadphi_50_80->Fit("corrFit2_50100", "R0");
 
-    TF1 *hhBG_50_100 = new TF1("hhBG_50_100", "pol0(0)", -TMath::Pi()/2.0, 3.0*TMath::Pi()/2.0);
-    hhBG_50_100->SetParLimits(0, 0.00001, 10000000.0);
-    hhBG_50_100->SetParameter(0, 1.0*corrFit50100->GetParameter(6));
-    hhBG_50_100->SetLineStyle(2);
+    TF1 *hhBG_50_80 = new TF1("hhBG_50_80", "pol0(0)", -TMath::Pi()/2.0, 3.0*TMath::Pi()/2.0);
+    hhBG_50_80->SetParLimits(0, 0.00001, 10000000.0);
+    hhBG_50_80->SetParameter(0, 1.0*corrFit50100->GetParameter(6));
+    hhBG_50_80->SetLineStyle(2);
 
-    TF1 *hLambdaBG_50_100 = new TF1("hLambdaBG_50_100", "pol0(0)", -TMath::Pi()/2.0, 3.0*TMath::Pi()/2.0);
-    hLambdaBG_50_100->SetParLimits(0, 0.00001, 10000000.0);
-    hLambdaBG_50_100->SetParameter(0, 1.0*corrFit2_50100->GetParameter(6));
-    hLambdaBG_50_100->SetLineStyle(2);
+    TF1 *hLambdaBG_50_80 = new TF1("hLambdaBG_50_80", "pol0(0)", -TMath::Pi()/2.0, 3.0*TMath::Pi()/2.0);
+    hLambdaBG_50_80->SetParLimits(0, 0.00001, 10000000.0);
+    hLambdaBG_50_80->SetParameter(0, 1.0*corrFit2_50100->GetParameter(6));
+    hLambdaBG_50_80->SetLineStyle(2);
 
-    Double_t near50_100hLambdaError = 0;
-    Double_t near50_100hhError = 0;
-    Double_t away50_100hLambdaError = 0;
-    Double_t away50_100hhError = 0;
-    //Double_t mid50_100hLambdaError =(1.0/3.0)*TMath::Sqrt(TMath::Power(hLambdadphi_50_100->GetBinError(8),2) + TMath::Power(hLambdadphi_50_100->GetBinError(16),2) + TMath::Power(hLambdadphi_50_100->GetBinError(1),2));
-    Double_t mid50_100hLambdaError = corrFit2_50100->GetParError(6);
-    //Double_t mid50_100hhError = (1.0/3.0)*TMath::Sqrt(TMath::Power(hhdphi_50_100->GetBinError(8),2) + TMath::Power(hhdphi_50_100->GetBinError(16),2) + TMath::Power(hhdphi_50_100->GetBinError(1),2));
-    Double_t mid50_100hhError = corrFit50100->GetParError(6);
-    Double_t total50_100hLambdaError = 0;
-    Double_t total50_100hhError = 0;
+    Double_t near50_80hLambdaError = 0;
+    Double_t near50_80hhError = 0;
+    Double_t away50_80hLambdaError = 0;
+    Double_t away50_80hhError = 0;
+    //Double_t mid50_80hLambdaError =(1.0/3.0)*TMath::Sqrt(TMath::Power(hLambdadphi_50_80->GetBinError(8),2) + TMath::Power(hLambdadphi_50_80->GetBinError(16),2) + TMath::Power(hLambdadphi_50_80->GetBinError(1),2));
+    Double_t mid50_80hLambdaError = corrFit2_50100->GetParError(6);
+    //Double_t mid50_80hhError = (1.0/3.0)*TMath::Sqrt(TMath::Power(hhdphi_50_80->GetBinError(8),2) + TMath::Power(hhdphi_50_80->GetBinError(16),2) + TMath::Power(hhdphi_50_80->GetBinError(1),2));
+    Double_t mid50_80hhError = corrFit50100->GetParError(6);
+    Double_t total50_80hLambdaError = 0;
+    Double_t total50_80hhError = 0;
 
-    Double_t near50_100hLambdaYield = hLambdadphi_50_100->IntegralAndError(1,8,near50_100hLambdaError, "width") - hLambdaBG_50_100->Integral(hLambdadphi_50_100->GetXaxis()->GetBinLowEdge(1), hLambdadphi_50_100->GetXaxis()->GetBinUpEdge(8));
-    //near50_100hLambdaError = TMath::Sqrt(TMath::Power(near50_100hLambdaError, 2) + TMath::Power(6.0*mid50_100hLambdaError, 2));
-    Double_t near50_100hhYield = hhdphi_50_100->IntegralAndError(1,8,near50_100hhError, "width") - hhBG_50_100->Integral(hLambdadphi_50_100->GetXaxis()->GetBinLowEdge(1), hLambdadphi_50_100->GetXaxis()->GetBinUpEdge(8));
-    //near50_100hhError = TMath::Sqrt(TMath::Power(near50_100hhError, 2) + TMath::Power(6.0*mid50_100hhError, 2));
-    Double_t away50_100hLambdaYield = hLambdadphi_50_100->IntegralAndError(9,16,away50_100hLambdaError, "width") - hLambdaBG_50_100->Integral(hLambdadphi_50_100->GetXaxis()->GetBinLowEdge(9), hLambdadphi_50_100->GetXaxis()->GetBinUpEdge(16));
-    //away50_100hLambdaError = TMath::Sqrt(TMath::Power(away50_100hLambdaError, 2) + TMath::Power(8.0*mid50_100hLambdaError, 2));
-    Double_t away50_100hhYield = hhdphi_50_100->IntegralAndError(9,16,away50_100hhError, "width")- hhBG_50_100->Integral(hLambdadphi_50_100->GetXaxis()->GetBinLowEdge(9), hLambdadphi_50_100->GetXaxis()->GetBinUpEdge(16));
-    //away50_100hhError = TMath::Sqrt(TMath::Power(away50_100hhError, 2) + TMath::Power(8.0*mid50_100hhError, 2));
-    Double_t mid50_100hLambdaYield = hLambdaBG_50_100->Integral(hLambdadphi_50_100->GetXaxis()->GetBinLowEdge(1), hLambdadphi_50_100->GetXaxis()->GetBinUpEdge(16));
-    mid50_100hLambdaError = mid50_100hLambdaError*16.0;
-    Double_t mid50_100hhYield = hhBG_50_100->Integral(hLambdadphi_50_100->GetXaxis()->GetBinLowEdge(1), hLambdadphi_50_100->GetXaxis()->GetBinUpEdge(16));
-    mid50_100hhError = mid50_100hhError*16.0;
-    Double_t total50_100hLambdaYield = hLambdadphi_50_100->IntegralAndError(1, 16,total50_100hLambdaError, "width");
-    Double_t total50_100hhYield = hhdphi_50_100->IntegralAndError(1, 16,total50_100hhError, "width");
-    Double_t jet50_100hLambda = hLambdadphi_50_100->Integral(1, 16) - mid50_100hLambdaYield;
-    Double_t jet50_100hh = hhdphi_50_100->Integral(1, 16) - mid50_100hhYield;
+    Double_t near50_80hLambdaYield = hLambdadphi_50_80->IntegralAndError(1,8,near50_80hLambdaError, "width") - hLambdaBG_50_80->Integral(hLambdadphi_50_80->GetXaxis()->GetBinLowEdge(1), hLambdadphi_50_80->GetXaxis()->GetBinUpEdge(8));
+    //near50_80hLambdaError = TMath::Sqrt(TMath::Power(near50_80hLambdaError, 2) + TMath::Power(6.0*mid50_80hLambdaError, 2));
+    Double_t near50_80hhYield = hhdphi_50_80->IntegralAndError(1,8,near50_80hhError, "width") - hhBG_50_80->Integral(hLambdadphi_50_80->GetXaxis()->GetBinLowEdge(1), hLambdadphi_50_80->GetXaxis()->GetBinUpEdge(8));
+    //near50_80hhError = TMath::Sqrt(TMath::Power(near50_80hhError, 2) + TMath::Power(6.0*mid50_80hhError, 2));
+    Double_t away50_80hLambdaYield = hLambdadphi_50_80->IntegralAndError(9,16,away50_80hLambdaError, "width") - hLambdaBG_50_80->Integral(hLambdadphi_50_80->GetXaxis()->GetBinLowEdge(9), hLambdadphi_50_80->GetXaxis()->GetBinUpEdge(16));
+    //away50_80hLambdaError = TMath::Sqrt(TMath::Power(away50_80hLambdaError, 2) + TMath::Power(8.0*mid50_80hLambdaError, 2));
+    Double_t away50_80hhYield = hhdphi_50_80->IntegralAndError(9,16,away50_80hhError, "width")- hhBG_50_80->Integral(hLambdadphi_50_80->GetXaxis()->GetBinLowEdge(9), hLambdadphi_50_80->GetXaxis()->GetBinUpEdge(16));
+    //away50_80hhError = TMath::Sqrt(TMath::Power(away50_80hhError, 2) + TMath::Power(8.0*mid50_80hhError, 2));
+    Double_t mid50_80hLambdaYield = hLambdaBG_50_80->Integral(hLambdadphi_50_80->GetXaxis()->GetBinLowEdge(1), hLambdadphi_50_80->GetXaxis()->GetBinUpEdge(16));
+    mid50_80hLambdaError = mid50_80hLambdaError*16.0;
+    Double_t mid50_80hhYield = hhBG_50_80->Integral(hLambdadphi_50_80->GetXaxis()->GetBinLowEdge(1), hLambdadphi_50_80->GetXaxis()->GetBinUpEdge(16));
+    mid50_80hhError = mid50_80hhError*16.0;
+    Double_t total50_80hLambdaYield = hLambdadphi_50_80->IntegralAndError(1, 16,total50_80hLambdaError, "width");
+    Double_t total50_80hhYield = hhdphi_50_80->IntegralAndError(1, 16,total50_80hhError, "width");
+    Double_t jet50_80hLambda = hLambdadphi_50_80->Integral(1, 16) - mid50_80hLambdaYield;
+    Double_t jet50_80hh = hhdphi_50_80->Integral(1, 16) - mid50_80hhYield;
 
 
-    Double_t near50100 = near50_100hLambdaYield/near50_100hhYield;
-    Double_t near50100Er = near50100*TMath::Sqrt(TMath::Power(near50_100hLambdaError/near50_100hLambdaYield, 2) + TMath::Power(near50_100hhError/near50_100hhYield, 2));
-    Double_t away50100 = away50_100hLambdaYield/away50_100hhYield;
-    Double_t away50100Er = away50100*TMath::Sqrt(TMath::Power(away50_100hLambdaError/away50_100hLambdaYield, 2) + TMath::Power(away50_100hhError/away50_100hhYield, 2));
-    Double_t mid50100 = mid50_100hLambdaYield/mid50_100hhYield;
-    Double_t mid50100Er = mid50100*TMath::Sqrt(TMath::Power(mid50_100hLambdaError/mid50_100hLambdaYield, 2) + TMath::Power(mid50_100hhError/mid50_100hhYield, 2));
-    Double_t total50100 = total50_100hLambdaYield/total50_100hhYield;
-    Double_t total50100Er = total50100*TMath::Sqrt(TMath::Power(total50_100hLambdaError/total50_100hLambdaYield, 2) + TMath::Power(total50_100hhError/total50_100hhYield, 2));
+    Double_t near50100 = near50_80hLambdaYield/near50_80hhYield;
+    Double_t near50100Er = near50100*TMath::Sqrt(TMath::Power(near50_80hLambdaError/near50_80hLambdaYield, 2) + TMath::Power(near50_80hhError/near50_80hhYield, 2));
+    Double_t away50100 = away50_80hLambdaYield/away50_80hhYield;
+    Double_t away50100Er = away50100*TMath::Sqrt(TMath::Power(away50_80hLambdaError/away50_80hLambdaYield, 2) + TMath::Power(away50_80hhError/away50_80hhYield, 2));
+    Double_t mid50100 = mid50_80hLambdaYield/mid50_80hhYield;
+    Double_t mid50100Er = mid50100*TMath::Sqrt(TMath::Power(mid50_80hLambdaError/mid50_80hLambdaYield, 2) + TMath::Power(mid50_80hhError/mid50_80hhYield, 2));
+    Double_t total50100 = total50_80hLambdaYield/total50_80hhYield;
+    Double_t total50100Er = total50100*TMath::Sqrt(TMath::Power(total50_80hLambdaError/total50_80hLambdaYield, 2) + TMath::Power(total50_80hhError/total50_80hhYield, 2));
 
     TH1D *ratios50100 = new TH1D("ratios50100", "(h-#Lambda / h-h) Ratios", 4, 0, 4);
     ratios50100->GetXaxis()->SetBinLabel(1, "near-side");
@@ -386,39 +386,39 @@ void calculateRatios(TString input_0_20 = "", TString input_20_50 = "", TString 
     ratios50100->SetLineWidth(2);
 
     TF1* paperfit50100 = new TF2("paperfit50100", "[0]*(1+2*0.12*0.1*cos(2.0*x))", -0.5*TMath::Pi(), 1.5*TMath::Pi());
-    paperfit50100->SetParameter(0, hLambdaBG_50_100->GetParameter(0));
+    paperfit50100->SetParameter(0, hLambdaBG_50_80->GetParameter(0));
 
     TF1* paperhhfit50100 = new TF2("paperhhfit50100", "[0]*(1+2*0.12*0.1*cos(2.0*x))", -0.5*TMath::Pi(), 1.5*TMath::Pi());
-    paperhhfit50100->SetParameter(0, hhBG_50_100->GetParameter(0));
+    paperhhfit50100->SetParameter(0, hhBG_50_80->GetParameter(0));
 
 
-    Double_t near0_100hLambdaYield = near0_20hLambdaYield + near20_50hLambdaYield + near50_100hLambdaYield;
-    Double_t near0_100hLambdaError = TMath::Sqrt((TMath::Power(near0_20hLambdaError,2) + TMath::Power(near20_50hLambdaError,2) + TMath::Power(near50_100hLambdaError,2)));
-    Double_t near0_100hhYield = near0_20hhYield + near20_50hhYield + near50_100hhYield;
-    Double_t near0_100hhError = TMath::Sqrt((TMath::Power(near0_20hhError,2) + TMath::Power(near20_50hhError,2) + TMath::Power(near50_100hhError,2)));
-    Double_t mid0_100hLambdaYield = mid0_20hLambdaYield + mid20_50hLambdaYield + mid50_100hLambdaYield;
-    Double_t mid0_100hLambdaError = TMath::Sqrt((TMath::Power(mid0_20hLambdaError,2) + TMath::Power(mid20_50hLambdaError,2) + TMath::Power(mid50_100hLambdaError,2)));
-    Double_t mid0_100hhYield = mid0_20hhYield + mid20_50hhYield + mid50_100hhYield;
-    Double_t mid0_100hhError = TMath::Sqrt((TMath::Power(mid0_20hhError,2) + TMath::Power(mid20_50hhError,2) + TMath::Power(mid50_100hhError,2)));
-    Double_t away0_100hLambdaYield = away0_20hLambdaYield + away20_50hLambdaYield + away50_100hLambdaYield;
-    Double_t away0_100hLambdaError = TMath::Sqrt((TMath::Power(away0_20hLambdaError,2) + TMath::Power(away20_50hLambdaError,2) + TMath::Power(away50_100hLambdaError,2)));
-    Double_t away0_100hhYield = away0_20hhYield + away20_50hhYield + away50_100hhYield;
-    Double_t away0_100hhError = TMath::Sqrt((TMath::Power(away0_20hhError,2) + TMath::Power(away20_50hhError,2) + TMath::Power(away50_100hhError,2)));
-    Double_t total0_100hLambdaYield = total0_20hLambdaYield + total20_50hLambdaYield + total50_100hLambdaYield;
-    Double_t total0_100hLambdaError = TMath::Sqrt((TMath::Power(total0_20hLambdaError,2) + TMath::Power(total20_50hLambdaError,2) + TMath::Power(total50_100hLambdaError,2)));
-    Double_t total0_100hhYield = total0_20hhYield + total20_50hhYield + total50_100hhYield;
-    Double_t total0_100hhError = TMath::Sqrt((TMath::Power(total0_20hhError,2) + TMath::Power(total20_50hhError,2) + TMath::Power(total50_100hhError,2)));
+    Double_t near0_100hLambdaYield = near0_20hLambdaYield + near20_50hLambdaYield + near50_80hLambdaYield;
+    Double_t near0_100hLambdaError = TMath::Sqrt((TMath::Power(near0_20hLambdaError,2) + TMath::Power(near20_50hLambdaError,2) + TMath::Power(near50_80hLambdaError,2)));
+    Double_t near0_100hhYield = near0_20hhYield + near20_50hhYield + near50_80hhYield;
+    Double_t near0_100hhError = TMath::Sqrt((TMath::Power(near0_20hhError,2) + TMath::Power(near20_50hhError,2) + TMath::Power(near50_80hhError,2)));
+    Double_t mid0_100hLambdaYield = mid0_20hLambdaYield + mid20_50hLambdaYield + mid50_80hLambdaYield;
+    Double_t mid0_100hLambdaError = TMath::Sqrt((TMath::Power(mid0_20hLambdaError,2) + TMath::Power(mid20_50hLambdaError,2) + TMath::Power(mid50_80hLambdaError,2)));
+    Double_t mid0_100hhYield = mid0_20hhYield + mid20_50hhYield + mid50_80hhYield;
+    Double_t mid0_100hhError = TMath::Sqrt((TMath::Power(mid0_20hhError,2) + TMath::Power(mid20_50hhError,2) + TMath::Power(mid50_80hhError,2)));
+    Double_t away0_100hLambdaYield = away0_20hLambdaYield + away20_50hLambdaYield + away50_80hLambdaYield;
+    Double_t away0_100hLambdaError = TMath::Sqrt((TMath::Power(away0_20hLambdaError,2) + TMath::Power(away20_50hLambdaError,2) + TMath::Power(away50_80hLambdaError,2)));
+    Double_t away0_100hhYield = away0_20hhYield + away20_50hhYield + away50_80hhYield;
+    Double_t away0_100hhError = TMath::Sqrt((TMath::Power(away0_20hhError,2) + TMath::Power(away20_50hhError,2) + TMath::Power(away50_80hhError,2)));
+    Double_t total0_100hLambdaYield = total0_20hLambdaYield + total20_50hLambdaYield + total50_80hLambdaYield;
+    Double_t total0_100hLambdaError = TMath::Sqrt((TMath::Power(total0_20hLambdaError,2) + TMath::Power(total20_50hLambdaError,2) + TMath::Power(total50_80hLambdaError,2)));
+    Double_t total0_100hhYield = total0_20hhYield + total20_50hhYield + total50_80hhYield;
+    Double_t total0_100hhError = TMath::Sqrt((TMath::Power(total0_20hhError,2) + TMath::Power(total20_50hhError,2) + TMath::Power(total50_80hhError,2)));
 
 
 
-    Double_t near0100 = (near0_20hLambdaYield + near20_50hLambdaYield + near50_100hLambdaYield)/(near0_20hhYield + near20_50hhYield + near50_100hhYield);
-    Double_t near0100Er = near0100*TMath::Sqrt((TMath::Power(near0_20hLambdaError,2) + TMath::Power(near20_50hLambdaError,2) + TMath::Power(near50_100hLambdaError,2))/TMath::Power((near0_20hLambdaYield + near20_50hLambdaYield + near50_100hLambdaYield), 2) + (TMath::Power(near0_20hhError,2) + TMath::Power(near20_50hhError,2) + TMath::Power(near50_100hhError,2))/TMath::Power((near0_20hhYield + near20_50hhYield + near50_100hhYield), 2));
-    Double_t away0100 = (away0_20hLambdaYield + away20_50hLambdaYield + away50_100hLambdaYield)/(away0_20hhYield + away20_50hhYield + away50_100hhYield);
-    Double_t away0100Er = away0100*TMath::Sqrt((TMath::Power(away0_20hLambdaError,2) + TMath::Power(away20_50hLambdaError,2) + TMath::Power(away50_100hLambdaError,2))/TMath::Power((away0_20hLambdaYield + away20_50hLambdaYield + away50_100hLambdaYield), 2) + (TMath::Power(away0_20hhError,2) + TMath::Power(away20_50hhError,2) + TMath::Power(away50_100hhError,2))/TMath::Power((away0_20hhYield + away20_50hhYield + away50_100hhYield), 2));
-    Double_t mid0100 = (mid0_20hLambdaYield + mid20_50hLambdaYield + mid50_100hLambdaYield)/(mid0_20hhYield + mid20_50hhYield + mid50_100hhYield);
-    Double_t mid0100Er = mid0100*TMath::Sqrt((TMath::Power(mid0_20hLambdaError,2) + TMath::Power(mid20_50hLambdaError,2) + TMath::Power(mid50_100hLambdaError,2))/TMath::Power((mid0_20hLambdaYield + mid20_50hLambdaYield + mid50_100hLambdaYield), 2) + (TMath::Power(mid0_20hhError,2) + TMath::Power(mid20_50hhError,2) + TMath::Power(mid50_100hhError,2))/TMath::Power((mid0_20hhYield + mid20_50hhYield + mid50_100hhYield), 2));
-    Double_t total0100 = (total0_20hLambdaYield + total20_50hLambdaYield + total50_100hLambdaYield)/(total0_20hhYield + total20_50hhYield + total50_100hhYield);
-    Double_t total0100Er = total0100*TMath::Sqrt((TMath::Power(total0_20hLambdaError,2) + TMath::Power(total20_50hLambdaError,2) + TMath::Power(total50_100hLambdaError,2))/TMath::Power((total0_20hLambdaYield + total20_50hLambdaYield + total50_100hLambdaYield), 2) + (TMath::Power(total0_20hhError,2) + TMath::Power(total20_50hhError,2) + TMath::Power(total50_100hhError,2))/TMath::Power((total0_20hhYield + total20_50hhYield + total50_100hhYield), 2));
+    Double_t near0100 = (near0_20hLambdaYield + near20_50hLambdaYield + near50_80hLambdaYield)/(near0_20hhYield + near20_50hhYield + near50_80hhYield);
+    Double_t near0100Er = near0100*TMath::Sqrt((TMath::Power(near0_20hLambdaError,2) + TMath::Power(near20_50hLambdaError,2) + TMath::Power(near50_80hLambdaError,2))/TMath::Power((near0_20hLambdaYield + near20_50hLambdaYield + near50_80hLambdaYield), 2) + (TMath::Power(near0_20hhError,2) + TMath::Power(near20_50hhError,2) + TMath::Power(near50_80hhError,2))/TMath::Power((near0_20hhYield + near20_50hhYield + near50_80hhYield), 2));
+    Double_t away0100 = (away0_20hLambdaYield + away20_50hLambdaYield + away50_80hLambdaYield)/(away0_20hhYield + away20_50hhYield + away50_80hhYield);
+    Double_t away0100Er = away0100*TMath::Sqrt((TMath::Power(away0_20hLambdaError,2) + TMath::Power(away20_50hLambdaError,2) + TMath::Power(away50_80hLambdaError,2))/TMath::Power((away0_20hLambdaYield + away20_50hLambdaYield + away50_80hLambdaYield), 2) + (TMath::Power(away0_20hhError,2) + TMath::Power(away20_50hhError,2) + TMath::Power(away50_80hhError,2))/TMath::Power((away0_20hhYield + away20_50hhYield + away50_80hhYield), 2));
+    Double_t mid0100 = (mid0_20hLambdaYield + mid20_50hLambdaYield + mid50_80hLambdaYield)/(mid0_20hhYield + mid20_50hhYield + mid50_80hhYield);
+    Double_t mid0100Er = mid0100*TMath::Sqrt((TMath::Power(mid0_20hLambdaError,2) + TMath::Power(mid20_50hLambdaError,2) + TMath::Power(mid50_80hLambdaError,2))/TMath::Power((mid0_20hLambdaYield + mid20_50hLambdaYield + mid50_80hLambdaYield), 2) + (TMath::Power(mid0_20hhError,2) + TMath::Power(mid20_50hhError,2) + TMath::Power(mid50_80hhError,2))/TMath::Power((mid0_20hhYield + mid20_50hhYield + mid50_80hhYield), 2));
+    Double_t total0100 = (total0_20hLambdaYield + total20_50hLambdaYield + total50_80hLambdaYield)/(total0_20hhYield + total20_50hhYield + total50_80hhYield);
+    Double_t total0100Er = total0100*TMath::Sqrt((TMath::Power(total0_20hLambdaError,2) + TMath::Power(total20_50hLambdaError,2) + TMath::Power(total50_80hLambdaError,2))/TMath::Power((total0_20hLambdaYield + total20_50hLambdaYield + total50_80hLambdaYield), 2) + (TMath::Power(total0_20hhError,2) + TMath::Power(total20_50hhError,2) + TMath::Power(total50_80hhError,2))/TMath::Power((total0_20hhYield + total20_50hhYield + total50_80hhYield), 2));
 
     printf("near020Er: %E\n", near020Er);
     printf("mid020Er: %E\n", mid020Er);
@@ -472,57 +472,57 @@ void calculateRatios(TString input_0_20 = "", TString input_20_50 = "", TString 
     //initialize all sytematic error values
     Double_t near0_20hLambdaSystError = 0.068;
     Double_t near20_50hLambdaSystError = 0.077;
-    Double_t near50_100hLambdaSystError = 0.133;
+    Double_t near50_80hLambdaSystError = 0.133;
     Double_t away0_20hLambdaSystError = 0.097;
     Double_t away20_50hLambdaSystError = 0.061;
-    Double_t away50_100hLambdaSystError = 0.111;
+    Double_t away50_80hLambdaSystError = 0.111;
     Double_t mid0_20hLambdaSystError = 0.017;
     Double_t mid20_50hLambdaSystError = 0.013;
-    Double_t mid50_100hLambdaSystError = 0.037;
+    Double_t mid50_80hLambdaSystError = 0.037;
     Double_t total0_20hLambdaSystError = 0.014;
     Double_t total20_50hLambdaSystError = 0.012;
-    Double_t total50_100hLambdaSystError = 0.032;
+    Double_t total50_80hLambdaSystError = 0.032;
 
     Double_t near0_20hhSystError = 0;
     Double_t near20_50hhSystError = 0;
-    Double_t near50_100hhSystError = 0;
+    Double_t near50_80hhSystError = 0;
     Double_t away0_20hhSystError = 0;
     Double_t away20_50hhSystError = 0;
-    Double_t away50_100hhSystError = 0;
+    Double_t away50_80hhSystError = 0;
     Double_t mid0_20hhSystError = 0;
     Double_t mid20_50hhSystError = 0;
-    Double_t mid50_100hhSystError = 0;
+    Double_t mid50_80hhSystError = 0;
     Double_t total0_20hhSystError = 0;
     Double_t total20_50hhSystError = 0;
-    Double_t total50_100hhSystError = 0;
+    Double_t total50_80hhSystError = 0;
 
 
     //Setup single yield arrays for different regions
-    Double_t nearhLambdaYieldArray[3] = {near50_100hLambdaYield*300.0, near20_50hLambdaYield*300.0, near0_20hLambdaYield*300.0};
-    Double_t nearhLambdaYieldArrayErr[3] = {near50_100hLambdaError*300.0, near20_50hLambdaError*300.0, near0_20hLambdaError*300.0};
-    Double_t nearhLambdaYieldArraySystErr[3] = {near50_100hLambdaYield*near50_100hLambdaSystError*300.0, near20_50hLambdaYield*near20_50hLambdaSystError*300.0, near0_20hLambdaYield*near0_20hLambdaSystError*300.0};
-    Double_t awayhLambdaYieldArray[3] = {away50_100hLambdaYield*300.0, away20_50hLambdaYield*300.0, away0_20hLambdaYield*300.0};
-    Double_t awayhLambdaYieldArrayErr[3] = {away50_100hLambdaError*300.0, away20_50hLambdaError*300.0, away0_20hLambdaError*300.0};
-    Double_t awayhLambdaYieldArraySystErr[3] = {away50_100hLambdaYield*away50_100hLambdaSystError*300.0, away20_50hLambdaYield*away20_50hLambdaSystError*300.0, away0_20hLambdaYield*away0_20hLambdaSystError*300.0};
-    Double_t bulkhLambdaYieldArray[3] = {mid50_100hLambdaYield*100.0, mid20_50hLambdaYield*100.0, mid0_20hLambdaYield*100.0};
-    Double_t bulkhLambdaYieldArrayErr[3] = {mid50_100hLambdaError*100.0, mid20_50hLambdaError*100.0, mid0_20hLambdaError*100.0};
-    Double_t bulkhLambdaYieldArraySystErr[3] = {mid50_100hLambdaYield*mid50_100hLambdaSystError*100.0, mid20_50hLambdaYield*mid20_50hLambdaSystError*100.0, mid0_20hLambdaYield*mid0_20hLambdaSystError*100.0};
-    Double_t totalhLambdaYieldArray[3] = {total50_100hLambdaYield*100.0, total20_50hLambdaYield*100.0, total0_20hLambdaYield*100.0};
-    Double_t totalhLambdaYieldArrayErr[3] = {total50_100hLambdaError*100.0, total20_50hLambdaError*100.0, total0_20hLambdaError*100.0};
-    Double_t totalhLambdaYieldArraySystErr[3] = {total50_100hLambdaYield*total50_100hLambdaSystError*100.0, total20_50hLambdaYield*total20_50hLambdaSystError*100.0, total0_20hLambdaYield*total0_20hLambdaSystError*100.0};
+    Double_t nearhLambdaYieldArray[3] = {near50_80hLambdaYield*300.0, near20_50hLambdaYield*300.0, near0_20hLambdaYield*300.0};
+    Double_t nearhLambdaYieldArrayErr[3] = {near50_80hLambdaError*300.0, near20_50hLambdaError*300.0, near0_20hLambdaError*300.0};
+    Double_t nearhLambdaYieldArraySystErr[3] = {near50_80hLambdaYield*near50_80hLambdaSystError*300.0, near20_50hLambdaYield*near20_50hLambdaSystError*300.0, near0_20hLambdaYield*near0_20hLambdaSystError*300.0};
+    Double_t awayhLambdaYieldArray[3] = {away50_80hLambdaYield*300.0, away20_50hLambdaYield*300.0, away0_20hLambdaYield*300.0};
+    Double_t awayhLambdaYieldArrayErr[3] = {away50_80hLambdaError*300.0, away20_50hLambdaError*300.0, away0_20hLambdaError*300.0};
+    Double_t awayhLambdaYieldArraySystErr[3] = {away50_80hLambdaYield*away50_80hLambdaSystError*300.0, away20_50hLambdaYield*away20_50hLambdaSystError*300.0, away0_20hLambdaYield*away0_20hLambdaSystError*300.0};
+    Double_t bulkhLambdaYieldArray[3] = {mid50_80hLambdaYield*100.0, mid20_50hLambdaYield*100.0, mid0_20hLambdaYield*100.0};
+    Double_t bulkhLambdaYieldArrayErr[3] = {mid50_80hLambdaError*100.0, mid20_50hLambdaError*100.0, mid0_20hLambdaError*100.0};
+    Double_t bulkhLambdaYieldArraySystErr[3] = {mid50_80hLambdaYield*mid50_80hLambdaSystError*100.0, mid20_50hLambdaYield*mid20_50hLambdaSystError*100.0, mid0_20hLambdaYield*mid0_20hLambdaSystError*100.0};
+    Double_t totalhLambdaYieldArray[3] = {total50_80hLambdaYield*100.0, total20_50hLambdaYield*100.0, total0_20hLambdaYield*100.0};
+    Double_t totalhLambdaYieldArrayErr[3] = {total50_80hLambdaError*100.0, total20_50hLambdaError*100.0, total0_20hLambdaError*100.0};
+    Double_t totalhLambdaYieldArraySystErr[3] = {total50_80hLambdaYield*total50_80hLambdaSystError*100.0, total20_50hLambdaYield*total20_50hLambdaSystError*100.0, total0_20hLambdaYield*total0_20hLambdaSystError*100.0};
 
-    Double_t nearhhYieldArray[3] = {near50_100hhYield, near20_50hhYield, near0_20hhYield};
-    Double_t nearhhYieldArrayErr[3] = {near50_100hhError, near20_50hhError, near0_20hhError};
-    Double_t nearhhYieldArraySystErr[3] = {near50_100hhSystError, near20_50hhSystError, near0_20hhSystError};
-    Double_t awayhhYieldArray[3] = {away50_100hhYield, away20_50hhYield, away0_20hhYield};
-    Double_t awayhhYieldArrayErr[3] = {away50_100hhError, away20_50hhError, away0_20hhError};
-    Double_t awayhhYieldArraySystErr[3] = {away50_100hhSystError, away20_50hhSystError, away0_20hhSystError};
-    Double_t bulkhhYieldArray[3] = {mid50_100hhYield, mid20_50hhYield, mid0_20hhYield};
-    Double_t bulkhhYieldArrayErr[3] = {mid50_100hhError, mid20_50hhError, mid0_20hhError};
-    Double_t bulkhhYieldArraySystErr[3] = {mid50_100hhSystError, mid20_50hhSystError, mid0_20hhSystError};
-    Double_t totalhhYieldArray[3] = {total50_100hhYield, total20_50hhYield, total0_20hhYield};
-    Double_t totalhhYieldArrayErr[3] = {total50_100hhError, total20_50hhError, total0_20hhError};
-    Double_t totalhhYieldArraySystErr[3] = {total50_100hhSystError, total20_50hhSystError, total0_20hhSystError};
+    Double_t nearhhYieldArray[3] = {near50_80hhYield, near20_50hhYield, near0_20hhYield};
+    Double_t nearhhYieldArrayErr[3] = {near50_80hhError, near20_50hhError, near0_20hhError};
+    Double_t nearhhYieldArraySystErr[3] = {near50_80hhSystError, near20_50hhSystError, near0_20hhSystError};
+    Double_t awayhhYieldArray[3] = {away50_80hhYield, away20_50hhYield, away0_20hhYield};
+    Double_t awayhhYieldArrayErr[3] = {away50_80hhError, away20_50hhError, away0_20hhError};
+    Double_t awayhhYieldArraySystErr[3] = {away50_80hhSystError, away20_50hhSystError, away0_20hhSystError};
+    Double_t bulkhhYieldArray[3] = {mid50_80hhYield, mid20_50hhYield, mid0_20hhYield};
+    Double_t bulkhhYieldArrayErr[3] = {mid50_80hhError, mid20_50hhError, mid0_20hhError};
+    Double_t bulkhhYieldArraySystErr[3] = {mid50_80hhSystError, mid20_50hhSystError, mid0_20hhSystError};
+    Double_t totalhhYieldArray[3] = {total50_80hhYield, total20_50hhYield, total0_20hhYield};
+    Double_t totalhhYieldArrayErr[3] = {total50_80hhError, total20_50hhError, total0_20hhError};
+    Double_t totalhhYieldArraySystErr[3] = {total50_80hhSystError, total20_50hhSystError, total0_20hhSystError};
 
 
     //Plot ratio as a function of multiplicity for the different angular regions
@@ -536,10 +536,10 @@ void calculateRatios(TString input_0_20 = "", TString input_20_50 = "", TString 
     Double_t totalArrayErr[3] = {ratios50100->GetBinError(4), ratios2050->GetBinError(4), ratios020->GetBinError(4)};
 
     //ratio of Near Jet to Underlying Event vs. Multiplicity
-    //Double_t jet2UEhLambda[3] = {jet50_100hLambda/mid50_100hLambdaYield, jet20_50hLambda/mid20_50hLambdaYield, jet0_20hLambda/mid0_20hLambdaYield};
-    //Double_t jet2UEhh[3] = {jet50_100hh/mid50_100hhYield, jet20_50hh/mid20_50hhYield, jet0_20hh/mid0_20hhYield};
-    Double_t jet2UEhLambda[3] = {mid50_100hLambdaYield/total50_100hLambdaYield, mid20_50hLambdaYield/total20_50hLambdaYield, mid0_20hLambdaYield/total0_20hLambdaYield};
-    Double_t jet2UEhh[3] = {mid50_100hhYield/total50_100hhYield, mid20_50hhYield/total20_50hhYield, mid0_20hhYield/total0_20hhYield};
+    //Double_t jet2UEhLambda[3] = {jet50_80hLambda/mid50_80hLambdaYield, jet20_50hLambda/mid20_50hLambdaYield, jet0_20hLambda/mid0_20hLambdaYield};
+    //Double_t jet2UEhh[3] = {jet50_80hh/mid50_80hhYield, jet20_50hh/mid20_50hhYield, jet0_20hh/mid0_20hhYield};
+    Double_t jet2UEhLambda[3] = {mid50_80hLambdaYield/total50_80hLambdaYield, mid20_50hLambdaYield/total20_50hLambdaYield, mid0_20hLambdaYield/total0_20hLambdaYield};
+    Double_t jet2UEhh[3] = {mid50_80hhYield/total50_80hhYield, mid20_50hhYield/total20_50hhYield, mid0_20hhYield/total0_20hhYield};
 
     //systematic errors from the changing the fitting parameters
     Double_t nearArraySystErr[3] = {ratios50100->GetBinContent(1)*0.068, ratios2050->GetBinContent(1)*0.077, ratios020->GetBinContent(1)*0.133};
@@ -1351,44 +1351,44 @@ void calculateRatios(TString input_0_20 = "", TString input_20_50 = "", TString 
     printf("\n\n");
     printf(" h-Lambda  YIELDS  ||     0 - 20     ||    20 - 50     ||    50 - 100    ||     0 - 100    ||\n");
     printf("=========================================================================================\n");
-    printf("      NEAR     ||  %E  ||  %E  ||  %E  ||  %E  ||\n", near0_20hLambdaYield, near20_50hLambdaYield, near50_100hLambdaYield, near0_100hLambdaYield);
-    printf("      MID      ||  %E  ||  %E  ||  %E  ||  %E  ||\n", mid0_20hLambdaYield, mid20_50hLambdaYield, mid50_100hLambdaYield, mid0_100hLambdaYield);
-    printf("      AWAY     ||  %E  ||  %E  ||  %E  ||  %E  ||\n", away0_20hLambdaYield, away20_50hLambdaYield, away50_100hLambdaYield, away0_100hLambdaYield);
-    printf("      TOTAL    ||  %E  ||  %E  ||  %E  ||  %E  ||\n", total0_20hLambdaYield, total20_50hLambdaYield, total50_100hLambdaYield, total0_100hLambdaYield);
+    printf("      NEAR     ||  %E  ||  %E  ||  %E  ||  %E  ||\n", near0_20hLambdaYield, near20_50hLambdaYield, near50_80hLambdaYield, near0_100hLambdaYield);
+    printf("      MID      ||  %E  ||  %E  ||  %E  ||  %E  ||\n", mid0_20hLambdaYield, mid20_50hLambdaYield, mid50_80hLambdaYield, mid0_100hLambdaYield);
+    printf("      AWAY     ||  %E  ||  %E  ||  %E  ||  %E  ||\n", away0_20hLambdaYield, away20_50hLambdaYield, away50_80hLambdaYield, away0_100hLambdaYield);
+    printf("      TOTAL    ||  %E  ||  %E  ||  %E  ||  %E  ||\n", total0_20hLambdaYield, total20_50hLambdaYield, total50_80hLambdaYield, total0_100hLambdaYield);
 
     printf("\n\n");
     printf(" h-Lambda  ERRORS  ||     0 - 20     ||    20 - 50     ||    50 - 100    ||     0 - 100    ||\n");
     printf("=========================================================================================\n");
-    printf("      NEAR     ||  %E  ||  %E  ||  %E  ||  %E  ||\n", near0_20hLambdaError, near20_50hLambdaError, near50_100hLambdaError, near0_100hLambdaError);
-    printf("      MID      ||  %E  ||  %E  ||  %E  ||  %E  ||\n", mid0_20hLambdaError, mid20_50hLambdaError, mid50_100hLambdaError, mid0_100hLambdaError);
-    printf("      AWAY     ||  %E  ||  %E  ||  %E  ||  %E  ||\n", away0_20hLambdaError, away20_50hLambdaError, away50_100hLambdaError, away0_100hLambdaError);
-    printf("      TOTAL    ||  %E  ||  %E  ||  %E  ||  %E  ||\n", total0_20hLambdaError, total20_50hLambdaError, total50_100hLambdaError, total0_100hLambdaError);
+    printf("      NEAR     ||  %E  ||  %E  ||  %E  ||  %E  ||\n", near0_20hLambdaError, near20_50hLambdaError, near50_80hLambdaError, near0_100hLambdaError);
+    printf("      MID      ||  %E  ||  %E  ||  %E  ||  %E  ||\n", mid0_20hLambdaError, mid20_50hLambdaError, mid50_80hLambdaError, mid0_100hLambdaError);
+    printf("      AWAY     ||  %E  ||  %E  ||  %E  ||  %E  ||\n", away0_20hLambdaError, away20_50hLambdaError, away50_80hLambdaError, away0_100hLambdaError);
+    printf("      TOTAL    ||  %E  ||  %E  ||  %E  ||  %E  ||\n", total0_20hLambdaError, total20_50hLambdaError, total50_80hLambdaError, total0_100hLambdaError);
 
     printf("\n\n");
     printf(" h-Lambda %%ERRORS ||     0 - 20     ||    20 - 50     ||    50 - 100    ||     0 - 100    ||\n");
     printf("=========================================================================================\n");
-    printf("      NEAR     ||     %2.2f%%     ||     %2.2f%%     ||     %2.2f%%     ||     %2.2f%%     ||\n", 100*near0_20hLambdaError/near0_20hLambdaYield, 100*near20_50hLambdaError/near20_50hLambdaYield, 100*near50_100hLambdaError/near50_100hLambdaYield, 100*near0_100hLambdaError/near0_100hLambdaYield);
-    printf("      MID      ||      %2.2f%%     ||      %2.2f%%     ||      %2.2f%%     ||      %2.2f%%     ||\n", 100*mid0_20hLambdaError/mid0_20hLambdaYield, 100*mid20_50hLambdaError/mid20_50hLambdaYield, 100*mid50_100hLambdaError/mid50_100hLambdaYield, 100*mid0_100hLambdaError/mid0_100hLambdaYield);
-    printf("      AWAY     ||     %2.2f%%     ||     %2.2f%%     ||     %2.2f%%     ||     %2.2f%%     ||\n", 100*away0_20hLambdaError/away0_20hLambdaYield, 100*away20_50hLambdaError/away20_50hLambdaYield, 100*away50_100hLambdaError/away50_100hLambdaYield, 100*away0_100hLambdaError/away0_100hLambdaYield);
-    printf("      TOTAL    ||      %2.2f%%     ||      %2.2f%%     ||      %2.2f%%     ||      %2.2f%%     ||\n", 100*total0_20hLambdaError/total0_20hLambdaYield, 100*total20_50hLambdaError/total20_50hLambdaYield, 100*total50_100hLambdaError/total50_100hLambdaYield, 100*total0_100hLambdaError/total0_100hLambdaYield);
+    printf("      NEAR     ||     %2.2f%%     ||     %2.2f%%     ||     %2.2f%%     ||     %2.2f%%     ||\n", 100*near0_20hLambdaError/near0_20hLambdaYield, 100*near20_50hLambdaError/near20_50hLambdaYield, 100*near50_80hLambdaError/near50_80hLambdaYield, 100*near0_100hLambdaError/near0_100hLambdaYield);
+    printf("      MID      ||      %2.2f%%     ||      %2.2f%%     ||      %2.2f%%     ||      %2.2f%%     ||\n", 100*mid0_20hLambdaError/mid0_20hLambdaYield, 100*mid20_50hLambdaError/mid20_50hLambdaYield, 100*mid50_80hLambdaError/mid50_80hLambdaYield, 100*mid0_100hLambdaError/mid0_100hLambdaYield);
+    printf("      AWAY     ||     %2.2f%%     ||     %2.2f%%     ||     %2.2f%%     ||     %2.2f%%     ||\n", 100*away0_20hLambdaError/away0_20hLambdaYield, 100*away20_50hLambdaError/away20_50hLambdaYield, 100*away50_80hLambdaError/away50_80hLambdaYield, 100*away0_100hLambdaError/away0_100hLambdaYield);
+    printf("      TOTAL    ||      %2.2f%%     ||      %2.2f%%     ||      %2.2f%%     ||      %2.2f%%     ||\n", 100*total0_20hLambdaError/total0_20hLambdaYield, 100*total20_50hLambdaError/total20_50hLambdaYield, 100*total50_80hLambdaError/total50_80hLambdaYield, 100*total0_100hLambdaError/total0_100hLambdaYield);
 
 
 
     printf("\n\n");
     printf(" h-h   YIELDS  ||     0 - 20     ||    20 - 50     ||    50 - 100    ||     0 - 100    ||\n");
     printf("=========================================================================================\n");
-    printf("      NEAR     ||  %E  ||  %E  ||  %E  ||  %E  ||\n", near0_20hhYield, near20_50hhYield, near50_100hhYield, near0_100hhYield);
-    printf("      MID      ||  %E  ||  %E  ||  %E  ||  %E  ||\n", mid0_20hhYield, mid20_50hhYield, mid50_100hhYield, mid0_100hhYield);
-    printf("      AWAY     ||  %E  ||  %E  ||  %E  ||  %E  ||\n", away0_20hhYield, away20_50hhYield, away50_100hhYield, away0_100hhYield);
-    printf("      TOTAL    ||  %E  ||  %E  ||  %E  ||  %E  ||\n", total0_20hhYield, total20_50hhYield, total50_100hhYield, total0_100hhYield);
+    printf("      NEAR     ||  %E  ||  %E  ||  %E  ||  %E  ||\n", near0_20hhYield, near20_50hhYield, near50_80hhYield, near0_100hhYield);
+    printf("      MID      ||  %E  ||  %E  ||  %E  ||  %E  ||\n", mid0_20hhYield, mid20_50hhYield, mid50_80hhYield, mid0_100hhYield);
+    printf("      AWAY     ||  %E  ||  %E  ||  %E  ||  %E  ||\n", away0_20hhYield, away20_50hhYield, away50_80hhYield, away0_100hhYield);
+    printf("      TOTAL    ||  %E  ||  %E  ||  %E  ||  %E  ||\n", total0_20hhYield, total20_50hhYield, total50_80hhYield, total0_100hhYield);
 
     printf("\n\n");
     printf(" h-h ERRORS  ||     0 - 20     ||    20 - 50     ||    50 - 100    ||     0 - 100    ||\n");
     printf("=========================================================================================\n");
-    printf("      NEAR     ||  %E  ||  %E  ||  %E  ||  %E  ||\n", near0_20hhError, near20_50hhError, near50_100hhError, near0_100hhError);
-    printf("      MID      ||  %E  ||  %E  ||  %E  ||  %E  ||\n", mid0_20hhError, mid20_50hhError, mid50_100hhError, mid0_100hhError);
-    printf("      AWAY     ||  %E  ||  %E  ||  %E  ||  %E  ||\n", away0_20hhError, away20_50hhError, away50_100hhError, away0_100hhError);
-    printf("      TOTAL    ||  %E  ||  %E  ||  %E  ||  %E  ||\n", total0_20hhError, total20_50hhError, total50_100hhError, total0_100hhError);
+    printf("      NEAR     ||  %E  ||  %E  ||  %E  ||  %E  ||\n", near0_20hhError, near20_50hhError, near50_80hhError, near0_100hhError);
+    printf("      MID      ||  %E  ||  %E  ||  %E  ||  %E  ||\n", mid0_20hhError, mid20_50hhError, mid50_80hhError, mid0_100hhError);
+    printf("      AWAY     ||  %E  ||  %E  ||  %E  ||  %E  ||\n", away0_20hhError, away20_50hhError, away50_80hhError, away0_100hhError);
+    printf("      TOTAL    ||  %E  ||  %E  ||  %E  ||  %E  ||\n", total0_20hhError, total20_50hhError, total50_80hhError, total0_100hhError);
     printf("\n\n");
 
 
@@ -1432,17 +1432,17 @@ void calculateRatios(TString input_0_20 = "", TString input_20_50 = "", TString 
 
     TH1D *yields50100hLambda = new TH1D("yields50100hLambdaEff", "h-#Lambda Per Trigger Yields", 4, 0, 4);
     yields50100hLambda->GetXaxis()->SetBinLabel(1, "near-side");
-    yields50100hLambda->SetBinContent(1, near50_100hLambdaYield);
-    yields50100hLambda->SetBinError(1, near50_100hLambdaError);
+    yields50100hLambda->SetBinContent(1, near50_80hLambdaYield);
+    yields50100hLambda->SetBinError(1, near50_80hLambdaError);
     yields50100hLambda->GetXaxis()->SetBinLabel(2, "mid");
-    yields50100hLambda->SetBinContent(2, mid50_100hLambdaYield);
-    yields50100hLambda->SetBinError(2, mid50_100hLambdaError);
+    yields50100hLambda->SetBinContent(2, mid50_80hLambdaYield);
+    yields50100hLambda->SetBinError(2, mid50_80hLambdaError);
     yields50100hLambda->GetXaxis()->SetBinLabel(3, "away-side");
-    yields50100hLambda->SetBinContent(3, away50_100hLambdaYield);
-    yields50100hLambda->SetBinError(3, away50_100hLambdaError);
+    yields50100hLambda->SetBinContent(3, away50_80hLambdaYield);
+    yields50100hLambda->SetBinError(3, away50_80hLambdaError);
     yields50100hLambda->GetXaxis()->SetBinLabel(4, "total");
-    yields50100hLambda->SetBinContent(4, total50_100hLambdaYield);
-    yields50100hLambda->SetBinError(4, total50_100hLambdaError);
+    yields50100hLambda->SetBinContent(4, total50_80hLambdaYield);
+    yields50100hLambda->SetBinError(4, total50_80hLambdaError);
     yields50100hLambda->SetMarkerStyle(20);
     yields50100hLambda->SetMarkerColor(kGreen+2);
     yields50100hLambda->SetLineColor(kGreen+2);
@@ -1524,17 +1524,17 @@ void calculateRatios(TString input_0_20 = "", TString input_20_50 = "", TString 
 
     TH1D *yields50100hh = new TH1D("yields50100hhEff", "h-#Lambda Per Trigger Yields", 4, 0, 4);
     yields50100hh->GetXaxis()->SetBinLabel(1, "near-side");
-    yields50100hh->SetBinContent(1, near50_100hhYield);
-    yields50100hh->SetBinError(1, near50_100hhError);
+    yields50100hh->SetBinContent(1, near50_80hhYield);
+    yields50100hh->SetBinError(1, near50_80hhError);
     yields50100hh->GetXaxis()->SetBinLabel(2, "mid");
-    yields50100hh->SetBinContent(2, mid50_100hhYield);
-    yields50100hh->SetBinError(2, mid50_100hhError);
+    yields50100hh->SetBinContent(2, mid50_80hhYield);
+    yields50100hh->SetBinError(2, mid50_80hhError);
     yields50100hh->GetXaxis()->SetBinLabel(3, "away-side");
-    yields50100hh->SetBinContent(3, away50_100hhYield);
-    yields50100hh->SetBinError(3, away50_100hhError);
+    yields50100hh->SetBinContent(3, away50_80hhYield);
+    yields50100hh->SetBinError(3, away50_80hhError);
     yields50100hh->GetXaxis()->SetBinLabel(4, "total");
-    yields50100hh->SetBinContent(4, total50_100hhYield);
-    yields50100hh->SetBinError(4, total50_100hhError);
+    yields50100hh->SetBinContent(4, total50_80hhYield);
+    yields50100hh->SetBinError(4, total50_80hhError);
     yields50100hh->SetMarkerStyle(20);
     yields50100hh->SetMarkerColor(kGreen+2);
     yields50100hh->SetLineColor(kGreen+2);
@@ -1627,23 +1627,23 @@ void calculateRatios(TString input_0_20 = "", TString input_20_50 = "", TString 
     hLambdadphi_0_20_syst->SetFillColor(kGray);
     TH1D* hLambdadphi_20_50_syst = (TH1D*)hLambdadphi_20_50->Clone("hLambdadphi_20_50_syst");
     hLambdadphi_20_50_syst->SetFillColor(kGray);
-    TH1D* hLambdadphi_50_100_syst = (TH1D*)hLambdadphi_50_100->Clone("hLambdadphi_50_100_syst");
-    hLambdadphi_50_100_syst->SetFillColor(kGray);
+    TH1D* hLambdadphi_50_80_syst = (TH1D*)hLambdadphi_50_80->Clone("hLambdadphi_50_80_syst");
+    hLambdadphi_50_80_syst->SetFillColor(kGray);
 
     TH1D* hhdphi_0_20_syst = (TH1D*)hhdphi_0_20->Clone("hhdphi_0_20_syst");
     hhdphi_0_20_syst->SetFillColor(kGray);
     TH1D* hhdphi_20_50_syst = (TH1D*)hhdphi_20_50->Clone("hhdphi_20_50_syst");
     hhdphi_20_50_syst->SetFillColor(kGray);
-    TH1D* hhdphi_50_100_syst = (TH1D*)hhdphi_50_100->Clone("hhdphi_50_100_syst");
-    hhdphi_50_100_syst->SetFillColor(kGray);
+    TH1D* hhdphi_50_80_syst = (TH1D*)hhdphi_50_80->Clone("hhdphi_50_80_syst");
+    hhdphi_50_80_syst->SetFillColor(kGray);
 
     for(int i = 1; i <= 16; i++){
         hLambdadphi_0_20_syst->SetBinError(i, hLambdadphi_0_20_syst->GetBinContent(i)*dphi020syst);
         hLambdadphi_20_50_syst->SetBinError(i, hLambdadphi_20_50_syst->GetBinContent(i)*dphi2050syst);
-        hLambdadphi_50_100_syst->SetBinError(i, hLambdadphi_50_100_syst->GetBinContent(i)*dphi5080syst);
+        hLambdadphi_50_80_syst->SetBinError(i, hLambdadphi_50_80_syst->GetBinContent(i)*dphi5080syst);
         hhdphi_0_20_syst->SetBinError(i, hhdphi_0_20_syst->GetBinContent(i)*hhdphi020syst);
         hhdphi_20_50_syst->SetBinError(i, hhdphi_20_50_syst->GetBinContent(i)*hhdphi2050syst);
-        hhdphi_50_100_syst->SetBinError(i, hhdphi_50_100_syst->GetBinContent(i)*hhdphi5080syst);
+        hhdphi_50_80_syst->SetBinError(i, hhdphi_50_80_syst->GetBinContent(i)*hhdphi5080syst);
 
     }
 
@@ -1749,30 +1749,30 @@ void calculateRatios(TString input_0_20 = "", TString input_20_50 = "", TString 
     text2->Draw();
     //legend->Draw();
 
-    TCanvas *c50_100 = new TCanvas("c50_100", "c50_100", 50, 50, 550, 600);
-    c50_100->cd();
-    c50_100->SetMargin(0.12, 0.05, 0.1, 0.05);
-    //hhdphi_50_100->Draw("E0 X0");
-    hLambdadphi_50_100_syst->Draw("E2 SAME");
-    hLambdadphi_50_100->Draw("E0 X0 HIST SAME");
+    TCanvas *c50_80 = new TCanvas("c50_80", "c50_80", 50, 50, 550, 600);
+    c50_80->cd();
+    c50_80->SetMargin(0.12, 0.05, 0.1, 0.05);
+    //hhdphi_50_80->Draw("E0 X0");
+    hLambdadphi_50_80_syst->Draw("E2 SAME");
+    hLambdadphi_50_80->Draw("E0 X0 HIST SAME");
     //corrFit50100->Draw("SAME");
     //corrFit2_50100->Draw("SAME");
-    //hhBG_50_100->Draw("SAME");
-    hLambdaBG_50_100->Draw("SAME");
+    //hhBG_50_80->Draw("SAME");
+    hLambdaBG_50_80->Draw("SAME");
     text50100->Draw();
     text2->Draw();
     //legend->Draw();
 
-    TCanvas *c50_100pp = new TCanvas("c50_100pp", "c50_100pp", 50, 50, 550, 600);
-    c50_100pp->cd();
-    c50_100pp->SetMargin(0.12, 0.05, 0.1, 0.05);
-    hhdphi_50_100_syst->Draw("E2 SAME");
-    hhdphi_50_100->Draw("E0 X0 HIST SAME");
-    //hLambdadphi_50_100->Draw("E0 X0 SAME");
+    TCanvas *c50_80pp = new TCanvas("c50_80pp", "c50_80pp", 50, 50, 550, 600);
+    c50_80pp->cd();
+    c50_80pp->SetMargin(0.12, 0.05, 0.1, 0.05);
+    hhdphi_50_80_syst->Draw("E2 SAME");
+    hhdphi_50_80->Draw("E0 X0 HIST SAME");
+    //hLambdadphi_50_80->Draw("E0 X0 SAME");
     //corrFit50100->Draw("SAME");
     //corrFit2_50100->Draw("SAME");
-    hhBG_50_100->Draw("SAME");
-    //hLambdaBG_50_100->Draw("SAME");
+    hhBG_50_80->Draw("SAME");
+    //hLambdaBG_50_80->Draw("SAME");
     text50100->Draw();
     text2->Draw();
     //legend->Draw();
@@ -1795,12 +1795,12 @@ void calculateRatios(TString input_0_20 = "", TString input_20_50 = "", TString 
     hlambda2050->Add(hLambdaBG_20_50, -1.0);
     hlambda2050->Scale(1.0/(2.4*hlambda2050->GetXaxis()->GetBinWidth(1))); //scale by delta-eta and bin width
 
-    TH1D* hlambda5080 = (TH1D*)hLambdadphi_50_100->Clone("hlambda5080");
+    TH1D* hlambda5080 = (TH1D*)hLambdadphi_50_80->Clone("hlambda5080");
     hlambda5080->SetMarkerColor(kAzure);
     hlambda5080->SetMarkerSize(1.3);
     hlambda5080->SetMarkerStyle(23);
     hlambda5080->SetLineColor(kAzure);
-    hlambda5080->Add(hLambdaBG_50_100, -1.0);
+    hlambda5080->Add(hLambdaBG_50_80, -1.0);
     hlambda5080->Scale(1.0/(2.4*hlambda5080->GetXaxis()->GetBinWidth(1))); //scale by delta-eta and bin width
 
     TH1D* hh020 = (TH1D*)hhdphi_0_20->Clone("hh020");
@@ -1819,12 +1819,12 @@ void calculateRatios(TString input_0_20 = "", TString input_20_50 = "", TString 
     hh2050->Add(hhBG_20_50, -1.0);
     hh2050->Scale(1.0/(2.4*hh2050->GetXaxis()->GetBinWidth(1))); //scale by delta-eta and bin width
 
-    TH1D* hh5080 = (TH1D*)hhdphi_50_100->Clone("hh5080");
+    TH1D* hh5080 = (TH1D*)hhdphi_50_80->Clone("hh5080");
     hh5080->SetMarkerColor(kAzure);
     hh5080->SetMarkerSize(1.3);
     hh5080->SetMarkerStyle(20);
     hh5080->SetLineColor(kAzure);
-    hh5080->Add(hhBG_50_100, -1.0);
+    hh5080->Add(hhBG_50_80, -1.0);
     hh5080->Scale(1.0/(2.4*hh5080->GetXaxis()->GetBinWidth(1))); //scale by delta-eta and bin width
 
     TF1* fline = new TF1("fline", "pol0", -0.5*TMath::Pi(), 1.5*TMath::Pi());
@@ -1892,101 +1892,101 @@ void calculateRatios(TString input_0_20 = "", TString input_20_50 = "", TString 
     //Do plots of the yields for the systematics:
   /*TH1F* hhyieldSyst_0_20 = new TH1F("hhyieldSyst_0_20", "hhyieldSyst_0_20", 1000, 0.0, 10.0);
     TH1F* hhyieldSyst_20_50 = new TH1F("hhyieldSyst_20_50", "hhyieldSyst_20_50", 1000, 0.0, 10.0);
-    TH1F* hhyieldSyst_50_100 = new TH1F("hhyieldSyst_50_100", "hhyieldSyst_50_100", 1000, 0.0, 10.0);
+    TH1F* hhyieldSyst_50_80 = new TH1F("hhyieldSyst_50_80", "hhyieldSyst_50_80", 1000, 0.0, 10.0);
     TH1F* hlambdayieldSyst_0_20 = new TH1F("hlambdayieldSyst_0_20", "hlambdayieldSyst_0_20", 700, 3.0E-02, 10.0E-02);
     TH1F* hlambdayieldSyst_20_50 = new TH1F("hlambdayieldSyst_20_50", "hlambdayieldSyst_20_50", 600, 1.0E-02, 8.0E-02);
-    TH1F* hlambdayieldSyst_50_100 = new TH1F("hlambdayieldSyst_50_100", "hlambdayieldSyst_50_100", 700, 0.5E-02, 7.5E-02);
+    TH1F* hlambdayieldSyst_50_80 = new TH1F("hlambdayieldSyst_50_80", "hlambdayieldSyst_50_80", 700, 0.5E-02, 7.5E-02);
 
     TH1F* hhnearyieldSyst_0_20 = new TH1F("hhnearyieldSyst_0_20", "hhnearyieldSyst_0_20", 1000, 0.0, 2.0);
     TH1F* hhnearyieldSyst_20_50 = new TH1F("hhnearyieldSyst_20_50", "hhnearyieldSyst_20_50", 1000, 0.0, 2.0);
-    TH1F* hhnearyieldSyst_50_100 = new TH1F("hhnearyieldSyst_50_100", "hhnearyieldSyst_50_100", 1000, 0.0, 2.0);
+    TH1F* hhnearyieldSyst_50_80 = new TH1F("hhnearyieldSyst_50_80", "hhnearyieldSyst_50_80", 1000, 0.0, 2.0);
     TH1F* hlambdanearyieldSyst_0_20 = new TH1F("hlambdanearyieldSyst_0_20", "hlambdanearyieldSyst_0_20", 800, 0.5E-03, 4.5E-03);
     TH1F* hlambdanearyieldSyst_20_50 = new TH1F("hlambdanearyieldSyst_20_50", "hlambdanearyieldSyst_20_50", 800, 0.5E-03, 4.5E-03);
-    TH1F* hlambdanearyieldSyst_50_100 = new TH1F("hlambdanearyieldSyst_50_100", "hlambdanearyieldSyst_50_100", 800, 0.5E-03, 4.5E-03);
+    TH1F* hlambdanearyieldSyst_50_80 = new TH1F("hlambdanearyieldSyst_50_80", "hlambdanearyieldSyst_50_80", 800, 0.5E-03, 4.5E-03);
 
     TH1F* hhawayyieldSyst_0_20 = new TH1F("hhawayyieldSyst_0_20", "hhawayyieldSyst_0_20", 1000, 0.0, 2.0);
     TH1F* hhawayyieldSyst_20_50 = new TH1F("hhawayyieldSyst_20_50", "hhawayyieldSyst_20_50", 1000, 0.0, 2.0);
-    TH1F* hhawayyieldSyst_50_100 = new TH1F("hhawayyieldSyst_50_100", "hhawayyieldSyst_50_100", 1000, 0.0, 2.0);
+    TH1F* hhawayyieldSyst_50_80 = new TH1F("hhawayyieldSyst_50_80", "hhawayyieldSyst_50_80", 1000, 0.0, 2.0);
     TH1F* hlambdaawayyieldSyst_0_20 = new TH1F("hlambdaawayyieldSyst_0_20", "hlambdaawayyieldSyst_0_20", 800, 0.5E-03, 4.5E-03);
     TH1F* hlambdaawayyieldSyst_20_50 = new TH1F("hlambdaawayyieldSyst_20_50", "hlambdaawayyieldSyst_20_50", 800, 0.5E-03, 4.5E-03);
-    TH1F* hlambdaawayyieldSyst_50_100 = new TH1F("hlambdaawayyieldSyst_50_100", "hlambdaawayyieldSyst_50_100", 800, 0.5E-03, 4.5E-03);
+    TH1F* hlambdaawayyieldSyst_50_80 = new TH1F("hlambdaawayyieldSyst_50_80", "hlambdaawayyieldSyst_50_80", 800, 0.5E-03, 4.5E-03);
 
     TH1F* hhbulkyieldSyst_0_20 = new TH1F("hhbulkyieldSyst_0_20", "hhbulkyieldSyst_0_20", 1000, 0.0, 10.0);
     TH1F* hhbulkyieldSyst_20_50 = new TH1F("hhbulkyieldSyst_20_50", "hhbulkyieldSyst_20_50", 1000, 0.0, 10.0);
-    TH1F* hhbulkyieldSyst_50_100 = new TH1F("hhbulkyieldSyst_50_100", "hhbulkyieldSyst_50_100", 1000, 0.0, 10.0);
+    TH1F* hhbulkyieldSyst_50_80 = new TH1F("hhbulkyieldSyst_50_80", "hhbulkyieldSyst_50_80", 1000, 0.0, 10.0);
     TH1F* hlambdabulkyieldSyst_0_20 = new TH1F("hlambdabulkyieldSyst_0_20", "hlambdabulkyieldSyst_0_20", 700, 3.0E-02, 10.0E-02);
     TH1F* hlambdabulkyieldSyst_20_50 = new TH1F("hlambdabulkyieldSyst_20_50", "hlambdabulkyieldSyst_20_50", 600, 1.0E-02, 8.0E-02);
-    TH1F* hlambdabulkyieldSyst_50_100 = new TH1F("hlambdabulkyieldSyst_50_100", "hlambdabulkyieldSyst_50_100", 700, 0.5E-02, 7.5E-02);*/
+    TH1F* hlambdabulkyieldSyst_50_80 = new TH1F("hlambdabulkyieldSyst_50_80", "hlambdabulkyieldSyst_50_80", 700, 0.5E-02, 7.5E-02);*/
 
 
     TH1F* hhyieldSyst_0_20 = new TH1F("hhyieldSyst_0_20", "hhyieldSyst_0_20", 500, 0.75, 1.25);
     TH1F* hhyieldSyst_20_50 = new TH1F("hhyieldSyst_20_50", "hhyieldSyst_20_50", 500, 0.75, 1.25);
-    TH1F* hhyieldSyst_50_100 = new TH1F("hhyieldSyst_50_100", "hhyieldSyst_50_100", 500, 0.75, 1.25);
+    TH1F* hhyieldSyst_50_80 = new TH1F("hhyieldSyst_50_80", "hhyieldSyst_50_80", 500, 0.75, 1.25);
     TH1F* hlambdayieldSyst_0_20 = new TH1F("hlambdayieldSyst_0_20", "hlambdayieldSyst_0_20", 500, 0.75, 1.25);
     TH1F* hlambdayieldSyst_20_50 = new TH1F("hlambdayieldSyst_20_50", "hlambdayieldSyst_20_50", 500, 0.75, 1.25);
-    TH1F* hlambdayieldSyst_50_100 = new TH1F("hlambdayieldSyst_50_100", "hlambdayieldSyst_50_100", 500, 0.75, 1.25);
+    TH1F* hlambdayieldSyst_50_80 = new TH1F("hlambdayieldSyst_50_80", "hlambdayieldSyst_50_80", 500, 0.75, 1.25);
 
     TH1F* hhnearyieldSyst_0_20 = new TH1F("hhnearyieldSyst_0_20", "hhnearyieldSyst_0_20", 500, 0.75, 1.25);
     TH1F* hhnearyieldSyst_20_50 = new TH1F("hhnearyieldSyst_20_50", "hhnearyieldSyst_20_50", 500, 0.75, 1.25);
-    TH1F* hhnearyieldSyst_50_100 = new TH1F("hhnearyieldSyst_50_100", "hhnearyieldSyst_50_100", 500, 0.75, 1.25);
+    TH1F* hhnearyieldSyst_50_80 = new TH1F("hhnearyieldSyst_50_80", "hhnearyieldSyst_50_80", 500, 0.75, 1.25);
     TH1F* hlambdanearyieldSyst_0_20 = new TH1F("hlambdanearyieldSyst_0_20", "hlambdanearyieldSyst_0_20", 500, 0.75, 1.25);
     TH1F* hlambdanearyieldSyst_20_50 = new TH1F("hlambdanearyieldSyst_20_50", "hlambdanearyieldSyst_20_50", 500, 0.75, 1.25);
-    TH1F* hlambdanearyieldSyst_50_100 = new TH1F("hlambdanearyieldSyst_50_100", "hlambdanearyieldSyst_50_100", 500, 0.75, 1.25);
+    TH1F* hlambdanearyieldSyst_50_80 = new TH1F("hlambdanearyieldSyst_50_80", "hlambdanearyieldSyst_50_80", 500, 0.75, 1.25);
 
     TH1F* hhawayyieldSyst_0_20 = new TH1F("hhawayyieldSyst_0_20", "hhawayyieldSyst_0_20", 500, 0.75, 1.25);
     TH1F* hhawayyieldSyst_20_50 = new TH1F("hhawayyieldSyst_20_50", "hhawayyieldSyst_20_50", 500, 0.75, 1.25);
-    TH1F* hhawayyieldSyst_50_100 = new TH1F("hhawayyieldSyst_50_100", "hhawayyieldSyst_50_100", 500, 0.75, 1.25);
+    TH1F* hhawayyieldSyst_50_80 = new TH1F("hhawayyieldSyst_50_80", "hhawayyieldSyst_50_80", 500, 0.75, 1.25);
     TH1F* hlambdaawayyieldSyst_0_20 = new TH1F("hlambdaawayyieldSyst_0_20", "hlambdaawayyieldSyst_0_20", 500, 0.75, 1.25);
     TH1F* hlambdaawayyieldSyst_20_50 = new TH1F("hlambdaawayyieldSyst_20_50", "hlambdaawayyieldSyst_20_50", 500, 0.75, 1.25);
-    TH1F* hlambdaawayyieldSyst_50_100 = new TH1F("hlambdaawayyieldSyst_50_100", "hlambdaawayyieldSyst_50_100", 500, 0.75, 1.25);
+    TH1F* hlambdaawayyieldSyst_50_80 = new TH1F("hlambdaawayyieldSyst_50_80", "hlambdaawayyieldSyst_50_80", 500, 0.75, 1.25);
 
     TH1F* hhbulkyieldSyst_0_20 = new TH1F("hhbulkyieldSyst_0_20", "hhbulkyieldSyst_0_20", 500, 0.75, 1.25);
     TH1F* hhbulkyieldSyst_20_50 = new TH1F("hhbulkyieldSyst_20_50", "hhbulkyieldSyst_20_50", 500, 0.75, 1.25);
-    TH1F* hhbulkyieldSyst_50_100 = new TH1F("hhbulkyieldSyst_50_100", "hhbulkyieldSyst_50_100", 500, 0.75, 1.25);
+    TH1F* hhbulkyieldSyst_50_80 = new TH1F("hhbulkyieldSyst_50_80", "hhbulkyieldSyst_50_80", 500, 0.75, 1.25);
     TH1F* hlambdabulkyieldSyst_0_20 = new TH1F("hlambdabulkyieldSyst_0_20", "hlambdabulkyieldSyst_0_20", 500, 0.75, 1.25);
     TH1F* hlambdabulkyieldSyst_20_50 = new TH1F("hlambdabulkyieldSyst_20_50", "hlambdabulkyieldSyst_20_50", 500, 0.75, 1.25);
-    TH1F* hlambdabulkyieldSyst_50_100 = new TH1F("hlambdabulkyieldSyst_50_100", "hlambdabulkyieldSyst_50_100", 500, 0.75, 1.25);
+    TH1F* hlambdabulkyieldSyst_50_80 = new TH1F("hlambdabulkyieldSyst_50_80", "hlambdabulkyieldSyst_50_80", 500, 0.75, 1.25);
 
     Float_t stdtotal0_20 = 5.850084E-02;
     Float_t stdtotal20_50 = 3.489754E-02;
-    Float_t stdtotal50_100 = 1.881542E-02;
+    Float_t stdtotal50_80 = 1.881542E-02;
     Float_t stdnear0_20 = 1.509740E-03;
     Float_t stdnear20_50 = 1.450373E-03;
-    Float_t stdnear50_100 = 8.015203E-04;
+    Float_t stdnear50_80 = 8.015203E-04;
     Float_t stdaway0_20 = 2.234562E-03;
     Float_t stdaway20_50 = 2.274811E-03;
-    Float_t stdaway50_100 = 1.119789E-03;
+    Float_t stdaway50_80 = 1.119789E-03;
     Float_t stdmid0_20 = 5.476692E-02;
     Float_t stdmid20_50 = 3.111197E-02;
-    Float_t stdmid50_100 = 1.686431E-02;
+    Float_t stdmid50_80 = 1.686431E-02;
 
 
 
     hhyieldSyst_0_20->Fill(total0_20hhYield);
     hhyieldSyst_20_50->Fill(total20_50hhYield);
-    hhyieldSyst_50_100->Fill(total50_100hhYield);
+    hhyieldSyst_50_80->Fill(total50_80hhYield);
     hhnearyieldSyst_0_20->Fill(near0_20hhYield);
     hhnearyieldSyst_20_50->Fill(near20_50hhYield);
-    hhnearyieldSyst_50_100->Fill(near50_100hhYield);
+    hhnearyieldSyst_50_80->Fill(near50_80hhYield);
     hhawayyieldSyst_0_20->Fill(away0_20hhYield);
     hhawayyieldSyst_20_50->Fill(away20_50hhYield);
-    hhawayyieldSyst_50_100->Fill(away50_100hhYield);
+    hhawayyieldSyst_50_80->Fill(away50_80hhYield);
     hhbulkyieldSyst_0_20->Fill(mid0_20hhYield);
     hhbulkyieldSyst_20_50->Fill(mid20_50hhYield);
-    hhbulkyieldSyst_50_100->Fill(mid50_100hhYield);
+    hhbulkyieldSyst_50_80->Fill(mid50_80hhYield);
 
     hlambdayieldSyst_0_20->Fill(total0_20hLambdaYield/stdtotal0_20);
     hlambdayieldSyst_20_50->Fill(total20_50hLambdaYield/stdtotal20_50);
-    hlambdayieldSyst_50_100->Fill(total50_100hLambdaYield/stdtotal50_100);
+    hlambdayieldSyst_50_80->Fill(total50_80hLambdaYield/stdtotal50_80);
     hlambdanearyieldSyst_0_20->Fill(near0_20hLambdaYield/stdnear0_20);
     hlambdanearyieldSyst_20_50->Fill(near20_50hLambdaYield/stdnear20_50);
-    hlambdanearyieldSyst_50_100->Fill(near50_100hLambdaYield/stdnear50_100);
+    hlambdanearyieldSyst_50_80->Fill(near50_80hLambdaYield/stdnear50_80);
     hlambdaawayyieldSyst_0_20->Fill(away0_20hLambdaYield/stdaway0_20);
     hlambdaawayyieldSyst_20_50->Fill(away20_50hLambdaYield/stdaway20_50);
-    hlambdaawayyieldSyst_50_100->Fill(away50_100hLambdaYield/stdaway50_100);
+    hlambdaawayyieldSyst_50_80->Fill(away50_80hLambdaYield/stdaway50_80);
     hlambdabulkyieldSyst_0_20->Fill(mid0_20hLambdaYield/stdmid0_20);
     hlambdabulkyieldSyst_20_50->Fill(mid20_50hLambdaYield/stdmid20_50);
-    hlambdabulkyieldSyst_50_100->Fill(mid50_100hLambdaYield/stdmid50_100);
+    hlambdabulkyieldSyst_50_80->Fill(mid50_80hLambdaYield/stdmid50_80);
 
 
 /*
@@ -1997,43 +1997,43 @@ void calculateRatios(TString input_0_20 = "", TString input_20_50 = "", TString 
     csyst->cd(2);
     hhyieldSyst_20_50->Draw();
     csyst->cd(3);
-    hhyieldSyst_50_100->Draw();
+    hhyieldSyst_50_80->Draw();
 */
     TFile* output = new TFile(Form("fitsyst_%s.root", outputstring.Data()), "RECREATE");
 
     hhyieldSyst_0_20->Write();
     hhyieldSyst_20_50->Write();
-    hhyieldSyst_50_100->Write();
+    hhyieldSyst_50_80->Write();
     hhnearyieldSyst_0_20->Write();
     hhnearyieldSyst_20_50->Write();
-    hhnearyieldSyst_50_100->Write();
+    hhnearyieldSyst_50_80->Write();
     hhawayyieldSyst_0_20->Write();
     hhawayyieldSyst_20_50->Write();
-    hhawayyieldSyst_50_100->Write();
+    hhawayyieldSyst_50_80->Write();
     hhbulkyieldSyst_0_20->Write();
     hhbulkyieldSyst_20_50->Write();
-    hhbulkyieldSyst_50_100->Write();
+    hhbulkyieldSyst_50_80->Write();
 
     hhdphi_0_20->Write();
     hLambdadphi_0_20->Write();
     hhdphi_20_50->Write();
     hLambdadphi_20_50->Write();
-    hhdphi_50_100->Write();
-    hLambdadphi_50_100->Write();
+    hhdphi_50_80->Write();
+    hLambdadphi_50_80->Write();
 
 
     hlambdayieldSyst_0_20->Write();
     hlambdayieldSyst_20_50->Write();
-    hlambdayieldSyst_50_100->Write();
+    hlambdayieldSyst_50_80->Write();
     hlambdanearyieldSyst_0_20->Write();
     hlambdanearyieldSyst_20_50->Write();
-    hlambdanearyieldSyst_50_100->Write();
+    hlambdanearyieldSyst_50_80->Write();
     hlambdaawayyieldSyst_0_20->Write();
     hlambdaawayyieldSyst_20_50->Write();
-    hlambdaawayyieldSyst_50_100->Write();
+    hlambdaawayyieldSyst_50_80->Write();
     hlambdabulkyieldSyst_0_20->Write();
     hlambdabulkyieldSyst_20_50->Write();
-    hlambdabulkyieldSyst_50_100->Write();
+    hlambdabulkyieldSyst_50_80->Write();
 
     ratioNearHist->Write();
     ratiosNear->Write("ratiosNear");

@@ -103,7 +103,7 @@ void makeMixCorrections(float trigPTLow, float trigPTHigh, float assocPTLow, flo
     TFile *histoFile = new TFile("~/alice/research/lambda-over-hadron/data/online/output/fixed_filter_50_100.root");
     TList* list = (TList*) histoFile->Get("h-lambda");
     int centLow = 50;
-    int centHigh = 100;
+    int centHigh = 80;
 
     THnSparseF*triggerDist = (THnSparseF*)list->FindObject("fTriggerDist");
     TH2D *trigSameUSDist = (TH2D*)triggerDist->Projection(0, 3);

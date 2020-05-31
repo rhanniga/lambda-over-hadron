@@ -5,7 +5,7 @@ class AliAnalysisTaskLambdaHadronRatio;
 ClassImp(AliAnalysisTaskLambdaHadronRatio);
 
 static const int centLow = 50;
-static const int centHigh = 100;
+static const int centHigh = 80;
 
 AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     AliAnalysisTaskSE(),
@@ -648,25 +648,23 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     }
 
 
-    if(trigger_list.size() == 2) {
 
-        // Filling all of our single particle distribution histograms:
-        FillSingleParticleDist(trigger_list, primZ, fTriggerDist);
-        FillSingleParticleDist(associated_h_list, primZ, fAssociatedHDist);
-        FillSingleParticleDist(all_hadron_list, primZ, fLooseDist);
-        FillSingleParticleDist(lambda_list_signal_region, primZ, fLambdaDist);
+    // Filling all of our single particle distribution histograms:
+    FillSingleParticleDist(trigger_list, primZ, fTriggerDist);
+    FillSingleParticleDist(associated_h_list, primZ, fAssociatedHDist);
+    FillSingleParticleDist(all_hadron_list, primZ, fLooseDist);
+    FillSingleParticleDist(lambda_list_signal_region, primZ, fLambdaDist);
 
-        // Filling all of our correlation histograms
-        MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambda, primZ);
-        MakeSameHLambdaCorrelations(trigger_list, lambda_list_RotatedPi, fDphiHLambdaRotatedPi, primZ);
-        MakeSameHLambdaCorrelations(trigger_list, lambda_list_Flipped, fDphiHLambdaFlipped, primZ);
-        MakeSameHLambdaCorrelations(trigger_list, lambda_list_RotatedPion, fDphiHLambdaRotated, primZ);
-        MakeSameHLambdaCorrelations(trigger_list, lambda_list_RotatedProton, fDphiHLambdaRotatedProton, primZ);
-        MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHH, primZ);
-        MakeSameTriggerTriggerCorrelations(trigger_list, fDphiTriggerTrigger, primZ);
-        MakeSameHLambdaCorrelations(trigger_list, lambda_list_LS, fDphiHLambdaLS, primZ);
+    // Filling all of our correlation histograms
+    MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambda, primZ);
+    MakeSameHLambdaCorrelations(trigger_list, lambda_list_RotatedPi, fDphiHLambdaRotatedPi, primZ);
+    MakeSameHLambdaCorrelations(trigger_list, lambda_list_Flipped, fDphiHLambdaFlipped, primZ);
+    MakeSameHLambdaCorrelations(trigger_list, lambda_list_RotatedPion, fDphiHLambdaRotated, primZ);
+    MakeSameHLambdaCorrelations(trigger_list, lambda_list_RotatedProton, fDphiHLambdaRotatedProton, primZ);
+    MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHH, primZ);
+    MakeSameTriggerTriggerCorrelations(trigger_list, fDphiTriggerTrigger, primZ);
+    MakeSameHLambdaCorrelations(trigger_list, lambda_list_LS, fDphiHLambdaLS, primZ);
 
-    }
 
     fTriggersAndLambdasPerEvent_All->Fill(trigger_list.size(), lambda_list_signal_region.size());
     fTriggersAndLambdasPerEvent_2_4->Fill(trigger_list.size(), lambda_list_signal_region_2_4.size());
