@@ -1653,7 +1653,7 @@ void calculateRatios(TString input_0_20 = "", TString input_20_50 = "", TString 
     //hhdphi_0_20->GetYaxis()->SetRangeUser(0.001, 0.25);
     //hhdphi_0_20->Draw("E0 X0");
     hLambdadphi_0_20->GetYaxis()->SetTitle("Per Trigger (h-#Lambda) Pairs");
-    hLambdadphi_0_20_syst->Draw("E2 SAME");
+    // hLambdadphi_0_20_syst->Draw("E2 SAME");
     hLambdadphi_0_20->Draw("E0 X0 HIST SAME");
     //corrFit->Draw("SAME");
     //corrFit2->Draw("SAME");
@@ -1670,7 +1670,7 @@ void calculateRatios(TString input_0_20 = "", TString input_20_50 = "", TString 
     c0_20pp->SetMargin(0.12, 0.05, 0.1, 0.05);
     //hhdphi_0_20->GetYaxis()->SetRangeUser(0.001, 0.25);
     hhdphi_0_20->GetYaxis()->SetTitle("Per Trigger (h-h) Pairs");
-    hhdphi_0_20_syst->Draw("E2 SAME");
+    // hhdphi_0_20_syst->Draw("E2 SAME");
     hhdphi_0_20->Draw("E0 X0 HIST SAME");
     //hLambdadphi_0_20->Draw("E0 X0 SAME");
     // corrFit->Draw("SAME");
@@ -1724,7 +1724,7 @@ void calculateRatios(TString input_0_20 = "", TString input_20_50 = "", TString 
     c20_50->SetMargin(0.12, 0.05, 0.1, 0.05);
     //hhdphi_0_20->GetYaxis()->SetRangeUser(0.03, 0.11);
     //hhdphi_20_50->Draw("E0 X0");
-    hLambdadphi_20_50_syst->Draw("E2 SAME");
+    // hLambdadphi_20_50_syst->Draw("E2 SAME");
     hLambdadphi_20_50->Draw("E0 X0 HIST SAME");
     //corrFit2050->Draw("SAME");
     //corrFit2_2050->Draw("SAME");
@@ -1738,7 +1738,7 @@ void calculateRatios(TString input_0_20 = "", TString input_20_50 = "", TString 
     c20_50pp->cd();
     c20_50pp->SetMargin(0.12, 0.05, 0.1, 0.05);
     //hhdphi_0_20->GetYaxis()->SetRangeUser(0.03, 0.11);
-    hhdphi_20_50_syst->Draw("E2 SAME");
+    // hhdphi_20_50_syst->Draw("E2 SAME");
     hhdphi_20_50->Draw("E0 X0 HIST SAME");
     //hLambdadphi_20_50->Draw("E0 X0 SAME");
     //corrFit2050->Draw("SAME");
@@ -1753,7 +1753,7 @@ void calculateRatios(TString input_0_20 = "", TString input_20_50 = "", TString 
     c50_80->cd();
     c50_80->SetMargin(0.12, 0.05, 0.1, 0.05);
     //hhdphi_50_80->Draw("E0 X0");
-    hLambdadphi_50_80_syst->Draw("E2 SAME");
+    // hLambdadphi_50_80_syst->Draw("E2 SAME");
     hLambdadphi_50_80->Draw("E0 X0 HIST SAME");
     //corrFit50100->Draw("SAME");
     //corrFit2_50100->Draw("SAME");
@@ -1766,7 +1766,7 @@ void calculateRatios(TString input_0_20 = "", TString input_20_50 = "", TString 
     TCanvas *c50_80pp = new TCanvas("c50_80pp", "c50_80pp", 50, 50, 550, 600);
     c50_80pp->cd();
     c50_80pp->SetMargin(0.12, 0.05, 0.1, 0.05);
-    hhdphi_50_80_syst->Draw("E2 SAME");
+    // hhdphi_50_80_syst->Draw("E2 SAME");
     hhdphi_50_80->Draw("E0 X0 HIST SAME");
     //hLambdadphi_50_80->Draw("E0 X0 SAME");
     //corrFit50100->Draw("SAME");

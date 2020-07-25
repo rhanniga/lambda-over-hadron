@@ -54,6 +54,7 @@ class AliAnalysisTaskLambdaHadronRatio : public AliAnalysisTaskSE {
   THnSparseF* fLambdaDist;  //!>! single particle lambda dist
 
   THnSparseF* fDphiHLambda;  //!>! hadron-lambda correlation hist
+  THnSparseF* fDphiHLambdaV0;  //!>! hadron-lambda correlation hist (using v0 finder for lambda)
   THnSparseF* fDphiHLambdaRotated;  //!>! hadron-lambda correlation hist with rotated pion
   THnSparseF* fDphiHLambdaRotatedPi;  //!>! hadron-lambda correlation hist with daughter rotated by pi
   THnSparseF* fDphiHLambdaRotatedProton;  //!>! hadron-lambda correlation hist with rotated proton

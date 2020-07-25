@@ -4,8 +4,8 @@
 class AliAnalysisTaskLambdaHadronRatio;
 ClassImp(AliAnalysisTaskLambdaHadronRatio);
 
-static const int centLow = 50;
-static const int centHigh = 80;
+static const int centLow = 0;
+static const int centHigh = 100;
 
 AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     AliAnalysisTaskSE(),
@@ -115,9 +115,8 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     double hh_cor_mins[5] = {2, 2, -1.0*TMath::Pi()/2.0, -2.0, -10};
     double hh_cor_maxes[5] = {12, 12, 3.0*TMath::Pi()/2.0, 2.0, 10};
 
-
-
     fDphiHLambda = new THnSparseF("fDphiHLambda", "Hadron-Lambda Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
+    fDphiHLambdaV0 = new THnSparseF("fDphiHLambdaV0", "Hadron-Lambda (using V0) Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
     fDphiHLambdaRotated = new THnSparseF("fDphiHLambdaRotated", "Hadron-Lambda (rotated) Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
     fDphiHLambdaRotatedPi = new THnSparseF("fDphiHLambdaRotatedPi", "Hadron-Lambda (rotated pi) Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
     fDphiHLambdaRotatedProton = new THnSparseF("fDphiHLambdaRotatedProton", "Hadron-Lambda (proton rotated) Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
@@ -130,6 +129,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     fDphiTriggerTriggerMixed = new THnSparseF("fDphiTriggerTriggerMixed", "MixedTrigger-Trigger Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fDphiHLambdaLSMixed = new THnSparseF("fDphiHLambdaLSMixed", "Mixed Hadron-Lambda LS Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
     fOutputList->Add(fDphiHLambda);
+    fOutputList->Add(fDphiHLambdaV0);
     fOutputList->Add(fDphiHLambdaRotated);
     fOutputList->Add(fDphiHLambdaRotatedPi);
     fOutputList->Add(fDphiHLambdaRotatedProton);
@@ -145,20 +145,6 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     //axes are pion DCA proton DCA lambda mass
     fLambdaDaughterDCA = new TH3D("fLambdaDaughterDCA", "#Lambda^{0} daughter DCA dist", 100, -5, 5, 100, -5, 5, 100, 1.08, 1.16);
     fOutputList->Add(fLambdaDaughterDCA);
-
-    // int pid_bins[7] = {500, 500, 500, 50, 50, 50, 50};
-    // double pid_mins[7] = {0, 0, 10000, -10, -10, -10, -10};
-    // double pid_maxes[7] = {10, 160, 30000, 10, 10, 10, 10};
-
-    // fPid = new THnSparseF("fPid", "PID Histogram", 7, pid_bins, pid_mins, pid_maxes);
-    // fOutputList->Add(fPid);
-
-    // int signal_bins[6] = {50, 50, 50, 50, 100, 50};
-    // double signal_mins[6] = {-10, -10, -10, -10, 1.06, 0};
-    // double signal_maxes[6] = {10, 10, 10, 10, 1.16, 10};
-
-    // fSignalAnalysis = new THnSparseF("fSignalAnalysis", "Signal Analysis Histogram", 6, signal_bins, signal_mins, signal_maxes);
-    // fOutputList->Add(fSignalAnalysis);
 
     PostData(1, fOutputList);
 
@@ -533,6 +519,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     //Making list of possible lambdas (have to do +/- for proton or pi):
 
     std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list;
+    std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_v0;
     std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_signal_region;
     std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_signal_region_2_4;
     std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_RotatedPion;
@@ -648,6 +635,41 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     }
 
 
+    // V0 SECTION
+
+    int numV0s = fAOD->GetNumberOfV0s();
+    for(int i = 0; i < numV0s; i++) {
+        AliAODv0 *v0 = fAOD->GetV0(i);
+
+        // int posTrackID = v0->GetPosID();
+        // int negTrackID = v0->GetNegID();
+        // AliAODTrack* posTrack = (AliAODTrack*)fAOD->GetTrack(posTrackID);
+        // AliAODTrack* negTrack = (AliAODTrack*)fAOD->GetTrack(negTrackID);
+
+        AliAODTrack* posTrack = (AliAODTrack*) v0->GetSecondaryVtx()->GetDaughter(0);
+        AliAODTrack* negTrack = (AliAODTrack*) v0->GetSecondaryVtx()->GetDaughter(1);
+
+        // Occasionally returns null, not quite sure why...
+        if(!posTrack || !negTrack) continue;
+
+        double TPCNSigmaProton = 1000;
+        double TOFNSigmaProton = 1000;
+        double TPCNSigmaPion = 1000;
+        double TOFNSigmaPion = 1000;
+
+        TPCNSigmaProton = fpidResponse->NumberOfSigmasTPC(posTrack, AliPID::kProton);
+        TOFNSigmaProton = fpidResponse->NumberOfSigmasTOF(posTrack, AliPID::kProton);
+        TPCNSigmaPion = fpidResponse->NumberOfSigmasTPC(negTrack, AliPID::kPion);
+        TOFNSigmaPion = fpidResponse->NumberOfSigmasTOF(negTrack, AliPID::kPion);
+
+        bool isNegTrackPion = TMath::Abs(TPCNSigmaPion) <= 3 && (TMath::Abs(TOFNSigmaPion) <= 3 || TOFNSigmaPion == 1000);
+        bool isPosTrackProton = TMath::Abs(TPCNSigmaProton) <= 2 && (TMath::Abs(TOFNSigmaProton) <= 2 || TOFNSigmaProton == 1000);
+
+        if(isNegTrackPion && isPosTrackProton) {
+            auto lambda = DaughtersToMother(negTrack, posTrack, 0.1396, 0.9383);
+            lambda_list_v0.push_back(lambda);
+        }
+    }
 
     // Filling all of our single particle distribution histograms:
     FillSingleParticleDist(trigger_list, primZ, fTriggerDist);
@@ -657,6 +679,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
 
     // Filling all of our correlation histograms
     MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambda, primZ);
+    MakeSameHLambdaCorrelations(trigger_list, lambda_list_v0, fDphiHLambdaV0, primZ);
     MakeSameHLambdaCorrelations(trigger_list, lambda_list_RotatedPi, fDphiHLambdaRotatedPi, primZ);
     MakeSameHLambdaCorrelations(trigger_list, lambda_list_Flipped, fDphiHLambdaFlipped, primZ);
     MakeSameHLambdaCorrelations(trigger_list, lambda_list_RotatedPion, fDphiHLambdaRotated, primZ);

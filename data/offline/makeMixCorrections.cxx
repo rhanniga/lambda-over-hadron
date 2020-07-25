@@ -100,7 +100,7 @@ TH2D* makehhCorrections(TH3D* same3D, TH3D* mix3D){
 
 //--------------------------------------------------------------------------------------------
 void makeMixCorrections(float trigPTLow, float trigPTHigh, float assocPTLow, float assocPTHigh){
-    TFile *histoFile = new TFile("~/alice/research/lambda-over-hadron/data/online/output/fixed_filter_50_100.root");
+    TFile *histoFile = new TFile("~/alice/research/lambda-over-hadron/data/online/tmp/cent_50_80.root");
     TList* list = (TList*) histoFile->Get("h-lambda");
     int centLow = 50;
     int centHigh = 80;
@@ -198,25 +198,25 @@ void makeMixCorrections(float trigPTLow, float trigPTHigh, float assocPTLow, flo
         sameLSPeakEta[i]->SetName(Form("sameLSPeakEta_zvtx_%i", i));
         mixedLSPeakEta[i]->SetName(Form("mixedLSPeakEta_zvtx_%i", i));
     }
-    TH2D* hLambda2DRside = makeCorrections(hLambda, hLambdaMixed, 1.14, 1.15, sameUSRsideEta, mixedUSRsideEta, trigMixScalesUS, totalTrigSameUS);
+    TH2D* hLambda2DRside = makeCorrections(hLambda, hLambdaMixed, 1.135, 1.15, sameUSRsideEta, mixedUSRsideEta, trigMixScalesUS, totalTrigSameUS);
     hLambda2DRside->SetName("hLambda2DRside");
     for(int i = 0; i<10; i++){
         sameUSRsideEta[i]->SetName(Form("sameUSRsideEta_zvtx_%i", i));
         mixedUSRsideEta[i]->SetName(Form("mixedUSRsideEta_zvtx_%i", i));
     }
-    TH2D* hLambdaLS2DRside = makeCorrections(hLambdaLS, hLambdaLSMixed, 1.14, 1.15, sameLSRsideEta, mixedLSRsideEta, trigMixScalesLS, totalTrigSameLS);
+    TH2D* hLambdaLS2DRside = makeCorrections(hLambdaLS, hLambdaLSMixed, 1.135, 1.15, sameLSRsideEta, mixedLSRsideEta, trigMixScalesLS, totalTrigSameLS);
     hLambdaLS2DRside->SetName("hLambdaLS2DRside");
     for(int i = 0; i<10; i++){
         sameLSRsideEta[i]->SetName(Form("sameLSRsideEta_zvtx_%i", i));
         mixedLSRsideEta[i]->SetName(Form("mixedLSRsideEta_zvtx_%i", i));
     }
-    TH2D* hLambda2DLside = makeCorrections(hLambda, hLambdaMixed, 1.08, 1.09, sameUSLsideEta, mixedUSLsideEta, trigMixScalesUS, totalTrigSameUS);
+    TH2D* hLambda2DLside = makeCorrections(hLambda, hLambdaMixed, 1.08, 1.095, sameUSLsideEta, mixedUSLsideEta, trigMixScalesUS, totalTrigSameUS);
     hLambda2DLside->SetName("hLambda2DLside");
     for(int i = 0; i<10; i++){
         sameUSLsideEta[i]->SetName(Form("sameUSLsideEta_zvtx_%i", i));
         mixedUSLsideEta[i]->SetName(Form("mixedUSLsideEta_zvtx_%i", i));
     }
-    TH2D* hLambdaLS2DLside = makeCorrections(hLambdaLS, hLambdaLSMixed, 1.08, 1.09, sameLSLsideEta, mixedLSLsideEta, trigMixScalesLS, totalTrigSameLS);
+    TH2D* hLambdaLS2DLside = makeCorrections(hLambdaLS, hLambdaLSMixed, 1.08, 1.095, sameLSLsideEta, mixedLSLsideEta, trigMixScalesLS, totalTrigSameLS);
     hLambdaLS2DLside->SetName("hLambdaLS2DLside");
     for(int i = 0; i<10; i++){
         sameLSLsideEta[i]->SetName(Form("sameLSLsideEta_zvtx_%i", i));
