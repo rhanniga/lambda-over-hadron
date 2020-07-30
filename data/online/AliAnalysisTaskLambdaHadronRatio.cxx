@@ -641,16 +641,28 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     for(int i = 0; i < numV0s; i++) {
         AliAODv0 *v0 = fAOD->GetV0(i);
 
-        // int posTrackID = v0->GetPosID();
-        // int negTrackID = v0->GetNegID();
-        // AliAODTrack* posTrack = (AliAODTrack*)fAOD->GetTrack(posTrackID);
-        // AliAODTrack* negTrack = (AliAODTrack*)fAOD->GetTrack(negTrackID);
-
         AliAODTrack* posTrack = (AliAODTrack*) v0->GetSecondaryVtx()->GetDaughter(0);
         AliAODTrack* negTrack = (AliAODTrack*) v0->GetSecondaryVtx()->GetDaughter(1);
 
         // Occasionally returns null, not quite sure why...
         if(!posTrack || !negTrack) continue;
+
+        bool posPtCut = posTrack->Pt() > 0.15;
+        bool negPtCut = negTrack->Pt() > 0.15;
+
+        bool posEtaCut = TMath::Abs(posTrack->Eta()) < 1;
+        bool negEtaCut = TMath::Abs(negTrack->Eta()) < 1;
+
+        bool posQualCut = posTrack->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA);
+        bool negQualCut = negTrack->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA);
+
+        if(!posPtCut ||
+                !negPtCut   ||
+                !posEtaCut  ||
+                !negEtaCut  ||
+                !posQualCut ||
+                !negQualCut ||) continue;
+
 
         double TPCNSigmaProton = 1000;
         double TOFNSigmaProton = 1000;
