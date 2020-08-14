@@ -142,8 +142,14 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     fOutputList->Add(fDphiTriggerTriggerMixed);
     fOutputList->Add(fDphiHLambdaLSMixed);
 
-    //axes are pion DCA proton DCA lambda mass
-    fLambdaDaughterDCA = new TH3D("fLambdaDaughterDCA", "#Lambda^{0} daughter DCA dist", 100, -5, 5, 100, -5, 5, 100, 1.08, 1.16);
+    //axes are pion 0: dca pion 1: dca proton
+    //              2: pt pion  3: pt proton
+    //              4: pt L     5: mass L
+    int dca_bins[6] = {100, 100, 20, 20, 20, 50};
+    double dca_mins[6] = {-2.4, -2.4, 0, 0, 0, 1.08};
+    double dca_maxes[6] = {2.4, 2.4, 10, 10, 10, 1.16};
+
+    fLambdaDaughterDCA = new THnSparseF("fLambdaDaughterDCA", "#Lambda^{0} daughter DCA dist", 6, dca_bins, dca_mins, dca_maxes);
     fOutputList->Add(fLambdaDaughterDCA);
 
     PostData(1, fOutputList);
@@ -554,6 +560,8 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     for(int i = 0; i < (int)piMinus_list.size(); i++) {
         for(int j = 0; j < (int) proton_list.size(); j++) {
             AliMotherContainer lambda = DaughtersToMother(piMinus_list[i], proton_list[j], 0.1396, 0.9383);
+            auto pion = piMinus_list[i];
+            auto proton = proton_list[j];
             
             double pion_dz[2];
             double pion_covar[3];
@@ -565,7 +573,8 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
             bool is_protonDCA = proton_list[j]->PropagateToDCA(prim, fAOD->GetMagneticField(), 20., proton_dz, proton_covar);
 
             if(is_pionDCA && is_protonDCA) {
-                fLambdaDaughterDCA->Fill(pion_dz[0], proton_dz[0], lambda.particle.M());
+                double fillArray[6] = {pion_dz[0], proton_dz[0], pion->Pt(), proton->Pt(), lambda.particle.Pt(), lambda.particle.M()};
+                fLambdaDaughterDCA->Fill(fillArray);
             }
 
             AliMotherContainer lambda_RotatedPi = RotatedDaughtersToMother(piMinus_list[i], proton_list[j], 0.1396, 0.9383, TMath::Pi());
@@ -661,7 +670,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
                 !posEtaCut  ||
                 !negEtaCut  ||
                 !posQualCut ||
-                !negQualCut ||) continue;
+                !negQualCut ) continue;
 
 
         double TPCNSigmaProton = 1000;

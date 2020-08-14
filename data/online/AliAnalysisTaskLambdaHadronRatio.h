@@ -67,7 +67,7 @@ class AliAnalysisTaskLambdaHadronRatio : public AliAnalysisTaskSE {
   THnSparseF* fDphiHLambdaLSMixed; //!>! hadron-proton+pion like sign mixed correlation hist
   THnSparseF* fDphiTriggerTriggerMixed;   //!>! mixed trigger-trigger correlation hist
 
-  TH3D* fLambdaDaughterDCA;
+  THnSparseF* fLambdaDaughterDCA;
 
   // THnSparseF* fPid; //!>! histogram to visualize pid cuts
   // THnSparseF* fSignalAnalysis; //!>! histogram to analyze signal with nsigma cuts

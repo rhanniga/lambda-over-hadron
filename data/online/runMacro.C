@@ -102,7 +102,7 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
     // define the output folders
     alienHandler->SetGridWorkingDir("lambda_hadron_ratio");
-    alienHandler->SetGridOutputDir("v0_width_0_100_correct_cuts");
+    alienHandler->SetGridOutputDir("dca_changes_0_100");
 
     // connect the alien plugin to the manager
     manage->SetGridHandler(alienHandler);
