@@ -1,25 +1,25 @@
-#include "AliAnalysisTaskLambdaHadronRatio.h"
-#include <iostream>
+#include "TRint.h"
+#include "TSystem.h"
 
 void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
-  //Starting and ending index of the array containing the run numbers, specifies which range to run over
-  int startIndex = 0;
-  int endIndex = 12;
-  // int endIndex = 14;
 
-  //If we want to download test files from grid then run in one swoop:
-  bool gridTest = false;
-  int numTestFiles = 2;
+   //Starting and ending index of the array containing the run numbers, specifies which range to run over
+   int startIndex = 0;
+   int endIndex = 14;
+   char* work_dir = "lambda_hadron_efficiency";
+   char* output_dir = "test";
 
-  gInterpreter->ProcessLine(".include $ROOTSYS/include");
-  gInterpreter->ProcessLine(".include $ALICE_ROOT/include");
+   bool gridTest = false;
+   int numTestFiles = 2;
 
-  AliAnalysisManager *manage = new AliAnalysisManager("");
-  AliAODInputHandler *aodH = new AliAODInputHandler();
-  manage->SetInputEventHandler(aodH);
+   gInterpreter->ProcessLine(".include $ROOTSYS/include");
+   gInterpreter->ProcessLine(".include $ALICE_ROOT/include");
 
-  //UNSURE SECTION:
+   // create and customize the alien handler
+   AliAnalysisManager *manage = new AliAnalysisManager("");
+   AliAODInputHandler *aodH = new AliAODInputHandler();
+   manage->SetInputEventHandler(aodH);
 
   //MULT SELECTION:
   gInterpreter->ProcessLine(Form(".x %s", gSystem->ExpandPathName("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C")));
@@ -30,47 +30,38 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   //PID response:
   gInterpreter->ProcessLine(Form(".x %s(kFALSE)", gSystem->ExpandPathName("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C")));
 
-  //END SECTION
-
-
-  gInterpreter->LoadMacro("AliAnalysisTaskLambdaHadronRatio.cxx++g");
-  AliAnalysisTaskLambdaHadronRatio *task = reinterpret_cast<AliAnalysisTaskLambdaHadronRatio*>(gInterpreter->ExecuteMacro("AddLambdaHadronRatioTask.C"));
+  gInterpreter->LoadMacro("AliAnalysisTaskLambdaHadronEfficiency.cxx++g");
+  AliAnalysisTaskLambdaHadronEfficiency *task = reinterpret_cast<AliAnalysisTaskLambdaHadronEfficiency*>(gInterpreter->ExecuteMacro("AddLambdaHadronEfficiencyTask.C"));
 
   if(!manage->InitAnalysis()) return;
-  // manage->SetDebugLevel(2);
-  // manage->PrintStatus();
-  // manage->SetUseProgressBar(1, 25);
+  manage->SetDebugLevel(2);
+  manage->PrintStatus();
+  manage->SetUseProgressBar(1, 25);
 
   if(local) {
-    TChain *chain = new TChain("aodTree");
-    chain->Add("/Users/ryan/alice/data/pPb_5_tev_1.root");
-    chain->Add("/Users/ryan/alice/data/pPb_5_tev_69.root");
-    chain->Add("/Users/ryan/alice/data/pPb_5_tev_420.root");
-    manage->StartAnalysis("local", chain);
+     std::cout << "Cannot run in local mode, no input files available! (set file path)" << std::endl;
   }
 
-  else {
+
+   else{
+
     // if we want to run on grid, we create and configure the plugin
     AliAnalysisAlien *alienHandler = new AliAnalysisAlien();
     // also specify the include (header) paths on grid
     alienHandler->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
     // make sure your source files get copied to grid
-    alienHandler->SetAdditionalLibs("AliAnalysisTaskLambdaHadronRatio.cxx AliAnalysisTaskLambdaHadronRatio.h");
-    alienHandler->SetAnalysisSource("AliAnalysisTaskLambdaHadronRatio.cxx");
+    alienHandler->SetAdditionalLibs("AliAnalysisTaskLambdaHadronEfficiency.cxx AliAnalysisTaskLambdaHadronEfficiency.h");
+    alienHandler->SetAnalysisSource("AliAnalysisTaskLambdaHadronEfficiency.cxx");
     // select the aliphysics version. all other packages
     // are LOADED AUTOMATICALLY!
     alienHandler->SetAliPhysicsVersion("vAN-20181028_ROOT6-1");
     alienHandler->SetAPIVersion("V1.1x");
     // select the input data
-     alienHandler->SetGridDataDir("/alice/data/2016/LHC16q/");
-    alienHandler->SetDataPattern("pass1_FAST/AOD190/*/*AOD.root");
-    // MC has no prefix, data has prefix 000
-    alienHandler->SetRunPrefix("000");
+   alienHandler->SetGridDataDir("//alice/sim/2017/LHC17f2b_fast/");
+   alienHandler->SetDataPattern("/AOD/*/*AOD.root");
 
     // addding runs
-    // int runArray[] = {265525, 265521, 265501, 265499, 265435, 265427, 265426, 265425, 265424, 265422, 265421, 265420, 265419, 265388, 265387, 265385, 265384, 265383, 265381, 265378, 265377, 265344, 265343, 265342, 265339, 265338, 265336, 265334, 265332, 265309};
-    int runArray[] = {265521, 265501, 265499, 265435, 265427, 265426, 265425, 265424, 265422, 265421, 265420, 265419, 265388, 265387, 265385, 265384, 265383, 265381, 265378, 265377, 265344, 265343, 265342, 265339, 265338, 265336, 265334, 265332, 265309};
-
+    int runArray[] = {265525, 265521, 265501, 265499, 265435, 265427, 265426, 265425, 265424, 265422, 265421, 265420, 265419, 265388, 265387, 265385, 265384, 265383, 265381, 265378, 265377, 265344, 265343, 265342, 265339, 265338, 265336, 265334, 265332, 265309};
     int runArrayLength = (int)(sizeof(runArray)/sizeof(runArray[0]));
 
     if(endIndex > (runArrayLength-1) || endIndex < 0) {
@@ -87,10 +78,10 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
      alienHandler->AddRunNumber(runArray[i]);
     }
 
-    // number of files per subjob
+   // number of files per subjob
     alienHandler->SetSplitMaxInputFileNumber(40);
-    alienHandler->SetExecutable("LambdaHadronRatio.sh");
-    alienHandler->SetJDLName("LambdaHadronRatio.jdl");
+    alienHandler->SetExecutable("LambdaHadronEfficiency.sh");
+    alienHandler->SetJDLName("LambdaHadronEfficiency.jdl");
     alienHandler->SetTTL(30000);
     alienHandler->SetOutputToRunNo(kTRUE);
     alienHandler->SetKeepLogs(kTRUE);
@@ -103,8 +94,8 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
     alienHandler->SetMergeViaJDL(gridMerge);
 
     // define the output folders
-    alienHandler->SetGridWorkingDir("lambda_hadron_ratio");
-    alienHandler->SetGridOutputDir("two_triggers_0_20");
+    alienHandler->SetGridWorkingDir(work_dir); 
+    alienHandler->SetGridOutputDir(output_dir);
 
     // connect the alien plugin to the manager
     manage->SetGridHandler(alienHandler);

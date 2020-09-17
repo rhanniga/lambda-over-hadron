@@ -6,7 +6,9 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   //Starting and ending index of the array containing the run numbers, specifies which range to run over
   int startIndex = 0;
   int endIndex = 14;
-  /* int endIndex = 14; */
+
+  char* work_dir = "lambda_hadron_ratio";
+  char* output_dir = "dca_changes_0_100";
 
   //If we want to download test files from grid then run in one swoop (usually just run completely locally):
   bool gridTest = false;
@@ -19,7 +21,6 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   AliAODInputHandler *aodH = new AliAODInputHandler();
   manage->SetInputEventHandler(aodH);
 
-  //UNSURE SECTION:
 
   //MULT SELECTION:
   gInterpreter->ProcessLine(Form(".x %s", gSystem->ExpandPathName("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C")));
@@ -30,16 +31,15 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   //PID response:
   gInterpreter->ProcessLine(Form(".x %s(kFALSE)", gSystem->ExpandPathName("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C")));
 
-  //END SECTION
 
 
   gInterpreter->LoadMacro("AliAnalysisTaskLambdaHadronRatio.cxx++g");
   AliAnalysisTaskLambdaHadronRatio *task = reinterpret_cast<AliAnalysisTaskLambdaHadronRatio*>(gInterpreter->ExecuteMacro("AddLambdaHadronRatioTask.C"));
 
   if(!manage->InitAnalysis()) return;
-  // manage->SetDebugLevel(2);
-  // manage->PrintStatus();
-  // manage->SetUseProgressBar(1, 25);
+  manage->SetDebugLevel(2);
+  manage->PrintStatus();
+  manage->SetUseProgressBar(1, 25);
 
   if(local) {
     TChain *chain = new TChain("aodTree");
@@ -101,8 +101,8 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
     alienHandler->SetMergeViaJDL(gridMerge);
 
     // define the output folders
-    alienHandler->SetGridWorkingDir("lambda_hadron_ratio");
-    alienHandler->SetGridOutputDir("dca_changes_0_100");
+    alienHandler->SetGridWorkingDir(work_dir); 
+    alienHandler->SetGridOutputDir(output_dir);
 
     // connect the alien plugin to the manager
     manage->SetGridHandler(alienHandler);

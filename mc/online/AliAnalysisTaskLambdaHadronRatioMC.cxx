@@ -1,686 +1,747 @@
-#include "AliAnalysisTaskLambdaHadronRatio.h"
+#include "TChain.h"
+#include "TTree.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TCanvas.h"
+#include "THnSparse.h"
+#include "TParticle.h"
+#include "TStopwatch.h"
 
-//BOTH OF THESE ARE WEIRD, BUT APPARENTLY NECESSARRY
-class AliAnalysisTaskLambdaHadronRatio;
-ClassImp(AliAnalysisTaskLambdaHadronRatio);
+#include "AliAnalysisTask.h"
+#include "AliAnalysisManager.h"
 
-static const int centLow = 0;
-static const int centHigh = 20;
+#include "AliESDEvent.h"
+#include "AliESDInputHandler.h"
+#include "AliESDtrackCuts.h"
+#include "AliAODEvent.h"
+#include "AliAODHandler.h"
+#include "AliAODMCParticle.h"
+#include "AliCFParticle.h"
 
-AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
-    AliAnalysisTaskSE(),
-    fpidResponse{0},
-    fAOD{0},
-    fOutputList{0},
-    fTriggerDist{0},
-    fAssociatedHDist{0},
-    fDphiHLambda{0},
-    fDphiHLambdaRotated{0},
-    fDphiHLambdaRotatedProton{0},
-    fDphiHLambdaRotatedPi{0},
-    fDphiHLambdaFlipped{0},
-    fDphiHH{0},
-    fDphiHLambdaLS{0},
-    fDphiHLambdaMixed{0},
-    fDphiHHMixed{0},
-    fDphiHLambdaLSMixed{0},
-    fCorPoolMgr{0}
-    // fPid{0},
-    // fSignalAnalysis{0}
+#include "AliEventPoolManager.h"
+#include "AliMultSelection.h"
+
+#include "AliPID.h"
+#include "AliESDpid.h"
+#include "AliAODPid.h"
+#include "AliPIDResponse.h"
+
+#include "AliMCEvent.h"
+#include "AliStack.h"
+#include "AliMCEventHandler.h"
+
+#include "AliAnalysisTaskLambdaHadronEfficiency.h"
+
+using std::cout;
+using std::endl;
+
+ClassImp(AliAnalysisTaskLambdaHadronEfficiency)
+//________________________________________________________________________
+AliAnalysisTaskLambdaHadronEfficiency::AliAnalysisTaskLambdaHadronEfficiency(const char *name, Float_t multLow, Float_t multHigh)
+: AliAnalysisTaskSE(name),
+fVevent(0),
+fPoolMgr(0x0),
+fLSPoolMgr(0x0),
+fHHPoolMgr(0x0),
+fESD(0),
+fAOD(0),
+fpidResponse(0),
+fOutputList(0),
+fNevents(0),
+fNumTracks(0),
+fVtxZ(0),
+fVtxX(0),
+fVtxY(0),
+fRealKDist(0),
+fRealPiDist(0),
+fRealpDist(0),
+fRealeDist(0),
+fRealMuonDist(0),
+fRealLambdaDist(0),
+fRecoLambdaDist(0)
 {
-
-}
-
-AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *name) :
-    AliAnalysisTaskSE(name),
-    fpidResponse{0},
-    fAOD{0},
-    fOutputList{0},
-    fTriggerDist{0},
-    fAssociatedHDist{0},
-    fDphiHLambda{0},
-    fDphiHLambdaRotated{0},
-    fDphiHLambdaRotatedProton{0},
-    fDphiHLambdaRotatedPi{0},
-    fDphiHLambdaFlipped{0},
-    fDphiHH{0},
-    fDphiHLambdaLS{0},
-    fDphiHLambdaMixed{0},
-    fDphiHHMixed{0},
-    fDphiHLambdaLSMixed{0},
-    fCorPoolMgr{0}
-    // fPid{0},
-    // fSignalAnalysis{0}
-{
-
+    // Constructor
+    // Define input and output slots here
+    // Input slot #0 works with a TChain
     DefineInput(0, TChain::Class());
+    // Output slot #0 id reserved by the base class for AOD
+    // Output slot #1 writes into a TH1 container
     DefineOutput(1, TList::Class());
+    //printf("\n\n!!!!!!!!!!]\n done with the constructor! \n");
+    //fflush(stdout);
+    MULT_LOW = multLow;
+    MULT_HIGH = multHigh;
+    CENT_ESTIMATOR = "V0A";
+    KAON_TRK_BIT = 16;
+    ASSOC_TRK_BIT = 16;
+    TRIG_TRK_BIT = 768;
+    KAON_ETA_CUT = 0.8;
 
 }
-
-AliAnalysisTaskLambdaHadronRatio::~AliAnalysisTaskLambdaHadronRatio()
+//________________________________________________________________________
+AliAnalysisTaskLambdaHadronEfficiency::AliAnalysisTaskLambdaHadronEfficiency()
+: AliAnalysisTaskSE("DefaultTask_HfeEMCQA"),
+fVevent(0),
+fPoolMgr(0x0),
+fLSPoolMgr(0x0),
+fHHPoolMgr(0x0),
+fESD(0),
+fAOD(0),
+fpidResponse(0),
+fOutputList(0),
+fNevents(0),
+fNumTracks(0),
+fVtxZ(0),
+fVtxX(0),
+fVtxY(0),
+fRealLambdaDist(0),
+fRecoLambdaDist(0)
 {
-
-    if(fOutputList) delete fOutputList;
-
+    //Default constructor
+    // Define input and output slots here
+    // Input slot #0 works with a TChain
+    DefineInput(0, TChain::Class());
+    // Output slot #0 id reserved by the base class for AOD
+    // Output slot #1 writes into a TH1 container
+    // DefineOutput(1, TH1I::Class());
+    DefineOutput(1, TList::Class());
+    //DefineOutput(3, TTree::Class());
+    MULT_LOW = 0;
+    MULT_HIGH = 20;
+    CENT_ESTIMATOR = "V0A";
+    KAON_TRK_BIT = 16;
+    ASSOC_TRK_BIT = 16;
+    TRIG_TRK_BIT = 768;
+    KAON_ETA_CUT = 0.8;
 }
-
-void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
+//________________________________________________________________________
+AliAnalysisTaskLambdaHadronEfficiency::~AliAnalysisTaskLambdaHadronEfficiency()
 {
+    //Destructor
+    delete fOutputList;
+}
+//________________________________________________________________________
+void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
+{
+    //printf("\n!!!!!\n Starting UserCreateOutputObjects \n\n");
+    //fflush(stdout);
+    // Create histograms
+    // Called once
+    AliDebug(3, "Creating Output Objects");
+    
+    /////////////////////////////////////////////////
+    //Automatic determination of the analysis mode//
+    ////////////////////////////////////////////////
+    AliVEventHandler *inputHandler = dynamic_cast<AliVEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    if(!TString(inputHandler->IsA()->GetName()).CompareTo("AliAODInputHandler")){
+        SetAODAnalysis();
+    } else {
+        SetESDAnalysis();
+    }
+    printf("Analysis Mode: %s Analysis\n", IsAODanalysis() ? "AOD" : "ESD");
+   
+    ////////////////////////////
+    // Set-up for Mixed Event //
+    ////////////////////////////
 
+
+    Int_t numVtxZBins = 10;
+    //Double_t vtxZBins[11] = {-10.0, -6.15, -3.90, -2.13, -0.59, 0.86, 2.29, 3.77, 5.39, 7.30, 10.0};
+    Double_t vtxZBins[11] = {-10.0, -8.0, -6.0, -4.0, -2.0, 0.0, 2.0, 4.0, 6.0, 8.0, 10.0};
+    Int_t numMultBins = 3;
+    Double_t multBins[4] = {0.0, 20.0, 50.0, 90.0};
+
+
+    ////////////////
+    //Output list//
+    ///////////////
     fOutputList = new TList();
-    fOutputList->SetOwner(true);
+    fOutputList->SetOwner();
+    
+    fNevents = new TH1F("fNevents","No of events",3,-0.5,2.5);
+    fOutputList->Add(fNevents);
+    fNevents->GetYaxis()->SetTitle("counts");
+    fNevents->GetXaxis()->SetBinLabel(1,"All");
+    fNevents->GetXaxis()->SetBinLabel(2,"With >2 Trks");
+    fNevents->GetXaxis()->SetBinLabel(3,"Vtx_{z}<10cm");
 
-    //Generating the mixed event pools:
+    fNumTracks = new TH1F("fNumTracks", "Number of Tracks/evt", 1000, 0, 1000);
+    fOutputList->Add(fNumTracks);
+    
+    fVtxZ = new TH1F("fVtxZ","Z vertex position;Vtx_{z};counts",1000,-50,50);
+    fOutputList->Add(fVtxZ);
+    
+    fVtxY = new TH1F("fVtxY","Y vertex position;Vtx_{y};counts",1000,-50,50);
+    fOutputList->Add(fVtxY);
+    
+    fVtxX = new TH1F("fVtxX","X vertex position;Vtx_{x};counts",1000,-50,50);
+    fOutputList->Add(fVtxX);
+    
+    // Single Particle and inclusive charged hadron histos
+    Int_t numbinsSingle[5] = {95, 64, 64, 10, 10};
+    Double_t minvalSingle[5] = {0.5, -3.14159, -2.0, -10.0, 0.0};
+    Double_t maxvalSingle[5] = {10.0, 3.14159, 2.0, 10.0, 100.0};
 
-    int poolSize = 500;
-    int trackDepth = 1000;
+    fRealChargedDist = new THnSparseF("fRealChargedDist", "Real Charged Hadron distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fOutputList->Add(fRealChargedDist);
 
-    int numMultBins = 1;
-    double multBins[2] = {centLow, centHigh};
+    fRealKDist = new THnSparseF("fRealKDist", "Real Kaon distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fOutputList->Add(fRealKDist);
 
-    int numzVtxBins = 10;
-    double zVtxBins[11] = {-10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10};
+    fRealPiDist = new THnSparseF("fRealPiDist", "Real Pion distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fOutputList->Add(fRealPiDist);
 
-    fCorPoolMgr = new AliEventPoolManager(poolSize, trackDepth, numMultBins, multBins, numzVtxBins, zVtxBins);
-    fCorPoolMgr->SetTargetValues(trackDepth, 0.1, 5);
+    fRealpDist = new THnSparseF("fRealpDist", "Real proton distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fOutputList->Add(fRealpDist);
 
-    fTriggersAndLambdasPerEvent_All = new TH2D("fTriggersAndLambdasPerEvent_All", "Triggers and Lambdas per event (all p_{T})", 10, 0, 10, 10, 0, 10);
-    fTriggersAndLambdasPerEvent_2_4 = new TH2D("fTriggersAndLambdasPerEvent_2_4", "Triggers and Lambdas per event (2-4 p_{T})", 10, 0, 10, 10, 0, 10);
-    fOutputList->Add(fTriggersAndLambdasPerEvent_All);
-    fOutputList->Add(fTriggersAndLambdasPerEvent_2_4);
+    fRealeDist = new THnSparseF("fRealeDist", "Real electron distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fOutputList->Add(fRealeDist);
 
+    fRealMuonDist = new THnSparseF("fRealMuonDist", "Real Muon distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fOutputList->Add(fRealMuonDist);
 
-    //Distribution axes are: Pt, Phi, Eta, zVtx
-    int dist_bins[4] = {100, 16, 20, 10};
-    double dist_mins[4] = {0, 0, -1, -10};
-    double dist_maxes[4] = {15, 6.28, 1, 10};
+    fRecoChargedDist = new THnSparseF("fRecoChargedDist", "Reco Charged Hadron distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fOutputList->Add(fRecoChargedDist);
 
-    fLooseDist = new THnSparseF("fLooseDist", "All Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
-    fTriggerDist = new THnSparseF("fTriggerDist", "Trigger Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
-    fAssociatedHDist = new THnSparseF("fAssociatedHDist", "Associated Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
-    fLambdaDist = new THnSparseF("fLambdaDist", "Lambda Distribution", 4, dist_bins, dist_mins, dist_maxes);
-    fOutputList->Add(fLooseDist);
-    fOutputList->Add(fTriggerDist);
-    fOutputList->Add(fAssociatedHDist);
-    fOutputList->Add(fLambdaDist);
+    fRecoKDist = new THnSparseF("fRecoKDist", "Reco Kaon distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fOutputList->Add(fRecoKDist);
+    
+    fTOFPiDist = new THnSparseF("fTOFPiDist", "TOF Pion distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fOutputList->Add(fTOFPiDist);
+    
+    fRecoPiDist = new THnSparseF("fRecoPiDist", "Reco Pion distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fOutputList->Add(fRecoPiDist);
 
+    fRecopDist = new THnSparseF("fRecopDist", "Reco proton distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fOutputList->Add(fRecopDist);
 
+    fRecoeDist = new THnSparseF("fRecoeDist", "Reco electron distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fOutputList->Add(fRecoeDist);
 
+    fRecoMuonDist = new THnSparseF("fRecoMuonDist", "Reco Muon distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fOutputList->Add(fRecoMuonDist);
 
-    //Correlation axes are: Trigger Pt, Associated Pt, dPhi, dEta, Associated Inv Mass (Lambda only), Zvtx
-    int hk_cor_bins[6] = {8, 10, 16, 20, 100, 10};
-    double hk_cor_mins[6] = {4.0, 1, -1.0*TMath::Pi()/2.0, -2.0, 1.06, -10};
-    double hk_cor_maxes[6] = {12.0, 6, 3.0*TMath::Pi()/2.0, 2.0, 1.16, 10};
+    fRecoChargedTriggerDist = new THnSparseF("fRecoChargedTriggerDist", "Reco Charged Hadron Trigger distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fOutputList->Add(fRecoChargedTriggerDist);
 
-    int hh_cor_bins[5] = {20, 20, 16, 20, 10};
-    double hh_cor_mins[5] = {2, 2, -1.0*TMath::Pi()/2.0, -2.0, -10};
-    double hh_cor_maxes[5] = {12, 12, 3.0*TMath::Pi()/2.0, 2.0, 10};
+    fRecoKTriggerDist = new THnSparseF("fRecoKTriggerDist", "Reco Kaon Trigger distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fOutputList->Add(fRecoKTriggerDist);
+    
+    fRecoPiTriggerDist = new THnSparseF("fRecoPiTriggerDist", "Reco Pion Trigger distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fOutputList->Add(fRecoPiTriggerDist);
 
+    fRecopTriggerDist = new THnSparseF("fRecopTriggerDist", "Reco proton Trigger distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fOutputList->Add(fRecopTriggerDist);
 
+    fRecoeTriggerDist = new THnSparseF("fRecoeTriggerDist", "Reco electron Trigger distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fOutputList->Add(fRecoeTriggerDist);
 
-    fDphiHLambda = new THnSparseF("fDphiHLambda", "Hadron-Lambda Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
-    fDphiHLambdaRotated = new THnSparseF("fDphiHLambdaRotated", "Hadron-Lambda (rotated) Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
-    fDphiHLambdaRotatedPi = new THnSparseF("fDphiHLambdaRotatedPi", "Hadron-Lambda (rotated pi) Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
-    fDphiHLambdaRotatedProton = new THnSparseF("fDphiHLambdaRotatedProton", "Hadron-Lambda (proton rotated) Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
-    fDphiHLambdaFlipped = new THnSparseF("fDphiHLambdaFlipped", "Hadron-Lambda (flipped) Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
-    fDphiHH = new THnSparseF("fDphiHH", "Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
-    fDphiTriggerTrigger = new THnSparseF("fDphiTriggerTrigger", "Trigger-Trigger Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
-    fDphiHLambdaLS = new THnSparseF("fDphiHLambdaLS", "Hadron-Lambda LS Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
-    fDphiHLambdaMixed = new THnSparseF("fDphiHLambdaMixed", "Mixed Hadron-Lambda Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
-    fDphiHHMixed = new THnSparseF("fDphiHHMixed", "Mixed Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
-    fDphiTriggerTriggerMixed = new THnSparseF("fDphiTriggerTriggerMixed", "MixedTrigger-Trigger Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
-    fDphiHLambdaLSMixed = new THnSparseF("fDphiHLambdaLSMixed", "Mixed Hadron-Lambda LS Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
-    fOutputList->Add(fDphiHLambda);
-    fOutputList->Add(fDphiHLambdaRotated);
-    fOutputList->Add(fDphiHLambdaRotatedPi);
-    fOutputList->Add(fDphiHLambdaRotatedProton);
-    fOutputList->Add(fDphiHLambdaFlipped);
-    fOutputList->Add(fDphiHH);
-    fOutputList->Add(fDphiTriggerTrigger);
-    fOutputList->Add(fDphiHLambdaLS);
-    fOutputList->Add(fDphiHLambdaMixed);
-    fOutputList->Add(fDphiHHMixed);
-    fOutputList->Add(fDphiTriggerTriggerMixed);
-    fOutputList->Add(fDphiHLambdaLSMixed);
+    fRecoMuonTriggerDist = new THnSparseF("fRecoMuonTriggerDist", "Reco Muon Trigger distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fOutputList->Add(fRecoMuonTriggerDist);
 
-    // int pid_bins[7] = {500, 500, 500, 50, 50, 50, 50};
-    // double pid_mins[7] = {0, 0, 10000, -10, -10, -10, -10};
-    // double pid_maxes[7] = {10, 160, 30000, 10, 10, 10, 10};
+    //Real & MC Phi track histos
+    
+    Int_t numbins[6] = {95, 64, 64, 10, 80, 10};
+    Double_t minval[6] = {0.5, -3.14159, -2., -10, 0.99, 0.0};
+    Double_t maxval[6] = {10.0, 3.14159,  2.,  10, 1.07, 100.0};
 
-    // fPid = new THnSparseF("fPid", "PID Histogram", 7, pid_bins, pid_mins, pid_maxes);
-    // fOutputList->Add(fPid);
+    fRealLambdaDist = new THnSparseF("fRealLambdaDist", "Real #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{KK};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fOutputList->Add(fRealLambdaDist);
 
-    // int signal_bins[6] = {50, 50, 50, 50, 100, 50};
-    // double signal_mins[6] = {-10, -10, -10, -10, 1.06, 0};
-    // double signal_maxes[6] = {10, 10, 10, 10, 1.16, 10};
+    fRealNoDecayCutLambdaDist = new THnSparseF("fRealNoDecayCutLambdaDist", "Real #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{KK};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fOutputList->Add(fRealNoDecayCutLambdaDist);
 
-    // fSignalAnalysis = new THnSparseF("fSignalAnalysis", "Signal Analysis Histogram", 6, signal_bins, signal_mins, signal_maxes);
-    // fOutputList->Add(fSignalAnalysis);
+    fRecoLambdaDist = new THnSparseF("fRecoLambdaDist", "Reco #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fOutputList->Add(fRecoLambdaDist);
 
-    PostData(1, fOutputList);
+    fTrackRecoLambdaDist = new THnSparseF("fTrackRecoLambdaDist", "Track Cut Reco #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.",6, numbins, minval, maxval);
+    fOutputList->Add(fTrackRecoLambdaDist);
 
+    fTOFRecoLambdaDist = new THnSparseF("fTOFRecoLambdaDist","Track Cut & TOF hit Reco #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.",6, numbins, minval, maxval);
+    fOutputList->Add(fTOFRecoLambdaDist);
+    
+    fTPCPIDTrackRecoLambdaDist = new THnSparseF("fTPCPIDTrackRecoLambdaDist", "Track Cut & TPC PID 3#sigma Reco #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fOutputList->Add(fTPCPIDTrackRecoLambdaDist);
+    
+    fTPCPIDRecoLambdaDist = new THnSparseF("fTPCPIDRecoLambdaDist", "Track Cut & TOF hit & TPC PID 3#sigma Reco #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fOutputList->Add(fTPCPIDRecoLambdaDist);
+
+    fPIDRecoLambdaDist = new THnSparseF("fPIDRecoLambdaDist", "Track Cut & TOF hit & TOF&TPC 3#sigma Reco #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fOutputList->Add(fPIDRecoLambdaDist);
+
+    PostData(1,fOutputList);
+
+    fReactionPlane = new TH1D("fReactionPlane", "Reaction Plane Angle; Angle", 64, -3.14159, 3.14159);
+    fOutputList->Add(fReactionPlane);
 }
 
-void AliAnalysisTaskLambdaHadronRatio::FillSingleParticleDist(std::vector<AliAODTrack*> particle_list, double zVtx, THnSparse* fDist)
-{
-
-    double dist_points[4]; //Pt, Phi, Eta, zVtx
-    for(int i = 0; i < (int)particle_list.size(); i++) {
-        auto particle = particle_list[i];
-        dist_points[0] = particle->Pt();
-        dist_points[1] = particle->Phi();
-        dist_points[2] = particle->Eta();
-        dist_points[3] = zVtx;
-        fDist->Fill(dist_points);
+//_______________________________________________________________________
+UInt_t AliAnalysisTaskLambdaHadronEfficiency::PassProtonCuts(AliAODTrack *track, Double_t TPCnSigma, Double_t TOFnSigma){
+    //returns the level of cuts that the track passed
+    //cutLevel: 1 = track cuts, 2 = TOF Hit, 4 = TPC PID cut, 8 = TOF PID cut
+    UInt_t passLevel = 0;
+    Bool_t pass = kTRUE;
+    pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
+    pass = pass && (track->Pt() >= 0.15);
+    pass = pass && (track->TestFilterMask(ASSOC_TRK_BIT));
+    pass = pass && (track->GetTPCCrossedRows() > 80);
+    if(pass) passLevel |= TRACK_BIT;    
+    if(TOFnSigma != -999){ //check if there is a TOF signal, but don't care what the signal is
+        passLevel |= TOF_HIT_BIT;
     }
-
-}
-
-void AliAnalysisTaskLambdaHadronRatio::FillSingleParticleDist(std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> particle_list, double zVtx, THnSparse* fDist)
-{
-
-    double dist_points[4]; //Pt, Phi, Eta, zVtx
-    for(int i = 0; i < (int)particle_list.size(); i++) {
-        auto particle = particle_list[i].particle;
-        dist_points[0] = particle.Pt();
-        dist_points[1] = particle.Phi();
-        dist_points[2] = particle.Eta();
-        dist_points[3] = zVtx;
-        fDist->Fill(dist_points);
+    if(TMath::Abs(TPCnSigma) <= 2.0){ // check that kaon passed the TPC nsigma cut
+        passLevel |= TPC_PID_BIT;
     }
-
-}
-
-AliAnalysisTaskLambdaHadronRatio::AliMotherContainer AliAnalysisTaskLambdaHadronRatio::DaughtersToMother(AliAODTrack* track1, AliAODTrack* track2, double mass1, double mass2)
-{
-
-    AliAnalysisTaskLambdaHadronRatio::AliMotherContainer mom;
-    mom.particle.SetPx(track1->Px() + track2->Px());
-    mom.particle.SetPy(track1->Py() + track2->Py());
-    mom.particle.SetPz(track1->Pz() + track2->Pz());
-    mom.particle.SetE(track1->E(mass1) + track2->E(mass2));
-    mom.daughter1ID = track1->GetID();
-    mom.daughter2ID = track2->GetID();
-    return mom;
-
-}
-
-AliAnalysisTaskLambdaHadronRatio::AliMotherContainer AliAnalysisTaskLambdaHadronRatio::RotatedDaughtersToMother(AliAODTrack* track1, AliAODTrack* track2, double mass1, double mass2, double angle)
-{
-
-    AliAnalysisTaskLambdaHadronRatio::AliMotherContainer mom;
-    // Rotating track1
-    TVector3 track1Vector(track1->Px(), track1->Py(), track1->Pz());
-    track1Vector.RotateZ(angle);
-    mom.particle.SetPx(track1Vector(0) + track2->Px());
-    mom.particle.SetPy(track1Vector(1) + track2->Py());
-    mom.particle.SetPz(track1Vector(2) + track2->Pz());
-    mom.particle.SetE(track1->E(mass1) + track2->E(mass2));
-    mom.daughter1ID = track1->GetID();
-    mom.daughter2ID = track2->GetID();
-    return mom;
-
-}
-
-AliAnalysisTaskLambdaHadronRatio::AliMotherContainer AliAnalysisTaskLambdaHadronRatio::FlippedDaughtersToMother(AliAODTrack* track1, AliAODTrack* track2, double mass1, double mass2)
-{
-
-    AliAnalysisTaskLambdaHadronRatio::AliMotherContainer mom;
-    // Flipping track1
-    mom.particle.SetPx(-track1->Px() + track2->Px());
-    mom.particle.SetPy(-track1->Py() + track2->Py());
-    mom.particle.SetPz(track1->Pz() + track2->Pz());
-    mom.particle.SetE(track1->E(mass1) + track2->E(mass2));
-    mom.daughter1ID = track1->GetID();
-    mom.daughter2ID = track2->GetID();
-    return mom;
-
-}
-
-void AliAnalysisTaskLambdaHadronRatio::MakeSameHLambdaCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx)
-{
-
-    double dphi_point[6];
-
-    for(int j = 0; j < (int)trigger_list.size(); j++) {
-        auto trigger = trigger_list[j];
-        dphi_point[0] = trigger->Pt();
-
-        for(int i = 0; i < (int)lambda_list.size(); i++) {
-            auto lambda = lambda_list[i];
-
-            //Make sure trigger isn't one of the daughters of lambda
-            if((trigger->GetID() == lambda.daughter1ID) || (trigger->GetID() == lambda.daughter2ID)) continue;
-
-            dphi_point[1] = lambda.particle.Pt();
-            dphi_point[2] = trigger->Phi() - lambda.particle.Phi();
-
-            if(dphi_point[2] < -TMath::Pi()/2.0) {
-                dphi_point[2] += 2.0*TMath::Pi();
-            }
-            else if(dphi_point[2] > 3.0*TMath::Pi()/2.0) {
-                dphi_point[2] -= 2.0*TMath::Pi();
-            }
-
-            dphi_point[3] = trigger->Eta() - lambda.particle.Eta();
-            dphi_point[4] = lambda.particle.M();
-            dphi_point[5] = zVtx;
-            fDphi->Fill(dphi_point);
-        }
+    if(TMath::Abs(TOFnSigma) <= 2.0){ // check that kaon passed TOF nsigma cut
+        passLevel |= TOF_PID_BIT;
     }
-
+    return passLevel;
 }
 
-void AliAnalysisTaskLambdaHadronRatio::MakeSameHHCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAODTrack*> associated_h_list, THnSparse* fDphi, double zVtx)
-{
-
-    double dphi_point[5];
-
-    for(int j = 0; j < (int)trigger_list.size(); j++) {
-        auto trigger = trigger_list[j];
-
-        dphi_point[0] = trigger->Pt();
-
-        for(int i = 0; i < (int)associated_h_list.size(); i++) {
-            auto associate = associated_h_list[i];
-
-            dphi_point[1] = associate->Pt();
-            dphi_point[2] = trigger->Phi() - associate->Phi();
-
-            if(dphi_point[2] < -TMath::Pi()/2.0) {
-                dphi_point[2] += 2.0*TMath::Pi();
-            }
-            else if(dphi_point[2] > 3.0*TMath::Pi()/2.0) {
-                dphi_point[2] -= 2.0*TMath::Pi();
-            }
-
-            dphi_point[3] = trigger->Eta() - associate->Eta();
-            dphi_point[4] = zVtx;
-            fDphi->Fill(dphi_point);
-        }
+//_______________________________________________________________________
+UInt_t AliAnalysisTaskLambdaHadronEfficiency::PassPionCuts(AliAODTrack *track, Double_t TPCnSigma, Double_t TOFnSigma){
+    //returns the level of cuts that the track passed
+    //cutLevel: 1 = track cuts, 2 = TOF Hit, 4 = TPC PID cut, 8 = TOF PID cut
+    UInt_t passLevel = 0;
+    Bool_t pass = kTRUE;
+    pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
+    pass = pass && (track->Pt() >= 0.15);
+    pass = pass && (track->TestFilterMask(ASSOC_TRK_BIT));
+    pass = pass && (track->GetTPCCrossedRows() > 80);
+    if(pass) passLevel |= TRACK_BIT;    
+    if(TOFnSigma != -999){ //check if there is a TOF signal, but don't care what the signal is
+        passLevel |= TOF_HIT_BIT;
     }
-
+    if(TMath::Abs(TPCnSigma) <= 3.0){ // check that kaon passed the TPC nsigma cut
+        passLevel |= TPC_PID_BIT;
+    }
+    if(TMath::Abs(TOFnSigma) <= 3.0){ // check that kaon passed TOF nsigma cut
+        passLevel |= TOF_PID_BIT;
+    }
+    return passLevel;
 }
 
-void AliAnalysisTaskLambdaHadronRatio::MakeSameTriggerTriggerCorrelations(std::vector<AliAODTrack*> trigger_list, THnSparse* fDphi, double zVtx)
-{
-
-    double dphi_point[5];
-
-    for(int j = 0; j < (int)trigger_list.size(); j++) {
-        auto trigger = trigger_list[j];
-
-        dphi_point[0] = trigger->Pt();
-
-        for(int i = j+1; i < (int)trigger_list.size(); i++) {
-            auto associate = trigger_list[i];
-
-            dphi_point[1] = associate->Pt();
-            dphi_point[2] = trigger->Phi() - associate->Phi();
-
-            if(dphi_point[2] < -TMath::Pi()/2.0) {
-                dphi_point[2] += 2.0*TMath::Pi();
-            }
-            else if(dphi_point[2] > 3.0*TMath::Pi()/2.0) {
-                dphi_point[2] -= 2.0*TMath::Pi();
-            }
-
-            dphi_point[3] = trigger->Eta() - associate->Eta();
-            dphi_point[4] = zVtx;
-            fDphi->Fill(dphi_point);
-        }
+//_______________________________________________________________________
+Bool_t AliAnalysisTaskLambdaHadronEfficiency::PassHadronCuts(AliAODTrack *track, Bool_t isTrigger){
+    //returns the level of cuts that the track passed
+    //cutLevel: 1 = track cuts, 2 = TOF Hit, 4 = TPC PID cut, 8 = TOF PID cut
+    Bool_t pass = kTRUE;
+    pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
+    pass = pass && (track->Pt() >= 0.15);
+    if(isTrigger){
+        pass = pass && (track->TestBit(TRIG_TRK_BIT));
+    }else{
+        pass = pass && (track->TestFilterMask(ASSOC_TRK_BIT));
     }
-
+    return pass;
 }
 
-void AliAnalysisTaskLambdaHadronRatio::MakeMixedHLambdaCorrelations(AliEventPool* fPool, std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list , THnSparse* fDphi, double zVtx)
-{
+//________________________________________________________________________
+void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
-    double dphi_point[6];
-    int numEvents = fPool->GetCurrentNEvents();
-    for(int iEvent = 0; iEvent < numEvents; iEvent++) {
-        TObjArray *tracks = fPool->GetEvent(iEvent);
-        tracks->SetName(Form("%d_Zvtx", (int)zVtx));
-        int numTracks = tracks->GetEntriesFast();
+    //masks for the different cut configurations: (track cuts only), (track + TOF hit), (track + TPC PID), (track + TOF hit + TPC PID), (track + TOF hit + TPC PID + TOF PID)
+    UInt_t maskTrackOnly = TRACK_BIT;
+    UInt_t maskTrackTOF = TRACK_BIT + TOF_HIT_BIT;
+    UInt_t maskTrackTPC = TRACK_BIT + TPC_PID_BIT;
+    UInt_t maskTrackTOFTPC = TRACK_BIT + TOF_HIT_BIT + TPC_PID_BIT;
+    UInt_t maskTrackPID = TRACK_BIT + TOF_HIT_BIT + TPC_PID_BIT + TOF_PID_BIT;
 
-        for(int i = 0; i < numTracks; i++) {
-            AliCFParticle *trigger = (AliCFParticle*) tracks->At(i);
-            if(!trigger) continue;
-            dphi_point[0] = trigger->Pt();
-
-            for(int j = 0; j < (int)lambda_list.size(); j++) {
-                auto lambda = lambda_list[j];
-
-                dphi_point[1] = lambda.particle.Pt();
-                dphi_point[2] = trigger->Phi() - lambda.particle.Phi();
-
-                if(dphi_point[2] < -TMath::Pi()/2.0) {
-                    dphi_point[2] += 2.0*TMath::Pi();
-                }
-                else if(dphi_point[2] > 3.0*TMath::Pi()/2.0) {
-                    dphi_point[2] -= 2.0*TMath::Pi();
-                }
-
-                dphi_point[3] = trigger->Eta() - lambda.particle.Eta();
-                dphi_point[4] = lambda.particle.M();
-                dphi_point[5] = zVtx;
-                fDphi->Fill(dphi_point);
-            }
-        }
+    UInt_t evSelMask=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+    
+    fVevent = dynamic_cast<AliVEvent*>(InputEvent());
+    if (!fVevent) {
+        printf("ERROR: fVEvent not available\n");
+        return;
     }
-}
-
-void AliAnalysisTaskLambdaHadronRatio::MakeMixedHHCorrelations(AliEventPool* fPool, std::vector<AliAODTrack*> associated_h_list, THnSparse* fDphi, double zVtx)
-{
-
-    double dphi_point[5];
-
-    int numEvents = fPool->GetCurrentNEvents();
-
-    for(int iEvent = 0; iEvent < numEvents; iEvent++) {
-        TObjArray *tracks = fPool->GetEvent(iEvent);
-        int numTracks = tracks->GetEntriesFast();
-
-        for(int i = 0; i < numTracks; i++) {
-            AliCFParticle *trigger = (AliCFParticle*) tracks->At(i);
-            dphi_point[0] = trigger->Pt();
-
-            for(int j = 0; j < (int)associated_h_list.size(); j++) {
-                auto associate = associated_h_list[j];
-
-                dphi_point[1] = associate->Pt();
-                dphi_point[2] = trigger->Phi() - associate->Phi();
-
-                if(dphi_point[2] < -TMath::Pi()/2.0) {
-                    dphi_point[2] += 2.0*TMath::Pi();
-                }
-                else if(dphi_point[2] > 3.0*TMath::Pi()/2.0) {
-                    dphi_point[2] -= 2.0*TMath::Pi();
-                }
-
-                dphi_point[3] = trigger->Eta() - associate->Eta();
-                dphi_point[4] = zVtx;
-                fDphi->Fill(dphi_point);
-            }
-        }
-    }
-
-}
-
-void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
-{
-
-    fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-    if(!fAOD){
-        std::cout << "THERE IS NO AOD EVENT, CHECK EVENT HANDLER... ALSO WHERE DOES STANDARD OUT GO WHEN I RUN ON THE GRID??? also is it a good idea to use abort??? Probably not!!" << std::endl;
-        std::abort();
-    }
-
-    fpidResponse = fInputHandler->GetPIDResponse();
-
-
-    //Event cuts
-    TString cent_estimator = "V0A";
-    double multPercentile = 0;
-
-    fMultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
-    if(fMultSelection) multPercentile = fMultSelection->GetMultiplicityPercentile(cent_estimator.Data());
-    else return;
-
-    if(multPercentile < centLow || multPercentile > centHigh) return;
-
-    AliVVertex *prim = fAOD->GetPrimaryVertex();
-    int NcontV = prim->GetNContributors();
-    if(NcontV < 3) return;
-
-    double primZ = prim->GetZ();
-    if(primZ < -10 || primZ > 10) return;
-
-
-    int numTracks = fAOD->GetNumberOfTracks();
-
-    std::vector<AliAODTrack*> unlikelyProton_list;
-    std::vector<AliAODTrack*> unlikelyPion_list;
-    std::vector<AliAODTrack*> proton_list;
-    std::vector<AliAODTrack*> antiProton_list;
-    std::vector<AliAODTrack*> piPlus_list;
-    std::vector<AliAODTrack*> piMinus_list;
-    std::vector<AliAODTrack*> trigger_list;
-    std::vector<AliAODTrack*> associated_h_list;
-    std::vector<AliAODTrack*> all_hadron_list;
-    std::vector<AliAODTrack*> k_list;
-
-    //Trigger list used for event mixing
-    TObjArray* fMixedTrackObjArray = new TObjArray;
-    fMixedTrackObjArray->SetOwner(kTRUE);
-
-    for(int trackNum = 0; trackNum < numTracks; trackNum++) {
+     
     
 
-        AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(trackNum));
-        if(!track) continue;
+    fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+    if (fAOD) {
+        //printf("fAOD available\n");
+        //return;
+    }else{
+        return;
+    }
 
+    ///////////////////
+    //PID initialised//
+    //////////////////
+   fpidResponse = fInputHandler->GetPIDResponse();
 
-        //List for comparison with cuts/filter bits
-        all_hadron_list.push_back(track);
+    if(!fpidResponse){
+        AliFatal("No PID response loaded!");
+    }
+    
+    ////////////////
+    //Event vertex//
+    ///////////////
+    Int_t ntracks = -999;
+    ntracks = fVevent->GetNumberOfTracks();
+    
+    /////////////////
+    //trigger check//
+    /////////////////
+    fVevent->GetFiredTriggerClasses();
+    
+    Int_t trigger = -1;
+    //Multiplicity stuff
+    Double_t multPercentile = 10.0;
+    if (fAOD){
+        //Double_t multiplicity=fAOD->GetHeader()->GetRefMultiplicity();
+        AliAODHeader *header = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+        if(!header) AliFatal("Not a standard AOD");
+        Double_t multiplicity = header->GetRefMultiplicity();
+        /*
+        fMultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
+        if(fMultSelection){
+            multPercentile = fMultSelection->GetMultiplicityPercentile(CENT_ESTIMATOR.Data());
+        }else{
+            return;
+        }
+        //if(multPercentile < MULT_LOW || multPercentile > MULT_HIGH) return;
+        if(multPercentile < 0.0 || multPercentile > 100.0) return;
+        */
+    }
+    
+    fNevents->Fill(0); //all events
+    Double_t Zvertex = -100, Xvertex = -100, Yvertex = -100;
+    const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
+    Double_t NcontV = pVtx->GetNContributors();
+    if(NcontV<3)return;
+    fNevents->Fill(1); //events with 3 tracks
 
-        //Filter for trigger particles
-        bool trigFilter = track->TestBit(AliAODTrack::kIsHybridGCG);
-        if(trigFilter) {
+    Zvertex = pVtx->GetZ();
+    Yvertex = pVtx->GetY();
+    Xvertex = pVtx->GetX();
+    fVtxZ->Fill(Zvertex);
+    fVtxX->Fill(Xvertex);
+    fVtxY->Fill(Yvertex);
 
-            if(track->Pt() > 4 && track->Pt() < 8 TMath::Abs(track->Eta()) < 1) {
-                trigger_list.push_back(track);
-                AliCFParticle *triggerPart = new AliCFParticle(track->Pt(), track->Eta(), track->Phi(), track->Charge(), 0);
-                fMixedTrackObjArray->Add(triggerPart);
-           }
+    fNumTracks->Fill(ntracks);
+
+    ////////////////////
+    //event selection//
+    ///////////////////
+    if(fabs(Zvertex)>10.0)return;
+    fNevents->Fill(2); //events after z vtx cut
+
+    Double_t distPoint[6] = {0., 0., 0., 0., 0., 0.};
+    Double_t singledistPoint[5] = {0., 0., 0., 0., 0.};
+    //Loop over all particles in stack to get real phi, looking for phi->KK
+    //AliMCEvent *fMCEvent = dynamic_cast<AliMCEvent*>(InputEvent());
+    fMCArray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+    if(!fMCArray){
+        AliError("Array of MC particles not found");
+        return;
+    }
+
+    fMCHeader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+    if (!fMCHeader) {
+        AliError("Could not find MC Header in AOD");
+        return;
+    }
+
+    Double_t RA = fMCHeader->GetReactionPlaneAngle();
+    if(RA > TMath::Pi()){
+        RA -= 2.0*TMath::Pi();
+    }else if(RA < -1.0*TMath::Pi()){
+        RA += 2.0*TMath::Pi();
+    }
+    fReactionPlane->Fill(RA);
+
+    //TRandom3* randomGen = new TRandom3();
+    //Double_t randangle = randomGen->Uniform(0.0, 2.0*TMath::Pi());
+
+    UInt_t negPassCuts = 0;
+    UInt_t posPassCuts = 0;
+
+    Int_t negparPDG = 0;
+    Int_t posparPDG = 0;
+    Float_t recoPx = 0.0;
+    Float_t recoPy = 0.0;
+    Float_t recoPz = 0.0;
+    Float_t recoP = 0.0;
+    Float_t recoE = 0.0;
+    Float_t recoM = 0.0;
+    Float_t recoEta = 0.0;
+    Float_t recoY = 0.0;
+    Float_t recoPt = 0.0;
+    Float_t recoPhi = 0.0;
+
+    Int_t motherIndex = 0;
+    Int_t motherPDG = 0;
+    Int_t pdgcode = 0;
+    
+    //loop over tracks to get kaons, find phi daughters and fill Reco Dist
+    for(int itrack = 0; itrack < ntracks; itrack++){
+        AliVParticle *vnegpart = dynamic_cast<AliVParticle*>(fVevent->GetTrack(itrack));
+        AliVTrack *negtrack = dynamic_cast<AliVTrack*>(vnegpart);
+        AliAODTrack *aodnegtrack = dynamic_cast<AliAODTrack*>(vnegpart);
+
+        Int_t tracklabel = aodnegtrack->GetLabel();
+        if(tracklabel < 0) continue;
+    
+        Double_t negTPCnSigma = -999;
+        Double_t negTOFnSigma = -999;
+        if(negtrack->Pt() > 0.15){
+            negTPCnSigma = fpidResponse->NumberOfSigmasTPC(negtrack, AliPID::kKaon);
+            negTOFnSigma = fpidResponse->NumberOfSigmasTOF(negtrack, AliPID::kKaon);
+          /*negTOFnSigma = negtrack->GetTOFsignal();
+            if(negTOFnSigma == 0.0){
+                negTOFnSigma = -999;
+            }
+          */  
         }
 
-        //Filter for associated particles
-
-        bool assocFilter = track->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA);
-        if(assocFilter) {
-
-            if(track->Pt() > 0.15 && TMath::Abs(track->Eta()) < 1) {
-
-                associated_h_list.push_back(track);
-
-                double TPCNSigmaPion = 1000;
-                double TOFNSigmaPion = 1000;
-
-                TPCNSigmaPion = fpidResponse->NumberOfSigmasTPC(track, AliPID::kPion);
-                TOFNSigmaPion = fpidResponse->NumberOfSigmasTOF(track, AliPID::kPion);
-
-                if(TOFNSigmaPion != 1000 && track->Charge() != 1) unlikelyPion_list.push_back(track);
-
-                if(TMath::Abs(TPCNSigmaPion) <= 3 && (TMath::Abs(TOFNSigmaPion) <= 3 || TOFNSigmaPion == 1000)) {
-
-                    if(track->Charge() == 1){
-                        piPlus_list.push_back(track);
+        //Get all single particle distributions
+        AliAODMCParticle* mcpart = (AliAODMCParticle*)fMCArray->At(tracklabel);
+        if(mcpart->IsPhysicalPrimary()){
+            pdgcode = mcpart->GetPdgCode();
+            Bool_t pass = PassHadronCuts(aodnegtrack, kFALSE);
+            //Bool_t trigpass = PassHadronCuts(aodnegtrack, kTRUE);
+            Bool_t trigpass = kFALSE;
+            singledistPoint[0] = aodnegtrack->Pt();
+            singledistPoint[1] = aodnegtrack->Phi();
+            if(singledistPoint[1] > TMath::Pi()){
+                singledistPoint[1] -= 2.0*TMath::Pi();
+            }else if(singledistPoint[1] < -1.0*TMath::Pi()){
+                singledistPoint[1] += 2.0*TMath::Pi();
+            }
+            singledistPoint[2] = aodnegtrack->Eta();
+            singledistPoint[3] = Zvertex;
+            singledistPoint[4] = multPercentile;
+            if(pass){ 
+                if(TMath::Abs(pdgcode) == 321){
+                    Int_t kaonPass = PassKaonCuts(aodnegtrack, negTPCnSigma, negTOFnSigma);
+                    fRecoKDist->Fill(singledistPoint);
+                    fRecoChargedDist->Fill(singledistPoint);
+                    if((kaonPass & maskTrackTOF) == maskTrackTOF){
+                        fTOFKDist->Fill(singledistPoint);
                     }
-                    else {
-                        piMinus_list.push_back(track);
-                    }
+                }else if(TMath::Abs(pdgcode) == 211){
+                    fRecoPiDist->Fill(singledistPoint);
+                    fRecoChargedDist->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 2212){
+                    fRecopDist->Fill(singledistPoint);
+                    fRecoChargedDist->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 11){
+                    fRecoeDist->Fill(singledistPoint);
+                    fRecoChargedDist->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 13){
+                    fRecoMuonDist->Fill(singledistPoint);
+                    fRecoChargedDist->Fill(singledistPoint);
+                }
+            }
+            if(trigpass){
+                if(TMath::Abs(pdgcode) == 321){
+                    Int_t kaonPass = PassKaonCuts(aodnegtrack, negTPCnSigma, negTOFnSigma);
+                    fRecoKTriggerDist->Fill(singledistPoint);
+                    fRecoChargedTriggerDist->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 211){
+                    fRecoPiTriggerDist->Fill(singledistPoint);
+                    fRecoChargedTriggerDist->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 2212){
+                    fRecopTriggerDist->Fill(singledistPoint);
+                    fRecoChargedTriggerDist->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 11){
+                    fRecoeTriggerDist->Fill(singledistPoint);
+                    fRecoChargedTriggerDist->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 13){
+                    fRecoMuonTriggerDist->Fill(singledistPoint);
+                    fRecoChargedTriggerDist->Fill(singledistPoint);
                 }
 
-                double TPCNSigmaProton = 1000;
-                double TOFNSigmaProton = 1000;
+            }
 
+        }
 
-                TPCNSigmaProton = fpidResponse->NumberOfSigmasTPC(track, AliPID::kProton);
-                TOFNSigmaProton = fpidResponse->NumberOfSigmasTOF(track, AliPID::kProton);
+        //GetKaons that came from phi for phi reco
+        negPassCuts = PassKaonCuts(aodnegtrack,  negTPCnSigma, negTOFnSigma);
+        if(negPassCuts == 0) continue;
 
-                if(TOFNSigmaProton != 1000 && track->Charge() == 1) unlikelyProton_list.push_back(track);
+        AliAODMCParticle* mcnegpart = (AliAODMCParticle*)fMCArray->At(tracklabel);
+        negparPDG = mcnegpart->GetPdgCode();
+        if(negparPDG != -321) continue;
 
-                if(TMath::Abs(TPCNSigmaProton) <= 2 && (TMath::Abs(TOFNSigmaProton) <= 2 || TOFNSigmaProton == 1000)) {
+        motherIndex = mcnegpart->GetMother();
+        if(motherIndex < 0) continue;
 
-                    if(track->Charge() == 1){
-                        proton_list.push_back(track);
-                    }
-                    else {
-                        antiProton_list.push_back(track);
-                    }
+        AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(motherIndex);
+        motherPDG = mcmother->GetPdgCode();
+        if(motherPDG != 333) continue;
+
+        for(int jtrack = 0; jtrack < ntracks; jtrack++){
+            AliVParticle *vpospart = dynamic_cast<AliVParticle*>(fVevent->GetTrack(jtrack));
+            AliVTrack *postrack = dynamic_cast<AliVTrack*>(vpospart);
+            AliAODTrack *aodpostrack = dynamic_cast<AliAODTrack*>(vpospart);
+
+            Double_t posTPCnSigma = -999;
+            Double_t posTOFnSigma = -999;
+            if(postrack->Pt() > 0.15){
+                posTPCnSigma = fpidResponse->NumberOfSigmasTPC(postrack, AliPID::kKaon);
+                posTOFnSigma = fpidResponse->NumberOfSigmasTOF(postrack, AliPID::kKaon);
+              /*  posTOFnSigma = postrack->GetTOFsignal();
+                if(posTOFnSigma == 0.0){
+                    posTOFnSigma = -999;
+                }
+              */  
+            }
+
+            posPassCuts = PassKaonCuts(aodpostrack, posTPCnSigma, posTOFnSigma);
+            if(posPassCuts == 0) continue;
+
+            Int_t postracklabel = aodpostrack->GetLabel();
+            if(postracklabel < 0) continue;
+
+            AliAODMCParticle* mcpospart = (AliAODMCParticle*)fMCArray->At(postracklabel);
+            posparPDG = mcpospart->GetPdgCode();
+            if(posparPDG != 321) continue;
+
+            if(mcpospart->GetMother() == motherIndex){
+                recoPx = aodnegtrack->Px() + aodpostrack->Px();
+                recoPy = aodnegtrack->Py() + aodpostrack->Py();
+                recoPz = aodnegtrack->Pz() + aodpostrack->Pz();
+                
+                recoP = TMath::Sqrt(recoPx*recoPx + recoPy*recoPy + recoPz*recoPz);
+                recoE = TMath::Sqrt(aodnegtrack->Px()*aodnegtrack->Px() + aodnegtrack->Py()*aodnegtrack->Py() + aodnegtrack->Pz()*aodnegtrack->Pz() + 0.4937*0.4937) + TMath::Sqrt(aodpostrack->Px()*aodpostrack->Px() + aodpostrack->Py()*aodpostrack->Py() + aodpostrack->Pz()*aodpostrack->Pz() + 0.4937*0.4937);
+                recoM = TMath::Sqrt(recoE*recoE - recoP*recoP);
+                recoPt = TMath::Sqrt(recoPx*recoPx + recoPy*recoPy);
+                recoEta = 0.5*TMath::Log((recoP + recoPz)/(recoP -  recoPz));
+                recoY = 0.5*TMath::Log((recoE + recoPz)/(recoE - recoPz));
+                recoPhi = TMath::ATan2(recoPy, recoPx);
+                if(recoPhi < -TMath::Pi()){
+                    recoPhi += 2.0*TMath::Pi();
+                }else if(recoPhi > TMath::Pi()){
+                    recoPhi -= 2.0*TMath::Pi();
+                }
+                distPoint[0] = recoPt;
+                distPoint[1] = recoPhi;
+                distPoint[2] = recoEta;
+                distPoint[3] = Zvertex;
+                distPoint[4] = recoM;
+                distPoint[5] = multPercentile;
+                
+                fRecoPhiDist->Fill(distPoint);
+                //fill with phi's where daughter kaons pass track cuts
+                if(((negPassCuts & maskTrackOnly) == maskTrackOnly) && ((posPassCuts & maskTrackOnly)== maskTrackOnly)){
+                    fTrackRecoPhiDist->Fill(distPoint);
+                }
+                //fill with phi's where daughter kaons pass track cuts and have a TOF hit
+                if(((negPassCuts & maskTrackTOF) == maskTrackTOF) && ((posPassCuts & maskTrackTOF)== maskTrackTOF)){
+                    fTOFRecoPhiDist->Fill(distPoint);
+                }
+               
+                //fill with phi's where daughter kaons pass track cuts and TPC PID cuts
+                if(((negPassCuts & maskTrackTPC) == maskTrackTPC) && ((posPassCuts & maskTrackTPC)== maskTrackTPC)){
+                    fTPCPIDTrackRecoPhiDist->Fill(distPoint);
+                } 
+                
+                //fill with phi's where daughter kaons pass track cuts and TOF hit and TPC PID cuts 
+                if(((negPassCuts & maskTrackTOFTPC) == maskTrackTOFTPC) && ((posPassCuts & maskTrackTOFTPC)== maskTrackTOFTPC)){
+                    fTPCPIDRecoPhiDist->Fill(distPoint);
                 }
 
-                // double pid_array[7] = {track->P(), track->GetTPCsignal(), track->GetTOFsignal(), TPCNSigmaPion, TOFNSigmaPion, TPCNSigmaProton, TOFNSigmaProton};
-                // fPid->Fill(pid_array);
-            
+                //fill with phi daughter kaons that pass track cuts and pass TOF&TPC PID cuts
+                if(((negPassCuts & maskTrackPID) == maskTrackPID) && ((posPassCuts & maskTrackPID)== maskTrackPID)){
+                    fPIDRecoPhiDist->Fill(distPoint);
+                }
             }
         }
     }
 
-    //Making list of possible lambdas (have to do +/- for proton or pi):
-
-    std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list;
-    std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_signal_region;
-    std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_signal_region_2_4;
-    std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_RotatedPion;
-    std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_RotatedProton;
-    std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_RotatedPi;
-    std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_Flipped;
-    std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_LS;
-
-    // for(int i = 0; i < (int)unlikelyPion_list.size(); i++) {
-    //     for(int j = 0; j < (int) unlikelyProton_list.size(); j++) {
-
-    //         double TPCNSigmaPion = 1000;
-    //         double TOFNSigmaPion = 1000;
-    //         double TPCNSigmaProton = 1000;
-    //         double TOFNSigmaProton = 1000;
-
-    //         TPCNSigmaPion = fpidResponse->NumberOfSigmasTPC(unlikelyPion_list[i], AliPID::kPion);
-    //         TOFNSigmaPion = fpidResponse->NumberOfSigmasTOF(unlikelyPion_list[i], AliPID::kPion);
-    //         TPCNSigmaProton = fpidResponse->NumberOfSigmasTPC(unlikelyProton_list[j], AliPID::kProton);
-    //         TOFNSigmaProton = fpidResponse->NumberOfSigmasTOF(unlikelyProton_list[j], AliPID::kProton);
-
-    //         AliMotherContainer mother = DaughtersToMother(unlikelyPion_list[i], unlikelyProton_list[j], 0.1396, 0.9383);
-    //         double mass = mother.particle.M();
-    //         double pt = mother.particle.Pt();
-
-    //         double signal_array[6] = {TPCNSigmaPion, TOFNSigmaPion, TPCNSigmaProton, TOFNSigmaProton, mass, pt};
-    //         fSignalAnalysis->Fill(signal_array);
-    //     }
-    // }
-
-
-    for(int i = 0; i < (int)piMinus_list.size(); i++) {
-        for(int j = 0; j < (int) proton_list.size(); j++) {
-            AliMotherContainer lambda = DaughtersToMother(piMinus_list[i], proton_list[j], 0.1396, 0.9383);
-            AliMotherContainer lambda_RotatedPi = RotatedDaughtersToMother(piMinus_list[i], proton_list[j], 0.1396, 0.9383, TMath::Pi());
-            AliMotherContainer lambda_Flipped = FlippedDaughtersToMother(piMinus_list[i], proton_list[j], 0.1396, 0.9383);
-            lambda_list.push_back(lambda);
-            lambda_list_RotatedPi.push_back(lambda_RotatedPi);
-            lambda_list_Flipped.push_back(lambda_Flipped);
-
-            AliMotherContainer lambda_Rotated;
-            AliMotherContainer lambda_RotatedProton;
-            for(int k = 1; k < 12; k++) {
-                lambda_Rotated = RotatedDaughtersToMother(piMinus_list[i], proton_list[j], 0.1396, 0.9383, (2*TMath::Pi()*k)/12);
-                lambda_RotatedProton = RotatedDaughtersToMother(proton_list[j], piMinus_list[i], 0.9383, 0.1396, (2*TMath::Pi()*k)/12);
-                lambda_list_RotatedPion.push_back(lambda_Rotated);
-                lambda_list_RotatedProton.push_back(lambda_RotatedProton);
-
+    //loop over MC particles to get original phi and fill Real dist (and real single particle dist
+    
+    for(Int_t imcpart=0; imcpart< fMCArray->GetEntries(); imcpart++){
+        AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)fMCArray->At(imcpart);
+        pdgcode = TMath::Abs(AODMCtrack->GetPdgCode());
+        if(AODMCtrack->IsPhysicalPrimary()){
+            singledistPoint[0] = AODMCtrack->Pt();
+            singledistPoint[1] = AODMCtrack->Phi();
+            if(singledistPoint[1] > TMath::Pi()){
+                singledistPoint[1] -= 2.0*TMath::Pi();
+            }else if(singledistPoint[1] < -1.0*TMath::Pi()){
+                singledistPoint[1] += 2.0*TMath::Pi();
             }
-        }
-    }
-
-    for(int i = 0; i < (int)piPlus_list.size(); i++) {
-        for(int j = 0; j < (int) antiProton_list.size(); j++) {
-            AliMotherContainer lambda = DaughtersToMother(piPlus_list[i], antiProton_list[j], 0.1396, 0.9383);
-            AliMotherContainer lambda_RotatedPi = RotatedDaughtersToMother(piPlus_list[i], antiProton_list[j], 0.1396, 0.9383, TMath::Pi());
-            AliMotherContainer lambda_Flipped = FlippedDaughtersToMother(piPlus_list[i], antiProton_list[j], 0.1396, 0.9383);
-            lambda_list.push_back(lambda);
-            lambda_list_RotatedPi.push_back(lambda_RotatedPi);
-            lambda_list_Flipped.push_back(lambda_Flipped);
-
-            AliMotherContainer lambda_Rotated;
-            AliMotherContainer lambda_RotatedProton;
-            for(int k = 1; k < 12; k++) {
-                lambda_Rotated = RotatedDaughtersToMother(piPlus_list[i], antiProton_list[j], 0.1396, 0.9383, (2*TMath::Pi()*k)/12);
-                lambda_RotatedProton = RotatedDaughtersToMother(antiProton_list[j], piPlus_list[i], 0.9383, 0.1396, (2*TMath::Pi()*k)/12);
-                lambda_list_RotatedPion.push_back(lambda_Rotated);
-                lambda_list_RotatedProton.push_back(lambda_RotatedProton);
-
+            singledistPoint[2] = AODMCtrack->Eta();
+            singledistPoint[3] = Zvertex;
+            singledistPoint[4] = multPercentile;
+            if(TMath::Abs(pdgcode) == 321){
+                fRealKDist->Fill(singledistPoint);
+                fRealChargedDist->Fill(singledistPoint);
+            }else if(TMath::Abs(pdgcode) == 211){
+                fRealPiDist->Fill(singledistPoint);
+                fRealChargedDist->Fill(singledistPoint);
+            }else if(TMath::Abs(pdgcode) == 2212){
+                fRealpDist->Fill(singledistPoint);
+                fRealChargedDist->Fill(singledistPoint);
+            }else if(TMath::Abs(pdgcode) == 11){
+                fRealeDist->Fill(singledistPoint);
+                fRealChargedDist->Fill(singledistPoint);
+            }else if(TMath::Abs(pdgcode) == 13){
+                fRealMuonDist->Fill(singledistPoint);
+                fRealChargedDist->Fill(singledistPoint);
             }
 
         }
-    }
 
-    for(int i = 0; i < (int)piPlus_list.size(); i++) {
-        for(int j = 0; j < (int) proton_list.size(); j++) {
-            if(piPlus_list[i]->GetID() == proton_list[j]->GetID()) continue;
-            AliMotherContainer lambda = DaughtersToMother(piPlus_list[i], proton_list[j], 0.1396, 0.9383);
-            lambda_list_LS.push_back(lambda);
-        }
-    }
+        //select phis
+        if(pdgcode != 333) continue;
+        Int_t indexFirstDaughter = 0, indexSecondDaughter = 0;
+        indexFirstDaughter = AODMCtrack->GetDaughterFirst();
+        indexSecondDaughter = AODMCtrack->GetDaughterLast();
 
-    for(int i = 0; i < (int)piMinus_list.size(); i++) {
-        for(int j = 0; j < (int) antiProton_list.size(); j++) {
-            if(piMinus_list[i]->GetID() == antiProton_list[j]->GetID()) continue;
-            AliMotherContainer lambda = DaughtersToMother(piMinus_list[i], antiProton_list[j], 0.1396, 0.9383);
-            lambda_list_LS.push_back(lambda);
-        }
-    }
+        //indexFirstDaughter = AODMCtrack->GetDaughter(0);
+        //indexSecondDaughter = AODMCtrack->GetDaughter(1);
 
+        if(indexFirstDaughter < 0 || indexSecondDaughter < 0) continue;
+        AliAODMCParticle* firstDaughter = (AliAODMCParticle*)fMCArray->At(indexFirstDaughter);
+        AliAODMCParticle* secondDaughter = (AliAODMCParticle*)fMCArray->At(indexSecondDaughter);
 
-    for(int i = 0; i < (int)lambda_list.size(); i++) {
-        if(lambda_list[i].particle.M() < 1.125 && lambda_list[i].particle.M() > 1.105) {
-            lambda_list_signal_region.push_back(lambda_list[i]);
-            if(lambda_list[i].particle.Pt() < 4 && lambda_list[i].particle.Pt() > 2) {
-                lambda_list_signal_region_2_4.push_back(lambda_list[i]);
+        //select only phi that decay to two kaons
+        if(TMath::Abs(firstDaughter->GetPdgCode()) == 321 && TMath::Abs(secondDaughter->GetPdgCode()) == 321 && (firstDaughter->GetPdgCode())*(secondDaughter->GetPdgCode()) <0 && TMath::Abs(firstDaughter->Eta()) <= 0.8 && TMath::Abs(secondDaughter->Eta()) <= 0.8){
+            distPoint[0] = AODMCtrack->Pt();
+            distPoint[1] = AODMCtrack->Phi();
+            if(distPoint[1] > TMath::Pi()){
+                distPoint[1] -= 2.0*TMath::Pi();
+            }else if(distPoint[1] < -1.0*TMath::Pi()){
+                distPoint[1] += 2.0*TMath::Pi();
             }
-        }
-    }
+            distPoint[2] = AODMCtrack->Eta();
+            distPoint[3] = Zvertex;
+            distPoint[4] = AODMCtrack->GetCalcMass();
+            distPoint[5] = multPercentile;
+            fRealPhiDist->Fill(distPoint);
+        } 
 
-
-    if(trigger_list.size() == 2) {
-
-        // Filling all of our single particle distribution histograms:
-        FillSingleParticleDist(trigger_list, primZ, fTriggerDist);
-        FillSingleParticleDist(associated_h_list, primZ, fAssociatedHDist);
-        FillSingleParticleDist(all_hadron_list, primZ, fLooseDist);
-        FillSingleParticleDist(lambda_list_signal_region, primZ, fLambdaDist);
-
-        // Filling all of our correlation histograms
-        MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambda, primZ);
-        MakeSameHLambdaCorrelations(trigger_list, lambda_list_RotatedPi, fDphiHLambdaRotatedPi, primZ);
-        MakeSameHLambdaCorrelations(trigger_list, lambda_list_Flipped, fDphiHLambdaFlipped, primZ);
-        MakeSameHLambdaCorrelations(trigger_list, lambda_list_RotatedPion, fDphiHLambdaRotated, primZ);
-        MakeSameHLambdaCorrelations(trigger_list, lambda_list_RotatedProton, fDphiHLambdaRotatedProton, primZ);
-        MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHH, primZ);
-        MakeSameTriggerTriggerCorrelations(trigger_list, fDphiTriggerTrigger, primZ);
-        MakeSameHLambdaCorrelations(trigger_list, lambda_list_LS, fDphiHLambdaLS, primZ);
-
-    }
-
-    fTriggersAndLambdasPerEvent_All->Fill(trigger_list.size(), lambda_list_signal_region.size());
-    fTriggersAndLambdasPerEvent_2_4->Fill(trigger_list.size(), lambda_list_signal_region_2_4.size());
-
-
-    if(lambda_list.size() > 0 && associated_h_list.size() > 0) {
-        AliEventPool *fCorPool = fCorPoolMgr->GetEventPool(multPercentile, primZ);
-        if(!fCorPool) {
-            AliFatal(Form("No pool found for multiplicity = %f, zVtx = %f", multPercentile, primZ));
-        }
-
-
-        else {
-            if(fCorPool->IsReady()) {
-                MakeMixedHLambdaCorrelations(fCorPool, lambda_list, fDphiHLambdaMixed, primZ);
-                MakeMixedHLambdaCorrelations(fCorPool, lambda_list_LS, fDphiHLambdaLSMixed, primZ);
-                MakeMixedHHCorrelations(fCorPool, associated_h_list, fDphiHHMixed, primZ);
-                MakeMixedHHCorrelations(fCorPool, trigger_list, fDphiTriggerTriggerMixed, primZ);
+        if(TMath::Abs(firstDaughter->GetPdgCode()) == 321 && TMath::Abs(secondDaughter->GetPdgCode()) == 321 && (firstDaughter->GetPdgCode())*(secondDaughter->GetPdgCode())){
+            distPoint[0] = AODMCtrack->Pt();
+            distPoint[1] = AODMCtrack->Phi();
+            if(distPoint[1] > TMath::Pi()){
+                distPoint[1] -= 2.0*TMath::Pi();
+            }else if(distPoint[1] < -1.0*TMath::Pi()){
+                distPoint[1] += 2.0*TMath::Pi();
             }
-            if(fMixedTrackObjArray->GetEntries() > 0) {
-                fCorPool->UpdatePool(fMixedTrackObjArray);
-            }
-        }
+            distPoint[2] = AODMCtrack->Eta();
+            distPoint[3] = Zvertex;
+            distPoint[4] = AODMCtrack->GetCalcMass();
+            distPoint[5] = multPercentile;
+            fRealNoDecayCutPhiDist->Fill(distPoint);
+        } 
     }
 
     PostData(1, fOutputList);
-
-}
-
-void AliAnalysisTaskLambdaHadronRatio::Terminate(Option_t *option)
+}    
+//________________________________________________________________________
+void AliAnalysisTaskLambdaHadronEfficiency::Terminate(Option_t *) 
 {
+    // Draw result to the screen
+    // Called once at the end of the query
+    printf("terminating task... \n");
+    fOutputList = dynamic_cast<TList*> (GetOutputData(1));
+    if (!fOutputList) {
+        printf("ERROR: Output list not available\n");
+        return;
+    }
+    
 }

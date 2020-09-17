@@ -1,90 +1,118 @@
-#ifndef AliAnalysisTaskLambdaHadronRatio_H
-#define AliAnalysisTaskLambdaHadronRatio_H
+#ifndef AliAnalysisTaskPhiEff_cxx
+#define AliAnalysisTaskPhiEff_cxx
 
-//All relevant AliPhysics includes (this list will continue to grow):
+//QA task for EMCAL electron analysis
+
 #include "AliAnalysisTaskSE.h"
-#include "AliAODTrack.h"
-#include "AliAODHandler.h"
-#include "AliPIDResponse.h"
-#include "AliMultSelection.h"
+#include "AliAODMCHeader.h"
 #include "THnSparse.h"
-#include "TList.h"
-#include "TH1F.h"
-#include "AliAODEvent.h"
-#include "AliAODInputHandler.h"
-#include "AliPID.h"
-#include "TChain.h"
-#include "TVector.h"
-#include "AliEventPoolManager.h"
-#include "AliCFParticle.h"
+#include "TObject.h"
+#include "TRandom3.h"
+#include "AliAODTrack.h"
 
-//These includes probably aren't necessary but I feel like it's proper etiquette
-#include <vector>
-#include <iostream>
+class TH1F;
+class AliEventPoolManager;
+class THnSparse;
+class AliESDEvent;
+class AliAODEvent;
+class AliAODMCParticle;
+class AliMultSelection;
 
-class AliAnalysisTaskLambdaHadronRatio : public AliAnalysisTaskSE {
+class AliAnalysisTaskPhiEff : public AliAnalysisTaskSE {
+public:
+    AliAnalysisTaskPhiEff();
+    AliAnalysisTaskPhiEff(const char *name, Float_t multLow, Float_t multHigh);
+    virtual ~AliAnalysisTaskPhiEff();
+    
+    virtual void   UserCreateOutputObjects();
+    UInt_t PassKaonCuts(AliAODTrack* track, Double_t TPCnSigma, Double_t TOFnSigma);
+    Bool_t PassHadronCuts(AliAODTrack* track, Bool_t isTrigger);
+    virtual void   UserExec(Option_t *option);
+    virtual void   Terminate(Option_t *);
 
- public:
-  AliAnalysisTaskLambdaHadronRatio();
-  AliAnalysisTaskLambdaHadronRatio(const char *name);
-  virtual ~AliAnalysisTaskLambdaHadronRatio();
-  virtual void UserCreateOutputObjects();
-  virtual void UserExec(Option_t* option);
-  virtual void Terminate(Option_t* option);
+    void SetAODAnalysis() { SetBit(kAODanalysis, kTRUE); };
+    void SetESDAnalysis() { SetBit(kAODanalysis, kFALSE); };
+    
+    void SetKaonTrkBit(Int_t kaonbit){ KAON_TRK_BIT = kaonbit; };
+    void SetKaonEtaCut(Float_t eta){ KAON_ETA_CUT = eta; };
+    void SetCentEstimator(TString est){ CENT_ESTIMATOR = est; };
+    void SetTrigTrkBit(UInt_t trkbit) { TRIG_TRK_BIT = trkbit; };
+    void SetAssocTrkBit(UInt_t trkbit) { ASSOC_TRK_BIT = trkbit; };
 
-  struct AliMotherContainer {
-    TLorentzVector particle;
-    int daughter1ID;
-    int daughter2ID;
-  };
+    Bool_t IsAODanalysis() const { return TestBit(kAODanalysis); };
+    
+private:
 
- private:
-  AliAODEvent* fAOD; //!>! input event
-  TList* fOutputList; //!>! output list
+    Float_t MULT_LOW;
+    Float_t MULT_HIGH;
+    Float_t KAON_ETA_CUT;
+    Float_t KAON_TRK_BIT;
+    Float_t ASSOC_TRK_BIT;
+    Float_t TRIG_TRK_BIT;
+    TString CENT_ESTIMATOR;
 
-  AliEventPoolManager *fCorPoolMgr; //!>! correlation pool manager
+    UInt_t TRACK_BIT = 1UL << 0;
+    UInt_t TOF_HIT_BIT = 1UL << 1;
+    UInt_t TPC_PID_BIT = 1UL << 2;
+    UInt_t TOF_PID_BIT = 1UL << 3;
 
-  TH2D* fTriggersAndLambdasPerEvent_All; //!>! triggers and all lambdas per event
-  TH2D* fTriggersAndLambdasPerEvent_2_4; //!>! triggers and 2-4 GeV lambdas per event
+    enum{
+        kAODanalysis = BIT(20),
+    };
+      
+    AliVEvent   *fVevent;  //!event object
+    AliEventPoolManager *fPoolMgr; //! Event pool manager for mixed event
+    AliEventPoolManager *fLSPoolMgr; //! Event pool manager for LS mixed event
+    AliEventPoolManager *fHHPoolMgr; //! Event pool manager for HH
+    AliESDEvent *fESD;    //!ESD object
+    AliAODEvent *fAOD;    //!AOD object
+    AliPIDResponse *fpidResponse; //!pid response
+    AliMultSelection *fMultSelection; //!mult selection
+   
+    TClonesArray* fMCArray; //!
+    AliAODMCHeader* fMCHeader; //!
+    TList       *fOutputList; //!Output list
+    TH1F        *fNevents;//! no of events
+    TH1F        *fNumTracks;//! number of Tracks/evt
+    TH1F        *fVtxZ;//!Vertex z
+    TH1F        *fVtxX;//!Vertex x
+    TH1F        *fVtxY;//!Vertex y
 
-  THnSparseF* fLooseDist;  //!>! single particle all hadron dist (no cuts at all)
-  THnSparseF* fTriggerDist;  //!>! single particle trigger dist
-  THnSparseF* fAssociatedHDist;  //!>! single particle associated hadron dist
-  THnSparseF* fLambdaDist;  //!>! single particle lambda dist
+    THnSparseF  *fRealPhiDist;//! Dist of Real phi
+    THnSparseF  *fRealNoDecayCutPhiDist;//! Dist of Real phi with no check on decay daughter eta
+    THnSparseF  *fRecoPhiDist;//! Dist of Recon phi
+    THnSparseF  *fTrackRecoPhiDist;//! Dist of Recon phi passing track cuts
+    THnSparseF  *fTOFRecoPhiDist;//! Dist of Recon phi passing track cuts + TOF hit
+    THnSparseF  *fTPCPIDTrackRecoPhiDist;//! Dist of Recon phi passing track cuts + TPC PID
+    THnSparseF  *fTPCPIDRecoPhiDist;//! Dist of Recon phi passing track cuts + TOF hit + TPC PID
+    THnSparseF  *fPIDRecoPhiDist;//! Dist of Recon phi passing track cuts + TOF&TPC PID 3 sigma cut
 
-  THnSparseF* fDphiHLambda;  //!>! hadron-lambda correlation hist
-  THnSparseF* fDphiHLambdaRotated;  //!>! hadron-lambda correlation hist with rotated pion
-  THnSparseF* fDphiHLambdaRotatedPi;  //!>! hadron-lambda correlation hist with daughter rotated by pi
-  THnSparseF* fDphiHLambdaRotatedProton;  //!>! hadron-lambda correlation hist with rotated proton
-  THnSparseF* fDphiHLambdaFlipped;  //!>! hadron-lambda correlation hist with flipped pion
-  THnSparseF* fDphiHH;   //!>! hadron-hadron correlation hist
-  THnSparseF* fDphiTriggerTrigger;   //!>! trigger-trigger correlation hist
-  THnSparseF* fDphiHLambdaLS; //!>! hadron-proton+pion like sign correlation hist
-  THnSparseF* fDphiHLambdaMixed; //!>! hadron-lambda mixed correlation hist
-  THnSparseF* fDphiHHMixed; //!>! hadron-hadron mixed correlation hist
-  THnSparseF* fDphiHLambdaLSMixed; //!>! hadron-proton+pion like sign mixed correlation hist
-  THnSparseF* fDphiTriggerTriggerMixed;   //!>! mixed trigger-trigger correlation hist
+    THnSparseF  *fRealChargedDist;//!
+    THnSparseF  *fRealKDist;//!
+    THnSparseF  *fRealPiDist;//!
+    THnSparseF  *fRealeDist;//!
+    THnSparseF  *fRealpDist;//!
+    THnSparseF  *fRealMuonDist;//!
+   
+    THnSparseF  *fRecoChargedDist;//!
+    THnSparseF  *fRecoKDist;//!
+    THnSparseF  *fTOFKDist;//!
+    THnSparseF  *fRecoPiDist;//!
+    THnSparseF  *fRecoeDist;//!
+    THnSparseF  *fRecopDist;//!
+    THnSparseF  *fRecoMuonDist;//!
 
-  // THnSparseF* fPid; //!>! histogram to visualize pid cuts
-  // THnSparseF* fSignalAnalysis; //!>! histogram to analyze signal with nsigma cuts
+    THnSparseF  *fRecoChargedTriggerDist;//!
+    THnSparseF  *fRecoKTriggerDist;//!
+    THnSparseF  *fRecoPiTriggerDist;//!
+    THnSparseF  *fRecoeTriggerDist;//!
+    THnSparseF  *fRecopTriggerDist;//!
+    THnSparseF  *fRecoMuonTriggerDist;//!
 
-  AliPIDResponse *fpidResponse; //!>!pid response
-  AliMultSelection *fMultSelection; //!>!mult selection
+    TH1D        *fReactionPlane;//!
 
-  //hand written functions:
 
-  AliMotherContainer DaughtersToMother(AliAODTrack* track1, AliAODTrack* track2, double mass1, double mass2);
-  AliMotherContainer RotatedDaughtersToMother(AliAODTrack* track1, AliAODTrack* track2, double mass1, double mass2, double angle);
-  AliMotherContainer FlippedDaughtersToMother(AliAODTrack* track1, AliAODTrack* track2, double mass1, double mass2);
-  void FillSingleParticleDist(std::vector<AliAODTrack*> particle_list, double zVtx, THnSparse* fDist);
-  void FillSingleParticleDist(std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> particle_list, double zVtx, THnSparse* fDist);
-  void MakeSameHLambdaCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx);
-  void MakeSameHHCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAODTrack*> associated_h_list, THnSparse* fDphi, double zVtx);
-  void MakeSameTriggerTriggerCorrelations(std::vector<AliAODTrack*> trigger_list, THnSparse* fDphi, double zVtx);
-  void MakeMixedHLambdaCorrelations(AliEventPool *fPool, std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx);
-  void MakeMixedHHCorrelations(AliEventPool *fPool, std::vector<AliAODTrack*> associated_h_list , THnSparse* fDphi, double zVtx);
-
-  ClassDef(AliAnalysisTaskLambdaHadronRatio, 0);
-
+    ClassDef(AliAnalysisTaskPhiEff, 1); 
 };
+
 #endif
