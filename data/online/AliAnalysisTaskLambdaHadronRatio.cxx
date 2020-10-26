@@ -72,7 +72,6 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     fOutputList->SetOwner(true);
 
     //Generating the mixed event pools:
-
     int poolSize = 500;
     int trackDepth = 1000;
 
@@ -410,6 +409,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
         std::cout << "THERE IS NO AOD EVENT, CHECK EVENT HANDLER... ALSO WHERE DOES STANDARD OUT GO WHEN I RUN ON THE GRID??? also is it a good idea to use abort??? Probably not!!" << std::endl;
         std::abort();
     }
+
 
     fpidResponse = fInputHandler->GetPIDResponse();
 

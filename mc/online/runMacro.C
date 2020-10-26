@@ -1,5 +1,6 @@
 #include "TRint.h"
-#include "TSystem.h"
+#include "AliAnalysisTaskLambdaHadronEfficiency.h"
+
 
 void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
@@ -8,7 +9,7 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
    int startIndex = 0;
    int endIndex = 14;
    char* work_dir = "lambda_hadron_efficiency";
-   char* output_dir = "test";
+   char* output_dir = "cent_0_20_try_3";
 
    bool gridTest = false;
    int numTestFiles = 2;
@@ -25,7 +26,7 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   gInterpreter->ProcessLine(Form(".x %s", gSystem->ExpandPathName("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C")));
 
   //SELECTION TASK:
-  AliPhysicsSelectionTask* physSelTask = reinterpret_cast<AliPhysicsSelectionTask*>(gInterpreter->ProcessLine(Form(".x %s(kFALSE, kTRUE)", gSystem->ExpandPathName("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C"))));
+  AliPhysicsSelectionTask* physSelTask = reinterpret_cast<AliPhysicsSelectionTask*>(gInterpreter->ProcessLine(Form(".x %s(kTRUE, kTRUE)", gSystem->ExpandPathName("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C"))));
 
   //PID response:
   gInterpreter->ProcessLine(Form(".x %s(kFALSE)", gSystem->ExpandPathName("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C")));
@@ -34,12 +35,17 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   AliAnalysisTaskLambdaHadronEfficiency *task = reinterpret_cast<AliAnalysisTaskLambdaHadronEfficiency*>(gInterpreter->ExecuteMacro("AddLambdaHadronEfficiencyTask.C"));
 
   if(!manage->InitAnalysis()) return;
-  manage->SetDebugLevel(2);
-  manage->PrintStatus();
-  manage->SetUseProgressBar(1, 25);
+  // manage->SetDebugLevel(2);
+  // manage->PrintStatus();
+  // manage->SetUseProgressBar(1, 25);
 
   if(local) {
-     std::cout << "Cannot run in local mode, no input files available! (set file path)" << std::endl;
+    TChain *chain = new TChain("aodTree");
+    chain->Add("/Users/ryan/alice/sim/pp_5_tev_0340.root");
+    chain->Add("/Users/ryan/alice/sim/pp_5_tev_0342.root");
+    chain->Add("/Users/ryan/alice/sim/pp_5_tev_0368.root");
+    chain->Add("/Users/ryan/alice/sim/pp_5_tev_0369.root");
+    manage->StartAnalysis("local", chain);
   }
 
 
@@ -58,7 +64,7 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
     alienHandler->SetAPIVersion("V1.1x");
     // select the input data
    alienHandler->SetGridDataDir("//alice/sim/2017/LHC17f2b_fast/");
-   alienHandler->SetDataPattern("/AOD/*/*AOD.root");
+   alienHandler->SetDataPattern("/AOD202/*/*AOD.root");
 
     // addding runs
     int runArray[] = {265525, 265521, 265501, 265499, 265435, 265427, 265426, 265425, 265424, 265422, 265421, 265420, 265419, 265388, 265387, 265385, 265384, 265383, 265381, 265378, 265377, 265344, 265343, 265342, 265339, 265338, 265336, 265334, 265332, 265309};
