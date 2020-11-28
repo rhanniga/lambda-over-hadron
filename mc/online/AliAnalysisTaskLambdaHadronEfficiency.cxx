@@ -545,7 +545,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 }else if(TMath::Abs(pdgcode) == 2212){
                     fRecopTriggerDist->Fill(singledistPoint);
                     fRecoChargedTriggerDist->Fill(singledistPoint);
-                }else if(TMath::Abs(pdgcode) == 11){
+            }else if(TMath::Abs(pdgcode) == 11){
                     fRecoeTriggerDist->Fill(singledistPoint);
                     fRecoChargedTriggerDist->Fill(singledistPoint);
                 }else if(TMath::Abs(pdgcode) == 13){
@@ -600,7 +600,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 recoPz = aodnegtrack->Pz() + aodpostrack->Pz();
                 
                 recoP = TMath::Sqrt(recoPx*recoPx + recoPy*recoPy + recoPz*recoPz);
-                recoE = TMath::Sqrt(aodnegtrack->Px()*aodnegtrack->Px() + aodnegtrack->Py()*aodnegtrack->Py() + aodnegtrack->Pz()*aodnegtrack->Pz() + 0.13957*0.13957) + TMath::Sqrt(aodpostrack->Px()*aodpostrack->Px() + aodpostrack->Py()*aodpostrack->Py() + aodpostrack->Pz()*aodpostrack->Pz() + 1.0073*1.0073);
+                recoE = TMath::Sqrt(aodnegtrack->Px()*aodnegtrack->Px() + aodnegtrack->Py()*aodnegtrack->Py() + aodnegtrack->Pz()*aodnegtrack->Pz() + 0.13957*0.13957) + TMath::Sqrt(aodpostrack->Px()*aodpostrack->Px() + aodpostrack->Py()*aodpostrack->Py() + aodpostrack->Pz()*aodpostrack->Pz() + 0.9383*0.9383);
                 recoM = TMath::Sqrt(recoE*recoE - recoP*recoP);
                 recoPt = TMath::Sqrt(recoPx*recoPx + recoPy*recoPy);
                 recoEta = 0.5*TMath::Log((recoP + recoPz)/(recoP -  recoPz));
@@ -732,7 +732,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 recoPz = aodnegtrack->Pz() + aodpostrack->Pz();
                 
                 recoP = TMath::Sqrt(recoPx*recoPx + recoPy*recoPy + recoPz*recoPz);
-                recoE = TMath::Sqrt(aodnegtrack->Px()*aodnegtrack->Px() + aodnegtrack->Py()*aodnegtrack->Py() + aodnegtrack->Pz()*aodnegtrack->Pz() + 1.0073*1.0073) + TMath::Sqrt(aodpostrack->Px()*aodpostrack->Px() + aodpostrack->Py()*aodpostrack->Py() + aodpostrack->Pz()*aodpostrack->Pz() + 0.13957*0.13957);
+                recoE = TMath::Sqrt(aodnegtrack->Px()*aodnegtrack->Px() + aodnegtrack->Py()*aodnegtrack->Py() + aodnegtrack->Pz()*aodnegtrack->Pz() + 0.9383*0.9383) + TMath::Sqrt(aodpostrack->Px()*aodpostrack->Px() + aodpostrack->Py()*aodpostrack->Py() + aodpostrack->Pz()*aodpostrack->Pz() + 0.13957*0.13957);
                 recoM = TMath::Sqrt(recoE*recoE - recoP*recoP);
                 recoPt = TMath::Sqrt(recoPx*recoPx + recoPy*recoPy);
                 recoEta = 0.5*TMath::Log((recoP + recoPz)/(recoP -  recoPz));
