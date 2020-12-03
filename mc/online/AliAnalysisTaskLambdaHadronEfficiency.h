@@ -93,8 +93,10 @@ private:
     THnSparseF  *fRealChargedDist;//!
     THnSparseF  *fRealKDist;//!
     THnSparseF  *fRealPiDist;//!
+    THnSparseF  *fRealPiFromLambdaDist;//!
     THnSparseF  *fRealeDist;//!
     THnSparseF  *fRealpDist;//!
+    THnSparseF  *fRealpFromLambdaDist;//!
     THnSparseF  *fRealMuonDist;//!
    
     THnSparseF  *fRecoChargedDist;//!
@@ -102,8 +104,10 @@ private:
     THnSparseF  *fTOFPiDist;//!
     THnSparseF  *fTOFProtonDist;//!
     THnSparseF  *fRecoPiDist;//!
+    THnSparseF  *fRecoPiFromLambdaDist;//!
     THnSparseF  *fRecoeDist;//!
     THnSparseF  *fRecopDist;//!
+    THnSparseF  *fRecopFromLambdaDist;//!
     THnSparseF  *fRecoMuonDist;//!
 
     THnSparseF  *fRecoChargedTriggerDist;//!

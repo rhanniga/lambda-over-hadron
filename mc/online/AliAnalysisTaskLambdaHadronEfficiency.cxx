@@ -191,8 +191,14 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     fRealPiDist = new THnSparseF("fRealPiDist", "Real Pion distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
     fOutputList->Add(fRealPiDist);
 
+    fRealPiFromLambdaDist = new THnSparseF("fRealPiFromLambdaDist", "Real Pion (from #Lambda) distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fOutputList->Add(fRealPiFromLambdaDist);
+
     fRealpDist = new THnSparseF("fRealpDist", "Real proton distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
     fOutputList->Add(fRealpDist);
+
+    fRealpFromLambdaDist = new THnSparseF("fRealpFromLambdaDist", "Real proton (from #Lambda) distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fOutputList->Add(fRealpFromLambdaDist);
 
     fRealeDist = new THnSparseF("fRealeDist", "Real electron distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
     fOutputList->Add(fRealeDist);
@@ -214,6 +220,12 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
 
     fRecoPiDist = new THnSparseF("fRecoPiDist", "Reco Pion distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
     fOutputList->Add(fRecoPiDist);
+
+    fRecoPiFromLambdaDist = new THnSparseF("fRecoPiFromLambdaDist", "Reco Pion (from #Lambda) distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fOutputList->Add(fRecoPiFromLambdaDist);
+
+    fRecopFromLambdaDist = new THnSparseF("fRecopFromLambdaDist", "Reco proton (from #Lambda) distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fOutputList->Add(fRecopFromLambdaDist);
 
     fRecopDist = new THnSparseF("fRecopDist", "Reco proton distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
     fOutputList->Add(fRecopDist);
@@ -518,6 +530,12 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                     Int_t pionPass = PassPionCuts(aodnegtrack, negTPCnSigma, negTOFnSigma);
                     fRecoPiDist->Fill(singledistPoint);
                     fRecoChargedDist->Fill(singledistPoint);
+                    motherIndex = mcpart->GetMother();
+                    if(motherIndex >= 0) {
+                        AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(motherIndex);
+                        motherPDG = mcmother->GetPdgCode();
+                        if(TMath::Abs(motherPDG) == 3122) fRecoPiFromLambdaDist->Fill(singledistPoint);
+                    } 
                     if((pionPass & maskTrackTOF) == maskTrackTOF){
                         fTOFPiDist->Fill(singledistPoint);
                     }
@@ -527,6 +545,12 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 }else if(TMath::Abs(pdgcode) == 2212){
                     fRecopDist->Fill(singledistPoint);
                     fRecoChargedDist->Fill(singledistPoint);
+                    motherIndex = mcpart->GetMother();
+                    if(motherIndex >= 0) {
+                        AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(motherIndex);
+                        motherPDG = mcmother->GetPdgCode();
+                        if(TMath::Abs(motherPDG) == 3122) fRecopFromLambdaDist->Fill(singledistPoint);
+                    } 
                 }else if(TMath::Abs(pdgcode) == 11){
                     fRecoeDist->Fill(singledistPoint);
                     fRecoChargedDist->Fill(singledistPoint);
@@ -800,9 +824,20 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
             }else if(TMath::Abs(pdgcode) == 211){
                 fRealPiDist->Fill(singledistPoint);
                 fRealChargedDist->Fill(singledistPoint);
+                motherIndex = AODMCtrack->GetMother();
+                if(motherIndex >= 0) {
+                    AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(motherIndex);
+                    motherPDG = mcmother->GetPdgCode();
+                    if(TMath::Abs(motherPDG) == 3122) fRealPiFromLambdaDist->Fill(singledistPoint); 
             }else if(TMath::Abs(pdgcode) == 2212){
                 fRealpDist->Fill(singledistPoint);
                 fRealChargedDist->Fill(singledistPoint);
+                motherIndex = AODMCtrack->GetMother();
+                if(motherIndex >= 0) {
+                    AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(motherIndex);
+                    motherPDG = mcmother->GetPdgCode();
+                    if(TMath::Abs(motherPDG) == 3122) fRealpFromLambdaDist->Fill(singledistPoint);
+                } 
             }else if(TMath::Abs(pdgcode) == 11){
                 fRealeDist->Fill(singledistPoint);
                 fRealChargedDist->Fill(singledistPoint);
