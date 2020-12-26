@@ -7,9 +7,9 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
    //Starting and ending index of the array containing the run numbers, specifies which range to run over
    int startIndex = 0;
-   int endIndex = 14;
+   int endIndex = 0;
    char* work_dir = "lambda_hadron_efficiency";
-   char* output_dir = "fix_proton_mass_0_100";
+   char* output_dir = "even_quicker_check";
 
    bool gridTest = false;
    int numTestFiles = 2;
@@ -41,10 +41,10 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
   if(local) {
     TChain *chain = new TChain("aodTree");
-    chain->Add("/Users/ryan/alice/sim/pp_5_tev_0340.root");
-    chain->Add("/Users/ryan/alice/sim/pp_5_tev_0342.root");
-    chain->Add("/Users/ryan/alice/sim/pp_5_tev_0368.root");
-    chain->Add("/Users/ryan/alice/sim/pp_5_tev_0369.root");
+    chain->Add("/Users/ryan/Wonderland/alice/sim/pp_5_tev_0340.root");
+    chain->Add("/Users/ryan/Wonderland/alice/sim/pp_5_tev_0342.root");
+    chain->Add("/Users/ryan/Wonderland/alice/sim/pp_5_tev_0368.root");
+    chain->Add("/Users/ryan/Wonderland/alice/sim/pp_5_tev_0369.root");
     manage->StartAnalysis("local", chain);
   }
 

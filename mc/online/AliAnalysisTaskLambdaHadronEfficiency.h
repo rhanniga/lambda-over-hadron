@@ -117,6 +117,12 @@ private:
     THnSparseF  *fRecopTriggerDist;//!
     THnSparseF  *fRecoMuonTriggerDist;//!
 
+    THnSparseF  *fRealLambdaDaughterDist;//!
+    THnSparseF  *fRecoLambdaDaughterDist;//!
+
+    TH1F        *fRealLambdasPerEvent;//!
+    TH1F        *fRecoLambdasPerEvent;//!
+
     TH1D        *fReactionPlane;//!
 
 

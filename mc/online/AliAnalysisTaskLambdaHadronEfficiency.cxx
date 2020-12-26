@@ -293,6 +293,24 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     fReactionPlane = new TH1D("fReactionPlane", "Reaction Plane Angle; Angle", 64, -3.14159, 3.14159);
     fOutputList->Add(fReactionPlane);
 
+
+    // pt Lambda, eta Lambda, pt Proton, pt Pion
+    int numBinsDaughters[4] = {128, 128, 128, 128}; 
+    double binsMinDaughters[4] = {0, -2, 0, 0};
+    double binsMaxDaughters[4] = {10, 2, 10, 10};
+
+    fRealLambdaDaughterDist = new THnSparseF("fRealLambdaDaughterDist", "Real Lambda Daughter (p and #pi) distributions", 4, numBinsDaughters, binsMinDaughters, binsMaxDaughters);
+    fOutputList->Add(fRealLambdaDaughterDist);
+
+    fRecoLambdaDaughterDist = new THnSparseF("fRecoLambdaDaughterDist", "Track Cut Reco #Lambda Daughter (p and #pi) distribution", 4, numBinsDaughters, binsMinDaughters, binsMaxDaughters);
+    fOutputList->Add(fRecoLambdaDaughterDist);
+
+    fRealLambdasPerEvent = new TH1F("fRealLambdasPerEvent", "Real Lambdas per Event", 10, 0, 10);
+    fOutputList->Add(fRealLambdasPerEvent);
+
+    fRecoLambdasPerEvent = new TH1F("fRecoLambdasPerEvent", "Reco Lambdas per Event", 10, 0, 10);
+    fOutputList->Add(fRecoLambdasPerEvent);
+
     PostData(1,fOutputList);
 
 }
@@ -492,6 +510,9 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
     Int_t motherIndex = 0;
     Int_t motherPDG = 0;
     Int_t pdgcode = 0;
+
+    int numRealLambdas = 0;
+    int numRecoLambdas = 0;
     
     //first loop over tracks to get pi minuses, find lambda daughters and fill Reco Dist
     for(int itrack = 0; itrack < ntracks; itrack++){
@@ -500,7 +521,14 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         AliAODTrack *aodnegtrack = dynamic_cast<AliAODTrack*>(vnegpart);
 
         Int_t tracklabel = aodnegtrack->GetLabel();
-        if(tracklabel < 0) continue;
+        // std::cout << tracklabel << " is the track label" << std::endl;
+        if(tracklabel < 0) {
+            AliAODMCParticle* part = (AliAODMCParticle*)fMCArray->At(TMath::Abs(tracklabel));
+            // std::cout << part->GetPdgCode() << " is the PDG code" << std::endl;
+            // std::cout << part->GetPdgCode() << std::endl;
+            // std::cout << "hello! the track label is: " << tracklabel << std::endl;
+            continue;
+        }
     
         Double_t negTPCnSigma = -999;
         Double_t negTOFnSigma = -999;
@@ -511,31 +539,26 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
         //Get all single particle distributions
         AliAODMCParticle* mcpart = (AliAODMCParticle*)fMCArray->At(tracklabel);
+        pdgcode = mcpart->GetPdgCode();
+        Bool_t pass = PassHadronCuts(aodnegtrack, kFALSE);
+        Bool_t trigpass = kFALSE;
+        singledistPoint[0] = aodnegtrack->Pt();
+        singledistPoint[1] = aodnegtrack->Phi();
+        if(singledistPoint[1] > TMath::Pi()){
+            singledistPoint[1] -= 2.0*TMath::Pi();
+        }else if(singledistPoint[1] < -1.0*TMath::Pi()){
+            singledistPoint[1] += 2.0*TMath::Pi();
+        }
+        singledistPoint[2] = aodnegtrack->Eta();
+        singledistPoint[3] = Zvertex;
+        singledistPoint[4] = multPercentile;
+
         if(mcpart->IsPhysicalPrimary()){
-            pdgcode = mcpart->GetPdgCode();
-            Bool_t pass = PassHadronCuts(aodnegtrack, kFALSE);
-            Bool_t trigpass = kFALSE;
-            singledistPoint[0] = aodnegtrack->Pt();
-            singledistPoint[1] = aodnegtrack->Phi();
-            if(singledistPoint[1] > TMath::Pi()){
-                singledistPoint[1] -= 2.0*TMath::Pi();
-            }else if(singledistPoint[1] < -1.0*TMath::Pi()){
-                singledistPoint[1] += 2.0*TMath::Pi();
-            }
-            singledistPoint[2] = aodnegtrack->Eta();
-            singledistPoint[3] = Zvertex;
-            singledistPoint[4] = multPercentile;
             if(pass){ 
                 if(TMath::Abs(pdgcode) == 211){
                     Int_t pionPass = PassPionCuts(aodnegtrack, negTPCnSigma, negTOFnSigma);
                     fRecoPiDist->Fill(singledistPoint);
                     fRecoChargedDist->Fill(singledistPoint);
-                    motherIndex = mcpart->GetMother();
-                    if(motherIndex >= 0) {
-                        AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(motherIndex);
-                        motherPDG = mcmother->GetPdgCode();
-                        if(TMath::Abs(motherPDG) == 3122) fRecoPiFromLambdaDist->Fill(singledistPoint);
-                    } 
                     if((pionPass & maskTrackTOF) == maskTrackTOF){
                         fTOFPiDist->Fill(singledistPoint);
                     }
@@ -581,12 +604,31 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
         }
 
-        //Get pions that came from lambda for lambda reco
+        // Get reco pions and protons that came from lambdas (can't be physical primaries)
+        if(pass){ 
+            if(TMath::Abs(pdgcode) == 211){
+                motherIndex = mcpart->GetMother();
+                if(motherIndex >= 0) {
+                    AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(motherIndex);
+                    motherPDG = mcmother->GetPdgCode();
+                    if(TMath::Abs(motherPDG) == 3122) fRecoPiFromLambdaDist->Fill(singledistPoint);
+                } 
+            } else if(TMath::Abs(pdgcode) == 2212){
+                motherIndex = mcpart->GetMother();
+                if(motherIndex >= 0) {
+                    AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(motherIndex);
+                    motherPDG = mcmother->GetPdgCode();
+                    if(TMath::Abs(motherPDG) == 3122) fRecopFromLambdaDist->Fill(singledistPoint);
+                } 
+            }
+        }
+
         negPassCuts = PassPionCuts(aodnegtrack,  negTPCnSigma, negTOFnSigma);
         if(negPassCuts == 0) continue;
 
         AliAODMCParticle* mcnegpart = (AliAODMCParticle*)fMCArray->At(tracklabel);
         negparPDG = mcnegpart->GetPdgCode();
+
         if(negparPDG != -211) continue;
 
         motherIndex = mcnegpart->GetMother();
@@ -644,9 +686,21 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 
                 fRecoLambdaDist->Fill(distPoint);
                 fRecoNormalLambdaDist->Fill(distPoint);
+
+
                 //fill with phi's where daughter kaons pass track cuts
                 if(((negPassCuts & maskTrackOnly) == maskTrackOnly) && ((posPassCuts & maskTrackOnly)== maskTrackOnly)){
                     fTrackRecoLambdaDist->Fill(distPoint);
+                    numRecoLambdas += 1;
+                    if(recoM <= 1.12 && recoM >= 1.11) {
+                        double daughterDistPoint[4];
+                        daughterDistPoint[0] = recoPt;
+                        daughterDistPoint[1] = recoEta;
+                        // THE PION IS THE NEGATIVE TRACK, PROTON IS POSITIVE
+                        daughterDistPoint[2] = aodpostrack->Pt();
+                        daughterDistPoint[3] = aodnegtrack->Pt();
+                        fRecoLambdaDaughterDist->Fill(daughterDistPoint);
+                    }
                 }
                 //fill with phi's where daughter kaons pass track cuts and have a TOF hit
                 if(((negPassCuts & maskTrackTOF) == maskTrackTOF) && ((posPassCuts & maskTrackTOF)== maskTrackTOF)){
@@ -776,9 +830,20 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 
                 fRecoLambdaDist->Fill(distPoint);
                 fRecoAntiLambdaDist->Fill(distPoint);
+
                 //fill with phi's where daughter kaons pass track cuts
                 if(((negPassCuts & maskTrackOnly) == maskTrackOnly) && ((posPassCuts & maskTrackOnly)== maskTrackOnly)){
                     fTrackRecoLambdaDist->Fill(distPoint);
+                    numRecoLambdas += 1;
+                    if(recoM <= 1.12 && recoM >= 1.11) {
+                        double daughterDistPoint[4];
+                        daughterDistPoint[0] = recoPt;
+                        daughterDistPoint[1] = recoEta;
+                        // THE PION IS THE POSITIVE TRACK, ANTIPROTON IS NEGATIVE
+                        daughterDistPoint[2] = aodnegtrack->Pt();
+                        daughterDistPoint[3] = aodpostrack->Pt();
+                        fRecoLambdaDaughterDist->Fill(daughterDistPoint);
+                    }
                 }
                 //fill with phi's where daughter kaons pass track cuts and have a TOF hit
                 if(((negPassCuts & maskTrackTOF) == maskTrackTOF) && ((posPassCuts & maskTrackTOF)== maskTrackTOF)){
@@ -804,48 +869,62 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
     }
 
     //loop over MC particles to get original lambda and fill Real dist (and real single particle dist)
+    int numCharged = 0;
     for(Int_t imcpart=0; imcpart< fMCArray->GetEntries(); imcpart++){
+
         AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)fMCArray->At(imcpart);
         pdgcode = TMath::Abs(AODMCtrack->GetPdgCode());
+
+        singledistPoint[0] = AODMCtrack->Pt();
+        singledistPoint[1] = AODMCtrack->Phi();
+        if(singledistPoint[1] > TMath::Pi()){
+            singledistPoint[1] -= 2.0*TMath::Pi();
+        }else if(singledistPoint[1] < -1.0*TMath::Pi()){
+            singledistPoint[1] += 2.0*TMath::Pi();
+        }
+        singledistPoint[2] = AODMCtrack->Eta();
+        singledistPoint[3] = Zvertex;
+        singledistPoint[4] = multPercentile;
+
         if(AODMCtrack->IsPhysicalPrimary()){
-            singledistPoint[0] = AODMCtrack->Pt();
-            singledistPoint[1] = AODMCtrack->Phi();
-            if(singledistPoint[1] > TMath::Pi()){
-                singledistPoint[1] -= 2.0*TMath::Pi();
-            }else if(singledistPoint[1] < -1.0*TMath::Pi()){
-                singledistPoint[1] += 2.0*TMath::Pi();
-            }
-            singledistPoint[2] = AODMCtrack->Eta();
-            singledistPoint[3] = Zvertex;
-            singledistPoint[4] = multPercentile;
             if(TMath::Abs(pdgcode) == 321){
                 fRealKDist->Fill(singledistPoint);
                 fRealChargedDist->Fill(singledistPoint);
+                numCharged += 1;
             }else if(TMath::Abs(pdgcode) == 211){
                 fRealPiDist->Fill(singledistPoint);
                 fRealChargedDist->Fill(singledistPoint);
-                motherIndex = AODMCtrack->GetMother();
-                if(motherIndex >= 0) {
-                    AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(motherIndex);
-                    motherPDG = mcmother->GetPdgCode();
-                    if(TMath::Abs(motherPDG) == 3122) fRealPiFromLambdaDist->Fill(singledistPoint); 
+                numCharged += 1;
             }else if(TMath::Abs(pdgcode) == 2212){
                 fRealpDist->Fill(singledistPoint);
                 fRealChargedDist->Fill(singledistPoint);
-                motherIndex = AODMCtrack->GetMother();
-                if(motherIndex >= 0) {
-                    AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(motherIndex);
-                    motherPDG = mcmother->GetPdgCode();
-                    if(TMath::Abs(motherPDG) == 3122) fRealpFromLambdaDist->Fill(singledistPoint);
-                } 
+                numCharged += 1;
             }else if(TMath::Abs(pdgcode) == 11){
                 fRealeDist->Fill(singledistPoint);
                 fRealChargedDist->Fill(singledistPoint);
+                numCharged += 1;
             }else if(TMath::Abs(pdgcode) == 13){
                 fRealMuonDist->Fill(singledistPoint);
                 fRealChargedDist->Fill(singledistPoint);
+                numCharged += 1;
             }
 
+        }
+
+        // Get protons and pions that came from lambdas (would not be physical primaries) 
+        if(TMath::Abs(pdgcode) == 211){
+            motherIndex = AODMCtrack->GetMother();
+            if(motherIndex >= 0) {
+                AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(motherIndex);
+                motherPDG = mcmother->GetPdgCode();
+                if(TMath::Abs(motherPDG) == 3122) fRealPiFromLambdaDist->Fill(singledistPoint);
+            } 
+        } else if(TMath::Abs(pdgcode) == 2212){
+            if(motherIndex >= 0) {
+                AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(motherIndex);
+                motherPDG = mcmother->GetPdgCode();
+                if(TMath::Abs(motherPDG) == 3122) fRealpFromLambdaDist->Fill(singledistPoint);
+            } 
         }
 
         //select phis
@@ -861,6 +940,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         //select only lambda that decay to p-pi
         if(((TMath::Abs(firstDaughter->GetPdgCode()) == 211 && TMath::Abs(secondDaughter->GetPdgCode()) == 2212) ||
             (TMath::Abs(firstDaughter->GetPdgCode()) == 2212 && TMath::Abs(secondDaughter->GetPdgCode()) == 211)) && (firstDaughter->GetPdgCode())*(secondDaughter->GetPdgCode()) < 0 && TMath::Abs(firstDaughter->Eta()) <= 0.8 && TMath::Abs(secondDaughter->Eta()) <= 0.8){
+
             distPoint[0] = AODMCtrack->Pt();
             distPoint[1] = AODMCtrack->Phi();
             if(distPoint[1] > TMath::Pi()){
@@ -877,6 +957,9 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
         if(((TMath::Abs(firstDaughter->GetPdgCode()) == 211 && TMath::Abs(secondDaughter->GetPdgCode()) == 2212) ||
             (TMath::Abs(firstDaughter->GetPdgCode()) == 2212 && TMath::Abs(secondDaughter->GetPdgCode()) == 211)) && (firstDaughter->GetPdgCode())*(secondDaughter->GetPdgCode()) < 0){
+
+
+            numRealLambdas += 1;
             distPoint[0] = AODMCtrack->Pt();
             distPoint[1] = AODMCtrack->Phi();
             if(distPoint[1] > TMath::Pi()){
@@ -889,8 +972,25 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
             distPoint[4] = AODMCtrack->GetCalcMass();
             distPoint[5] = multPercentile;
             fRealNoDecayCutLambdaDist->Fill(distPoint);
+
+
+            double daughterDistPoint[4];
+            daughterDistPoint[0] = AODMCtrack->Pt();
+            daughterDistPoint[1] = AODMCtrack->Eta();
+            if(TMath::Abs(firstDaughter->GetPdgCode()) == 211) {
+                daughterDistPoint[2] = secondDaughter->Pt();
+                daughterDistPoint[3] = firstDaughter->Pt();
+            }
+            else {
+                daughterDistPoint[2] = firstDaughter->Pt();
+                daughterDistPoint[3] = secondDaughter->Pt();
+            }
+            fRealLambdaDaughterDist->Fill(daughterDistPoint);
         } 
     }
+
+    fRealLambdasPerEvent->Fill(numRealLambdas);
+    fRecoLambdasPerEvent->Fill(numRecoLambdas);
 
     PostData(1, fOutputList);
 }    
