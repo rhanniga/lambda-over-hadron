@@ -275,8 +275,21 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     fRecoAntiLambdaDist = new THnSparseF("fRecoAntiLambdaDist", "Reco #Lambda (anti) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
     fOutputList->Add(fRecoAntiLambdaDist);
 
-    fTrackRecoLambdaDist = new THnSparseF("fTrackRecoLambdaDist", "Track Cut Reco #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.",6, numbins, minval, maxval);
+    fTrackRecoLambdaDist = new THnSparseF("fTrackRecoLambdaDist", "Track Eta, Pt, FilterMask and Crossed Rows Cut Reco #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.",6, numbins, minval, maxval);
     fOutputList->Add(fTrackRecoLambdaDist);
+
+    fTrackEtaRecoLambdaDist = new THnSparseF("fTrackEtaRecoLambdaDist", "Track Eta Cut (< 0.8) Reco #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.",6, numbins, minval, maxval);
+    fOutputList->Add(fTrackEtaRecoLambdaDist);
+
+    fTrackEtaPtRecoLambdaDist = new THnSparseF("fTrackEtaPtRecoLambdaDist", "Track Eta and Pt Cut (< 0.8, > 0.15 GeV) Reco #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.",6, numbins, minval, maxval);
+    fOutputList->Add(fTrackEtaPtRecoLambdaDist);
+
+    fTrackEtaPtFilterRecoLambdaDist = new THnSparseF("fTrackEtaPtFilterRecoLambdaDist", "Track Eta, Pt and Filtermask Cut (< 0.8, > 0.15 GeV, Filter mask = 16) Reco #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.",6, numbins, minval, maxval);
+    fOutputList->Add(fTrackEtaPtFilterRecoLambdaDist);
+
+    // THIS SHOULD BE THE SAME AS fTrackRecoLambdaDist
+    fTrackEtaPtFilterRowsRecoLambdaDist = new THnSparseF("fTrackEtaPtFilterRowsRecoLambdaDist", "Track Eta, Pt, Filtermask and rows Cut (< 0.8, > 0.15 GeV, Filter mask = 16, rows > 80) Reco #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.",6, numbins, minval, maxval);
+    fOutputList->Add(fTrackEtaPtFilterRowsRecoLambdaDist);
 
     fTOFRecoLambdaDist = new THnSparseF("fTOFRecoLambdaDist","Track Cut & TOF hit Reco #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.",6, numbins, minval, maxval);
     fOutputList->Add(fTOFRecoLambdaDist);
@@ -335,6 +348,12 @@ UInt_t AliAnalysisTaskLambdaHadronEfficiency::PassProtonCuts(AliAODTrack *track,
     if(TMath::Abs(TOFnSigma) <= 2.0){ // check that kaon passed TOF nsigma cut
         passLevel |= TOF_PID_BIT;
     }
+
+    if(TMath::Abs(track->Eta()) <= 0.8) passLevel |= ETA_BIT;
+    if(track->Pt() >= 0.15) passLevel |= PT_BIT;
+    if(track->TestFilterMask(ASSOC_TRK_BIT)) passLevel |= MASK_BIT;
+    if(track->GetTPCCrossedRows() > 80) passLevel |= ROWS_BIT;
+
     return passLevel;
 }
 
@@ -358,6 +377,12 @@ UInt_t AliAnalysisTaskLambdaHadronEfficiency::PassPionCuts(AliAODTrack *track, D
     if(TMath::Abs(TOFnSigma) <= 3.0){ // check that kaon passed TOF nsigma cut
         passLevel |= TOF_PID_BIT;
     }
+
+    if(TMath::Abs(track->Eta()) <= 0.8) passLevel |= ETA_BIT;
+    if(track->Pt() >= 0.15) passLevel |= PT_BIT;
+    if(track->TestFilterMask(ASSOC_TRK_BIT)) passLevel |= MASK_BIT;
+    if(track->GetTPCCrossedRows() > 80) passLevel |= ROWS_BIT;
+
     return passLevel;
 }
 
@@ -380,6 +405,10 @@ Bool_t AliAnalysisTaskLambdaHadronEfficiency::PassHadronCuts(AliAODTrack *track,
 void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
     //masks for the different cut configurations: (track cuts only), (track + TOF hit), (track + TPC PID), (track + TOF hit + TPC PID), (track + TOF hit + TPC PID + TOF PID)
+    UInt_t maskEta = ETA_BIT;
+    UInt_t maskEtaPt = ETA_BIT + PT_BIT;
+    UInt_t maskEtaPtMask = ETA_BIT + PT_BIT + MASK_BIT;
+    UInt_t maskEtaPtMaskRows = ETA_BIT + PT_BIT + MASK_BIT + ROWS_BIT;
     UInt_t maskTrackOnly = TRACK_BIT;
     UInt_t maskTrackTOF = TRACK_BIT + TOF_HIT_BIT;
     UInt_t maskTrackTPC = TRACK_BIT + TPC_PID_BIT;
@@ -702,6 +731,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                         fRecoLambdaDaughterDist->Fill(daughterDistPoint);
                     }
                 }
+
                 //fill with phi's where daughter kaons pass track cuts and have a TOF hit
                 if(((negPassCuts & maskTrackTOF) == maskTrackTOF) && ((posPassCuts & maskTrackTOF)== maskTrackTOF)){
                     fTOFRecoLambdaDist->Fill(distPoint);
@@ -721,6 +751,31 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 if(((negPassCuts & maskTrackPID) == maskTrackPID) && ((posPassCuts & maskTrackPID)== maskTrackPID)){
                     fPIDRecoLambdaDist->Fill(distPoint);
                 }
+
+                // Fill with lambdas whose daughters pass eta cuts
+                if(((negPassCuts & maskEta) == maskEta) && ((posPassCuts & maskEta)== maskEta)){
+                    fTrackEtaRecoLambdaDist->Fill(distPoint);
+                }
+
+                // Fill with lambdas whose daughters pass eta and pt cuts
+                if(((negPassCuts & maskEtaPt) == maskEtaPt) && ((posPassCuts & maskEtaPt)== maskEtaPt)){
+                    std::cout << (negPassCuts & maskTrackOnly) << " " << (posPassCuts & maskTrackOnly) << std::endl;
+                    fTrackEtaPtRecoLambdaDist->Fill(distPoint);
+                }
+
+                // Fill with lambdas whose daughters pass eta and pt cuts and filtermask cuts
+                if(((negPassCuts & maskEtaPtMask) == maskEtaPtMask) && ((posPassCuts & maskEtaPtMask)== maskEtaPtMask)){
+                    std::cout << (negPassCuts & maskTrackOnly) << " " << (posPassCuts & maskTrackOnly) << std::endl;
+                    std::cout << "neg cuts: " << negPassCuts << "; pos cuts: " << posPassCuts << std::endl;
+                    fTrackEtaPtFilterRecoLambdaDist->Fill(distPoint);
+                }
+
+                // Fill with lambdas whose daughters pass eta and pt cuts and filtermask cuts and crossed rows
+                // NOTE: This should completely match the original track cut distribution
+                if(((negPassCuts & maskEtaPtMaskRows) == maskEtaPtMaskRows) && ((posPassCuts & maskEtaPtMaskRows)== maskEtaPtMaskRows)){
+                    fTrackEtaPtFilterRowsRecoLambdaDist->Fill(distPoint);
+                }
+
             }
         }
     }
@@ -863,6 +918,30 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 //fill with phi daughter kaons that pass track cuts and pass TOF&TPC PID cuts
                 if(((negPassCuts & maskTrackPID) == maskTrackPID) && ((posPassCuts & maskTrackPID)== maskTrackPID)){
                     fPIDRecoLambdaDist->Fill(distPoint);
+                }
+
+                // Fill with lambdas whose daughters pass eta cuts
+                if(((negPassCuts & maskEta) == maskEta) && ((posPassCuts & maskEta)== maskEta)){
+                    fTrackEtaRecoLambdaDist->Fill(distPoint);
+                }
+
+                // Fill with lambdas whose daughters pass eta and pt cuts
+                if(((negPassCuts & maskEtaPt) == maskEtaPt) && ((posPassCuts & maskEtaPt)== maskEtaPt)){
+                    std::cout << (negPassCuts & maskTrackOnly) << " " << (posPassCuts & maskTrackOnly) << std::endl;
+                    fTrackEtaPtRecoLambdaDist->Fill(distPoint);
+                }
+
+                // Fill with lambdas whose daughters pass eta and pt cuts and filtermask cuts
+                if(((negPassCuts & maskEtaPtMask) == maskEtaPtMask) && ((posPassCuts & maskEtaPtMask)== maskEtaPtMask)){
+                    std::cout << (negPassCuts & maskTrackOnly) << " " << (posPassCuts & maskTrackOnly) << std::endl;
+                    std::cout << "neg cuts: " << negPassCuts << "; pos cuts: " << posPassCuts << std::endl;
+                    fTrackEtaPtFilterRecoLambdaDist->Fill(distPoint);
+                }
+
+                // Fill with lambdas whose daughters pass eta and pt cuts and filtermask cuts and crossed rows
+                // NOTE: This should completely match the original track cut distribution
+                if(((negPassCuts & maskEtaPtMaskRows) == maskEtaPtMaskRows) && ((posPassCuts & maskEtaPtMaskRows)== maskEtaPtMaskRows)){
+                    fTrackEtaPtFilterRowsRecoLambdaDist->Fill(distPoint);
                 }
             }
         }

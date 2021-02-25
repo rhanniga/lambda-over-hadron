@@ -56,6 +56,10 @@ private:
     UInt_t TOF_HIT_BIT = 1UL << 1;
     UInt_t TPC_PID_BIT = 1UL << 2;
     UInt_t TOF_PID_BIT = 1UL << 3;
+    UInt_t ETA_BIT = 1UL << 4;
+    UInt_t PT_BIT = 1UL << 5;
+    UInt_t MASK_BIT = 1UL << 6;
+    UInt_t ROWS_BIT = 1UL << 7;
 
     enum{
         kAODanalysis = BIT(20),
@@ -89,6 +93,10 @@ private:
     THnSparseF  *fTPCPIDTrackRecoLambdaDist;//! Dist of Recon lambda passing track cuts + TPC PID
     THnSparseF  *fTPCPIDRecoLambdaDist;//! Dist of Recon lambda passing track cuts + TOF hit + TPC PID
     THnSparseF  *fPIDRecoLambdaDist;//! Dist of Recon lambda passing track cuts + TOF&TPC PID 3 sigma cut
+    THnSparseF  *fTrackEtaRecoLambdaDist;//! Dist of Recon lambda with daughters passing eta cuts
+    THnSparseF  *fTrackEtaPtRecoLambdaDist;//! Dist of Recon lambda with daughters passing eta and pt cuts
+    THnSparseF  *fTrackEtaPtFilterRecoLambdaDist;//! Dist of Recon lambda with daughters passing eta, pt, and filtermask cuts
+    THnSparseF  *fTrackEtaPtFilterRowsRecoLambdaDist;//! Dist of Recon lambda with daughters passing eta, pt, filtermask and TPC crossed rows cuts
 
     THnSparseF  *fRealChargedDist;//!
     THnSparseF  *fRealKDist;//!
