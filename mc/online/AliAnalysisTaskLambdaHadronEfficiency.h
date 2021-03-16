@@ -131,6 +131,8 @@ private:
     TH1F        *fRealLambdasPerEvent;//!
     TH1F        *fRecoLambdasPerEvent;//!
 
+    TH2D        *fRecoVsRealLambdaPtDist;//!
+
     TH1D        *fReactionPlane;//!
 
 

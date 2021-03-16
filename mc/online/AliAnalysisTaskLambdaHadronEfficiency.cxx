@@ -176,6 +176,9 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     
     fVtxX = new TH1F("fVtxX","X vertex position;Vtx_{x};counts",1000,-50,50);
     fOutputList->Add(fVtxX);
+
+    fRecoVsRealLambdaPtDist = new TH2D("fRecoVsRealLambdaPtDist", "Reco vs. Real #Lambda p_{T} dist", 100, 0, 10, 100, 0, 10);
+    fOutputList->Add(fRecoVsRealLambdaPtDist);
     
     // Single Particle and inclusive charged hadron histos
     Int_t numbinsSingle[5] = {95, 64, 64, 10, 10};
@@ -653,7 +656,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         }
 
         negPassCuts = PassPionCuts(aodnegtrack,  negTPCnSigma, negTOFnSigma);
-        if(negPassCuts == 0) continue;
+        // if(negPassCuts == 0) continue;
 
         AliAODMCParticle* mcnegpart = (AliAODMCParticle*)fMCArray->At(tracklabel);
         negparPDG = mcnegpart->GetPdgCode();
@@ -680,7 +683,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
             }
 
             posPassCuts = PassProtonCuts(aodpostrack, posTPCnSigma, posTOFnSigma);
-            if(posPassCuts == 0) continue;
+            // if(posPassCuts == 0) continue;
 
             Int_t postracklabel = aodpostrack->GetLabel();
             if(postracklabel < 0) continue;
@@ -716,6 +719,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 fRecoLambdaDist->Fill(distPoint);
                 fRecoNormalLambdaDist->Fill(distPoint);
 
+                fRecoVsRealLambdaPtDist->Fill(recoPt, mcmother->Pt());
 
                 //fill with phi's where daughter kaons pass track cuts
                 if(((negPassCuts & maskTrackOnly) == maskTrackOnly) && ((posPassCuts & maskTrackOnly)== maskTrackOnly)){
@@ -759,14 +763,11 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
                 // Fill with lambdas whose daughters pass eta and pt cuts
                 if(((negPassCuts & maskEtaPt) == maskEtaPt) && ((posPassCuts & maskEtaPt)== maskEtaPt)){
-                    std::cout << (negPassCuts & maskTrackOnly) << " " << (posPassCuts & maskTrackOnly) << std::endl;
                     fTrackEtaPtRecoLambdaDist->Fill(distPoint);
                 }
 
                 // Fill with lambdas whose daughters pass eta and pt cuts and filtermask cuts
                 if(((negPassCuts & maskEtaPtMask) == maskEtaPtMask) && ((posPassCuts & maskEtaPtMask)== maskEtaPtMask)){
-                    std::cout << (negPassCuts & maskTrackOnly) << " " << (posPassCuts & maskTrackOnly) << std::endl;
-                    std::cout << "neg cuts: " << negPassCuts << "; pos cuts: " << posPassCuts << std::endl;
                     fTrackEtaPtFilterRecoLambdaDist->Fill(distPoint);
                 }
 
@@ -824,7 +825,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
         //Get pions that came from lambda for lambda reco
         negPassCuts = PassProtonCuts(aodnegtrack,  negTPCnSigma, negTOFnSigma);
-        if(negPassCuts == 0) continue;
+        // if(negPassCuts == 0) continue;
 
         AliAODMCParticle* mcnegpart = (AliAODMCParticle*)fMCArray->At(tracklabel);
         negparPDG = mcnegpart->GetPdgCode();
@@ -850,7 +851,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
             }
 
             posPassCuts = PassPionCuts(aodpostrack, posTPCnSigma, posTOFnSigma);
-            if(posPassCuts == 0) continue;
+            // if(posPassCuts == 0) continue;
 
             Int_t postracklabel = aodpostrack->GetLabel();
             if(postracklabel < 0) continue;
@@ -885,6 +886,8 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 
                 fRecoLambdaDist->Fill(distPoint);
                 fRecoAntiLambdaDist->Fill(distPoint);
+
+                fRecoVsRealLambdaPtDist->Fill(recoPt, mcmother->Pt());
 
                 //fill with phi's where daughter kaons pass track cuts
                 if(((negPassCuts & maskTrackOnly) == maskTrackOnly) && ((posPassCuts & maskTrackOnly)== maskTrackOnly)){
@@ -927,14 +930,11 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
                 // Fill with lambdas whose daughters pass eta and pt cuts
                 if(((negPassCuts & maskEtaPt) == maskEtaPt) && ((posPassCuts & maskEtaPt)== maskEtaPt)){
-                    std::cout << (negPassCuts & maskTrackOnly) << " " << (posPassCuts & maskTrackOnly) << std::endl;
                     fTrackEtaPtRecoLambdaDist->Fill(distPoint);
                 }
 
                 // Fill with lambdas whose daughters pass eta and pt cuts and filtermask cuts
                 if(((negPassCuts & maskEtaPtMask) == maskEtaPtMask) && ((posPassCuts & maskEtaPtMask)== maskEtaPtMask)){
-                    std::cout << (negPassCuts & maskTrackOnly) << " " << (posPassCuts & maskTrackOnly) << std::endl;
-                    std::cout << "neg cuts: " << negPassCuts << "; pos cuts: " << posPassCuts << std::endl;
                     fTrackEtaPtFilterRecoLambdaDist->Fill(distPoint);
                 }
 
@@ -952,7 +952,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
     for(Int_t imcpart=0; imcpart< fMCArray->GetEntries(); imcpart++){
 
         AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)fMCArray->At(imcpart);
-        pdgcode = TMath::Abs(AODMCtrack->GetPdgCode());
+        pdgcode = AODMCtrack->GetPdgCode();
 
         singledistPoint[0] = AODMCtrack->Pt();
         singledistPoint[1] = AODMCtrack->Phi();
