@@ -97,6 +97,8 @@ private:
     THnSparseF  *fTrackEtaPtRecoLambdaDist;//! Dist of Recon lambda with daughters passing eta and pt cuts
     THnSparseF  *fTrackEtaPtFilterRecoLambdaDist;//! Dist of Recon lambda with daughters passing eta, pt, and filtermask cuts
     THnSparseF  *fTrackEtaPtFilterRowsRecoLambdaDist;//! Dist of Recon lambda with daughters passing eta, pt, filtermask and TPC crossed rows cuts
+    THnSparseF  *fDuplicatePion;//! Dist of track qual stuff for pions from lambda
+    THnSparseF  *fDuplicateProton;//! Dist of track qual stuff for protons from (same) lambda
 
     THnSparseF  *fRealChargedDist;//!
     THnSparseF  *fRealKDist;//!

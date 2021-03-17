@@ -327,6 +327,17 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     fRecoLambdasPerEvent = new TH1F("fRecoLambdasPerEvent", "Reco Lambdas per Event", 10, 0, 10);
     fOutputList->Add(fRecoLambdasPerEvent);
 
+    // duplicate track checks (crossed rows, clusters, filtermask)
+    int numBinsDuplicate[3] = {145, 100, 1000};
+    int binsMinDuplicate[3] = {0, 0, 0};
+    int binsMaxDuplicate[3] = {145, 100, 1000};
+
+    fDuplicatePion = new THnSparseF("fDuplicatePion", "Duplicate Pion track parameters", numBinsDuplicate, binsMinDuplicate, binsMaxDuplicate);
+    fOutputList->Add(fDuplicatePion);
+
+    fDuplicateProton = new THnSparseF("fDuplicateProton", "Duplicate Proton track parameters", numBinsDuplicate, binsMinDuplicate, binsMaxDuplicate);
+    fOutputList->Add(fDuplicateProton);
+
     PostData(1,fOutputList);
 
 }
@@ -656,7 +667,6 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         }
 
         negPassCuts = PassPionCuts(aodnegtrack,  negTPCnSigma, negTOFnSigma);
-        // if(negPassCuts == 0) continue;
 
         AliAODMCParticle* mcnegpart = (AliAODMCParticle*)fMCArray->At(tracklabel);
         negparPDG = mcnegpart->GetPdgCode();
@@ -683,7 +693,6 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
             }
 
             posPassCuts = PassProtonCuts(aodpostrack, posTPCnSigma, posTOFnSigma);
-            // if(posPassCuts == 0) continue;
 
             Int_t postracklabel = aodpostrack->GetLabel();
             if(postracklabel < 0) continue;
@@ -693,6 +702,13 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
             if(posparPDG != 2212) continue;
 
             if(mcpospart->GetMother() == motherIndex){
+
+                float pionParams[3] = {negtrack->GetTPCNCrossedRows(), negtrack->GetNumberOfITSClusters(), negtrack->GetFilterMask()};
+                float protonParams[3] = {postrack->GetTPCNCrossedRows(), postrack->GetNumberOfITSClusters(), postrack->GetFilterMask()};
+
+                fDuplicatePion->Fill(pionParams);
+                fDuplicateProton->Fill(protonParams);
+
                 recoPx = aodnegtrack->Px() + aodpostrack->Px();
                 recoPy = aodnegtrack->Py() + aodpostrack->Py();
                 recoPz = aodnegtrack->Pz() + aodpostrack->Pz();
@@ -825,7 +841,6 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
         //Get pions that came from lambda for lambda reco
         negPassCuts = PassProtonCuts(aodnegtrack,  negTPCnSigma, negTOFnSigma);
-        // if(negPassCuts == 0) continue;
 
         AliAODMCParticle* mcnegpart = (AliAODMCParticle*)fMCArray->At(tracklabel);
         negparPDG = mcnegpart->GetPdgCode();
