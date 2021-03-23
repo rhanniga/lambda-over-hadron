@@ -269,17 +269,23 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     fRealNoDecayCutLambdaDist = new THnSparseF("fRealNoDecayCutLambdaDist", "Real #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{KK};Multiplicity Pctl.", 6, numbins, minval, maxval);
     fOutputList->Add(fRealNoDecayCutLambdaDist);
 
+    fRecoTotalLambdaDist = new THnSparseF("fRecoTotalLambdaDist", "Reco (#Lambda + #bar{#Lambda}) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fOutputList->Add(fRecoTotalLambdaDist);
+
+    fTrackRecoTotalLambdaDist = new THnSparseF("fTrackRecoTotalLambdaDist", "Track cut reco (#Lambda + #bar{#Lambda}) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.",6, numbins, minval, maxval);
+    fOutputList->Add(fTrackRecoTotalLambdaDist);
+
     fRecoLambdaDist = new THnSparseF("fRecoLambdaDist", "Reco #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
     fOutputList->Add(fRecoLambdaDist);
 
-    fRecoNormalLambdaDist = new THnSparseF("fRecoNormalLambdaDist", "Reco #Lambda (normal) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
-    fOutputList->Add(fRecoNormalLambdaDist);
+    fTrackRecoLambdaDist = new THnSparseF("fTrackRecoLambdaDist", "Track cut reco #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fOutputList->Add(fTrackRecoLambdaDist);
 
     fRecoAntiLambdaDist = new THnSparseF("fRecoAntiLambdaDist", "Reco #Lambda (anti) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
     fOutputList->Add(fRecoAntiLambdaDist);
 
-    fTrackRecoLambdaDist = new THnSparseF("fTrackRecoLambdaDist", "Track Eta, Pt, FilterMask and Crossed Rows Cut Reco #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.",6, numbins, minval, maxval);
-    fOutputList->Add(fTrackRecoLambdaDist);
+    fTrackRecoAntiLambdaDist = new THnSparseF("fTrackRecoAntiLambdaDist", "Track cut reco #bar{#Lambda} distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fOutputList->Add(fTrackRecoAntiLambdaDist);
 
     fTrackEtaRecoLambdaDist = new THnSparseF("fTrackEtaRecoLambdaDist", "Track Eta Cut (< 0.8) Reco #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.",6, numbins, minval, maxval);
     fOutputList->Add(fTrackEtaRecoLambdaDist);
@@ -329,13 +335,13 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
 
     // duplicate track checks (crossed rows, clusters, filtermask)
     int numBinsDuplicate[3] = {145, 100, 1000};
-    int binsMinDuplicate[3] = {0, 0, 0};
-    int binsMaxDuplicate[3] = {145, 100, 1000};
+    double binsMinDuplicate[3] = {0, 0, 0};
+    double binsMaxDuplicate[3] = {145, 100, 1000};
 
-    fDuplicatePion = new THnSparseF("fDuplicatePion", "Duplicate Pion track parameters", numBinsDuplicate, binsMinDuplicate, binsMaxDuplicate);
+    fDuplicatePion = new THnSparseF("fDuplicatePion", "Duplicate Pion track parameters", 3, numBinsDuplicate, binsMinDuplicate, binsMaxDuplicate);
     fOutputList->Add(fDuplicatePion);
 
-    fDuplicateProton = new THnSparseF("fDuplicateProton", "Duplicate Proton track parameters", numBinsDuplicate, binsMinDuplicate, binsMaxDuplicate);
+    fDuplicateProton = new THnSparseF("fDuplicateProton", "Duplicate Proton track parameters", 3, numBinsDuplicate, binsMinDuplicate, binsMaxDuplicate);
     fOutputList->Add(fDuplicateProton);
 
     PostData(1,fOutputList);
@@ -703,8 +709,12 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
             if(mcpospart->GetMother() == motherIndex){
 
-                float pionParams[3] = {negtrack->GetTPCNCrossedRows(), negtrack->GetNumberOfITSClusters(), negtrack->GetFilterMask()};
-                float protonParams[3] = {postrack->GetTPCNCrossedRows(), postrack->GetNumberOfITSClusters(), postrack->GetFilterMask()};
+                // std::cout << "mother mc index: " << motherIndex <<"; pi mc index: " << tracklabel << "; proton mc index: " << postracklabel << std::endl;
+                // std::cout << "pi track index: " << itrack << "; proton track index: " << jtrack << std::endl;
+                // std::cout << "pi track filtermap: " << aodnegtrack->GetFilterMap() << "; proton track filtermap: " << aodpostrack->GetFilterMap() << std::endl;
+
+                double pionParams[3] = {static_cast<double>(aodnegtrack->GetTPCNCrossedRows()), static_cast<double>(aodnegtrack->GetITSNcls()), static_cast<double>(aodnegtrack->GetFilterMap())};
+                double protonParams[3] = {static_cast<double>(aodpostrack->GetTPCNCrossedRows()), static_cast<double>(aodpostrack->GetITSNcls()), static_cast<double>(aodpostrack->GetFilterMap())};
 
                 fDuplicatePion->Fill(pionParams);
                 fDuplicateProton->Fill(protonParams);

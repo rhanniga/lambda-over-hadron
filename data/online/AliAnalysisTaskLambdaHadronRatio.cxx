@@ -115,6 +115,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     double hh_cor_maxes[5] = {12, 12, 3.0*TMath::Pi()/2.0, 2.0, 10};
 
     fDphiHLambda = new THnSparseF("fDphiHLambda", "Hadron-Lambda Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
+    fDphiHLambdaEff = new THnSparseF("fDphiHLambdaEff", "Efficiency-corrected Hadron-Lambda Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
     fDphiHLambdaV0 = new THnSparseF("fDphiHLambdaV0", "Hadron-Lambda (using V0) Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
     fDphiHLambdaRotated = new THnSparseF("fDphiHLambdaRotated", "Hadron-Lambda (rotated) Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
     fDphiHLambdaRotatedPi = new THnSparseF("fDphiHLambdaRotatedPi", "Hadron-Lambda (rotated pi) Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
@@ -154,6 +155,8 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     PostData(1, fOutputList);
 
 }
+
+double AliAnalysisTaskLambdaHadronRatio::EfficiencyScale
 
 void AliAnalysisTaskLambdaHadronRatio::FillSingleParticleDist(std::vector<AliAODTrack*> particle_list, double zVtx, THnSparse* fDist)
 {
@@ -231,7 +234,7 @@ AliAnalysisTaskLambdaHadronRatio::AliMotherContainer AliAnalysisTaskLambdaHadron
 
 }
 
-void AliAnalysisTaskLambdaHadronRatio::MakeSameHLambdaCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx)
+void AliAnalysisTaskLambdaHadronRatio::MakeSameHLambdaCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx, bool eff)
 {
 
     double dphi_point[6];
@@ -265,7 +268,7 @@ void AliAnalysisTaskLambdaHadronRatio::MakeSameHLambdaCorrelations(std::vector<A
 
 }
 
-void AliAnalysisTaskLambdaHadronRatio::MakeSameHHCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAODTrack*> associated_h_list, THnSparse* fDphi, double zVtx)
+void AliAnalysisTaskLambdaHadronRatio::MakeSameHHCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAODTrack*> associated_h_list, THnSparse* fDphi, double zVtx, bool eff)
 {
 
     double dphi_point[5];
@@ -296,7 +299,7 @@ void AliAnalysisTaskLambdaHadronRatio::MakeSameHHCorrelations(std::vector<AliAOD
 
 }
 
-void AliAnalysisTaskLambdaHadronRatio::MakeSameTriggerTriggerCorrelations(std::vector<AliAODTrack*> trigger_list, THnSparse* fDphi, double zVtx)
+void AliAnalysisTaskLambdaHadronRatio::MakeSameTriggerTriggerCorrelations(std::vector<AliAODTrack*> trigger_list, THnSparse* fDphi, double zVtx, bool eff)
 {
 
     double dphi_point[5];
@@ -327,7 +330,7 @@ void AliAnalysisTaskLambdaHadronRatio::MakeSameTriggerTriggerCorrelations(std::v
 
 }
 
-void AliAnalysisTaskLambdaHadronRatio::MakeMixedHLambdaCorrelations(AliEventPool* fPool, std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list , THnSparse* fDphi, double zVtx)
+void AliAnalysisTaskLambdaHadronRatio::MakeMixedHLambdaCorrelations(AliEventPool* fPool, std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list , THnSparse* fDphi, double zVtx, bool eff)
 {
 
     double dphi_point[6];
@@ -364,7 +367,7 @@ void AliAnalysisTaskLambdaHadronRatio::MakeMixedHLambdaCorrelations(AliEventPool
     }
 }
 
-void AliAnalysisTaskLambdaHadronRatio::MakeMixedHHCorrelations(AliEventPool* fPool, std::vector<AliAODTrack*> associated_h_list, THnSparse* fDphi, double zVtx)
+void AliAnalysisTaskLambdaHadronRatio::MakeMixedHHCorrelations(AliEventPool* fPool, std::vector<AliAODTrack*> associated_h_list, THnSparse* fDphi, double zVtx, bool eff)
 {
 
     double dphi_point[5];

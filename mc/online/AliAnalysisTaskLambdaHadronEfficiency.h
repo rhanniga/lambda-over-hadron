@@ -28,6 +28,9 @@ public:
     UInt_t PassProtonCuts(AliAODTrack* track, Double_t TPCnSigma, Double_t TOFnSigma);
     UInt_t PassPionCuts(AliAODTrack* track, Double_t TPCnSigma, Double_t TOFnSigma);
     Bool_t PassHadronCuts(AliAODTrack* track, Bool_t isTrigger);
+    Bool_t PassDaughterCuts(AliAODTrack* track);
+    Bool_t PassAssociatedCuts(AliAODTrack* track);
+    Bool_t PassTriggerCuts(AliAODTrack* track);
     virtual void   UserExec(Option_t *option);
     virtual void   Terminate(Option_t *);
 
