@@ -37,8 +37,8 @@ public:
     void SetAODAnalysis() { SetBit(kAODanalysis, kTRUE); };
     void SetESDAnalysis() { SetBit(kAODanalysis, kFALSE); };
     
-    void SetKaonTrkBit(Int_t kaonbit){ KAON_TRK_BIT = kaonbit; };
-    void SetKaonEtaCut(Float_t eta){ KAON_ETA_CUT = eta; };
+    void SetDaughterTrkBit(Int_t daughterbit){ DAUGHTER_TRK_BIT = daughterbit; };
+    void SetDaughterEtaCut(Float_t eta){ DAUGHTER_ETA_CUT = eta; };
     void SetCentEstimator(TString est){ CENT_ESTIMATOR = est; };
     void SetTrigTrkBit(UInt_t trkbit) { TRIG_TRK_BIT = trkbit; };
     void SetAssocTrkBit(UInt_t trkbit) { ASSOC_TRK_BIT = trkbit; };
@@ -49,8 +49,8 @@ private:
 
     Float_t MULT_LOW;
     Float_t MULT_HIGH;
-    Float_t KAON_ETA_CUT;
-    Float_t KAON_TRK_BIT;
+    Float_t DAUGHTER_ETA_CUT;
+    Float_t DAUGHTER_TRK_BIT;
     Float_t ASSOC_TRK_BIT;
     Float_t TRIG_TRK_BIT;
     TString CENT_ESTIMATOR;
@@ -86,12 +86,17 @@ private:
     TH1F        *fVtxX;//!Vertex x
     TH1F        *fVtxY;//!Vertex y
 
+    THnSparseF  *fRealTotalLambdaDist;//! Dist of Real lambda and anti lambda
     THnSparseF  *fRealLambdaDist;//! Dist of Real lambda
+    THnSparseF  *fRealAntiLambdaDist;//! Dist of Real anti lambda
     THnSparseF  *fRealNoDecayCutLambdaDist;//! Dist of Real lambda with no check on decay daughter eta
+    THnSparseF  *fRecoTotalLambdaDist;//! Dist of Recon lambda and anti lambda
+    THnSparseF  *fTrackRecoTotalLambdaDist;//! Dist of Recon lambda and anti lambda with daughter passing cuts
     THnSparseF  *fRecoLambdaDist;//! Dist of Recon lambda
-    THnSparseF  *fRecoNormalLambdaDist;//! Dist of Recon normal lambda
-    THnSparseF  *fRecoAntiLambdaDist;//! Dist of Recon anti lambda
     THnSparseF  *fTrackRecoLambdaDist;//! Dist of Recon lambda passing track cuts
+    THnSparseF  *fRecoAntiLambdaDist;//! Dist of Recon anti lambda
+    THnSparseF  *fTrackRecoAntiLambdaDist;//! Dist of recon anti lambda with daughter passing cuts
+    THnSparseF  *fRecoNormalLambdaDist;//! Dist of Recon normal lambda
     THnSparseF  *fTOFRecoLambdaDist;//! Dist of Recon lambda passing track cuts + TOF hit
     THnSparseF  *fTPCPIDTrackRecoLambdaDist;//! Dist of Recon lambda passing track cuts + TPC PID
     THnSparseF  *fTPCPIDRecoLambdaDist;//! Dist of Recon lambda passing track cuts + TOF hit + TPC PID

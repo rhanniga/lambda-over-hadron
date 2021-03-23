@@ -9,7 +9,7 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
    int startIndex = 0;
    int endIndex = 18;
    char* work_dir = "lambda_hadron_efficiency";
-   char* output_dir = "change_track_cuts";
+   char* output_dir = "separate_lambdas";
 
    bool gridTest = false;
    int numTestFiles = 2;
