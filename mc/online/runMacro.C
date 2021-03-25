@@ -7,9 +7,9 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
    //Starting and ending index of the array containing the run numbers, specifies which range to run over
    int startIndex = 0;
-   int endIndex = 18;
+   int endIndex = 5;
    char* work_dir = "lambda_hadron_efficiency";
-   char* output_dir = "separate_lambdas";
+   char* output_dir = "test_justins_bit";
 
    bool gridTest = false;
    int numTestFiles = 2;

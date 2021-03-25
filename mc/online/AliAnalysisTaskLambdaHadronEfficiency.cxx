@@ -72,7 +72,7 @@ fRecoLambdaDist(0)
     MULT_LOW = multLow;
     MULT_HIGH = multHigh;
     CENT_ESTIMATOR = "V0A";
-    DAUGHTER_TRK_BIT = 16;
+    DAUGHTER_TRK_BIT = 1024;
     ASSOC_TRK_BIT = 1024;
     TRIG_TRK_BIT = 768;
     DAUGHTER_ETA_CUT = 0.8;
@@ -109,7 +109,7 @@ fRecoLambdaDist(0)
     MULT_LOW = 0;
     MULT_HIGH = 80;
     CENT_ESTIMATOR = "V0A";
-    DAUGHTER_TRK_BIT = 16;
+    DAUGHTER_TRK_BIT = 1024;
     ASSOC_TRK_BIT = 1024;
     TRIG_TRK_BIT = 768;
     DAUGHTER_ETA_CUT = 0.8;
