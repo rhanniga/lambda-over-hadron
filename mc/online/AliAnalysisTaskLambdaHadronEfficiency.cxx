@@ -72,7 +72,7 @@ fRecoLambdaDist(0)
     MULT_LOW = multLow;
     MULT_HIGH = multHigh;
     CENT_ESTIMATOR = "V0A";
-    DAUGHTER_TRK_BIT = 1024;
+    DAUGHTER_TRK_BIT = 16;
     ASSOC_TRK_BIT = 1024;
     TRIG_TRK_BIT = 768;
     DAUGHTER_ETA_CUT = 0.8;
@@ -109,7 +109,7 @@ fRecoLambdaDist(0)
     MULT_LOW = 0;
     MULT_HIGH = 80;
     CENT_ESTIMATOR = "V0A";
-    DAUGHTER_TRK_BIT = 1024;
+    DAUGHTER_TRK_BIT = 16;
     ASSOC_TRK_BIT = 1024;
     TRIG_TRK_BIT = 768;
     DAUGHTER_ETA_CUT = 0.8;
@@ -181,8 +181,8 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     fOutputList->Add(fRecoVsRealLambdaPtDist);
     
     // Single Particle and inclusive charged hadron histos
-    Int_t numbinsSingle[5] = {95, 64, 64, 10, 10};
-    Double_t minvalSingle[5] = {0.5, -3.14159, -2.0, -10.0, 0.0};
+    Int_t numbinsSingle[5] = {100, 64, 64, 10, 10};
+    Double_t minvalSingle[5] = {0, -3.14159, -2.0, -10.0, 0.0};
     Double_t maxvalSingle[5] = {10.0, 3.14159, 2.0, 10.0, 100.0};
 
     fRealChargedDist = new THnSparseF("fRealChargedDist", "Real Charged Hadron distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
@@ -259,8 +259,8 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
 
     //Real & MC Phi track histos
     
-    Int_t numbins[6] = {95, 64, 64, 10, 80, 10};
-    Double_t minval[6] = {0.5, -3.14159, -2., -10, 1.06, 0.0};
+    Int_t numbins[6] = {100, 64, 64, 10, 80, 10};
+    Double_t minval[6] = {0, -3.14159, -2., -10, 1.06, 0.0};
     Double_t maxval[6] = {10.0, 3.14159,  2.,  10, 1.16, 100.0};
 
     fRealTotalLambdaDist = new THnSparseF("fRealTotalLambdaDist", "Real (#Lambda + #bar{#Lambda}) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{KK};Multiplicity Pctl.", 6, numbins, minval, maxval);
@@ -274,6 +274,12 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
 
     fRealNoDecayCutLambdaDist = new THnSparseF("fRealNoDecayCutLambdaDist", "Real #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{KK};Multiplicity Pctl.", 6, numbins, minval, maxval);
     fOutputList->Add(fRealNoDecayCutLambdaDist);
+
+    fRecoTotalV0LambdaDist = new THnSparseF("fRecoTotalV0LambdaDist", "Reco (#Lambda + #bar{#Lambda}) from V^{0} distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fOutputList->Add(fRecoTotalV0LambdaDist);
+
+    fTrackRecoTotalV0LambdaDist = new THnSparseF("fTrackRecoTotalV0LambdaDist", "TrackReco (#Lambda + #bar{#Lambda}) from V^{0} distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fOutputList->Add(fTrackRecoTotalV0LambdaDist);
 
     fRecoTotalLambdaDist = new THnSparseF("fRecoTotalLambdaDist", "Reco (#Lambda + #bar{#Lambda}) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
     fOutputList->Add(fRecoTotalLambdaDist);
@@ -420,7 +426,14 @@ Bool_t AliAnalysisTaskLambdaHadronEfficiency::PassDaughterCuts(AliAODTrack *trac
     pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
     pass = pass && (track->Pt() >= 0.15);
 
-    pass = pass && track->TestFilterMask(DAUGHTER_TRK_BIT);
+    // pass = pass && (track->TestFilterMask(DAUGHTER_TRK_BIT));
+
+    pass = pass && (track->IsOn(AliAODTrack::kTPCrefit));
+
+    pass = pass && (track->GetTPCCrossedRows() > 70);
+
+    float ratio = (track->GetTPCNclsF() > 0)  ? track->GetTPCCrossedRows()/track->GetTPCNclsF() : 0;
+    pass = pass && (ratio > 0.8);
 
     return pass;
 }
@@ -497,13 +510,13 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         return;
     }
 
-    fESD = dynamic_cast<AliESDEvent*>(InputEvent());
-    if(fESD) {
-        std::cout << "ESD FOUND!" << std::endl;
-    }
-    else {
-        std::cout << "ESD NOT FOUND" << std::endl;
-    }
+    // fESD = dynamic_cast<AliESDEvent*>(InputEvent());
+    // if(fESD) {
+    //     std::cout << "ESD FOUND!" << std::endl;
+    // }
+    // else {
+    //     std::cout << "ESD NOT FOUND" << std::endl;
+    // }
 
     ///////////////////
     //PID initialised//
@@ -611,8 +624,134 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
     Int_t motherPDG = 0;
     Int_t pdgcode = 0;
 
+    std::vector<std::vector<int>> trackIDsV0;
+    std::vector<std::vector<int>> trackIDsV0cut;
+
+    std::vector<std::vector<int>> trackIDsList;
+    std::vector<std::vector<int>> trackIDsListcut;
+
     int numRealLambdas = 0;
     int numRecoLambdas = 0;
+
+    // quick test loop over V0's to determine filter mask range for daughter tracks
+    int numV0s = fAOD->GetNumberOfV0s();
+    for(int iv0 = 0; iv0 < numV0s; iv0++) {
+        AliAODv0 *vZero = fAOD->GetV0(iv0);
+        if(!vZero) continue;
+
+        // int v0label = vZero->GetLabel();
+        // if(v0label < 0) continue;
+        // std::cout << "the v0 label is: " << v0label << std::endl;
+        // AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(v0label);
+        // std::cout << mcmother->GetPdgCode() << " is the PDG code" << std::endl;
+
+        AliAODTrack *ptrack=(AliAODTrack *)vZero->GetDaughter(0);
+        AliAODTrack *ntrack=(AliAODTrack *)vZero->GetDaughter(1);
+        AliAODTrack *ttrack=(AliAODTrack *)vZero->GetDaughter(2);
+        
+        int plabel = ptrack->GetLabel();
+        int nlabel = ntrack->GetLabel();
+
+        if(plabel < 0 || nlabel < 0) continue;
+
+        AliAODMCParticle* mcpospart = (AliAODMCParticle*)fMCArray->At(plabel);
+        AliAODMCParticle* mcnegpart = (AliAODMCParticle*)fMCArray->At(nlabel);
+
+        int posPDG = mcpospart->GetPdgCode();
+        int negPDG = mcnegpart->GetPdgCode();
+
+        if(!((posPDG == 2212 && negPDG == -211) || (posPDG == 211 && negPDG == -2212))) continue;
+
+        int posmomlabel = mcpospart->GetMother(); 
+        int negmomlabel = mcnegpart->GetMother(); 
+
+        if(posmomlabel < 0 || negmomlabel < 0) continue;
+
+        if(posmomlabel != negmomlabel) {
+            // std::cout << "somehow the v0 daughter tracks to not correspond to the same mother!" << std::endl;
+            AliAODMCParticle* mcposmother = (AliAODMCParticle*)fMCArray->At(posmomlabel);
+            AliAODMCParticle* mcnegmother = (AliAODMCParticle*)fMCArray->At(negmomlabel);
+            // std::cout << "pos mother label: " << posmomlabel << "pos mother pdg: " << mcposmother->GetPdgCode() << std::endl;
+            // std::cout << "neg mother label: " << negmomlabel << "neg mother pdg: " << mcnegmother->GetPdgCode() << std::endl;
+            continue ;
+        }
+
+        AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(posmomlabel);
+        // std::cout << mcmother->GetPdgCode() << std::endl;
+
+        if(!(TMath::Abs(mcmother->GetPdgCode()) == 3122)) continue;
+
+
+        double distPoint[6];
+        double recoPx = ntrack->Px() + ptrack->Px();
+        double recoPy = ntrack->Py() + ptrack->Py();
+        double recoPz = ntrack->Pz() + ptrack->Pz();
+        
+        double recoP = TMath::Sqrt(recoPx*recoPx + recoPy*recoPy + recoPz*recoPz);
+        double recoE = TMath::Sqrt(ntrack->Px()*ntrack->Px() + ntrack->Py()*ntrack->Py() + ntrack->Pz()*ntrack->Pz() + 0.13957*0.13957) + TMath::Sqrt(ptrack->Px()*ptrack->Px() + ptrack->Py()*ptrack->Py() + ptrack->Pz()*ptrack->Pz() + 0.9383*0.9383);
+        double recoM = TMath::Sqrt(recoE*recoE - recoP*recoP);
+        double recoPt = TMath::Sqrt(recoPx*recoPx + recoPy*recoPy);
+        double recoEta = 0.5*TMath::Log((recoP + recoPz)/(recoP -  recoPz));
+        double recoY = 0.5*TMath::Log((recoE + recoPz)/(recoE - recoPz));
+        double recoPhi = TMath::ATan2(recoPy, recoPx);
+
+        if(recoPhi < -TMath::Pi()){
+            recoPhi += 2.0*TMath::Pi();
+        }else if(recoPhi > TMath::Pi()){
+            recoPhi -= 2.0*TMath::Pi();
+        }
+
+        distPoint[0] = recoPt;
+        distPoint[1] = recoPhi;
+        distPoint[2] = recoEta;
+        distPoint[3] = Zvertex;
+        distPoint[4] = recoM;
+        distPoint[5] = multPercentile;
+        
+        int posTrackID = ptrack->GetID();
+        int negTrackID = ntrack->GetID();
+        int testTrackID = 0;
+        if(ttrack) {
+            testTrackID = ttrack->GetID();
+        }
+
+        // std::cout << ptrack->GetSign() << ", " << ntrack->GetSign() << std::endl;
+        bool alreadyFilled = false;
+        for(int i = 0; i < trackIDsV0.size(); i++) {
+            if(posTrackID == trackIDsV0[i][0] && negTrackID == trackIDsV0[i][1]) alreadyFilled = true;
+        }
+
+        
+        std::vector<int> v0tracks;
+        if(!alreadyFilled) {
+            v0tracks.push_back(posTrackID);
+            v0tracks.push_back(negTrackID);
+            trackIDsV0.push_back(v0tracks);
+        }
+
+
+        // if(posTrackID == 33) {
+        //     std::cout << "v0 number: " << iv0 << "; pos track ID: " << posTrackID << "; neg track ID: " << negTrackID << "; test track ID: " << testTrackID << std::endl;
+        // }
+
+        fRecoTotalV0LambdaDist->Fill(distPoint);
+
+        if(PassDaughterCuts(ntrack) && PassDaughterCuts(ptrack)) {
+            if(!alreadyFilled) {
+                fTrackRecoTotalV0LambdaDist->Fill(distPoint);
+                trackIDsV0cut.push_back(v0tracks);
+            }
+        }
+
+        // std::cout << "ptrack filter mask: " << ptrack->GetFilterMap() << std::endl;
+        // std::cout << "ntrack filter mask: " << ntrack->GetFilterMap() << std::endl;
+
+        // if(PassDaughterCuts(ptrack) && PassDaughterCuts(ntrack)) {
+        //     std::cout << "ptrack filter mask PASSED CUTS: " << ptrack->GetFilterMap() << std::endl;
+        //     std::cout << "ntrack filter mask PASSED CUTS: " << ntrack->GetFilterMap() << std::endl;
+        // }
+
+    }
     
     //first loop over tracks to get pi minuses, find lambda daughters and fill Reco Dist
     for(int itrack = 0; itrack < ntracks; itrack++){
@@ -621,6 +760,8 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         AliAODTrack *aodnegtrack = dynamic_cast<AliAODTrack*>(vnegpart);
 
         Int_t tracklabel = aodnegtrack->GetLabel();
+
+        // if(aodnegtrack->GetID() < 0) std::cout << aodnegtrack->GetFilterMap() << " is the filtermap\n";
         // std::cout << tracklabel << " is the track label" << std::endl;
         if(tracklabel < 0) {
             AliAODMCParticle* part = (AliAODMCParticle*)fMCArray->At(TMath::Abs(tracklabel));
@@ -763,6 +904,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 // std::cout << "mother mc index: " << motherIndex <<"; pi mc index: " << tracklabel << "; proton mc index: " << postracklabel << std::endl;
                 // std::cout << "pi track index: " << itrack << "; proton track index: " << jtrack << std::endl;
                 // std::cout << "pi track filtermap: " << aodnegtrack->GetFilterMap() << "; proton track filtermap: " << aodpostrack->GetFilterMap() << std::endl;
+                // std::cout << "pi track ID: " << aodnegtrack->GetID() << "; proton track ID: " << aodpostrack->GetID() << std::endl;
 
                 double pionParams[3] = {static_cast<double>(aodnegtrack->GetTPCNCrossedRows()), static_cast<double>(aodnegtrack->GetITSNcls()), static_cast<double>(aodnegtrack->GetFilterMap())};
                 double protonParams[3] = {static_cast<double>(aodpostrack->GetTPCNCrossedRows()), static_cast<double>(aodpostrack->GetITSNcls()), static_cast<double>(aodpostrack->GetFilterMap())};
@@ -798,9 +940,23 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
                 fRecoVsRealLambdaPtDist->Fill(recoPt, mcmother->Pt());
 
+                std::vector<int> listtracks;
+                listtracks.push_back(aodpostrack->GetID());
+                listtracks.push_back(aodnegtrack->GetID());
+
+                trackIDsList.push_back(listtracks);
+
                 if(PassDaughterCuts(aodnegtrack) && PassDaughterCuts(aodpostrack)) {
                     fTrackRecoLambdaDist->Fill(distPoint);
                     fTrackRecoTotalLambdaDist->Fill(distPoint);
+                    trackIDsListcut.push_back(listtracks);
+
+
+                    // std::cout << "the label from track list is: " << motherIndex << std::endl;
+                    // std::cout << "mother mc index: " << motherIndex <<"; pi mc index: " << tracklabel << "; proton mc index: " << postracklabel << std::endl;
+                    // std::cout << "pi track index: " << itrack << "; proton track index: " << jtrack << std::endl;
+                    // std::cout << "pi track filtermap: " << aodnegtrack->GetFilterMap() << "; proton track filtermap: " << aodpostrack->GetFilterMap() << std::endl;
+                    // std::cout << "pi track ID: " << aodnegtrack->GetID() << "; proton track ID: " << aodpostrack->GetID() << std::endl;
                 }
 
                 // //fill with phi's where daughter kaons pass track cuts
@@ -969,10 +1125,17 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
                 fRecoVsRealLambdaPtDist->Fill(recoPt, mcmother->Pt());
 
+                std::vector<int> listtracks;
+                listtracks.push_back(aodpostrack->GetID());
+                listtracks.push_back(aodnegtrack->GetID());
+
+                trackIDsList.push_back(listtracks);
+
 
                 if(PassDaughterCuts(aodnegtrack) && PassDaughterCuts(aodpostrack)) {
                     fTrackRecoAntiLambdaDist->Fill(distPoint);
                     fTrackRecoTotalLambdaDist->Fill(distPoint);
+                    trackIDsListcut.push_back(listtracks);
                 }
 
                 // //fill with phi's where daughter kaons pass track cuts
@@ -1164,6 +1327,26 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
             fRealLambdaDaughterDist->Fill(daughterDistPoint);
         } 
     }
+    
+    // if((bool)trackIDsV0cut.size() || (bool)trackIDsListcut.size()) {
+    // if((bool)trackIDsV0.size() || (bool)trackIDsV0cut.size() || (bool)trackIDsList.size() || (bool)trackIDsListcut.size()) {
+        // std::cout << "__________TRACKS FROM UNCUT V0 LAMBDAS______________" << std::endl;
+        // for(int i = 0; i < trackIDsV0.size(); i++) {
+        //     std::cout << "pos track ID: " << trackIDsV0[i][0] << "; neg track ID : " << trackIDsV0[i][1] << ";\n";
+        // }
+        // std::cout << "__________TRACKS FROM UNCUT TRACK LIST LAMBDAS______________" << std::endl;
+        // for(int i = 0; i < trackIDsList.size(); i++) {
+        //     std::cout << "pos track ID: " << trackIDsList[i][0] << "; neg track ID : " << trackIDsList[i][1] << ";\n";
+        // }
+    //     std::cout << "__________TRACKS FROM CUT V0 LAMBDAS______________" << std::endl;
+    //     for(int i = 0; i < trackIDsV0cut.size(); i++) {
+    //         std::cout << "pos track ID: " << trackIDsV0cut[i][0] << "; neg track ID : " << trackIDsV0cut[i][1] << ";\n";
+    //     }
+    //     std::cout << "__________TRACKS FROM CUT TRACK LIST LAMBDAS______________" << std::endl;
+    //     for(int i = 0; i < trackIDsListcut.size(); i++) {
+    //         std::cout << "pos track ID: " << trackIDsListcut[i][0] << "; neg track ID : " << trackIDsListcut[i][1] << ";\n";
+    //     }
+    // }
 
     fRealLambdasPerEvent->Fill(numRealLambdas);
     fRecoLambdasPerEvent->Fill(numRecoLambdas);

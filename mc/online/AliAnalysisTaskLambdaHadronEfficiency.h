@@ -90,6 +90,8 @@ private:
     THnSparseF  *fRealLambdaDist;//! Dist of Real lambda
     THnSparseF  *fRealAntiLambdaDist;//! Dist of Real anti lambda
     THnSparseF  *fRealNoDecayCutLambdaDist;//! Dist of Real lambda with no check on decay daughter eta
+    THnSparseF  *fRecoTotalV0LambdaDist;//! Dist of Recon lambda and anti lambda (from v0)
+    THnSparseF  *fTrackRecoTotalV0LambdaDist;//! Dist of Recon lambda and anti lambda with daughter passing cuts (from v0)
     THnSparseF  *fRecoTotalLambdaDist;//! Dist of Recon lambda and anti lambda
     THnSparseF  *fTrackRecoTotalLambdaDist;//! Dist of Recon lambda and anti lambda with daughter passing cuts
     THnSparseF  *fRecoLambdaDist;//! Dist of Recon lambda
