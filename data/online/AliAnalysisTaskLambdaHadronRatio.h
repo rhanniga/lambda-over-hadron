@@ -40,6 +40,14 @@ class AliAnalysisTaskLambdaHadronRatio : public AliAnalysisTaskSE {
   };
 
  private:
+
+  float MULT_LOW;
+  float MULT_HIGH;
+  float DAUGHTER_TRK_BIT;
+  float ASSOC_TRK_BIT;
+  float TRIG_TRK_BIT;
+
+  TString CENT_ESTIMATOR;
   AliAODEvent* fAOD; //!>! input event
   TList* fOutputList; //!>! output list
 
@@ -87,6 +95,9 @@ class AliAnalysisTaskLambdaHadronRatio : public AliAnalysisTaskSE {
   void MakeSameTriggerTriggerCorrelations(std::vector<AliAODTrack*> trigger_list, THnSparse* fDphi, double zVtx, bool eff=true);
   void MakeMixedHLambdaCorrelations(AliEventPool *fPool, std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx, bool eff=true);
   void MakeMixedHHCorrelations(AliEventPool *fPool, std::vector<AliAODTrack*> associated_h_list , THnSparse* fDphi, double zVtx, bool eff=true);
+  bool PassDaughterCuts(AliAODTrack *track);
+  bool PassTriggerCuts(AliAODTrack *track);
+  bool PassAssociatedCuts(AliAODTrack *track);
 
   ClassDef(AliAnalysisTaskLambdaHadronRatio, 0);
 
