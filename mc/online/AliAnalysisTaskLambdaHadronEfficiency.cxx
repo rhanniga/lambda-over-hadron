@@ -284,6 +284,12 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     fRecoTotalLambdaDist = new THnSparseF("fRecoTotalLambdaDist", "Reco (#Lambda + #bar{#Lambda}) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
     fOutputList->Add(fRecoTotalLambdaDist);
 
+    fRecoPrimaryLambdaDist = new THnSparseF("fRecoPrimaryLambdaDist", "Reco (#Lambda + #bar{#Lambda}) (prim. daughters) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fOutputList->Add(fRecoPrimaryLambdaDist);
+
+    fRecoNonPrimaryLambdaDist = new THnSparseF("fRecoNonPrimaryLambdaDist", "Reco (#Lambda + #bar{#Lambda}) (non-prim. daughters) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fOutputList->Add(fRecoNonPrimaryLambdaDist);
+
     fTrackRecoTotalLambdaDist = new THnSparseF("fTrackRecoTotalLambdaDist", "Track cut reco (#Lambda + #bar{#Lambda}) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.",6, numbins, minval, maxval);
     fOutputList->Add(fTrackRecoTotalLambdaDist);
 
@@ -689,7 +695,8 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         
         double recoP = TMath::Sqrt(recoPx*recoPx + recoPy*recoPy + recoPz*recoPz);
         double recoE = TMath::Sqrt(ntrack->Px()*ntrack->Px() + ntrack->Py()*ntrack->Py() + ntrack->Pz()*ntrack->Pz() + 0.13957*0.13957) + TMath::Sqrt(ptrack->Px()*ptrack->Px() + ptrack->Py()*ptrack->Py() + ptrack->Pz()*ptrack->Pz() + 0.9383*0.9383);
-        double recoM = TMath::Sqrt(recoE*recoE - recoP*recoP);
+        // double recoM = TMath::Sqrt(recoE*recoE - recoP*recoP);
+        double recoM = vZero->MassLambda();
         double recoPt = TMath::Sqrt(recoPx*recoPx + recoPy*recoPy);
         double recoEta = 0.5*TMath::Log((recoP + recoPz)/(recoP -  recoPz));
         double recoY = 0.5*TMath::Log((recoE + recoPz)/(recoE - recoPz));
@@ -936,6 +943,8 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 distPoint[5] = multPercentile;
                 
                 fRecoLambdaDist->Fill(distPoint);
+
+
                 fRecoTotalLambdaDist->Fill(distPoint);
 
                 fRecoVsRealLambdaPtDist->Fill(recoPt, mcmother->Pt());
@@ -947,6 +956,8 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 trackIDsList.push_back(listtracks);
 
                 if(PassDaughterCuts(aodnegtrack) && PassDaughterCuts(aodpostrack)) {
+                    if(aodnegtrack->IsPrimaryCandidate() && aodpostrack->IsPrimaryCandidate()) fRecoPrimaryLambdaDist->Fill(distPoint);
+                    if(!aodnegtrack->IsPrimaryCandidate() && !aodpostrack->IsPrimaryCandidate()) fRecoNonPrimaryLambdaDist->Fill(distPoint);
                     fTrackRecoLambdaDist->Fill(distPoint);
                     fTrackRecoTotalLambdaDist->Fill(distPoint);
                     trackIDsListcut.push_back(listtracks);
@@ -1120,6 +1131,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 distPoint[4] = recoM;
                 distPoint[5] = multPercentile;
                 
+
                 fRecoAntiLambdaDist->Fill(distPoint);
                 fRecoTotalLambdaDist->Fill(distPoint);
 
@@ -1133,6 +1145,8 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
 
                 if(PassDaughterCuts(aodnegtrack) && PassDaughterCuts(aodpostrack)) {
+                    if(aodnegtrack->IsPrimaryCandidate() && aodpostrack->IsPrimaryCandidate()) fRecoPrimaryLambdaDist->Fill(distPoint);
+                    if(!aodnegtrack->IsPrimaryCandidate() && !aodpostrack->IsPrimaryCandidate()) fRecoNonPrimaryLambdaDist->Fill(distPoint);
                     fTrackRecoAntiLambdaDist->Fill(distPoint);
                     fTrackRecoTotalLambdaDist->Fill(distPoint);
                     trackIDsListcut.push_back(listtracks);

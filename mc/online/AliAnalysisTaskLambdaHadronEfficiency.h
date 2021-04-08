@@ -93,6 +93,8 @@ private:
     THnSparseF  *fRecoTotalV0LambdaDist;//! Dist of Recon lambda and anti lambda (from v0)
     THnSparseF  *fTrackRecoTotalV0LambdaDist;//! Dist of Recon lambda and anti lambda with daughter passing cuts (from v0)
     THnSparseF  *fRecoTotalLambdaDist;//! Dist of Recon lambda and anti lambda
+    THnSparseF  *fRecoPrimaryLambdaDist;//! Dist of Recon lambda and anti lambda with prim daughters
+    THnSparseF  *fRecoNonPrimaryLambdaDist;//! Dist of Recon lambda and anti lambda without prim daughters
     THnSparseF  *fTrackRecoTotalLambdaDist;//! Dist of Recon lambda and anti lambda with daughter passing cuts
     THnSparseF  *fRecoLambdaDist;//! Dist of Recon lambda
     THnSparseF  *fTrackRecoLambdaDist;//! Dist of Recon lambda passing track cuts
