@@ -4,8 +4,6 @@
 class AliAnalysisTaskLambdaHadronRatio;
 ClassImp(AliAnalysisTaskLambdaHadronRatio);
 
-static const int centLow = 0;
-static const int centHigh = 100;
 
 AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     AliAnalysisTaskSE(),
@@ -28,7 +26,12 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     // fPid{0},
     // fSignalAnalysis{0}
 {
-
+    MULT_LOW = 0;
+    MULT_HIGH = 20;
+    CENT_ESTIMATOR = "V0A";
+    DAUGHTER_TRK_BIT = 16; // NOT CURRENTLY USED
+    ASSOC_TRK_BIT = 1024;
+    TRIG_TRK_BIT = 768;
 }
 
 AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *name) :
@@ -55,6 +58,12 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
 
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
+    MULT_LOW = 0;
+    MULT_HIGH = 20;
+    CENT_ESTIMATOR = "V0A";
+    DAUGHTER_TRK_BIT = 16; // NOT CURRENTLY USED
+    ASSOC_TRK_BIT = 1024;
+    TRIG_TRK_BIT = 768
 
 }
 
@@ -76,7 +85,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     int trackDepth = 1000;
 
     int numMultBins = 1;
-    double multBins[2] = {centLow, centHigh};
+    double multBins[2] = {MULT_LOW, MULT_HIGH};
 
     int numzVtxBins = 10;
     double zVtxBins[11] = {-10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10};
@@ -464,6 +473,49 @@ void AliAnalysisTaskLambdaHadronRatio::MakeMixedHHCorrelations(AliEventPool* fPo
 
 }
 
+bool AliAnalysisTaskLambdaHadronRatio::PassDaughterCuts(AliAODTrack *track){
+
+    Bool_t pass = kTRUE;
+
+    pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
+    pass = pass && (track->Pt() >= 0.15);
+
+    // pass = pass && (track->TestFilterMask(DAUGHTER_TRK_BIT));
+
+    pass = pass && (track->IsOn(AliAODTrack::kTPCrefit));
+
+    pass = pass && (track->GetTPCCrossedRows() > 70);
+
+    float ratio = (track->GetTPCNclsF() > 0)  ? track->GetTPCCrossedRows()/track->GetTPCNclsF() : 0;
+    pass = pass && (ratio > 0.8);
+
+    return pass;
+}
+
+bool AliAnalysisTaskLambdaHadronRatio::PassAssociatedCuts(AliAODTrack *track){
+
+    Bool_t pass = kTRUE;
+
+    pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
+    pass = pass && (track->Pt() >= 0.15);
+
+    pass = pass && track->TestFilterMask(ASSOC_TRK_BIT);
+
+    return pass;
+}
+
+Bool_t AliAnalysisTaskLambdaHadronRatio::PassTriggerCuts(AliAODTrack *track){
+
+    Bool_t pass = kTRUE;
+
+    pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
+    pass = pass && (track->Pt() >= 0.15);
+
+    pass = pass && track->TestBit(TRIG_TRK_BIT);
+
+    return pass;
+}
+
 void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
 {
 
@@ -478,14 +530,14 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
 
 
     //Event cuts
-    TString cent_estimator = "V0A";
+    TString cent_estimator = CENT_ESTIMATOR;
     double multPercentile = 0;
 
     fMultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
     if(fMultSelection) multPercentile = fMultSelection->GetMultiplicityPercentile(cent_estimator.Data());
     else return;
 
-    if(multPercentile < centLow || multPercentile > centHigh) return;
+    if(multPercentile < MULT_LOW || multPercentile > MULT_HIGH) return;
 
     AliVVertex *prim = fAOD->GetPrimaryVertex();
     int NcontV = prim->GetNContributors();
@@ -522,65 +574,52 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
         all_hadron_list.push_back(track);
 
         //Filter for trigger particles
-        bool trigFilter = track->TestBit(AliAODTrack::kIsHybridGCG);
-        if(trigFilter) {
-
-            if(track->Pt() > 4 && track->Pt() < 8 && TMath::Abs(track->Eta()) < 1) {
-                trigger_list.push_back(track);
-                AliCFParticle *triggerPart = new AliCFParticle(track->Pt(), track->Eta(), track->Phi(), track->Charge(), 0);
-                fMixedTrackObjArray->Add(triggerPart);
-           }
+        if(PassTriggerCuts(track)) {
+            trigger_list.push_back(track);
+            AliCFParticle *triggerPart = new AliCFParticle(track->Pt(), track->Eta(), track->Phi(), track->Charge(), 0);
+            fMixedTrackObjArray->Add(triggerPart);
         }
 
-        //Filter for associated particles
+        if(PassAssociatedCuts(track)) {
+            associated_h_list.push_back(track);
+        }
 
-        bool assocFilter = track->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA);
-        if(assocFilter) {
+        if(PassDaughterCuts(track)) {
+            double TPCNSigmaPion = 1000;
+            double TOFNSigmaPion = 1000;
 
-            if(track->Pt() > 0.15 && TMath::Abs(track->Eta()) < 1) {
+            TPCNSigmaPion = fpidResponse->NumberOfSigmasTPC(track, AliPID::kPion);
+            TOFNSigmaPion = fpidResponse->NumberOfSigmasTOF(track, AliPID::kPion);
 
-                associated_h_list.push_back(track);
+            if(TOFNSigmaPion != 1000 && track->Charge() != 1) unlikelyPion_list.push_back(track);
 
-                double TPCNSigmaPion = 1000;
-                double TOFNSigmaPion = 1000;
+            if(TMath::Abs(TPCNSigmaPion) <= 3 && (TMath::Abs(TOFNSigmaPion) <= 3 || TOFNSigmaPion == 1000)) {
 
-                TPCNSigmaPion = fpidResponse->NumberOfSigmasTPC(track, AliPID::kPion);
-                TOFNSigmaPion = fpidResponse->NumberOfSigmasTOF(track, AliPID::kPion);
-
-                if(TOFNSigmaPion != 1000 && track->Charge() != 1) unlikelyPion_list.push_back(track);
-
-                if(TMath::Abs(TPCNSigmaPion) <= 3 && (TMath::Abs(TOFNSigmaPion) <= 3 || TOFNSigmaPion == 1000)) {
-
-                    if(track->Charge() == 1){
-                        piPlus_list.push_back(track);
-                    }
-                    else {
-                        piMinus_list.push_back(track);
-                    }
+                if(track->Charge() == 1){
+                    piPlus_list.push_back(track);
                 }
-
-                double TPCNSigmaProton = 1000;
-                double TOFNSigmaProton = 1000;
-
-
-                TPCNSigmaProton = fpidResponse->NumberOfSigmasTPC(track, AliPID::kProton);
-                TOFNSigmaProton = fpidResponse->NumberOfSigmasTOF(track, AliPID::kProton);
-
-                if(TOFNSigmaProton != 1000 && track->Charge() == 1) unlikelyProton_list.push_back(track);
-
-                if(TMath::Abs(TPCNSigmaProton) <= 2 && (TMath::Abs(TOFNSigmaProton) <= 2 || TOFNSigmaProton == 1000)) {
-
-                    if(track->Charge() == 1){
-                        proton_list.push_back(track);
-                    }
-                    else {
-                        antiProton_list.push_back(track);
-                    }
+                else {
+                    piMinus_list.push_back(track);
                 }
+            }
 
-                // double pid_array[7] = {track->P(), track->GetTPCsignal(), track->GetTOFsignal(), TPCNSigmaPion, TOFNSigmaPion, TPCNSigmaProton, TOFNSigmaProton};
-                // fPid->Fill(pid_array);
-            
+            double TPCNSigmaProton = 1000;
+            double TOFNSigmaProton = 1000;
+
+
+            TPCNSigmaProton = fpidResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+            TOFNSigmaProton = fpidResponse->NumberOfSigmasTOF(track, AliPID::kProton);
+
+            if(TOFNSigmaProton != 1000 && track->Charge() == 1) unlikelyProton_list.push_back(track);
+
+            if(TMath::Abs(TPCNSigmaProton) <= 2 && (TMath::Abs(TOFNSigmaProton) <= 2 || TOFNSigmaProton == 1000)) {
+
+                if(track->Charge() == 1){
+                    proton_list.push_back(track);
+                }
+                else {
+                    antiProton_list.push_back(track);
+                }
             }
         }
     }
@@ -713,27 +752,12 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     for(int i = 0; i < numV0s; i++) {
         AliAODv0 *v0 = fAOD->GetV0(i);
 
-        AliAODTrack* posTrack = (AliAODTrack*) v0->GetSecondaryVtx()->GetDaughter(0);
-        AliAODTrack* negTrack = (AliAODTrack*) v0->GetSecondaryVtx()->GetDaughter(1);
+        AliAODTrack* posTrack = (AliAODTrack*) v0->GetDaughter(0);
+        AliAODTrack* negTrack = (AliAODTrack*) v0->GetDaughter(1);
 
         // Occasionally returns null, not quite sure why...
         if(!posTrack || !negTrack) continue;
-
-        bool posPtCut = posTrack->Pt() > 0.15;
-        bool negPtCut = negTrack->Pt() > 0.15;
-
-        bool posEtaCut = TMath::Abs(posTrack->Eta()) < 1;
-        bool negEtaCut = TMath::Abs(negTrack->Eta()) < 1;
-
-        bool posQualCut = posTrack->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA);
-        bool negQualCut = negTrack->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA);
-
-        if(!posPtCut ||
-                !negPtCut   ||
-                !posEtaCut  ||
-                !negEtaCut  ||
-                !posQualCut ||
-                !negQualCut ) continue;
+        if(!(PassDaughterCuts(posTrack) && PassDaughterCuts(negTrack))) continue;
 
 
         double TPCNSigmaProton = 1000;
