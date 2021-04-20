@@ -9,6 +9,8 @@
 #include "TObject.h"
 #include "TRandom3.h"
 #include "AliAODTrack.h"
+#include <iostream>
+#include <fstream>
 
 class TH1F;
 class AliEventPoolManager;
@@ -44,7 +46,7 @@ public:
     void SetAssocTrkBit(UInt_t trkbit) { ASSOC_TRK_BIT = trkbit; };
 
     Bool_t IsAODanalysis() const { return TestBit(kAODanalysis); };
-    
+
 private:
 
     Float_t MULT_LOW;
@@ -63,6 +65,18 @@ private:
     UInt_t PT_BIT = 1UL << 5;
     UInt_t MASK_BIT = 1UL << 6;
     UInt_t ROWS_BIT = 1UL << 7;
+
+    std::map<int, int> filterMap_map = {{0, 0},
+                                {1, 1},
+                                {2, 2},
+                                {5, 3},
+                                {21, 4},
+                                {277, 5},
+                                {512, 6},
+                                {3077, 7},
+                                {3381, 8}};
+
+
 
     enum{
         kAODanalysis = BIT(20),
@@ -93,6 +107,7 @@ private:
     THnSparseF  *fRecoTotalV0LambdaDist;//! Dist of Recon lambda and anti lambda (from v0)
     THnSparseF  *fTrackRecoTotalV0LambdaDist;//! Dist of Recon lambda and anti lambda with daughter passing cuts (from v0)
     THnSparseF  *fRecoTotalLambdaDist;//! Dist of Recon lambda and anti lambda
+    THnSparseF  *fRecoTotalLambdaFilterDist;//! Dist of Recon lambda and anti lambda with filter bit of daughters
     THnSparseF  *fRecoPrimaryLambdaDist;//! Dist of Recon lambda and anti lambda with prim daughters
     THnSparseF  *fRecoNonPrimaryLambdaDist;//! Dist of Recon lambda and anti lambda without prim daughters
     THnSparseF  *fTrackRecoTotalLambdaDist;//! Dist of Recon lambda and anti lambda with daughter passing cuts

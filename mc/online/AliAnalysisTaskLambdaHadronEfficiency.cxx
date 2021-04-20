@@ -333,6 +333,13 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     fReactionPlane = new TH1D("fReactionPlane", "Reaction Plane Angle; Angle", 64, -3.14159, 3.14159);
     fOutputList->Add(fReactionPlane);
 
+    // Same lambda distributions now with info on daughter filter maps (last two are proton filter map, pion filter map)
+    Int_t numbinsFilter[8] = {100, 64, 64, 10, 80, 10, 9, 9};
+    Double_t minvalFilter[8] = {0, -3.14159, -2., -10, 1.06, 0.0, 0, 0};
+    Double_t maxvalFilter[8] = {10.0, 3.14159,  2.,  10, 1.16, 100.0, 9, 9};
+
+    fRecoTotalLambdaFilterDist = new THnSparseF("fRecoTotalLambdaFilterDist", "Reco (#Lambda + #bar{#Lambda}) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 8, numbinsFilter, minvalFilter, maxvalFilter);
+    fOutputList->Add(fRecoTotalLambdaFilterDist);
 
     // pt Lambda, eta Lambda, pt Proton, pt Pion
     int numBinsDaughters[4] = {128, 128, 128, 128}; 
@@ -636,8 +643,12 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
     std::vector<std::vector<int>> trackIDsList;
     std::vector<std::vector<int>> trackIDsListcut;
 
+    std::set<int> protonMaps;
+    std::set<int> pionMaps;
+
     int numRealLambdas = 0;
     int numRecoLambdas = 0;
+
 
     // quick test loop over V0's to determine filter mask range for daughter tracks
     int numV0s = fAOD->GetNumberOfV0s();
@@ -935,17 +946,35 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 }else if(recoPhi > TMath::Pi()){
                     recoPhi -= 2.0*TMath::Pi();
                 }
+
                 distPoint[0] = recoPt;
                 distPoint[1] = recoPhi;
                 distPoint[2] = recoEta;
                 distPoint[3] = Zvertex;
                 distPoint[4] = recoM;
                 distPoint[5] = multPercentile;
+
+                double filter_distPoint[8];
+                filter_distPoint[0] = recoPt;
+                filter_distPoint[1] = recoPhi;
+                filter_distPoint[2] = recoEta;
+                filter_distPoint[3] = Zvertex;
+                filter_distPoint[4] = recoM;
+                filter_distPoint[5] = multPercentile;
+                filter_distPoint[6] = filterMap_map[aodpostrack->GetFilterMap()];
+                filter_distPoint[7] = filterMap_map[aodnegtrack->GetFilterMap()];
                 
                 fRecoLambdaDist->Fill(distPoint);
 
+                // std::cout << "The proton filter map is: " << aodpostrack->GetFilterMap() << std::endl;
+                // std::cout << "The pion filter map is: " << aodnegtrack->GetFilterMap() << std::endl;
+
+                protonMaps.insert(aodpostrack->GetFilterMap());
+                pionMaps.insert(aodnegtrack->GetFilterMap());
+
 
                 fRecoTotalLambdaDist->Fill(distPoint);
+                fRecoTotalLambdaFilterDist->Fill(filter_distPoint);
 
                 fRecoVsRealLambdaPtDist->Fill(recoPt, mcmother->Pt());
 
@@ -1130,10 +1159,25 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 distPoint[3] = Zvertex;
                 distPoint[4] = recoM;
                 distPoint[5] = multPercentile;
+
+                double filter_distPoint[8];
+                filter_distPoint[0] = recoPt;
+                filter_distPoint[1] = recoPhi;
+                filter_distPoint[2] = recoEta;
+                filter_distPoint[3] = Zvertex;
+                filter_distPoint[4] = recoM;
+                filter_distPoint[5] = multPercentile;
+                filter_distPoint[6] = filterMap_map[aodnegtrack->GetFilterMap()];
+                filter_distPoint[7] = filterMap_map[aodpostrack->GetFilterMap()];
                 
 
                 fRecoAntiLambdaDist->Fill(distPoint);
                 fRecoTotalLambdaDist->Fill(distPoint);
+                fRecoTotalLambdaFilterDist->Fill(filter_distPoint);
+
+                protonMaps.insert(aodnegtrack->GetFilterMap());
+                pionMaps.insert(aodpostrack->GetFilterMap());
+
 
                 fRecoVsRealLambdaPtDist->Fill(recoPt, mcmother->Pt());
 
@@ -1364,6 +1408,21 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
     fRealLambdasPerEvent->Fill(numRealLambdas);
     fRecoLambdasPerEvent->Fill(numRecoLambdas);
+
+    // if(protonMaps.size() != 0) {
+    //     std::cout << "The proton maps are: {";
+    //     for(auto m = protonMaps.begin(); m != protonMaps.end(); m++) {
+    //         std::cout << *m << ", ";
+    //     }
+    //     std::cout << "}\n";
+        
+    //     std::cout << "The pion maps are: {";
+    //     for(auto m = pionMaps.begin(); m != pionMaps.end(); m++) {
+    //         std::cout << *m << ", ";
+    //     }
+    //     std::cout << "}\n";
+    // }
+
 
     PostData(1, fOutputList);
 }    
