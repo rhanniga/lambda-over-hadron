@@ -708,7 +708,8 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         double recoE = TMath::Sqrt(ntrack->Px()*ntrack->Px() + ntrack->Py()*ntrack->Py() + ntrack->Pz()*ntrack->Pz() + 0.13957*0.13957) + TMath::Sqrt(ptrack->Px()*ptrack->Px() + ptrack->Py()*ptrack->Py() + ptrack->Pz()*ptrack->Pz() + 0.9383*0.9383);
         // double recoM = TMath::Sqrt(recoE*recoE - recoP*recoP);
         double recoM = vZero->MassLambda();
-        double recoPt = TMath::Sqrt(recoPx*recoPx + recoPy*recoPy);
+        // double recoPt = TMath::Sqrt(recoPx*recoPx + recoPy*recoPy);
+        double recoPt = vZero->Pt();
         double recoEta = 0.5*TMath::Log((recoP + recoPz)/(recoP -  recoPz));
         double recoY = 0.5*TMath::Log((recoE + recoPz)/(recoE - recoPz));
         double recoPhi = TMath::ATan2(recoPy, recoPx);
@@ -919,10 +920,10 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
             if(mcpospart->GetMother() == motherIndex){
 
-                // std::cout << "mother mc index: " << motherIndex <<"; pi mc index: " << tracklabel << "; proton mc index: " << postracklabel << std::endl;
-                // std::cout << "pi track index: " << itrack << "; proton track index: " << jtrack << std::endl;
-                // std::cout << "pi track filtermap: " << aodnegtrack->GetFilterMap() << "; proton track filtermap: " << aodpostrack->GetFilterMap() << std::endl;
-                // std::cout << "pi track ID: " << aodnegtrack->GetID() << "; proton track ID: " << aodpostrack->GetID() << std::endl;
+                std::cout << "mother mc index: " << motherIndex <<"; pi mc index: " << tracklabel << "; proton mc index: " << postracklabel << std::endl;
+                std::cout << "pi track index: " << itrack << "; proton track index: " << jtrack << std::endl;
+                std::cout << "pi track filtermap: " << aodnegtrack->GetFilterMap() << "; proton track filtermap: " << aodpostrack->GetFilterMap() << std::endl;
+                std::cout << "pi track ID: " << aodnegtrack->GetID() << "; proton track ID: " << aodpostrack->GetID() << std::endl;
 
                 double pionParams[3] = {static_cast<double>(aodnegtrack->GetTPCNCrossedRows()), static_cast<double>(aodnegtrack->GetITSNcls()), static_cast<double>(aodnegtrack->GetFilterMap())};
                 double protonParams[3] = {static_cast<double>(aodpostrack->GetTPCNCrossedRows()), static_cast<double>(aodpostrack->GetITSNcls()), static_cast<double>(aodpostrack->GetFilterMap())};
@@ -947,7 +948,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                     recoPhi -= 2.0*TMath::Pi();
                 }
 
-                distPoint[0] = recoPt;
+                distPoint[0] = recoP;
                 distPoint[1] = recoPhi;
                 distPoint[2] = recoEta;
                 distPoint[3] = Zvertex;
@@ -976,7 +977,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 fRecoTotalLambdaDist->Fill(distPoint);
                 fRecoTotalLambdaFilterDist->Fill(filter_distPoint);
 
-                fRecoVsRealLambdaPtDist->Fill(recoPt, mcmother->Pt());
+                fRecoVsRealLambdaPtDist->Fill(recoPz, mcmother->Pz());
 
                 std::vector<int> listtracks;
                 listtracks.push_back(aodpostrack->GetID());
@@ -1153,7 +1154,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 }else if(recoPhi > TMath::Pi()){
                     recoPhi -= 2.0*TMath::Pi();
                 }
-                distPoint[0] = recoPt;
+                distPoint[0] = recoP;
                 distPoint[1] = recoPhi;
                 distPoint[2] = recoEta;
                 distPoint[3] = Zvertex;
@@ -1179,7 +1180,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 pionMaps.insert(aodpostrack->GetFilterMap());
 
 
-                fRecoVsRealLambdaPtDist->Fill(recoPt, mcmother->Pt());
+                fRecoVsRealLambdaPtDist->Fill(recoPz, mcmother->Pz());
 
                 std::vector<int> listtracks;
                 listtracks.push_back(aodpostrack->GetID());

@@ -9,7 +9,7 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
    int startIndex = 0;
    int endIndex = 20;
    char* work_dir = "lambda_hadron_efficiency";
-   char* output_dir = "filter_check";
+   char* output_dir = "correct_v0_pt";
 
    bool gridTest = false;
    int numTestFiles = 2;
