@@ -504,6 +504,8 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
     UInt_t maskTrackTOFTPC = TRACK_BIT + TOF_HIT_BIT + TPC_PID_BIT;
     UInt_t maskTrackPID = TRACK_BIT + TOF_HIT_BIT + TPC_PID_BIT + TOF_PID_BIT;
 
+    std::map<int, std::vector<std::vector<AliAODTrack*>>> lambdaDict;
+
     UInt_t evSelMask=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
     
@@ -930,6 +932,11 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 fDuplicatePion->Fill(pionParams);
                 fDuplicateProton->Fill(protonParams);
 
+                std::vector<AliAODTrack*> daughterArray;
+                daughterArray.push_back(aodnegtrack);
+                daughterArray.push_back(aodpostrack);
+                lambdaDict[motherIndex].push_back(daughterArray);
+
                 recoPx = aodnegtrack->Px() + aodpostrack->Px();
                 recoPy = aodnegtrack->Py() + aodpostrack->Py();
                 recoPz = aodnegtrack->Pz() + aodpostrack->Pz();
@@ -997,6 +1004,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                     // std::cout << "pi track index: " << itrack << "; proton track index: " << jtrack << std::endl;
                     // std::cout << "pi track filtermap: " << aodnegtrack->GetFilterMap() << "; proton track filtermap: " << aodpostrack->GetFilterMap() << std::endl;
                     // std::cout << "pi track ID: " << aodnegtrack->GetID() << "; proton track ID: " << aodpostrack->GetID() << std::endl;
+
                 }
 
                 // //fill with phi's where daughter kaons pass track cuts
@@ -1137,6 +1145,12 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
             if(posparPDG != 211) continue;
 
             if(mcpospart->GetMother() == motherIndex){
+                
+                std::vector<AliAODTrack*> daughterArray;
+                daughterArray.push_back(aodnegtrack);
+                daughterArray.push_back(aodpostrack);
+                lambdaDict[motherIndex].push_back(daughterArray);
+
                 recoPx = aodnegtrack->Px() + aodpostrack->Px();
                 recoPy = aodnegtrack->Py() + aodpostrack->Py();
                 recoPz = aodnegtrack->Pz() + aodpostrack->Pz();
@@ -1423,6 +1437,46 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
     //     std::cout << "}\n";
     // }
 
+
+
+    // And here we must see what each lambda track looks like
+    for(auto const& [lambdaID, daughterArrayArray] : lambdaDict) {
+        std::cout << "For the lambda with ID "<< lambdaID << ", we have " << daughterArrayArray.size() << " daughter pairs:\n";
+        for(auto pairIndex = 0; pairIndex < daughterArrayArray.size(); pairIndex++) {
+            auto daughterArray = daughterArrayArray[pairIndex];
+            std::cout << "\tpair " << pairIndex << ":\n";
+
+            std::cout << "\t\tProton track info:\n";
+            std::cout << "\t\t\tTrack ID: " << daughterArray[0]->GetID() << "\n";
+            std::cout << "\t\t\tFilter map: " << daughterArray[0]->GetFilterMap() << "\n";
+            std::cout << "\t\t\tIs primary candidate: " << daughterArray[0]->IsPrimaryCandidate() << "\n";
+            std::cout << "\t\t\tIs TPC only: " << daughterArray[0]->TestFilterBit(AliAODTrack::kTrkTPCOnly) << "\n";
+            std::cout << "\t\t\tIs ITS standalone: " << daughterArray[0]->TestFilterBit(AliAODTrack::kTrkITSsa) << "\n";
+            std::cout << "\t\t\tIs ITS constrained: " << daughterArray[0]->TestFilterBit(AliAODTrack::kTrkITSConstrained) << "\n";
+            std::cout << "\t\t\tIs PID for electrons: " << daughterArray[0]->TestFilterBit(AliAODTrack::kTrkElectronsPID) << "\n";
+            std::cout << "\t\t\tIs global track with loose dca: " << daughterArray[0]->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA) << "\n";
+            std::cout << "\t\t\tIs global track with tight dca: " << daughterArray[0]->TestFilterBit(AliAODTrack::kTrkGlobal) << "\n";
+            std::cout << "\t\t\tIs TPC only track constrained to SPD vertex: " << daughterArray[0]->TestFilterBit(AliAODTrack::kTrkTPCOnlyConstrained) << "\n";
+            std::cout << "\t\t\tNumber of crossed TPC rows: " << daughterArray[0]->GetTPCNCrossedRows() << "\n";
+            std::cout << "\t\t\tNumber of findable TPC clusters: " << daughterArray[0]->GetTPCNclsF() << "\n";
+            std::cout << "\t\t\tEta: " << daughterArray[0]->Eta() << "\n";
+
+            std::cout << "\t\tPion track info:\n";
+            std::cout << "\t\t\tTrack ID: " << daughterArray[1]->GetID() << "\n";
+            std::cout << "\t\t\tFilter map: " << daughterArray[1]->GetFilterMap() << "\n";
+            std::cout << "\t\t\tIs primary candidate: " << daughterArray[1]->IsPrimaryCandidate() << "\n";
+            std::cout << "\t\t\tIs TPC only: " << daughterArray[1]->TestFilterBit(AliAODTrack::kTrkTPCOnly) << "\n";
+            std::cout << "\t\t\tIs ITS standalone: " << daughterArray[1]->TestFilterBit(AliAODTrack::kTrkITSsa) << "\n";
+            std::cout << "\t\t\tIs ITS constrained: " << daughterArray[1]->TestFilterBit(AliAODTrack::kTrkITSConstrained) << "\n";
+            std::cout << "\t\t\tIs PID for electrons: " << daughterArray[1]->TestFilterBit(AliAODTrack::kTrkElectronsPID) << "\n";
+            std::cout << "\t\t\tIs global track with loose dca: " << daughterArray[1]->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA) << "\n";
+            std::cout << "\t\t\tIs global track with tight dca: " << daughterArray[1]->TestFilterBit(AliAODTrack::kTrkGlobal) << "\n";
+            std::cout << "\t\t\tIs TPC only track constrained to SPD vertex: " << daughterArray[1]->TestFilterBit(AliAODTrack::kTrkTPCOnlyConstrained) << "\n";
+            std::cout << "\t\t\tNumber of crossed TPC rows: " << daughterArray[1]->GetTPCNCrossedRows() << "\n";
+            std::cout << "\t\t\tNumber of findable TPC clusters: " << daughterArray[1]->GetTPCNclsF() << "\n";
+            std::cout << "\t\t\tEta: " << daughterArray[1]->Eta() << "\n";
+        }
+    }
 
     PostData(1, fOutputList);
 }    
