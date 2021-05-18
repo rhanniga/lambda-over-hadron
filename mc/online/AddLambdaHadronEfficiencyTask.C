@@ -1,4 +1,4 @@
-AliAnalysisTaskLambdaHadronEfficiency *AddLambdaHadronEfficiencyTask(Float_t multLow = 0.0, Float_t multHigh = 100.0){
+AliAnalysisTaskLambdaHadronEfficiency *AddLambdaHadronEfficiencyTask(Float_t multLow = 0.0, Float_t multHigh = 80.0){
     //get the current analysis manager
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 

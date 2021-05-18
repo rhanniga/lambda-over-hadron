@@ -27,10 +27,10 @@ public:
     virtual ~AliAnalysisTaskLambdaHadronEfficiency();
     
     virtual void   UserCreateOutputObjects();
-    UInt_t PassProtonCuts(AliAODTrack* track, Double_t TPCnSigma, Double_t TOFnSigma);
-    UInt_t PassPionCuts(AliAODTrack* track, Double_t TPCnSigma, Double_t TOFnSigma);
-    Bool_t PassHadronCuts(AliAODTrack* track, Bool_t isTrigger);
-    Bool_t PassDaughterCuts(AliAODTrack* track);
+    // UInt_t PassProtonCuts(AliAODTrack* track, Double_t TPCnSigma, Double_t TOFnSigma);
+    // UInt_t PassPionCuts(AliAODTrack* track, Double_t TPCnSigma, Double_t TOFnSigma);
+    // Bool_t PassHadronCuts(AliAODTrack* track, Bool_t isTrigger);
+    uint PassDaughterCuts(AliAODTrack* track);
     Bool_t PassAssociatedCuts(AliAODTrack* track);
     Bool_t PassTriggerCuts(AliAODTrack* track);
     virtual void   UserExec(Option_t *option);
@@ -39,39 +39,48 @@ public:
     void SetAODAnalysis() { SetBit(kAODanalysis, kTRUE); };
     void SetESDAnalysis() { SetBit(kAODanalysis, kFALSE); };
     
-    void SetDaughterTrkBit(Int_t daughterbit){ DAUGHTER_TRK_BIT = daughterbit; };
-    void SetDaughterEtaCut(Float_t eta){ DAUGHTER_ETA_CUT = eta; };
     void SetCentEstimator(TString est){ CENT_ESTIMATOR = est; };
     void SetTrigTrkBit(UInt_t trkbit) { TRIG_TRK_BIT = trkbit; };
     void SetAssocTrkBit(UInt_t trkbit) { ASSOC_TRK_BIT = trkbit; };
+
+    AliAODTrack* GetTrackFromID(AliAODEvent* inputEvent, int trackID);
 
     Bool_t IsAODanalysis() const { return TestBit(kAODanalysis); };
 
 private:
 
+    int MIN_CROSSED_ROWS_TPC;
+    float MIN_ROW_CLUSTER_RATIO;
+
     Float_t MULT_LOW;
     Float_t MULT_HIGH;
     Float_t DAUGHTER_ETA_CUT;
-    Float_t DAUGHTER_TRK_BIT;
+    Float_t DAUGHTER_MIN_PT;
     Float_t ASSOC_TRK_BIT;
     Float_t TRIG_TRK_BIT;
     TString CENT_ESTIMATOR;
 
-    UInt_t TRACK_BIT = 1UL << 0;
-    UInt_t TOF_HIT_BIT = 1UL << 1;
-    UInt_t TPC_PID_BIT = 1UL << 2;
-    UInt_t TOF_PID_BIT = 1UL << 3;
-    UInt_t ETA_BIT = 1UL << 4;
-    UInt_t PT_BIT = 1UL << 5;
-    UInt_t MASK_BIT = 1UL << 6;
-    UInt_t ROWS_BIT = 1UL << 7;
+    // UInt_t TRACK_BIT = 1UL << 0;
+    // UInt_t TOF_HIT_BIT = 1UL << 1;
+    // UInt_t TPC_PID_BIT = 1UL << 2;
+    // UInt_t TOF_PID_BIT = 1UL << 3;
+    // UInt_t ETA_BIT = 1UL << 4;
+    // UInt_t PT_BIT = 1UL << 5;
+    // UInt_t MASK_BIT = 1UL << 6;
+    // UInt_t ROWS_BIT = 1UL << 7;
+
+    uint ETA_BIT = 1 << 0;
+    uint PT_BIT = 1 << 1;
+    uint TPC_REFIT_BIT = 1 << 2;
+    uint CROSSED_ROWS_BIT = 1 << 3;
+    uint ROW_CLUSTER_RATIO_BIT = 1 << 4;
 
     std::map<int, int> filterMap_map = {{0, 0},
                                 {1, 1},
                                 {2, 2},
                                 {5, 3},
                                 {21, 4},
-                                {277, 5},
+                                {128, 5},
                                 {512, 6},
                                 {3077, 7},
                                 {3381, 8}};
@@ -103,29 +112,24 @@ private:
     THnSparseF  *fRealTotalLambdaDist;//! Dist of Real lambda and anti lambda
     THnSparseF  *fRealLambdaDist;//! Dist of Real lambda
     THnSparseF  *fRealAntiLambdaDist;//! Dist of Real anti lambda
-    THnSparseF  *fRealNoDecayCutLambdaDist;//! Dist of Real lambda with no check on decay daughter eta
+    
     THnSparseF  *fRecoTotalV0LambdaDist;//! Dist of Recon lambda and anti lambda (from v0)
-    THnSparseF  *fTrackRecoTotalV0LambdaDist;//! Dist of Recon lambda and anti lambda with daughter passing cuts (from v0)
+    THnSparseF  *fRecoEtaV0LambdaDist;//! Dist of Recon lambda and anti lambda (from v0, eta cut on daughters)
+    THnSparseF  *fRecoEtaPtV0LambdaDist;//! Dist of Recon lambda and anti lambda (from v0, eta pt cut on daughters)
+    THnSparseF  *fRecoEtaPtRefitV0LambdaDist;//! Dist of Recon lambda and anti lambda (from v0, eta pt refit cut on daughters)
+    THnSparseF  *fRecoEtaPtRefitRowsV0LambdaDist;//! Dist of Recon lambda and anti lambda (from v0, eta pt refit rows  cut on daughters)
+    THnSparseF  *fRecoEtaPtRefitRowsRatioV0LambdaDist;//! Dist of Recon lambda and anti lambda (from v0, eta pt refit rows ratio cut on daughters)
+
     THnSparseF  *fRecoTotalLambdaDist;//! Dist of Recon lambda and anti lambda
+    THnSparseF  *fRecoEtaLambdaDist;//! Dist of Recon lambda and anti lambda (eta cut on daughters)
+    THnSparseF  *fRecoEtaPtLambdaDist;//! Dist of Recon lambda and anti lambda (eta pt cut on daughters)
+    THnSparseF  *fRecoEtaPtRefitLambdaDist;//! Dist of Recon lambda and anti lambda ( eta pt refit cut on daughters)
+    THnSparseF  *fRecoEtaPtRefitRowsLambdaDist;//! Dist of Recon lambda and anti lambda ( eta pt refit rows  cut on daughters)
+    THnSparseF  *fRecoEtaPtRefitRowsRatioLambdaDist;//! Dist of Recon lambda and anti lambda ( eta pt refit rows ratio cut on daughters)
+
     THnSparseF  *fRecoTotalLambdaFilterDist;//! Dist of Recon lambda and anti lambda with filter bit of daughters
-    THnSparseF  *fRecoPrimaryLambdaDist;//! Dist of Recon lambda and anti lambda with prim daughters
-    THnSparseF  *fRecoNonPrimaryLambdaDist;//! Dist of Recon lambda and anti lambda without prim daughters
-    THnSparseF  *fTrackRecoTotalLambdaDist;//! Dist of Recon lambda and anti lambda with daughter passing cuts
     THnSparseF  *fRecoLambdaDist;//! Dist of Recon lambda
-    THnSparseF  *fTrackRecoLambdaDist;//! Dist of Recon lambda passing track cuts
     THnSparseF  *fRecoAntiLambdaDist;//! Dist of Recon anti lambda
-    THnSparseF  *fTrackRecoAntiLambdaDist;//! Dist of recon anti lambda with daughter passing cuts
-    THnSparseF  *fRecoNormalLambdaDist;//! Dist of Recon normal lambda
-    THnSparseF  *fTOFRecoLambdaDist;//! Dist of Recon lambda passing track cuts + TOF hit
-    THnSparseF  *fTPCPIDTrackRecoLambdaDist;//! Dist of Recon lambda passing track cuts + TPC PID
-    THnSparseF  *fTPCPIDRecoLambdaDist;//! Dist of Recon lambda passing track cuts + TOF hit + TPC PID
-    THnSparseF  *fPIDRecoLambdaDist;//! Dist of Recon lambda passing track cuts + TOF&TPC PID 3 sigma cut
-    THnSparseF  *fTrackEtaRecoLambdaDist;//! Dist of Recon lambda with daughters passing eta cuts
-    THnSparseF  *fTrackEtaPtRecoLambdaDist;//! Dist of Recon lambda with daughters passing eta and pt cuts
-    THnSparseF  *fTrackEtaPtFilterRecoLambdaDist;//! Dist of Recon lambda with daughters passing eta, pt, and filtermask cuts
-    THnSparseF  *fTrackEtaPtFilterRowsRecoLambdaDist;//! Dist of Recon lambda with daughters passing eta, pt, filtermask and TPC crossed rows cuts
-    THnSparseF  *fDuplicatePion;//! Dist of track qual stuff for pions from lambda
-    THnSparseF  *fDuplicateProton;//! Dist of track qual stuff for protons from (same) lambda
 
     THnSparseF  *fRealChargedDist;//!
     THnSparseF  *fRealKDist;//!
@@ -138,13 +142,9 @@ private:
    
     THnSparseF  *fRecoChargedDist;//!
     THnSparseF  *fRecoKDist;//!
-    THnSparseF  *fTOFPiDist;//!
-    THnSparseF  *fTOFProtonDist;//!
     THnSparseF  *fRecoPiDist;//!
-    THnSparseF  *fRecoPiFromLambdaDist;//!
     THnSparseF  *fRecoeDist;//!
     THnSparseF  *fRecopDist;//!
-    THnSparseF  *fRecopFromLambdaDist;//!
     THnSparseF  *fRecoMuonDist;//!
 
     THnSparseF  *fRecoChargedTriggerDist;//!
@@ -159,8 +159,6 @@ private:
 
     TH1F        *fRealLambdasPerEvent;//!
     TH1F        *fRecoLambdasPerEvent;//!
-
-    TH2D        *fRecoVsRealLambdaPtDist;//!
 
     TH1D        *fReactionPlane;//!
 

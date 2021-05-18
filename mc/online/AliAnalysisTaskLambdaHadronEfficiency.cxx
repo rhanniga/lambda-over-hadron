@@ -69,13 +69,16 @@ fRecoLambdaDist(0)
     DefineOutput(1, TList::Class());
     //printf("\n\n!!!!!!!!!!]\n done with the constructor! \n");
     //fflush(stdout);
+    MIN_CROSSED_ROWS_TPC = 70;
+    MIN_ROW_CLUSTER_RATIO = 0.8;
     MULT_LOW = multLow;
     MULT_HIGH = multHigh;
     CENT_ESTIMATOR = "V0A";
-    DAUGHTER_TRK_BIT = 16;
+    // DAUGHTER_TRK_BIT = 16; not used
     ASSOC_TRK_BIT = 1024;
     TRIG_TRK_BIT = 768;
     DAUGHTER_ETA_CUT = 0.8;
+    DAUGHTER_MIN_PT = 0.15;
 
 }
 //________________________________________________________________________
@@ -106,13 +109,16 @@ fRecoLambdaDist(0)
     // DefineOutput(1, TH1I::Class());
     DefineOutput(1, TList::Class());
     //DefineOutput(3, TTree::Class());
+    MIN_CROSSED_ROWS_TPC = 70;
+    MIN_ROW_CLUSTER_RATIO = 0.8;
     MULT_LOW = 0;
     MULT_HIGH = 80;
     CENT_ESTIMATOR = "V0A";
-    DAUGHTER_TRK_BIT = 16;
+    // DAUGHTER_TRK_BIT = 16; not used
     ASSOC_TRK_BIT = 1024;
     TRIG_TRK_BIT = 768;
     DAUGHTER_ETA_CUT = 0.8;
+    DAUGHTER_MIN_PT = 0.15;
 }
 //________________________________________________________________________
 AliAnalysisTaskLambdaHadronEfficiency::~AliAnalysisTaskLambdaHadronEfficiency()
@@ -176,9 +182,6 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     
     fVtxX = new TH1F("fVtxX","X vertex position;Vtx_{x};counts",1000,-50,50);
     fOutputList->Add(fVtxX);
-
-    fRecoVsRealLambdaPtDist = new TH2D("fRecoVsRealLambdaPtDist", "Reco vs. Real #Lambda p_{T} dist", 100, 0, 10, 100, 0, 10);
-    fOutputList->Add(fRecoVsRealLambdaPtDist);
     
     // Single Particle and inclusive charged hadron histos
     Int_t numbinsSingle[5] = {100, 64, 64, 10, 10};
@@ -214,21 +217,9 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
 
     fRecoKDist = new THnSparseF("fRecoKDist", "Reco Kaon distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
     fOutputList->Add(fRecoKDist);
-    
-    fTOFPiDist = new THnSparseF("fTOFPiDist", "TOF Pion distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
-    fOutputList->Add(fTOFPiDist);
-    
-    fTOFProtonDist = new THnSparseF("fTOFProtonDist", "TOF Proton distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
-    fOutputList->Add(fTOFProtonDist);
 
     fRecoPiDist = new THnSparseF("fRecoPiDist", "Reco Pion distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
     fOutputList->Add(fRecoPiDist);
-
-    fRecoPiFromLambdaDist = new THnSparseF("fRecoPiFromLambdaDist", "Reco Pion (from #Lambda) distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
-    fOutputList->Add(fRecoPiFromLambdaDist);
-
-    fRecopFromLambdaDist = new THnSparseF("fRecopFromLambdaDist", "Reco proton (from #Lambda) distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
-    fOutputList->Add(fRecopFromLambdaDist);
 
     fRecopDist = new THnSparseF("fRecopDist", "Reco proton distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
     fOutputList->Add(fRecopDist);
@@ -257,7 +248,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     fRecoMuonTriggerDist = new THnSparseF("fRecoMuonTriggerDist", "Reco Muon Trigger distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
     fOutputList->Add(fRecoMuonTriggerDist);
 
-    //Real & MC Phi track histos
+    // Lambda ditributions used for eff calc
     
     Int_t numbins[6] = {100, 64, 64, 10, 80, 10};
     Double_t minval[6] = {0, -3.14159, -2., -10, 1.06, 0.0};
@@ -272,63 +263,47 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     fRealAntiLambdaDist = new THnSparseF("fRealAntiLambdaDist", "Real #bar{#Lambda} distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{KK};Multiplicity Pctl.", 6, numbins, minval, maxval);
     fOutputList->Add(fRealAntiLambdaDist);
 
-    fRealNoDecayCutLambdaDist = new THnSparseF("fRealNoDecayCutLambdaDist", "Real #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{KK};Multiplicity Pctl.", 6, numbins, minval, maxval);
-    fOutputList->Add(fRealNoDecayCutLambdaDist);
-
     fRecoTotalV0LambdaDist = new THnSparseF("fRecoTotalV0LambdaDist", "Reco (#Lambda + #bar{#Lambda}) from V^{0} distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
     fOutputList->Add(fRecoTotalV0LambdaDist);
 
-    fTrackRecoTotalV0LambdaDist = new THnSparseF("fTrackRecoTotalV0LambdaDist", "TrackReco (#Lambda + #bar{#Lambda}) from V^{0} distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
-    fOutputList->Add(fTrackRecoTotalV0LambdaDist);
+    fRecoEtaV0LambdaDist = new THnSparseF("fRecoEtaV0LambdaDist", "Reco (#Lambda + #bar{#Lambda}) from V^{0} distribution (eta cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fOutputList->Add(fRecoEtaV0LambdaDist);
+
+    fRecoEtaPtV0LambdaDist = new THnSparseF("fRecoEtaPtV0LambdaDist", "Reco (#Lambda + #bar{#Lambda}) from V^{0} distribution (eta + pt cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fOutputList->Add(fRecoEtaPtV0LambdaDist);
+
+    fRecoEtaPtRefitV0LambdaDist = new THnSparseF("fRecoEtaPtRefitV0LambdaDist", "Reco (#Lambda + #bar{#Lambda}) from V^{0} distribution (eta + pt + refit cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fOutputList->Add(fRecoEtaPtRefitV0LambdaDist);
+
+    fRecoEtaPtRefitRowsV0LambdaDist = new THnSparseF("fRecoEtaPtRefitRowsV0LambdaDist", "Reco (#Lambda + #bar{#Lambda}) from V^{0} distribution (eta + pt + refit + rows cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fOutputList->Add(fRecoEtaPtRefitRowsV0LambdaDist);
+
+    fRecoEtaPtRefitRowsRatioV0LambdaDist = new THnSparseF("fRecoEtaPtRefitRowsRatioV0LambdaDist", "Reco (#Lambda + #bar{#Lambda}) from V^{0} distribution (eta + pt + refit + rows + ratio cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fOutputList->Add(fRecoEtaPtRefitRowsRatioV0LambdaDist);
+
+    fRecoEtaLambdaDist = new THnSparseF("fRecoEtaLambdaDist", "Reco (#Lambda + #bar{#Lambda})  distribution (eta cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fOutputList->Add(fRecoEtaLambdaDist);
+
+    fRecoEtaPtLambdaDist = new THnSparseF("fRecoEtaPtLambdaDist", "Reco (#Lambda + #bar{#Lambda})  distribution (eta + pt cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fOutputList->Add(fRecoEtaPtLambdaDist);
+
+    fRecoEtaPtRefitLambdaDist = new THnSparseF("fRecoEtaPtRefitLambdaDist", "Reco (#Lambda + #bar{#Lambda}) distribution (eta + pt + refit cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fOutputList->Add(fRecoEtaPtRefitLambdaDist);
+
+    fRecoEtaPtRefitRowsLambdaDist = new THnSparseF("fRecoEtaPtRefitRowsLambdaDist", "Reco (#Lambda + #bar{#Lambda}) distribution (eta + pt + refit + rows cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fOutputList->Add(fRecoEtaPtRefitRowsLambdaDist);
+
+    fRecoEtaPtRefitRowsRatioLambdaDist = new THnSparseF("fRecoEtaPtRefitRowsRatioLambdaDist", "Reco (#Lambda + #bar{#Lambda}) distribution (eta + pt + refit + rows + ratio cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fOutputList->Add(fRecoEtaPtRefitRowsRatioLambdaDist);
 
     fRecoTotalLambdaDist = new THnSparseF("fRecoTotalLambdaDist", "Reco (#Lambda + #bar{#Lambda}) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
     fOutputList->Add(fRecoTotalLambdaDist);
 
-    fRecoPrimaryLambdaDist = new THnSparseF("fRecoPrimaryLambdaDist", "Reco (#Lambda + #bar{#Lambda}) (prim. daughters) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
-    fOutputList->Add(fRecoPrimaryLambdaDist);
-
-    fRecoNonPrimaryLambdaDist = new THnSparseF("fRecoNonPrimaryLambdaDist", "Reco (#Lambda + #bar{#Lambda}) (non-prim. daughters) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
-    fOutputList->Add(fRecoNonPrimaryLambdaDist);
-
-    fTrackRecoTotalLambdaDist = new THnSparseF("fTrackRecoTotalLambdaDist", "Track cut reco (#Lambda + #bar{#Lambda}) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.",6, numbins, minval, maxval);
-    fOutputList->Add(fTrackRecoTotalLambdaDist);
-
     fRecoLambdaDist = new THnSparseF("fRecoLambdaDist", "Reco #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
     fOutputList->Add(fRecoLambdaDist);
 
-    fTrackRecoLambdaDist = new THnSparseF("fTrackRecoLambdaDist", "Track cut reco #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
-    fOutputList->Add(fTrackRecoLambdaDist);
-
     fRecoAntiLambdaDist = new THnSparseF("fRecoAntiLambdaDist", "Reco #Lambda (anti) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
     fOutputList->Add(fRecoAntiLambdaDist);
-
-    fTrackRecoAntiLambdaDist = new THnSparseF("fTrackRecoAntiLambdaDist", "Track cut reco #bar{#Lambda} distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
-    fOutputList->Add(fTrackRecoAntiLambdaDist);
-
-    fTrackEtaRecoLambdaDist = new THnSparseF("fTrackEtaRecoLambdaDist", "Track Eta Cut (< 0.8) Reco #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.",6, numbins, minval, maxval);
-    fOutputList->Add(fTrackEtaRecoLambdaDist);
-
-    fTrackEtaPtRecoLambdaDist = new THnSparseF("fTrackEtaPtRecoLambdaDist", "Track Eta and Pt Cut (< 0.8, > 0.15 GeV) Reco #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.",6, numbins, minval, maxval);
-    fOutputList->Add(fTrackEtaPtRecoLambdaDist);
-
-    fTrackEtaPtFilterRecoLambdaDist = new THnSparseF("fTrackEtaPtFilterRecoLambdaDist", "Track Eta, Pt and Filtermask Cut (< 0.8, > 0.15 GeV, Filter mask = 16) Reco #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.",6, numbins, minval, maxval);
-    fOutputList->Add(fTrackEtaPtFilterRecoLambdaDist);
-
-    // THIS SHOULD BE THE SAME AS fTrackRecoLambdaDist
-    fTrackEtaPtFilterRowsRecoLambdaDist = new THnSparseF("fTrackEtaPtFilterRowsRecoLambdaDist", "Track Eta, Pt, Filtermask and rows Cut (< 0.8, > 0.15 GeV, Filter mask = 16, rows > 80) Reco #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.",6, numbins, minval, maxval);
-    fOutputList->Add(fTrackEtaPtFilterRowsRecoLambdaDist);
-
-    fTOFRecoLambdaDist = new THnSparseF("fTOFRecoLambdaDist","Track Cut & TOF hit Reco #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.",6, numbins, minval, maxval);
-    fOutputList->Add(fTOFRecoLambdaDist);
-    
-    fTPCPIDTrackRecoLambdaDist = new THnSparseF("fTPCPIDTrackRecoLambdaDist", "Track Cut & TPC PID 3#sigma Reco #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
-    fOutputList->Add(fTPCPIDTrackRecoLambdaDist);
-    
-    fTPCPIDRecoLambdaDist = new THnSparseF("fTPCPIDRecoLambdaDist", "Track Cut & TOF hit & TPC PID 3#sigma Reco #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
-    fOutputList->Add(fTPCPIDRecoLambdaDist);
-
-    fPIDRecoLambdaDist = new THnSparseF("fPIDRecoLambdaDist", "Track Cut & TOF hit & TOF&TPC 3#sigma Reco #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
-    fOutputList->Add(fPIDRecoLambdaDist);
 
     fReactionPlane = new TH1D("fReactionPlane", "Reaction Plane Angle; Angle", 64, -3.14159, 3.14159);
     fOutputList->Add(fReactionPlane);
@@ -341,114 +316,100 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     fRecoTotalLambdaFilterDist = new THnSparseF("fRecoTotalLambdaFilterDist", "Reco (#Lambda + #bar{#Lambda}) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 8, numbinsFilter, minvalFilter, maxvalFilter);
     fOutputList->Add(fRecoTotalLambdaFilterDist);
 
-    // pt Lambda, eta Lambda, pt Proton, pt Pion
-    int numBinsDaughters[4] = {128, 128, 128, 128}; 
-    double binsMinDaughters[4] = {0, -2, 0, 0};
-    double binsMaxDaughters[4] = {10, 2, 10, 10};
-
-    fRealLambdaDaughterDist = new THnSparseF("fRealLambdaDaughterDist", "Real Lambda Daughter (p and #pi) distributions", 4, numBinsDaughters, binsMinDaughters, binsMaxDaughters);
-    fOutputList->Add(fRealLambdaDaughterDist);
-
-    fRecoLambdaDaughterDist = new THnSparseF("fRecoLambdaDaughterDist", "Track Cut Reco #Lambda Daughter (p and #pi) distribution", 4, numBinsDaughters, binsMinDaughters, binsMaxDaughters);
-    fOutputList->Add(fRecoLambdaDaughterDist);
-
     fRealLambdasPerEvent = new TH1F("fRealLambdasPerEvent", "Real Lambdas per Event", 10, 0, 10);
     fOutputList->Add(fRealLambdasPerEvent);
 
     fRecoLambdasPerEvent = new TH1F("fRecoLambdasPerEvent", "Reco Lambdas per Event", 10, 0, 10);
     fOutputList->Add(fRecoLambdasPerEvent);
 
-    // duplicate track checks (crossed rows, clusters, filtermask)
-    int numBinsDuplicate[3] = {145, 100, 1000};
-    double binsMinDuplicate[3] = {0, 0, 0};
-    double binsMaxDuplicate[3] = {145, 100, 1000};
-
-    fDuplicatePion = new THnSparseF("fDuplicatePion", "Duplicate Pion track parameters", 3, numBinsDuplicate, binsMinDuplicate, binsMaxDuplicate);
-    fOutputList->Add(fDuplicatePion);
-
-    fDuplicateProton = new THnSparseF("fDuplicateProton", "Duplicate Proton track parameters", 3, numBinsDuplicate, binsMinDuplicate, binsMaxDuplicate);
-    fOutputList->Add(fDuplicateProton);
-
     PostData(1,fOutputList);
 
 }
 
 //_______________________________________________________________________
-UInt_t AliAnalysisTaskLambdaHadronEfficiency::PassProtonCuts(AliAODTrack *track, Double_t TPCnSigma, Double_t TOFnSigma){
-    //returns the level of cuts that the track passed
-    //cutLevel: 1 = track cuts, 2 = TOF Hit, 4 = TPC PID cut, 8 = TOF PID cut
-    UInt_t passLevel = 0;
-    Bool_t pass = kTRUE;
-    pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
-    pass = pass && (track->Pt() >= 0.15);
-    pass = pass && (track->TestFilterMask(ASSOC_TRK_BIT));
-    pass = pass && (track->GetTPCCrossedRows() > 80);
-    if(pass) passLevel |= TRACK_BIT;    
-    if(TOFnSigma != -999){ //check if there is a TOF signal, but don't care what the signal is
-        passLevel |= TOF_HIT_BIT;
-    }
-    if(TMath::Abs(TPCnSigma) <= 2.0){ // check that kaon passed the TPC nsigma cut
-        passLevel |= TPC_PID_BIT;
-    }
-    if(TMath::Abs(TOFnSigma) <= 2.0){ // check that kaon passed TOF nsigma cut
-        passLevel |= TOF_PID_BIT;
-    }
+// UInt_t AliAnalysisTaskLambdaHadronEfficiency::PassProtonCuts(AliAODTrack *track, Double_t TPCnSigma, Double_t TOFnSigma){
+//     //returns the level of cuts that the track passed
+//     //cutLevel: 1 = track cuts, 2 = TOF Hit, 4 = TPC PID cut, 8 = TOF PID cut
+//     UInt_t passLevel = 0;
+//     Bool_t pass = kTRUE;
+//     pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
+//     pass = pass && (track->Pt() >= 0.15);
+//     pass = pass && (track->TestFilterMask(ASSOC_TRK_BIT));
+//     pass = pass && (track->GetTPCCrossedRows() > 80);
+//     if(pass) passLevel |= TRACK_BIT;    
+//     if(TOFnSigma != -999){ //check if there is a TOF signal, but don't care what the signal is
+//         passLevel |= TOF_HIT_BIT;
+//     }
+//     if(TMath::Abs(TPCnSigma) <= 2.0){ // check that kaon passed the TPC nsigma cut
+//         passLevel |= TPC_PID_BIT;
+//     }
+//     if(TMath::Abs(TOFnSigma) <= 2.0){ // check that kaon passed TOF nsigma cut
+//         passLevel |= TOF_PID_BIT;
+//     }
 
-    if(TMath::Abs(track->Eta()) <= 0.8) passLevel |= ETA_BIT;
-    if(track->Pt() >= 0.15) passLevel |= PT_BIT;
-    if(track->TestFilterMask(ASSOC_TRK_BIT)) passLevel |= MASK_BIT;
-    if(track->GetTPCCrossedRows() > 80) passLevel |= ROWS_BIT;
+//     if(TMath::Abs(track->Eta()) <= 0.8) passLevel |= ETA_BIT;
+//     if(track->Pt() >= 0.15) passLevel |= PT_BIT;
+//     if(track->TestFilterMask(ASSOC_TRK_BIT)) passLevel |= MASK_BIT;
+//     if(track->GetTPCCrossedRows() > 80) passLevel |= ROWS_BIT;
 
-    return passLevel;
-}
-
-//_______________________________________________________________________
-UInt_t AliAnalysisTaskLambdaHadronEfficiency::PassPionCuts(AliAODTrack *track, Double_t TPCnSigma, Double_t TOFnSigma){
-    //returns the level of cuts that the track passed
-    //cutLevel: 1 = track cuts, 2 = TOF Hit, 4 = TPC PID cut, 8 = TOF PID cut
-    UInt_t passLevel = 0;
-    Bool_t pass = kTRUE;
-    pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
-    pass = pass && (track->Pt() >= 0.15);
-    pass = pass && (track->TestFilterMask(ASSOC_TRK_BIT));
-    pass = pass && (track->GetTPCCrossedRows() > 80);
-    if(pass) passLevel |= TRACK_BIT;    
-    if(TOFnSigma != -999){ //check if there is a TOF signal, but don't care what the signal is
-        passLevel |= TOF_HIT_BIT;
-    }
-    if(TMath::Abs(TPCnSigma) <= 3.0){ // check that kaon passed the TPC nsigma cut
-        passLevel |= TPC_PID_BIT;
-    }
-    if(TMath::Abs(TOFnSigma) <= 3.0){ // check that kaon passed TOF nsigma cut
-        passLevel |= TOF_PID_BIT;
-    }
-
-    if(TMath::Abs(track->Eta()) <= 0.8) passLevel |= ETA_BIT;
-    if(track->Pt() >= 0.15) passLevel |= PT_BIT;
-    if(track->TestFilterMask(ASSOC_TRK_BIT)) passLevel |= MASK_BIT;
-    if(track->GetTPCCrossedRows() > 80) passLevel |= ROWS_BIT;
-
-    return passLevel;
-}
+//     return passLevel;
+// }
 
 //_______________________________________________________________________
-Bool_t AliAnalysisTaskLambdaHadronEfficiency::PassDaughterCuts(AliAODTrack *track){
+// UInt_t AliAnalysisTaskLambdaHadronEfficiency::PassPionCuts(AliAODTrack *track, Double_t TPCnSigma, Double_t TOFnSigma){
+//     //returns the level of cuts that the track passed
+//     //cutLevel: 1 = track cuts, 2 = TOF Hit, 4 = TPC PID cut, 8 = TOF PID cut
+//     UInt_t passLevel = 0;
+//     Bool_t pass = kTRUE;
+//     pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
+//     pass = pass && (track->Pt() >= 0.15);
+//     pass = pass && (track->TestFilterMask(ASSOC_TRK_BIT));
+//     pass = pass && (track->GetTPCCrossedRows() > 80);
+//     if(pass) passLevel |= TRACK_BIT;    
+//     if(TOFnSigma != -999){ //check if there is a TOF signal, but don't care what the signal is
+//         passLevel |= TOF_HIT_BIT;
+//     }
+//     if(TMath::Abs(TPCnSigma) <= 3.0){ // check that kaon passed the TPC nsigma cut
+//         passLevel |= TPC_PID_BIT;
+//     }
+//     if(TMath::Abs(TOFnSigma) <= 3.0){ // check that kaon passed TOF nsigma cut
+//         passLevel |= TOF_PID_BIT;
+//     }
 
-    Bool_t pass = kTRUE;
+//     if(TMath::Abs(track->Eta()) <= 0.8) passLevel |= ETA_BIT;
+//     if(track->Pt() >= 0.15) passLevel |= PT_BIT;
+//     if(track->TestFilterMask(ASSOC_TRK_BIT)) passLevel |= MASK_BIT;
+//     if(track->GetTPCCrossedRows() > 80) passLevel |= ROWS_BIT;
 
-    pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
-    pass = pass && (track->Pt() >= 0.15);
+//     return passLevel;
+// }
 
-    // pass = pass && (track->TestFilterMask(DAUGHTER_TRK_BIT));
+//_______________________________________________________________________
+uint AliAnalysisTaskLambdaHadronEfficiency::PassDaughterCuts(AliAODTrack *track){
 
-    pass = pass && (track->IsOn(AliAODTrack::kTPCrefit));
+    // Reject the negative ID tracks (TPC constrained to PV, etc.)
+    if(track->GetID() < 0) return false;
 
-    pass = pass && (track->GetTPCCrossedRows() > 70);
+    uint passLevel = 0;
 
+    // Bit set if track passes eta cut
+    if(TMath::Abs(track->Eta()) <= DAUGHTER_ETA_CUT) passLevel |= ETA_BIT;
+
+    // Bit set if track passes pt cut
+    if(track->Pt() >= DAUGHTER_MIN_PT) passLevel |= PT_BIT;
+
+    // Bit set if track has TPC refit flag enabled
+    if(track->IsOn(AliAODTrack::kTPCrefit)) passLevel |= TPC_REFIT_BIT;
+
+    // Bit set if track has more than min number of crossed rows in TPC (set in constructor, usually 70)
+    if(track->GetTPCCrossedRows() > MIN_CROSSED_ROWS_TPC) passLevel |= CROSSED_ROWS_BIT;
+
+    // Bit set if the crossed rows/findable clusters is greater than a certain value (set in constructor, usually 0.8)
     float ratio = (track->GetTPCNclsF() > 0)  ? track->GetTPCCrossedRows()/track->GetTPCNclsF() : 0;
-    pass = pass && (ratio > 0.8);
+    if(ratio > MIN_ROW_CLUSTER_RATIO) passLevel |= ROW_CLUSTER_RATIO_BIT;
 
-    return pass;
+    return passLevel;
+
 }
 
 Bool_t AliAnalysisTaskLambdaHadronEfficiency::PassAssociatedCuts(AliAODTrack *track){
@@ -476,35 +437,54 @@ Bool_t AliAnalysisTaskLambdaHadronEfficiency::PassTriggerCuts(AliAODTrack *track
 }
 
 //_______________________________________________________________________
-Bool_t AliAnalysisTaskLambdaHadronEfficiency::PassHadronCuts(AliAODTrack *track, Bool_t isTrigger){
-    //returns the level of cuts that the track passed
-    //cutLevel: 1 = track cuts, 2 = TOF Hit, 4 = TPC PID cut, 8 = TOF PID cut
-    Bool_t pass = kTRUE;
-    pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
-    pass = pass && (track->Pt() >= 0.15);
-    if(isTrigger){
-        pass = pass && (track->TestBit(TRIG_TRK_BIT));
-    }else{
-        pass = pass && (track->TestFilterMask(ASSOC_TRK_BIT));
-    }
-    return pass;
-}
+// Bool_t AliAnalysisTaskLambdaHadronEfficiency::PassHadronCuts(AliAODTrack *track, Bool_t isTrigger){
+//     //returns the level of cuts that the track passed
+//     //cutLevel: 1 = track cuts, 2 = TOF Hit, 4 = TPC PID cut, 8 = TOF PID cut
+//     Bool_t pass = kTRUE;
+//     pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
+//     pass = pass && (track->Pt() >= 0.15);
+//     if(isTrigger){
+//         pass = pass && (track->TestBit(TRIG_TRK_BIT));
+//     }else{
+//         pass = pass && (track->TestFilterMask(ASSOC_TRK_BIT));
+//     }
+//     return pass;
+// }
+
+
+//_______________________________________________________________________
+// AliAODTrack* AliAnalysisTaskLambdaHadronEfficiency::GetTrackFromID(AliAODEvent* inputEvent, int trackID) {
+
+//     int numTracks = inputEvent->GetNumberOfTracks();
+//     bool trackFound = false;
+//     AliAODTrack* returnTrack = 0x0;
+//     for(int itrack = 0; itrack < numTracks; itrack++) {
+//         auto currentTrack = (AliAODTrack*)inputEvent->GetTrack(itrack);
+//         int currentTrackID = currentTrack->GetID();
+//         if((currentTrackID == trackID) && !trackFound) {
+//             trackFound = true;
+//             returnTrack = currentTrack;
+//         }    
+//         else if((currentTrackID == trackID) && trackFound) {
+//             std::cout << "OKAY SO THE TRACK IDs ARE NOT UNIQUE??? WTF IS AN ID THEN???????" << std::endl;
+//             std::cout << "THE INTERSECTING ID IS: " << trackID << "\n";
+//             std::cout << "track1 stats (pt, eta, phi, filtermap):\n";
+//             std::cout << "\t" << returnTrack->Pt() << ", " << returnTrack->Eta() << ", " << returnTrack->Phi() << ", " << returnTrack->GetFilterMap() << std::endl;
+//             std::cout << "\t" << currentTrack->Pt() << ", " << currentTrack->Eta() << ", " << currentTrack->Phi() << ", " << currentTrack->GetFilterMap() << std::endl;
+//         }
+//     }
+//     return returnTrack;
+// }
 
 //________________________________________________________________________
 void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
-    //masks for the different cut configurations: (track cuts only), (track + TOF hit), (track + TPC PID), (track + TOF hit + TPC PID), (track + TOF hit + TPC PID + TOF PID)
-    UInt_t maskEta = ETA_BIT;
-    UInt_t maskEtaPt = ETA_BIT + PT_BIT;
-    UInt_t maskEtaPtMask = ETA_BIT + PT_BIT + MASK_BIT;
-    UInt_t maskEtaPtMaskRows = ETA_BIT + PT_BIT + MASK_BIT + ROWS_BIT;
-    UInt_t maskTrackOnly = TRACK_BIT;
-    UInt_t maskTrackTOF = TRACK_BIT + TOF_HIT_BIT;
-    UInt_t maskTrackTPC = TRACK_BIT + TPC_PID_BIT;
-    UInt_t maskTrackTOFTPC = TRACK_BIT + TOF_HIT_BIT + TPC_PID_BIT;
-    UInt_t maskTrackPID = TRACK_BIT + TOF_HIT_BIT + TPC_PID_BIT + TOF_PID_BIT;
-
-    std::map<int, std::vector<std::vector<AliAODTrack*>>> lambdaDict;
+    //masks for the different cut configurations
+    uint maskEta = ETA_BIT;
+    uint maskEtaPt = ETA_BIT + PT_BIT;
+    uint maskEtaPtRefit = ETA_BIT + PT_BIT + TPC_REFIT_BIT;
+    uint maskEtaPtRefitRows = ETA_BIT + PT_BIT + TPC_REFIT_BIT + CROSSED_ROWS_BIT;
+    uint maskEtaPtRefitRowsRatio = ETA_BIT + PT_BIT + TPC_REFIT_BIT + CROSSED_ROWS_BIT + ROW_CLUSTER_RATIO_BIT;
 
     UInt_t evSelMask=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
@@ -616,9 +596,6 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
     }
     fReactionPlane->Fill(RA);
 
-    //TRandom3* randomGen = new TRandom3();
-    //Double_t randangle = randomGen->Uniform(0.0, 2.0*TMath::Pi());
-
     UInt_t negPassCuts = 0;
     UInt_t posPassCuts = 0;
 
@@ -639,18 +616,10 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
     Int_t motherPDG = 0;
     Int_t pdgcode = 0;
 
-    std::vector<std::vector<int>> trackIDsV0;
-    std::vector<std::vector<int>> trackIDsV0cut;
-
-    std::vector<std::vector<int>> trackIDsList;
-    std::vector<std::vector<int>> trackIDsListcut;
-
-    std::set<int> protonMaps;
-    std::set<int> pionMaps;
-
     int numRealLambdas = 0;
     int numRecoLambdas = 0;
 
+    std::vector<std::vector<int>> trackIDsV0;
 
     // quick test loop over V0's to determine filter mask range for daughter tracks
     int numV0s = fAOD->GetNumberOfV0s();
@@ -658,15 +627,8 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         AliAODv0 *vZero = fAOD->GetV0(iv0);
         if(!vZero) continue;
 
-        // int v0label = vZero->GetLabel();
-        // if(v0label < 0) continue;
-        // std::cout << "the v0 label is: " << v0label << std::endl;
-        // AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(v0label);
-        // std::cout << mcmother->GetPdgCode() << " is the PDG code" << std::endl;
-
         AliAODTrack *ptrack=(AliAODTrack *)vZero->GetDaughter(0);
         AliAODTrack *ntrack=(AliAODTrack *)vZero->GetDaughter(1);
-        AliAODTrack *ttrack=(AliAODTrack *)vZero->GetDaughter(2);
         
         int plabel = ptrack->GetLabel();
         int nlabel = ntrack->GetLabel();
@@ -687,16 +649,10 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         if(posmomlabel < 0 || negmomlabel < 0) continue;
 
         if(posmomlabel != negmomlabel) {
-            // std::cout << "somehow the v0 daughter tracks to not correspond to the same mother!" << std::endl;
-            AliAODMCParticle* mcposmother = (AliAODMCParticle*)fMCArray->At(posmomlabel);
-            AliAODMCParticle* mcnegmother = (AliAODMCParticle*)fMCArray->At(negmomlabel);
-            // std::cout << "pos mother label: " << posmomlabel << "pos mother pdg: " << mcposmother->GetPdgCode() << std::endl;
-            // std::cout << "neg mother label: " << negmomlabel << "neg mother pdg: " << mcnegmother->GetPdgCode() << std::endl;
             continue ;
         }
 
         AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(posmomlabel);
-        // std::cout << mcmother->GetPdgCode() << std::endl;
 
         if(!(TMath::Abs(mcmother->GetPdgCode()) == 3122)) continue;
 
@@ -708,10 +664,8 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         
         double recoP = TMath::Sqrt(recoPx*recoPx + recoPy*recoPy + recoPz*recoPz);
         double recoE = TMath::Sqrt(ntrack->Px()*ntrack->Px() + ntrack->Py()*ntrack->Py() + ntrack->Pz()*ntrack->Pz() + 0.13957*0.13957) + TMath::Sqrt(ptrack->Px()*ptrack->Px() + ptrack->Py()*ptrack->Py() + ptrack->Pz()*ptrack->Pz() + 0.9383*0.9383);
-        // double recoM = TMath::Sqrt(recoE*recoE - recoP*recoP);
-        double recoM = vZero->MassLambda();
-        // double recoPt = TMath::Sqrt(recoPx*recoPx + recoPy*recoPy);
-        double recoPt = vZero->Pt();
+        double recoM = TMath::Sqrt(recoE*recoE - recoP*recoP);
+        double recoPt = TMath::Sqrt(recoPx*recoPx + recoPy*recoPy);
         double recoEta = 0.5*TMath::Log((recoP + recoPz)/(recoP -  recoPz));
         double recoY = 0.5*TMath::Log((recoE + recoPz)/(recoE - recoPz));
         double recoPhi = TMath::ATan2(recoPy, recoPx);
@@ -731,46 +685,49 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         
         int posTrackID = ptrack->GetID();
         int negTrackID = ntrack->GetID();
-        int testTrackID = 0;
-        if(ttrack) {
-            testTrackID = ttrack->GetID();
-        }
 
-        // std::cout << ptrack->GetSign() << ", " << ntrack->GetSign() << std::endl;
         bool alreadyFilled = false;
         for(int i = 0; i < trackIDsV0.size(); i++) {
             if(posTrackID == trackIDsV0[i][0] && negTrackID == trackIDsV0[i][1]) alreadyFilled = true;
         }
 
-        
-        std::vector<int> v0tracks;
-        if(!alreadyFilled) {
+        if(alreadyFilled) {
+            std::cout << "There are duplicate V0s (whose daughters have exactly the same IDs: " << std::endl;
+            std::cout << "\tPositive track ID: " << posTrackID << "; Negative track ID: " << negTrackID << std::endl;
+            continue;
+        }
+        else {
+            std::vector<int> v0tracks;
             v0tracks.push_back(posTrackID);
             v0tracks.push_back(negTrackID);
             trackIDsV0.push_back(v0tracks);
         }
-
-
-        // if(posTrackID == 33) {
-        //     std::cout << "v0 number: " << iv0 << "; pos track ID: " << posTrackID << "; neg track ID: " << negTrackID << "; test track ID: " << testTrackID << std::endl;
-        // }
+        
 
         fRecoTotalV0LambdaDist->Fill(distPoint);
 
-        if(PassDaughterCuts(ntrack) && PassDaughterCuts(ptrack)) {
-            if(!alreadyFilled) {
-                fTrackRecoTotalV0LambdaDist->Fill(distPoint);
-                trackIDsV0cut.push_back(v0tracks);
-            }
+        uint posPassCuts = PassDaughterCuts(ptrack);
+        uint negPassCuts = PassDaughterCuts(ntrack);
+
+        if(((negPassCuts & maskEta) == maskEta) && ((posPassCuts & maskEta)== maskEta)){
+            fRecoEtaV0LambdaDist->Fill(distPoint);
         }
 
-        // std::cout << "ptrack filter mask: " << ptrack->GetFilterMap() << std::endl;
-        // std::cout << "ntrack filter mask: " << ntrack->GetFilterMap() << std::endl;
+        if(((negPassCuts & maskEtaPt) == maskEtaPt) && ((posPassCuts & maskEtaPt)== maskEtaPt)){
+            fRecoEtaPtV0LambdaDist->Fill(distPoint);
+        }
 
-        // if(PassDaughterCuts(ptrack) && PassDaughterCuts(ntrack)) {
-        //     std::cout << "ptrack filter mask PASSED CUTS: " << ptrack->GetFilterMap() << std::endl;
-        //     std::cout << "ntrack filter mask PASSED CUTS: " << ntrack->GetFilterMap() << std::endl;
-        // }
+        if(((negPassCuts & maskEtaPtRefit) == maskEtaPtRefit) && ((posPassCuts & maskEtaPtRefit)== maskEtaPtRefit)){
+            fRecoEtaPtRefitV0LambdaDist->Fill(distPoint);
+        }
+
+        if(((negPassCuts & maskEtaPtRefitRows) == maskEtaPtRefitRows) && ((posPassCuts & maskEtaPtRefitRows)== maskEtaPtRefitRows)){
+            fRecoEtaPtRefitRowsV0LambdaDist->Fill(distPoint);
+        }
+
+        if(((negPassCuts & maskEtaPtRefitRowsRatio) == maskEtaPtRefitRowsRatio) && ((posPassCuts & maskEtaPtRefitRowsRatio)== maskEtaPtRefitRowsRatio)){
+            fRecoEtaPtRefitRowsRatioV0LambdaDist->Fill(distPoint);
+        }
 
     }
     
@@ -782,21 +739,8 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
         Int_t tracklabel = aodnegtrack->GetLabel();
 
-        // if(aodnegtrack->GetID() < 0) std::cout << aodnegtrack->GetFilterMap() << " is the filtermap\n";
-        // std::cout << tracklabel << " is the track label" << std::endl;
         if(tracklabel < 0) {
-            AliAODMCParticle* part = (AliAODMCParticle*)fMCArray->At(TMath::Abs(tracklabel));
-            // std::cout << part->GetPdgCode() << " is the PDG code" << std::endl;
-            // std::cout << part->GetPdgCode() << std::endl;
-            // std::cout << "hello! the track label is: " << tracklabel << std::endl;
             continue;
-        }
-    
-        Double_t negTPCnSigma = -999;
-        Double_t negTOFnSigma = -999;
-        if(negtrack->Pt() > 0.15){
-            negTPCnSigma = fpidResponse->NumberOfSigmasTPC(negtrack, AliPID::kPion);
-            negTOFnSigma = fpidResponse->NumberOfSigmasTOF(negtrack, AliPID::kPion);
         }
 
         //Get all single particle distributions
@@ -818,24 +762,14 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         if(mcpart->IsPhysicalPrimary()){
             if(associatedPass){ 
                 if(TMath::Abs(pdgcode) == 211){
-                    Int_t pionPass = PassPionCuts(aodnegtrack, negTPCnSigma, negTOFnSigma);
                     fRecoPiDist->Fill(singledistPoint);
                     fRecoChargedDist->Fill(singledistPoint);
-                    if((pionPass & maskTrackTOF) == maskTrackTOF){
-                        fTOFPiDist->Fill(singledistPoint);
-                    }
                 }else if(TMath::Abs(pdgcode) == 321){
                     fRecoKDist->Fill(singledistPoint);
                     fRecoChargedDist->Fill(singledistPoint);
                 }else if(TMath::Abs(pdgcode) == 2212){
                     fRecopDist->Fill(singledistPoint);
                     fRecoChargedDist->Fill(singledistPoint);
-                    motherIndex = mcpart->GetMother();
-                    if(motherIndex >= 0) {
-                        AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(motherIndex);
-                        motherPDG = mcmother->GetPdgCode();
-                        if(TMath::Abs(motherPDG) == 3122) fRecopFromLambdaDist->Fill(singledistPoint);
-                    } 
                 }else if(TMath::Abs(pdgcode) == 11){
                     fRecoeDist->Fill(singledistPoint);
                     fRecoChargedDist->Fill(singledistPoint);
@@ -866,26 +800,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
         }
 
-        // Get reco pions and protons that came from lambdas (can't be physical primaries)
-        if(associatedPass){ 
-            if(TMath::Abs(pdgcode) == 211){
-                motherIndex = mcpart->GetMother();
-                if(motherIndex >= 0) {
-                    AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(motherIndex);
-                    motherPDG = mcmother->GetPdgCode();
-                    if(TMath::Abs(motherPDG) == 3122) fRecoPiFromLambdaDist->Fill(singledistPoint);
-                } 
-            } else if(TMath::Abs(pdgcode) == 2212){
-                motherIndex = mcpart->GetMother();
-                if(motherIndex >= 0) {
-                    AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(motherIndex);
-                    motherPDG = mcmother->GetPdgCode();
-                    if(TMath::Abs(motherPDG) == 3122) fRecopFromLambdaDist->Fill(singledistPoint);
-                } 
-            }
-        }
-
-        negPassCuts = PassPionCuts(aodnegtrack,  negTPCnSigma, negTOFnSigma);
+        negPassCuts = PassDaughterCuts(aodnegtrack);
 
         AliAODMCParticle* mcnegpart = (AliAODMCParticle*)fMCArray->At(tracklabel);
         negparPDG = mcnegpart->GetPdgCode();
@@ -911,7 +826,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 posTOFnSigma = fpidResponse->NumberOfSigmasTOF(postrack, AliPID::kProton);
             }
 
-            posPassCuts = PassProtonCuts(aodpostrack, posTPCnSigma, posTOFnSigma);
+            posPassCuts = PassDaughterCuts(aodpostrack);
 
             Int_t postracklabel = aodpostrack->GetLabel();
             if(postracklabel < 0) continue;
@@ -921,22 +836,6 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
             if(posparPDG != 2212) continue;
 
             if(mcpospart->GetMother() == motherIndex){
-
-                std::cout << "mother mc index: " << motherIndex <<"; pi mc index: " << tracklabel << "; proton mc index: " << postracklabel << std::endl;
-                std::cout << "pi track index: " << itrack << "; proton track index: " << jtrack << std::endl;
-                std::cout << "pi track filtermap: " << aodnegtrack->GetFilterMap() << "; proton track filtermap: " << aodpostrack->GetFilterMap() << std::endl;
-                std::cout << "pi track ID: " << aodnegtrack->GetID() << "; proton track ID: " << aodpostrack->GetID() << std::endl;
-
-                double pionParams[3] = {static_cast<double>(aodnegtrack->GetTPCNCrossedRows()), static_cast<double>(aodnegtrack->GetITSNcls()), static_cast<double>(aodnegtrack->GetFilterMap())};
-                double protonParams[3] = {static_cast<double>(aodpostrack->GetTPCNCrossedRows()), static_cast<double>(aodpostrack->GetITSNcls()), static_cast<double>(aodpostrack->GetFilterMap())};
-
-                fDuplicatePion->Fill(pionParams);
-                fDuplicateProton->Fill(protonParams);
-
-                std::vector<AliAODTrack*> daughterArray;
-                daughterArray.push_back(aodnegtrack);
-                daughterArray.push_back(aodpostrack);
-                lambdaDict[motherIndex].push_back(daughterArray);
 
                 recoPx = aodnegtrack->Px() + aodpostrack->Px();
                 recoPy = aodnegtrack->Py() + aodpostrack->Py();
@@ -962,6 +861,9 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 distPoint[4] = recoM;
                 distPoint[5] = multPercentile;
 
+                fRecoLambdaDist->Fill(distPoint);
+                fRecoTotalLambdaDist->Fill(distPoint);
+
                 double filter_distPoint[8];
                 filter_distPoint[0] = recoPt;
                 filter_distPoint[1] = recoPhi;
@@ -972,98 +874,28 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 filter_distPoint[6] = filterMap_map[aodpostrack->GetFilterMap()];
                 filter_distPoint[7] = filterMap_map[aodnegtrack->GetFilterMap()];
                 
-                fRecoLambdaDist->Fill(distPoint);
-
-                // std::cout << "The proton filter map is: " << aodpostrack->GetFilterMap() << std::endl;
-                // std::cout << "The pion filter map is: " << aodnegtrack->GetFilterMap() << std::endl;
-
-                protonMaps.insert(aodpostrack->GetFilterMap());
-                pionMaps.insert(aodnegtrack->GetFilterMap());
-
-
-                fRecoTotalLambdaDist->Fill(distPoint);
                 fRecoTotalLambdaFilterDist->Fill(filter_distPoint);
 
-                fRecoVsRealLambdaPtDist->Fill(recoPz, mcmother->Pz());
-
-                std::vector<int> listtracks;
-                listtracks.push_back(aodpostrack->GetID());
-                listtracks.push_back(aodnegtrack->GetID());
-
-                trackIDsList.push_back(listtracks);
-
-                if(PassDaughterCuts(aodnegtrack) && PassDaughterCuts(aodpostrack)) {
-                    if(aodnegtrack->IsPrimaryCandidate() && aodpostrack->IsPrimaryCandidate()) fRecoPrimaryLambdaDist->Fill(distPoint);
-                    if(!aodnegtrack->IsPrimaryCandidate() && !aodpostrack->IsPrimaryCandidate()) fRecoNonPrimaryLambdaDist->Fill(distPoint);
-                    fTrackRecoLambdaDist->Fill(distPoint);
-                    fTrackRecoTotalLambdaDist->Fill(distPoint);
-                    trackIDsListcut.push_back(listtracks);
-
-
-                    // std::cout << "the label from track list is: " << motherIndex << std::endl;
-                    // std::cout << "mother mc index: " << motherIndex <<"; pi mc index: " << tracklabel << "; proton mc index: " << postracklabel << std::endl;
-                    // std::cout << "pi track index: " << itrack << "; proton track index: " << jtrack << std::endl;
-                    // std::cout << "pi track filtermap: " << aodnegtrack->GetFilterMap() << "; proton track filtermap: " << aodpostrack->GetFilterMap() << std::endl;
-                    // std::cout << "pi track ID: " << aodnegtrack->GetID() << "; proton track ID: " << aodpostrack->GetID() << std::endl;
-
-                }
-
-                // //fill with phi's where daughter kaons pass track cuts
-                // if(((negPassCuts & maskTrackOnly) == maskTrackOnly) && ((posPassCuts & maskTrackOnly)== maskTrackOnly)){
-                //     fTrackRecoLambdaDist->Fill(distPoint);
-                //     numRecoLambdas += 1;
-                //     if(recoM <= 1.12 && recoM >= 1.11) {
-                //         double daughterDistPoint[4];
-                //         daughterDistPoint[0] = recoPt;
-                //         daughterDistPoint[1] = recoEta;
-                //         // THE PION IS THE NEGATIVE TRACK, PROTON IS POSITIVE
-                //         daughterDistPoint[2] = aodpostrack->Pt();
-                //         daughterDistPoint[3] = aodnegtrack->Pt();
-                //         fRecoLambdaDaughterDist->Fill(daughterDistPoint);
-                //     }
-                // }
-
-                //fill with phi's where daughter kaons pass track cuts and have a TOF hit
-                if(((negPassCuts & maskTrackTOF) == maskTrackTOF) && ((posPassCuts & maskTrackTOF)== maskTrackTOF)){
-                    fTOFRecoLambdaDist->Fill(distPoint);
-                }
-               
-                //fill with phi's where daughter kaons pass track cuts and TPC PID cuts
-                if(((negPassCuts & maskTrackTPC) == maskTrackTPC) && ((posPassCuts & maskTrackTPC)== maskTrackTPC)){
-                    fTPCPIDTrackRecoLambdaDist->Fill(distPoint);
-                } 
-                
-                //fill with phi's where daughter kaons pass track cuts and TOF hit and TPC PID cuts 
-                if(((negPassCuts & maskTrackTOFTPC) == maskTrackTOFTPC) && ((posPassCuts & maskTrackTOFTPC)== maskTrackTOFTPC)){
-                    fTPCPIDRecoLambdaDist->Fill(distPoint);
-                }
-
-                //fill with phi daughter kaons that pass track cuts and pass TOF&TPC PID cuts
-                if(((negPassCuts & maskTrackPID) == maskTrackPID) && ((posPassCuts & maskTrackPID)== maskTrackPID)){
-                    fPIDRecoLambdaDist->Fill(distPoint);
-                }
-
-                // Fill with lambdas whose daughters pass eta cuts
                 if(((negPassCuts & maskEta) == maskEta) && ((posPassCuts & maskEta)== maskEta)){
-                    fTrackEtaRecoLambdaDist->Fill(distPoint);
+                    fRecoEtaLambdaDist->Fill(distPoint);
                 }
 
-                // Fill with lambdas whose daughters pass eta and pt cuts
                 if(((negPassCuts & maskEtaPt) == maskEtaPt) && ((posPassCuts & maskEtaPt)== maskEtaPt)){
-                    fTrackEtaPtRecoLambdaDist->Fill(distPoint);
+                    fRecoEtaPtLambdaDist->Fill(distPoint);
                 }
 
-                // Fill with lambdas whose daughters pass eta and pt cuts and filtermask cuts
-                if(((negPassCuts & maskEtaPtMask) == maskEtaPtMask) && ((posPassCuts & maskEtaPtMask)== maskEtaPtMask)){
-                    fTrackEtaPtFilterRecoLambdaDist->Fill(distPoint);
+                if(((negPassCuts & maskEtaPtRefit) == maskEtaPtRefit) && ((posPassCuts & maskEtaPtRefit)== maskEtaPtRefit)){
+                    fRecoEtaPtRefitLambdaDist->Fill(distPoint);
                 }
 
-                // Fill with lambdas whose daughters pass eta and pt cuts and filtermask cuts and crossed rows
-                // NOTE: This should completely match the original track cut distribution
-                if(((negPassCuts & maskEtaPtMaskRows) == maskEtaPtMaskRows) && ((posPassCuts & maskEtaPtMaskRows)== maskEtaPtMaskRows)){
-                    fTrackEtaPtFilterRowsRecoLambdaDist->Fill(distPoint);
+                if(((negPassCuts & maskEtaPtRefitRows) == maskEtaPtRefitRows) && ((posPassCuts & maskEtaPtRefitRows)== maskEtaPtRefitRows)){
+                    fRecoEtaPtRefitRowsLambdaDist->Fill(distPoint);
                 }
 
+                if(((negPassCuts & maskEtaPtRefitRowsRatio) == maskEtaPtRefitRowsRatio) && ((posPassCuts & maskEtaPtRefitRowsRatio)== maskEtaPtRefitRowsRatio)){
+                    fRecoEtaPtRefitRowsRatioLambdaDist->Fill(distPoint);
+                    numRecoLambdas += 1;
+                }
             }
         }
     }
@@ -1076,42 +908,9 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
         Int_t tracklabel = aodnegtrack->GetLabel();
         if(tracklabel < 0) continue;
-    
-        Double_t negTPCnSigma = -999;
-        Double_t negTOFnSigma = -999;
-        if(negtrack->Pt() > 0.15){
-            negTPCnSigma = fpidResponse->NumberOfSigmasTPC(negtrack, AliPID::kProton);
-            negTOFnSigma = fpidResponse->NumberOfSigmasTOF(negtrack, AliPID::kProton);
-        }
-
-        //Get all single particle distributions
-        AliAODMCParticle* mcpart = (AliAODMCParticle*)fMCArray->At(tracklabel);
-        if(mcpart->IsPhysicalPrimary()){
-            pdgcode = mcpart->GetPdgCode();
-            Bool_t pass = PassHadronCuts(aodnegtrack, kFALSE);
-            Bool_t trigpass = kFALSE;
-            singledistPoint[0] = aodnegtrack->Pt();
-            singledistPoint[1] = aodnegtrack->Phi();
-            if(singledistPoint[1] > TMath::Pi()){
-                singledistPoint[1] -= 2.0*TMath::Pi();
-            }else if(singledistPoint[1] < -1.0*TMath::Pi()){
-                singledistPoint[1] += 2.0*TMath::Pi();
-            }
-            singledistPoint[2] = aodnegtrack->Eta();
-            singledistPoint[3] = Zvertex;
-            singledistPoint[4] = multPercentile;
-            if(pass){ 
-                if(TMath::Abs(pdgcode) == 2212){
-                    Int_t protonPass = PassProtonCuts(aodnegtrack, negTPCnSigma, negTOFnSigma);
-                    if((protonPass & maskTrackTOF) == maskTrackTOF){
-                        fTOFProtonDist->Fill(singledistPoint);
-                    }
-                }
-            }
-        }
 
         //Get pions that came from lambda for lambda reco
-        negPassCuts = PassProtonCuts(aodnegtrack,  negTPCnSigma, negTOFnSigma);
+        negPassCuts = PassDaughterCuts(aodnegtrack);
 
         AliAODMCParticle* mcnegpart = (AliAODMCParticle*)fMCArray->At(tracklabel);
         negparPDG = mcnegpart->GetPdgCode();
@@ -1129,14 +928,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
             AliVTrack *postrack = dynamic_cast<AliVTrack*>(vpospart);
             AliAODTrack *aodpostrack = dynamic_cast<AliAODTrack*>(vpospart);
 
-            Double_t posTPCnSigma = -999;
-            Double_t posTOFnSigma = -999;
-            if(postrack->Pt() > 0.15){
-                posTPCnSigma = fpidResponse->NumberOfSigmasTPC(postrack, AliPID::kPion);
-                posTOFnSigma = fpidResponse->NumberOfSigmasTOF(postrack, AliPID::kPion);
-            }
-
-            posPassCuts = PassPionCuts(aodpostrack, posTPCnSigma, posTOFnSigma);
+            posPassCuts = PassDaughterCuts(aodpostrack);
 
             Int_t postracklabel = aodpostrack->GetLabel();
             if(postracklabel < 0) continue;
@@ -1146,11 +938,6 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
             if(posparPDG != 211) continue;
 
             if(mcpospart->GetMother() == motherIndex){
-                
-                std::vector<AliAODTrack*> daughterArray;
-                daughterArray.push_back(aodnegtrack);
-                daughterArray.push_back(aodpostrack);
-                lambdaDict[motherIndex].push_back(daughterArray);
 
                 recoPx = aodnegtrack->Px() + aodpostrack->Px();
                 recoPy = aodnegtrack->Py() + aodpostrack->Py();
@@ -1175,6 +962,9 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 distPoint[4] = recoM;
                 distPoint[5] = multPercentile;
 
+                fRecoAntiLambdaDist->Fill(distPoint);
+                fRecoTotalLambdaDist->Fill(distPoint);
+
                 double filter_distPoint[8];
                 filter_distPoint[0] = recoPt;
                 filter_distPoint[1] = recoPhi;
@@ -1184,87 +974,28 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 filter_distPoint[5] = multPercentile;
                 filter_distPoint[6] = filterMap_map[aodnegtrack->GetFilterMap()];
                 filter_distPoint[7] = filterMap_map[aodpostrack->GetFilterMap()];
-                
 
-                fRecoAntiLambdaDist->Fill(distPoint);
-                fRecoTotalLambdaDist->Fill(distPoint);
                 fRecoTotalLambdaFilterDist->Fill(filter_distPoint);
 
-                protonMaps.insert(aodnegtrack->GetFilterMap());
-                pionMaps.insert(aodpostrack->GetFilterMap());
-
-
-                fRecoVsRealLambdaPtDist->Fill(recoPz, mcmother->Pz());
-
-                std::vector<int> listtracks;
-                listtracks.push_back(aodpostrack->GetID());
-                listtracks.push_back(aodnegtrack->GetID());
-
-                trackIDsList.push_back(listtracks);
-
-
-                if(PassDaughterCuts(aodnegtrack) && PassDaughterCuts(aodpostrack)) {
-                    if(aodnegtrack->IsPrimaryCandidate() && aodpostrack->IsPrimaryCandidate()) fRecoPrimaryLambdaDist->Fill(distPoint);
-                    if(!aodnegtrack->IsPrimaryCandidate() && !aodpostrack->IsPrimaryCandidate()) fRecoNonPrimaryLambdaDist->Fill(distPoint);
-                    fTrackRecoAntiLambdaDist->Fill(distPoint);
-                    fTrackRecoTotalLambdaDist->Fill(distPoint);
-                    trackIDsListcut.push_back(listtracks);
-                }
-
-                // //fill with phi's where daughter kaons pass track cuts
-                // if(((negPassCuts & maskTrackOnly) == maskTrackOnly) && ((posPassCuts & maskTrackOnly)== maskTrackOnly)){
-                //     fTrackRecoLambdaDist->Fill(distPoint);
-                //     numRecoLambdas += 1;
-                //     if(recoM <= 1.12 && recoM >= 1.11) {
-                //         double daughterDistPoint[4];
-                //         daughterDistPoint[0] = recoPt;
-                //         daughterDistPoint[1] = recoEta;
-                //         // THE PION IS THE POSITIVE TRACK, ANTIPROTON IS NEGATIVE
-                //         daughterDistPoint[2] = aodnegtrack->Pt();
-                //         daughterDistPoint[3] = aodpostrack->Pt();
-                //         fRecoLambdaDaughterDist->Fill(daughterDistPoint);
-                //     }
-                // }
-
-                //fill with phi's where daughter kaons pass track cuts and have a TOF hit
-                if(((negPassCuts & maskTrackTOF) == maskTrackTOF) && ((posPassCuts & maskTrackTOF)== maskTrackTOF)){
-                    fTOFRecoLambdaDist->Fill(distPoint);
-                }
-               
-                //fill with phi's where daughter kaons pass track cuts and TPC PID cuts
-                if(((negPassCuts & maskTrackTPC) == maskTrackTPC) && ((posPassCuts & maskTrackTPC)== maskTrackTPC)){
-                    fTPCPIDTrackRecoLambdaDist->Fill(distPoint);
-                } 
-                
-                //fill with phi's where daughter kaons pass track cuts and TOF hit and TPC PID cuts 
-                if(((negPassCuts & maskTrackTOFTPC) == maskTrackTOFTPC) && ((posPassCuts & maskTrackTOFTPC)== maskTrackTOFTPC)){
-                    fTPCPIDRecoLambdaDist->Fill(distPoint);
-                }
-
-                //fill with phi daughter kaons that pass track cuts and pass TOF&TPC PID cuts
-                if(((negPassCuts & maskTrackPID) == maskTrackPID) && ((posPassCuts & maskTrackPID)== maskTrackPID)){
-                    fPIDRecoLambdaDist->Fill(distPoint);
-                }
-
-                // Fill with lambdas whose daughters pass eta cuts
                 if(((negPassCuts & maskEta) == maskEta) && ((posPassCuts & maskEta)== maskEta)){
-                    fTrackEtaRecoLambdaDist->Fill(distPoint);
+                    fRecoEtaLambdaDist->Fill(distPoint);
                 }
 
-                // Fill with lambdas whose daughters pass eta and pt cuts
                 if(((negPassCuts & maskEtaPt) == maskEtaPt) && ((posPassCuts & maskEtaPt)== maskEtaPt)){
-                    fTrackEtaPtRecoLambdaDist->Fill(distPoint);
+                    fRecoEtaPtLambdaDist->Fill(distPoint);
                 }
 
-                // Fill with lambdas whose daughters pass eta and pt cuts and filtermask cuts
-                if(((negPassCuts & maskEtaPtMask) == maskEtaPtMask) && ((posPassCuts & maskEtaPtMask)== maskEtaPtMask)){
-                    fTrackEtaPtFilterRecoLambdaDist->Fill(distPoint);
+                if(((negPassCuts & maskEtaPtRefit) == maskEtaPtRefit) && ((posPassCuts & maskEtaPtRefit)== maskEtaPtRefit)){
+                    fRecoEtaPtRefitLambdaDist->Fill(distPoint);
                 }
 
-                // Fill with lambdas whose daughters pass eta and pt cuts and filtermask cuts and crossed rows
-                // NOTE: This should completely match the original track cut distribution
-                if(((negPassCuts & maskEtaPtMaskRows) == maskEtaPtMaskRows) && ((posPassCuts & maskEtaPtMaskRows)== maskEtaPtMaskRows)){
-                    fTrackEtaPtFilterRowsRecoLambdaDist->Fill(distPoint);
+                if(((negPassCuts & maskEtaPtRefitRows) == maskEtaPtRefitRows) && ((posPassCuts & maskEtaPtRefitRows)== maskEtaPtRefitRows)){
+                    fRecoEtaPtRefitRowsLambdaDist->Fill(distPoint);
+                }
+
+                if(((negPassCuts & maskEtaPtRefitRowsRatio) == maskEtaPtRefitRowsRatio) && ((posPassCuts & maskEtaPtRefitRowsRatio)== maskEtaPtRefitRowsRatio)){
+                    fRecoEtaPtRefitRowsRatioLambdaDist->Fill(distPoint);
+                    numRecoLambdas += 1;
                 }
             }
         }
@@ -1339,24 +1070,6 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         AliAODMCParticle* firstDaughter = (AliAODMCParticle*)fMCArray->At(indexFirstDaughter);
         AliAODMCParticle* secondDaughter = (AliAODMCParticle*)fMCArray->At(indexSecondDaughter);
 
-        // //select only lambda that decay to p-pi
-        // if(((TMath::Abs(firstDaughter->GetPdgCode()) == 211 && TMath::Abs(secondDaughter->GetPdgCode()) == 2212) ||
-        //     (TMath::Abs(firstDaughter->GetPdgCode()) == 2212 && TMath::Abs(secondDaughter->GetPdgCode()) == 211)) && (firstDaughter->GetPdgCode())*(secondDaughter->GetPdgCode()) < 0 && TMath::Abs(firstDaughter->Eta()) <= 0.8 && TMath::Abs(secondDaughter->Eta()) <= 0.8){
-
-        //     distPoint[0] = AODMCtrack->Pt();
-        //     distPoint[1] = AODMCtrack->Phi();
-        //     if(distPoint[1] > TMath::Pi()){
-        //         distPoint[1] -= 2.0*TMath::Pi();
-        //     }else if(distPoint[1] < -1.0*TMath::Pi()){
-        //         distPoint[1] += 2.0*TMath::Pi();
-        //     }
-        //     distPoint[2] = AODMCtrack->Eta();
-        //     distPoint[3] = Zvertex;
-        //     distPoint[4] = AODMCtrack->GetCalcMass();
-        //     distPoint[5] = multPercentile;
-        //     fRealLambdaDist->Fill(distPoint);
-        // } 
-
         if(((TMath::Abs(firstDaughter->GetPdgCode()) == 211 && TMath::Abs(secondDaughter->GetPdgCode()) == 2212) ||
             (TMath::Abs(firstDaughter->GetPdgCode()) == 2212 && TMath::Abs(secondDaughter->GetPdgCode()) == 211)) && (firstDaughter->GetPdgCode())*(secondDaughter->GetPdgCode()) < 0){
 
@@ -1384,100 +1097,11 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
             else{
                 std::cout << "OH FUCK OH SHIT OH NO, THIS ISN'T A LAMBDA, THE PDG CODE IS INCORRECT: " << pdgcode << std::endl;
             }
-
-
-            double daughterDistPoint[4];
-            daughterDistPoint[0] = AODMCtrack->Pt();
-            daughterDistPoint[1] = AODMCtrack->Eta();
-            if(TMath::Abs(firstDaughter->GetPdgCode()) == 211) {
-                daughterDistPoint[2] = secondDaughter->Pt();
-                daughterDistPoint[3] = firstDaughter->Pt();
-            }
-            else {
-                daughterDistPoint[2] = firstDaughter->Pt();
-                daughterDistPoint[3] = secondDaughter->Pt();
-            }
-            fRealLambdaDaughterDist->Fill(daughterDistPoint);
         } 
     }
     
-    // if((bool)trackIDsV0cut.size() || (bool)trackIDsListcut.size()) {
-    // if((bool)trackIDsV0.size() || (bool)trackIDsV0cut.size() || (bool)trackIDsList.size() || (bool)trackIDsListcut.size()) {
-        // std::cout << "__________TRACKS FROM UNCUT V0 LAMBDAS______________" << std::endl;
-        // for(int i = 0; i < trackIDsV0.size(); i++) {
-        //     std::cout << "pos track ID: " << trackIDsV0[i][0] << "; neg track ID : " << trackIDsV0[i][1] << ";\n";
-        // }
-        // std::cout << "__________TRACKS FROM UNCUT TRACK LIST LAMBDAS______________" << std::endl;
-        // for(int i = 0; i < trackIDsList.size(); i++) {
-        //     std::cout << "pos track ID: " << trackIDsList[i][0] << "; neg track ID : " << trackIDsList[i][1] << ";\n";
-        // }
-    //     std::cout << "__________TRACKS FROM CUT V0 LAMBDAS______________" << std::endl;
-    //     for(int i = 0; i < trackIDsV0cut.size(); i++) {
-    //         std::cout << "pos track ID: " << trackIDsV0cut[i][0] << "; neg track ID : " << trackIDsV0cut[i][1] << ";\n";
-    //     }
-    //     std::cout << "__________TRACKS FROM CUT TRACK LIST LAMBDAS______________" << std::endl;
-    //     for(int i = 0; i < trackIDsListcut.size(); i++) {
-    //         std::cout << "pos track ID: " << trackIDsListcut[i][0] << "; neg track ID : " << trackIDsListcut[i][1] << ";\n";
-    //     }
-    // }
-
     fRealLambdasPerEvent->Fill(numRealLambdas);
     fRecoLambdasPerEvent->Fill(numRecoLambdas);
-
-    // if(protonMaps.size() != 0) {
-    //     std::cout << "The proton maps are: {";
-    //     for(auto m = protonMaps.begin(); m != protonMaps.end(); m++) {
-    //         std::cout << *m << ", ";
-    //     }
-    //     std::cout << "}\n";
-        
-    //     std::cout << "The pion maps are: {";
-    //     for(auto m = pionMaps.begin(); m != pionMaps.end(); m++) {
-    //         std::cout << *m << ", ";
-    //     }
-    //     std::cout << "}\n";
-    // }
-
-
-
-    // And here we must see what each lambda track looks like
-    for(auto const& [lambdaID, daughterArrayArray] : lambdaDict) {
-        std::cout << "For the lambda with ID "<< lambdaID << ", we have " << daughterArrayArray.size() << " daughter pairs:\n";
-        for(auto pairIndex = 0; pairIndex < daughterArrayArray.size(); pairIndex++) {
-            auto daughterArray = daughterArrayArray[pairIndex];
-            std::cout << "\tpair " << pairIndex << ":\n";
-
-            std::cout << "\t\tProton track info:\n";
-            std::cout << "\t\t\tTrack ID: " << daughterArray[0]->GetID() << "\n";
-            std::cout << "\t\t\tFilter map: " << daughterArray[0]->GetFilterMap() << "\n";
-            std::cout << "\t\t\tIs primary candidate: " << daughterArray[0]->IsPrimaryCandidate() << "\n";
-            std::cout << "\t\t\tIs TPC only: " << daughterArray[0]->TestFilterBit(AliAODTrack::kTrkTPCOnly) << "\n";
-            std::cout << "\t\t\tIs ITS standalone: " << daughterArray[0]->TestFilterBit(AliAODTrack::kTrkITSsa) << "\n";
-            std::cout << "\t\t\tIs ITS constrained: " << daughterArray[0]->TestFilterBit(AliAODTrack::kTrkITSConstrained) << "\n";
-            std::cout << "\t\t\tIs PID for electrons: " << daughterArray[0]->TestFilterBit(AliAODTrack::kTrkElectronsPID) << "\n";
-            std::cout << "\t\t\tIs global track with loose dca: " << daughterArray[0]->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA) << "\n";
-            std::cout << "\t\t\tIs global track with tight dca: " << daughterArray[0]->TestFilterBit(AliAODTrack::kTrkGlobal) << "\n";
-            std::cout << "\t\t\tIs TPC only track constrained to SPD vertex: " << daughterArray[0]->TestFilterBit(AliAODTrack::kTrkTPCOnlyConstrained) << "\n";
-            std::cout << "\t\t\tNumber of crossed TPC rows: " << daughterArray[0]->GetTPCNCrossedRows() << "\n";
-            std::cout << "\t\t\tNumber of findable TPC clusters: " << daughterArray[0]->GetTPCNclsF() << "\n";
-            std::cout << "\t\t\tEta: " << daughterArray[0]->Eta() << "\n";
-
-            std::cout << "\t\tPion track info:\n";
-            std::cout << "\t\t\tTrack ID: " << daughterArray[1]->GetID() << "\n";
-            std::cout << "\t\t\tFilter map: " << daughterArray[1]->GetFilterMap() << "\n";
-            std::cout << "\t\t\tIs primary candidate: " << daughterArray[1]->IsPrimaryCandidate() << "\n";
-            std::cout << "\t\t\tIs TPC only: " << daughterArray[1]->TestFilterBit(AliAODTrack::kTrkTPCOnly) << "\n";
-            std::cout << "\t\t\tIs ITS standalone: " << daughterArray[1]->TestFilterBit(AliAODTrack::kTrkITSsa) << "\n";
-            std::cout << "\t\t\tIs ITS constrained: " << daughterArray[1]->TestFilterBit(AliAODTrack::kTrkITSConstrained) << "\n";
-            std::cout << "\t\t\tIs PID for electrons: " << daughterArray[1]->TestFilterBit(AliAODTrack::kTrkElectronsPID) << "\n";
-            std::cout << "\t\t\tIs global track with loose dca: " << daughterArray[1]->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA) << "\n";
-            std::cout << "\t\t\tIs global track with tight dca: " << daughterArray[1]->TestFilterBit(AliAODTrack::kTrkGlobal) << "\n";
-            std::cout << "\t\t\tIs TPC only track constrained to SPD vertex: " << daughterArray[1]->TestFilterBit(AliAODTrack::kTrkTPCOnlyConstrained) << "\n";
-            std::cout << "\t\t\tNumber of crossed TPC rows: " << daughterArray[1]->GetTPCNCrossedRows() << "\n";
-            std::cout << "\t\t\tNumber of findable TPC clusters: " << daughterArray[1]->GetTPCNclsF() << "\n";
-            std::cout << "\t\t\tEta: " << daughterArray[1]->Eta() << "\n";
-        }
-    }
 
     PostData(1, fOutputList);
 }    
