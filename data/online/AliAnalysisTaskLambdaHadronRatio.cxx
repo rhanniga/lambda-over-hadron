@@ -119,38 +119,38 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
 
 
     //Correlation axes are: Trigger Pt, Associated Pt, dPhi, dEta, Inv Mass, Zvtx
-    int hk_cor_bins[6] = {8, 10, 16, 20, 100, 10};
-    double hk_cor_mins[6] = {4.0, 1, -1.0*TMath::Pi()/2.0, -2.0, 1.06, -10};
-    double hk_cor_maxes[6] = {12.0, 6, 3.0*TMath::Pi()/2.0, 2.0, 1.16, 10};
+    int hl_cor_bins[6] = {8, 10, 16, 20, 100, 10};
+    double hl_cor_mins[6] = {4.0, 1, -1.0*TMath::Pi()/2.0, -2.0, 1.06, -10};
+    double hl_cor_maxes[6] = {12.0, 6, 3.0*TMath::Pi()/2.0, 2.0, 1.16, 10};
 
-    fDphiHLambda = new THnSparseF("fDphiHLambda", "Hadron-Lambda Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
+    fDphiHLambda = new THnSparseF("fDphiHLambda", "Hadron-Lambda Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fOutputList->Add(fDphiHLambda);
 
-    fDphiHLambdaEff = new THnSparseF("fDphiHLambdaEff", "Efficiency-corrected Hadron-Lambda Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
+    fDphiHLambdaEff = new THnSparseF("fDphiHLambdaEff", "Efficiency-corrected Hadron-Lambda Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fOutputList->Add(fDphiHLambdaEff);
 
-    fDphiHLambdaV0 = new THnSparseF("fDphiHLambdaV0", "Hadron-Lambda (using V0) Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
+    fDphiHLambdaV0 = new THnSparseF("fDphiHLambdaV0", "Hadron-Lambda (using V0) Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fOutputList->Add(fDphiHLambdaV0);
 
-    fDphiHLambdaRotated = new THnSparseF("fDphiHLambdaRotated", "Hadron-Lambda (rotated) Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
+    fDphiHLambdaRotated = new THnSparseF("fDphiHLambdaRotated", "Hadron-Lambda (rotated) Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fOutputList->Add(fDphiHLambdaRotated);
 
-    fDphiHLambdaRotatedPi = new THnSparseF("fDphiHLambdaRotatedPi", "Hadron-Lambda (rotated pi) Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
+    fDphiHLambdaRotatedPi = new THnSparseF("fDphiHLambdaRotatedPi", "Hadron-Lambda (rotated pi) Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fOutputList->Add(fDphiHLambdaRotatedPi);
 
-    fDphiHLambdaRotatedProton = new THnSparseF("fDphiHLambdaRotatedProton", "Hadron-Lambda (proton rotated) Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
+    fDphiHLambdaRotatedProton = new THnSparseF("fDphiHLambdaRotatedProton", "Hadron-Lambda (proton rotated) Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fOutputList->Add(fDphiHLambdaRotatedProton);
 
-    fDphiHLambdaFlipped = new THnSparseF("fDphiHLambdaFlipped", "Hadron-Lambda (flipped) Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
+    fDphiHLambdaFlipped = new THnSparseF("fDphiHLambdaFlipped", "Hadron-Lambda (flipped) Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fOutputList->Add(fDphiHLambdaFlipped);
 
-    fDphiHLambdaLS = new THnSparseF("fDphiHLambdaLS", "Hadron-Lambda LS Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
+    fDphiHLambdaLS = new THnSparseF("fDphiHLambdaLS", "Hadron-Lambda LS Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fOutputList->Add(fDphiHLambdaLS);
 
-    fDphiHLambdaMixed = new THnSparseF("fDphiHLambdaMixed", "Mixed Hadron-Lambda Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
+    fDphiHLambdaMixed = new THnSparseF("fDphiHLambdaMixed", "Mixed Hadron-Lambda Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fOutputList->Add(fDphiHLambdaMixed);
 
-    fDphiHLambdaLSMixed = new THnSparseF("fDphiHLambdaLSMixed", "Mixed Hadron-Lambda LS Correlation Histogram", 6, hk_cor_bins, hk_cor_mins, hk_cor_maxes);
+    fDphiHLambdaLSMixed = new THnSparseF("fDphiHLambdaLSMixed", "Mixed Hadron-Lambda LS Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fOutputList->Add(fDphiHLambdaLSMixed);
 
 
@@ -245,6 +245,30 @@ AliAnalysisTaskLambdaHadronRatio::AliMotherContainer AliAnalysisTaskLambdaHadron
     mom.daughter1ID = track1->GetID();
     mom.daughter2ID = track2->GetID();
     return mom;
+
+}
+
+
+void AliAnalysisTaskLambdaHadronRatio::LoadEfficiencies(TFile* inputFile) {
+
+    if(!inputFile) {
+        AliFatal("NULL INPUT FILE WHEN LOADING EFFICIENCIES, EXITING");
+    }
+
+    fLambdaEff = (TH1D*) inputFile->Get("fLambdaEff")->Clone("fLambdaEff");
+    if(!fLambdaEff) {
+        AliFatal("UNABLE TO FIND LAMBDA EFF, EXITING");
+    }
+    
+    fAssociatedEff = (TH1D*) inputFile->Get("fAssociatedEff")->Clone("fAssociatedEff");
+    if(!fAssociatedEff) {
+        AliFatal("UNABLE TO FIND ASSOCIATED EFF, EXITING");
+    }
+
+    fTriggerEff = (TH1D*) inputFile->Get("fTriggerEff")->Clone("fTriggerEff");
+    if(!fTriggerEff) {
+        AliFatal("UNABLE TO FIND TRIGGER EFF, EXITING");
+    }
 
 }
 
