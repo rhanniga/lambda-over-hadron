@@ -75,8 +75,8 @@ fRecoLambdaDist(0)
     MULT_HIGH = multHigh;
     CENT_ESTIMATOR = "V0A";
     // DAUGHTER_TRK_BIT = 16; not used
-    ASSOC_TRK_BIT = 1024;
-    TRIG_TRK_BIT = 768;
+    ASSOC_TRK_BIT = 1024; // global tracks with tight pt dependent dca cut (selecting primaries)
+    TRIG_TRK_BIT = AliAODTrack::kIsHybridGCG; // = 2^20
     DAUGHTER_ETA_CUT = 0.8;
     DAUGHTER_MIN_PT = 0.15;
 
@@ -115,8 +115,8 @@ fRecoLambdaDist(0)
     MULT_HIGH = 80;
     CENT_ESTIMATOR = "V0A";
     // DAUGHTER_TRK_BIT = 16; not used
-    ASSOC_TRK_BIT = 1024;
-    TRIG_TRK_BIT = 768;
+    ASSOC_TRK_BIT = 1024; // global tracks with tight pt dependent dca cut (selecting primaries)
+    TRIG_TRK_BIT = AliAODTrack::kIsHybridGCG; // = 2^20
     DAUGHTER_ETA_CUT = 0.8;
     DAUGHTER_MIN_PT = 0.15;
 }
