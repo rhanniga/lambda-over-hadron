@@ -110,7 +110,7 @@ void plotEfficiency(){
 
     Float_t mult[4] = {0.0, 20.0, 50.0, 80.0};
     
-    TFile* infile = new TFile("../online/output/min_filter.root");
+    TFile* infile = new TFile("../online/output/fix_trigger_eff.root");
     TList* list = (TList*)infile->Get("h-lambda_eff");
     
     //single track histos

@@ -22,16 +22,19 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     fDphiHLambdaMixed{0},
     fDphiHHMixed{0},
     fDphiHLambdaLSMixed{0},
-    fCorPoolMgr{0}
+    fCorPoolMgr{0},
+    fLambdaEff{0},
+    fAssociatedEff{0},
+    fTriggerEff{0}
     // fPid{0},
     // fSignalAnalysis{0}
 {
     MULT_LOW = 0;
     MULT_HIGH = 20;
     CENT_ESTIMATOR = "V0A";
-    DAUGHTER_TRK_BIT = 16; // NOT CURRENTLY USED
-    ASSOC_TRK_BIT = 1024;
-    TRIG_TRK_BIT = 768;
+    DAUGHTER_TRK_BIT = AliAODTrack::kTrkGlobalNoDCA; // = 16
+    ASSOC_TRK_BIT = 1024; // global tracks with tight pt dependent dca cut (selecting primaries)
+    TRIG_TRK_BIT = AliAODTrack::kIsHybridGCG; // = 2^20
 }
 
 AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *name) :
@@ -51,7 +54,10 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     fDphiHLambdaMixed{0},
     fDphiHHMixed{0},
     fDphiHLambdaLSMixed{0},
-    fCorPoolMgr{0}
+    fCorPoolMgr{0},
+    fLambdaEff{0},
+    fAssociatedEff{0},
+    fTriggerEff{0}
     // fPid{0},
     // fSignalAnalysis{0}
 {
@@ -61,10 +67,9 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     MULT_LOW = 0;
     MULT_HIGH = 20;
     CENT_ESTIMATOR = "V0A";
-    DAUGHTER_TRK_BIT = 16; // NOT CURRENTLY USED
-    ASSOC_TRK_BIT = 1024;
-    TRIG_TRK_BIT = 768
-
+    DAUGHTER_TRK_BIT = AliAODTrack::kTrkGlobalNoDCA; // = 16
+    ASSOC_TRK_BIT = 1024; // global tracks with tight pt dependent dca cut (selecting primaries)
+    TRIG_TRK_BIT = AliAODTrack::kIsHybridGCG; // = 2^20
 }
 
 AliAnalysisTaskLambdaHadronRatio::~AliAnalysisTaskLambdaHadronRatio()
@@ -161,6 +166,9 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
 
     fDphiHH = new THnSparseF("fDphiHH", "Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fOutputList->Add(fDphiHH);
+
+    fDphiHHEff = new THnSparseF("fDphiHHEff", "Efficiency corrected Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fOutputList->Add(fDphiHHEff);
 
     fDphiTriggerTrigger = new THnSparseF("fDphiTriggerTrigger", "Trigger-Trigger Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fOutputList->Add(fDphiTriggerTrigger);
@@ -315,13 +323,25 @@ void AliAnalysisTaskLambdaHadronRatio::MakeSameHLambdaCorrelations(std::vector<A
             dphi_point[3] = trigger->Eta() - lambda.particle.Eta();
             dphi_point[4] = lambda.particle.M();
             dphi_point[5] = zVtx;
+            std::cout << "we made it here" << std::endl;
             if(eff) {
-                double triggerScale = 1.0/ftrigEff->Eval(trigger->Pt());
-                double lambdaScale = 1.0/flambdaEff->Eval(lambda.particle.Pt());
+
+                std::cout << "but do we make it here?" << std::endl;
+                int trigBin = fTriggerEff->FindBin(trigger->Pt());
+                std::cout << "how about here?" << std::endl;
+                double trigEff = fTriggerEff->GetBinContent(trigBin);
+                double triggerScale = 1.0/trigEff;
+                
+                int lambdaBin = fLambdaEff->FindBin(lambda.particle.Pt());
+                int lambdaEff = fLambdaEff->GetBinContent(lambdaBin);
+                std::cout << lambdaEff << " is the lambda eff" << std::endl;
+                double lambdaScale = 1.0/lambdaEff;
                 double totalScale = triggerScale*lambdaScale;
                 fDphi->Fill(dphi_point, totalScale);
+
             }
             else{
+                std::cout << "whats going on here" << std::endl;
                 fDphi->Fill(dphi_point);
             }
         }
@@ -355,10 +375,16 @@ void AliAnalysisTaskLambdaHadronRatio::MakeSameHHCorrelations(std::vector<AliAOD
             dphi_point[3] = trigger->Eta() - associate->Eta();
             dphi_point[4] = zVtx;
             if(eff) {
-                double triggerScale = 1.0/ftrigEff->Eval(trigger->Pt());
-                double assocatedScale = 1.0/fassociatedEff->Eval(associate->Pt());
+
+                int trigBin = fTriggerEff->FindBin(trigger->Pt());
+                double trigEff = fTriggerEff->GetBinContent(trigBin);
+                double triggerScale = 1.0/trigEff;
+                int associatedBin = fAssociatedEff->FindBin(associate->Pt());
+                int associatedEff = fAssociatedEff->GetBinContent(associatedBin);
+                double associatedScale = 1.0/associatedEff;
                 double totalScale = triggerScale*associatedScale;
                 fDphi->Fill(dphi_point, totalScale);
+
             }
             else{
                 fDphi->Fill(dphi_point);
@@ -394,8 +420,12 @@ void AliAnalysisTaskLambdaHadronRatio::MakeSameTriggerTriggerCorrelations(std::v
             dphi_point[3] = trigger->Eta() - associate->Eta();
             dphi_point[4] = zVtx;
             if(eff) {
-                double triggerScale = 1.0/ftrigEff->Eval(trigger->Pt());
-                double assocatedScale = 1.0/ftrigEff->Eval(associate->Pt());
+                int trigBin = fTriggerEff->FindBin(trigger->Pt());
+                double trigEff = fTriggerEff->GetBinContent(trigBin);
+                double triggerScale = 1.0/trigEff;
+                int associatedBin = fTriggerEff->FindBin(trigger->Pt());
+                int associatedEff = fTriggerEff->GetBinContent(associatedBin);
+                double associatedScale = 1.0/associatedEff;
                 double totalScale = triggerScale*associatedScale;
                 fDphi->Fill(dphi_point, totalScale);
             }
@@ -439,8 +469,12 @@ void AliAnalysisTaskLambdaHadronRatio::MakeMixedHLambdaCorrelations(AliEventPool
                 dphi_point[4] = lambda.particle.M();
                 dphi_point[5] = zVtx;
                 if(eff) {
-                    double triggerScale = 1.0/ftrigEff->Eval(trigger->Pt());
-                    double lambdaScale = 1.0/flambdaEff->Eval(lambda.particle.Pt());
+                    int trigBin = fTriggerEff->FindBin(trigger->Pt());
+                    double trigEff = fTriggerEff->GetBinContent(trigBin);
+                    double triggerScale = 1.0/trigEff;
+                    int lambdaBin = fLambdaEff->FindBin(lambda.particle.Pt());
+                    int lambdaEff = fLambdaEff->GetBinContent(lambdaBin);
+                    double lambdaScale = 1.0/lambdaEff;
                     double totalScale = triggerScale*lambdaScale;
                     fDphi->Fill(dphi_point, totalScale);
                 }
@@ -483,8 +517,12 @@ void AliAnalysisTaskLambdaHadronRatio::MakeMixedHHCorrelations(AliEventPool* fPo
                 dphi_point[3] = trigger->Eta() - associate->Eta();
                 dphi_point[4] = zVtx;
                 if(eff) {
-                    double triggerScale = 1.0/ftrigEff->Eval(trigger->Pt());
-                    double assocatedScale = 1.0/fassociatedEff->Eval(associate->Pt());
+                    int trigBin = fTriggerEff->FindBin(trigger->Pt());
+                    double trigEff = fTriggerEff->GetBinContent(trigBin);
+                    double triggerScale = 1.0/trigEff;
+                    int associatedBin = fAssociatedEff->FindBin(associate->Pt());
+                    int associatedEff = fAssociatedEff->GetBinContent(associatedBin);
+                    double associatedScale = 1.0/associatedEff;
                     double totalScale = triggerScale*associatedScale;
                     fDphi->Fill(dphi_point, totalScale);
                 }
@@ -810,13 +848,15 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     FillSingleParticleDist(lambda_list_signal_region, primZ, fLambdaDist);
 
     // Filling all of our correlation histograms
-    MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambda, primZ);
+    MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambda, primZ, false);
+    MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambdaEff, primZ, true);
     MakeSameHLambdaCorrelations(trigger_list, lambda_list_v0, fDphiHLambdaV0, primZ);
     MakeSameHLambdaCorrelations(trigger_list, lambda_list_RotatedPi, fDphiHLambdaRotatedPi, primZ);
     MakeSameHLambdaCorrelations(trigger_list, lambda_list_Flipped, fDphiHLambdaFlipped, primZ);
     MakeSameHLambdaCorrelations(trigger_list, lambda_list_RotatedPion, fDphiHLambdaRotated, primZ);
     MakeSameHLambdaCorrelations(trigger_list, lambda_list_RotatedProton, fDphiHLambdaRotatedProton, primZ);
-    MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHH, primZ);
+    MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHH, primZ, false);
+    MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHHEff, primZ, true);
     MakeSameTriggerTriggerCorrelations(trigger_list, fDphiTriggerTrigger, primZ);
     MakeSameHLambdaCorrelations(trigger_list, lambda_list_LS, fDphiHLambdaLS, primZ);
 
