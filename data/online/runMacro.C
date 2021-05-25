@@ -38,8 +38,10 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   AliAnalysisTaskLambdaHadronRatio *task = reinterpret_cast<AliAnalysisTaskLambdaHadronRatio*>(gInterpreter->ExecuteMacro("AddLambdaHadronRatioTask.C"));
 
   TFile* effFile = TFile::Open("eff_out.root");
+  task->TestPrint("fuck the police wtf????????????????????????????????????????????????????");
   task->LoadEfficiencies(effFile);
-  effFile->Close();
+  // effFile->Close();
+
 
   if(!manage->InitAnalysis()) return;
   manage->SetDebugLevel(2);

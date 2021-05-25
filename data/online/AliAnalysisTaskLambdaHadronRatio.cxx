@@ -256,27 +256,35 @@ AliAnalysisTaskLambdaHadronRatio::AliMotherContainer AliAnalysisTaskLambdaHadron
 
 }
 
+void AliAnalysisTaskLambdaHadronRatio::TestPrint(TString string) {
+    std::cout << string << std::endl;
+}
 
 void AliAnalysisTaskLambdaHadronRatio::LoadEfficiencies(TFile* inputFile) {
 
-    if(!inputFile) {
+    TFile* effFile = inputFile;
+
+    if(!effFile) {
         AliFatal("NULL INPUT FILE WHEN LOADING EFFICIENCIES, EXITING");
     }
 
-    fLambdaEff = (TH1D*) inputFile->Get("fLambdaEff")->Clone("fLambdaEff");
+    fLambdaEff = (TH1D*) effFile->Get("fLambdaEff")->Clone("fLambdaEffClone");
     if(!fLambdaEff) {
         AliFatal("UNABLE TO FIND LAMBDA EFF, EXITING");
     }
     
-    fAssociatedEff = (TH1D*) inputFile->Get("fAssociatedEff")->Clone("fAssociatedEff");
+    fAssociatedEff = (TH1D*) effFile->Get("fAssociatedEff")->Clone("fAssociatedEffClone");
     if(!fAssociatedEff) {
         AliFatal("UNABLE TO FIND ASSOCIATED EFF, EXITING");
     }
 
-    fTriggerEff = (TH1D*) inputFile->Get("fTriggerEff")->Clone("fTriggerEff");
+    fTriggerEff = (TH1D*) effFile->Get("fTriggerEff")->Clone("fTriggerEffClone");
     if(!fTriggerEff) {
         AliFatal("UNABLE TO FIND TRIGGER EFF, EXITING");
     }
+
+    std::cout << fTriggerEff->Integral() << " is the integral WEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE" << std::endl;
+    // effFile->Close();
 
 }
 
@@ -323,25 +331,24 @@ void AliAnalysisTaskLambdaHadronRatio::MakeSameHLambdaCorrelations(std::vector<A
             dphi_point[3] = trigger->Eta() - lambda.particle.Eta();
             dphi_point[4] = lambda.particle.M();
             dphi_point[5] = zVtx;
-            std::cout << "we made it here" << std::endl;
-            if(eff) {
 
-                std::cout << "but do we make it here?" << std::endl;
+            bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0) 
+                               && (lambda.particle.Pt() < 10 && lambda.particle.Pt() > 0));
+
+            if(eff && in_pt_range) {
+                std::cout << "we get here once" << std::endl;
+
                 int trigBin = fTriggerEff->FindBin(trigger->Pt());
-                std::cout << "how about here?" << std::endl;
                 double trigEff = fTriggerEff->GetBinContent(trigBin);
                 double triggerScale = 1.0/trigEff;
-                
                 int lambdaBin = fLambdaEff->FindBin(lambda.particle.Pt());
-                int lambdaEff = fLambdaEff->GetBinContent(lambdaBin);
-                std::cout << lambdaEff << " is the lambda eff" << std::endl;
+                double lambdaEff = fLambdaEff->GetBinContent(lambdaBin);
                 double lambdaScale = 1.0/lambdaEff;
                 double totalScale = triggerScale*lambdaScale;
                 fDphi->Fill(dphi_point, totalScale);
 
             }
             else{
-                std::cout << "whats going on here" << std::endl;
                 fDphi->Fill(dphi_point);
             }
         }
@@ -374,13 +381,16 @@ void AliAnalysisTaskLambdaHadronRatio::MakeSameHHCorrelations(std::vector<AliAOD
 
             dphi_point[3] = trigger->Eta() - associate->Eta();
             dphi_point[4] = zVtx;
-            if(eff) {
+
+            bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0) 
+                               && (associate->Pt() < 10 && associate->Pt() > 0));
+            if(eff && in_pt_range) {
 
                 int trigBin = fTriggerEff->FindBin(trigger->Pt());
                 double trigEff = fTriggerEff->GetBinContent(trigBin);
                 double triggerScale = 1.0/trigEff;
                 int associatedBin = fAssociatedEff->FindBin(associate->Pt());
-                int associatedEff = fAssociatedEff->GetBinContent(associatedBin);
+                double associatedEff = fAssociatedEff->GetBinContent(associatedBin);
                 double associatedScale = 1.0/associatedEff;
                 double totalScale = triggerScale*associatedScale;
                 fDphi->Fill(dphi_point, totalScale);
@@ -419,12 +429,16 @@ void AliAnalysisTaskLambdaHadronRatio::MakeSameTriggerTriggerCorrelations(std::v
 
             dphi_point[3] = trigger->Eta() - associate->Eta();
             dphi_point[4] = zVtx;
-            if(eff) {
+
+            bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0) 
+                               && (associate->Pt() < 10 && associate->Pt() > 0));
+
+            if(eff && in_pt_range) {
                 int trigBin = fTriggerEff->FindBin(trigger->Pt());
                 double trigEff = fTriggerEff->GetBinContent(trigBin);
                 double triggerScale = 1.0/trigEff;
-                int associatedBin = fTriggerEff->FindBin(trigger->Pt());
-                int associatedEff = fTriggerEff->GetBinContent(associatedBin);
+                int associatedBin = fTriggerEff->FindBin(associate->Pt());
+                double associatedEff = fTriggerEff->GetBinContent(associatedBin);
                 double associatedScale = 1.0/associatedEff;
                 double totalScale = triggerScale*associatedScale;
                 fDphi->Fill(dphi_point, totalScale);
@@ -468,7 +482,9 @@ void AliAnalysisTaskLambdaHadronRatio::MakeMixedHLambdaCorrelations(AliEventPool
                 dphi_point[3] = trigger->Eta() - lambda.particle.Eta();
                 dphi_point[4] = lambda.particle.M();
                 dphi_point[5] = zVtx;
-                if(eff) {
+                bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0) 
+                                && (lambda.particle.Pt() < 10 && lambda.particle.Pt() > 0));
+                if(eff && in_pt_range) {
                     int trigBin = fTriggerEff->FindBin(trigger->Pt());
                     double trigEff = fTriggerEff->GetBinContent(trigBin);
                     double triggerScale = 1.0/trigEff;
@@ -516,7 +532,11 @@ void AliAnalysisTaskLambdaHadronRatio::MakeMixedHHCorrelations(AliEventPool* fPo
 
                 dphi_point[3] = trigger->Eta() - associate->Eta();
                 dphi_point[4] = zVtx;
-                if(eff) {
+
+                bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0) 
+                                && (associate->Pt() < 10 && associate->Pt() > 0));
+
+                if(eff && in_pt_range) {
                     int trigBin = fTriggerEff->FindBin(trigger->Pt());
                     double trigEff = fTriggerEff->GetBinContent(trigBin);
                     double triggerScale = 1.0/trigEff;

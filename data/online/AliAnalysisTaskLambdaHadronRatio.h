@@ -33,6 +33,7 @@ class AliAnalysisTaskLambdaHadronRatio : public AliAnalysisTaskSE {
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t* option);
   virtual void Terminate(Option_t* option);
+  void TestPrint(TString string);
   void LoadEfficiencies(TFile* inputFile);
 
   struct AliMotherContainer {
