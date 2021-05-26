@@ -22,10 +22,10 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     fDphiHLambdaMixed{0},
     fDphiHHMixed{0},
     fDphiHLambdaLSMixed{0},
-    fCorPoolMgr{0},
-    fLambdaEff{0},
-    fAssociatedEff{0},
-    fTriggerEff{0}
+    fCorPoolMgr{0}
+    // fLambdaEff{0},
+    // fAssociatedEff{0},
+    // fTriggerEff{0}
     // fPid{0},
     // fSignalAnalysis{0}
 {
@@ -35,6 +35,10 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     DAUGHTER_TRK_BIT = AliAODTrack::kTrkGlobalNoDCA; // = 16
     ASSOC_TRK_BIT = 1024; // global tracks with tight pt dependent dca cut (selecting primaries)
     TRIG_TRK_BIT = AliAODTrack::kIsHybridGCG; // = 2^20
+    TFile *test  = TFile::Open("eff_out.root");
+    fLambdaEff = (TH1D*) test->Get("fLambdaEff")->Clone("lambdaEffClone");
+    fAssociatedEff = (TH1D*) test->Get("fAssociatedEff")->Clone("associatedEffClone");
+    fTriggerEff = (TH1D*) test->Get("fTriggerEff")->Clone("triggerEffClone");
 }
 
 AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *name) :
@@ -54,10 +58,10 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     fDphiHLambdaMixed{0},
     fDphiHHMixed{0},
     fDphiHLambdaLSMixed{0},
-    fCorPoolMgr{0},
-    fLambdaEff{0},
-    fAssociatedEff{0},
-    fTriggerEff{0}
+    fCorPoolMgr{0}
+    // fLambdaEff{0},
+    // fAssociatedEff{0},
+    // fTriggerEff{0}
     // fPid{0},
     // fSignalAnalysis{0}
 {
@@ -70,6 +74,10 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     DAUGHTER_TRK_BIT = AliAODTrack::kTrkGlobalNoDCA; // = 16
     ASSOC_TRK_BIT = 1024; // global tracks with tight pt dependent dca cut (selecting primaries)
     TRIG_TRK_BIT = AliAODTrack::kIsHybridGCG; // = 2^20
+    TFile *test  = TFile::Open("eff_out.root");
+    fLambdaEff = (TH1D*) test->Get("fLambdaEff")->Clone("lambdaEffClone");
+    fAssociatedEff = (TH1D*) test->Get("fAssociatedEff")->Clone("associatedEffClone");
+    fTriggerEff = (TH1D*) test->Get("fTriggerEff")->Clone("triggerEffClone");
 }
 
 AliAnalysisTaskLambdaHadronRatio::~AliAnalysisTaskLambdaHadronRatio()
@@ -283,8 +291,6 @@ void AliAnalysisTaskLambdaHadronRatio::LoadEfficiencies(TFile* inputFile) {
         AliFatal("UNABLE TO FIND TRIGGER EFF, EXITING");
     }
 
-    std::cout << fTriggerEff->Integral() << " is the integral WEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE" << std::endl;
-    // effFile->Close();
 
 }
 
@@ -332,11 +338,10 @@ void AliAnalysisTaskLambdaHadronRatio::MakeSameHLambdaCorrelations(std::vector<A
             dphi_point[4] = lambda.particle.M();
             dphi_point[5] = zVtx;
 
-            bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0) 
-                               && (lambda.particle.Pt() < 10 && lambda.particle.Pt() > 0));
+            bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0.5) 
+                               && (lambda.particle.Pt() < 10 && lambda.particle.Pt() > 0.5));
 
             if(eff && in_pt_range) {
-                std::cout << "we get here once" << std::endl;
 
                 int trigBin = fTriggerEff->FindBin(trigger->Pt());
                 double trigEff = fTriggerEff->GetBinContent(trigBin);
@@ -382,8 +387,8 @@ void AliAnalysisTaskLambdaHadronRatio::MakeSameHHCorrelations(std::vector<AliAOD
             dphi_point[3] = trigger->Eta() - associate->Eta();
             dphi_point[4] = zVtx;
 
-            bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0) 
-                               && (associate->Pt() < 10 && associate->Pt() > 0));
+            bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0.5) 
+                               && (associate->Pt() < 10 && associate->Pt() > 0.5));
             if(eff && in_pt_range) {
 
                 int trigBin = fTriggerEff->FindBin(trigger->Pt());
@@ -430,8 +435,8 @@ void AliAnalysisTaskLambdaHadronRatio::MakeSameTriggerTriggerCorrelations(std::v
             dphi_point[3] = trigger->Eta() - associate->Eta();
             dphi_point[4] = zVtx;
 
-            bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0) 
-                               && (associate->Pt() < 10 && associate->Pt() > 0));
+            bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0.5) 
+                               && (associate->Pt() < 10 && associate->Pt() > 0.5));
 
             if(eff && in_pt_range) {
                 int trigBin = fTriggerEff->FindBin(trigger->Pt());
@@ -482,14 +487,14 @@ void AliAnalysisTaskLambdaHadronRatio::MakeMixedHLambdaCorrelations(AliEventPool
                 dphi_point[3] = trigger->Eta() - lambda.particle.Eta();
                 dphi_point[4] = lambda.particle.M();
                 dphi_point[5] = zVtx;
-                bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0) 
-                                && (lambda.particle.Pt() < 10 && lambda.particle.Pt() > 0));
+                bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0.5) 
+                                && (lambda.particle.Pt() < 10 && lambda.particle.Pt() > 0.5));
                 if(eff && in_pt_range) {
                     int trigBin = fTriggerEff->FindBin(trigger->Pt());
                     double trigEff = fTriggerEff->GetBinContent(trigBin);
                     double triggerScale = 1.0/trigEff;
                     int lambdaBin = fLambdaEff->FindBin(lambda.particle.Pt());
-                    int lambdaEff = fLambdaEff->GetBinContent(lambdaBin);
+                    double lambdaEff = fLambdaEff->GetBinContent(lambdaBin);
                     double lambdaScale = 1.0/lambdaEff;
                     double totalScale = triggerScale*lambdaScale;
                     fDphi->Fill(dphi_point, totalScale);
@@ -533,15 +538,15 @@ void AliAnalysisTaskLambdaHadronRatio::MakeMixedHHCorrelations(AliEventPool* fPo
                 dphi_point[3] = trigger->Eta() - associate->Eta();
                 dphi_point[4] = zVtx;
 
-                bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0) 
-                                && (associate->Pt() < 10 && associate->Pt() > 0));
+                bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0.5) 
+                                && (associate->Pt() < 10 && associate->Pt() > 0.5));
 
                 if(eff && in_pt_range) {
                     int trigBin = fTriggerEff->FindBin(trigger->Pt());
                     double trigEff = fTriggerEff->GetBinContent(trigBin);
                     double triggerScale = 1.0/trigEff;
                     int associatedBin = fAssociatedEff->FindBin(associate->Pt());
-                    int associatedEff = fAssociatedEff->GetBinContent(associatedBin);
+                    double associatedEff = fAssociatedEff->GetBinContent(associatedBin);
                     double associatedScale = 1.0/associatedEff;
                     double totalScale = triggerScale*associatedScale;
                     fDphi->Fill(dphi_point, totalScale);
@@ -562,7 +567,7 @@ bool AliAnalysisTaskLambdaHadronRatio::PassDaughterCuts(AliAODTrack *track){
     pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
     pass = pass && (track->Pt() >= 0.15);
 
-    // pass = pass && (track->TestFilterMask(DAUGHTER_TRK_BIT));
+    pass = pass && (track->TestFilterMask(DAUGHTER_TRK_BIT));
 
     pass = pass && (track->IsOn(AliAODTrack::kTPCrefit));
 
@@ -603,8 +608,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
 
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     if(!fAOD){
-        std::cout << "THERE IS NO AOD EVENT, CHECK EVENT HANDLER... ALSO WHERE DOES STANDARD OUT GO WHEN I RUN ON THE GRID??? also is it a good idea to use abort??? Probably not!!" << std::endl;
-        std::abort();
+        AliFatal("THERE IS NO AOD EVENT, CHECK EVENT HANDLER... ALSO WHERE DOES STANDARD OUT GO WHEN I RUN ON THE GRID??? also is it a good idea to use abort??? Probably not!!");
     }
 
 
