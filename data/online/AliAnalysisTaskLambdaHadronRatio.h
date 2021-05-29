@@ -33,8 +33,7 @@ class AliAnalysisTaskLambdaHadronRatio : public AliAnalysisTaskSE {
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t* option);
   virtual void Terminate(Option_t* option);
-  void TestPrint(TString string);
-  void LoadEfficiencies(TFile* inputFile);
+  void LoadEfficiencies();
 
   struct AliMotherContainer {
     TLorentzVector particle;
@@ -51,14 +50,16 @@ class AliAnalysisTaskLambdaHadronRatio : public AliAnalysisTaskSE {
   float TRIG_TRK_BIT;
 
   TString CENT_ESTIMATOR;
+  TString EFF_FILE_PATH;
+
   AliAODEvent* fAOD; //!>! input event
   TList* fOutputList; //!>! output list
 
   AliEventPoolManager *fCorPoolMgr; //!>! correlation pool manager
   
-  TH1D* fTriggerEff; //!>! trigger efficiency
-  TH1D* fAssociatedEff; //!>! associated efficiency
-  TH1D* fLambdaEff; //!>! lambda efficiency
+  TH1D* fTriggerEff; //! trigger efficiency
+  TH1D* fAssociatedEff; //! associated efficiency
+  TH1D* fLambdaEff; //! lambda efficiency
 
   TH2D* fTriggersAndLambdasPerEvent_All; //!>! triggers and all lambdas per event
   TH2D* fTriggersAndLambdasPerEvent_2_4; //!>! triggers and 2-4 GeV lambdas per event
@@ -86,13 +87,9 @@ class AliAnalysisTaskLambdaHadronRatio : public AliAnalysisTaskSE {
 
   THnSparseF* fLambdaDaughterDCA;
 
-  // THnSparseF* fPid; //!>! histogram to visualize pid cuts
-  // THnSparseF* fSignalAnalysis; //!>! histogram to analyze signal with nsigma cuts
-
   AliPIDResponse *fpidResponse; //!>!pid response
   AliMultSelection *fMultSelection; //!>!mult selection
 
-  //hand written functions:
 
   AliMotherContainer DaughtersToMother(AliAODTrack* track1, AliAODTrack* track2, double mass1, double mass2);
   AliMotherContainer RotatedDaughtersToMother(AliAODTrack* track1, AliAODTrack* track2, double mass1, double mass2, double angle);

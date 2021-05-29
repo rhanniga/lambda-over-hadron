@@ -16,6 +16,8 @@ AliAnalysisTaskLambdaHadronRatio* AddLambdaHadronRatioTask(TString name = "lambd
 
   if(!task) return 0x0;
 
+  task->LoadEfficiencies();
+
   manage->AddTask(task);
 
   manage->ConnectInput(task, 0, manage->GetCommonInputContainer());

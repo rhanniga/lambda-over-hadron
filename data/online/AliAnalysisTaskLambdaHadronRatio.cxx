@@ -13,21 +13,22 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     fTriggerDist{0},
     fAssociatedHDist{0},
     fDphiHLambda{0},
+    fDphiHLambdaEff{0},
+    fDphiHLambdaV0{0},
     fDphiHLambdaRotated{0},
     fDphiHLambdaRotatedProton{0},
     fDphiHLambdaRotatedPi{0},
     fDphiHLambdaFlipped{0},
     fDphiHH{0},
+    fDphiHHEff{0},
     fDphiHLambdaLS{0},
     fDphiHLambdaMixed{0},
     fDphiHHMixed{0},
     fDphiHLambdaLSMixed{0},
-    fCorPoolMgr{0}
-    // fLambdaEff{0},
-    // fAssociatedEff{0},
-    // fTriggerEff{0}
-    // fPid{0},
-    // fSignalAnalysis{0}
+    fCorPoolMgr{0},
+    fLambdaEff{0},
+    fAssociatedEff{0},
+    fTriggerEff{0}
 {
     MULT_LOW = 0;
     MULT_HIGH = 20;
@@ -35,10 +36,7 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     DAUGHTER_TRK_BIT = AliAODTrack::kTrkGlobalNoDCA; // = 16
     ASSOC_TRK_BIT = 1024; // global tracks with tight pt dependent dca cut (selecting primaries)
     TRIG_TRK_BIT = AliAODTrack::kIsHybridGCG; // = 2^20
-    TFile *test  = TFile::Open("eff_out.root");
-    fLambdaEff = (TH1D*) test->Get("fLambdaEff")->Clone("lambdaEffClone");
-    fAssociatedEff = (TH1D*) test->Get("fAssociatedEff")->Clone("associatedEffClone");
-    fTriggerEff = (TH1D*) test->Get("fTriggerEff")->Clone("triggerEffClone");
+    EFF_FILE_PATH = "alien:///alice/cern.ch/user/r/rhanniga/lambda_hadron_efficiency/eff_out.root";
 }
 
 AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *name) :
@@ -49,23 +47,23 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     fTriggerDist{0},
     fAssociatedHDist{0},
     fDphiHLambda{0},
+    fDphiHLambdaEff{0},
+    fDphiHLambdaV0{0},
     fDphiHLambdaRotated{0},
     fDphiHLambdaRotatedProton{0},
     fDphiHLambdaRotatedPi{0},
     fDphiHLambdaFlipped{0},
     fDphiHH{0},
+    fDphiHHEff{0},
     fDphiHLambdaLS{0},
     fDphiHLambdaMixed{0},
     fDphiHHMixed{0},
     fDphiHLambdaLSMixed{0},
-    fCorPoolMgr{0}
-    // fLambdaEff{0},
-    // fAssociatedEff{0},
-    // fTriggerEff{0}
-    // fPid{0},
-    // fSignalAnalysis{0}
+    fCorPoolMgr{0},
+    fLambdaEff{0},
+    fAssociatedEff{0},
+    fTriggerEff{0}
 {
-
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
     MULT_LOW = 0;
@@ -74,16 +72,16 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     DAUGHTER_TRK_BIT = AliAODTrack::kTrkGlobalNoDCA; // = 16
     ASSOC_TRK_BIT = 1024; // global tracks with tight pt dependent dca cut (selecting primaries)
     TRIG_TRK_BIT = AliAODTrack::kIsHybridGCG; // = 2^20
-    TFile *test  = TFile::Open("eff_out.root");
-    fLambdaEff = (TH1D*) test->Get("fLambdaEff")->Clone("lambdaEffClone");
-    fAssociatedEff = (TH1D*) test->Get("fAssociatedEff")->Clone("associatedEffClone");
-    fTriggerEff = (TH1D*) test->Get("fTriggerEff")->Clone("triggerEffClone");
+    EFF_FILE_PATH = "alien:///alice/cern.ch/user/r/rhanniga/lambda_hadron_efficiency/eff_out.root";
 }
 
 AliAnalysisTaskLambdaHadronRatio::~AliAnalysisTaskLambdaHadronRatio()
 {
 
     if(fOutputList) delete fOutputList;
+    if(fTriggerEff) delete fTriggerEff;
+    if(fAssociatedEff) delete fAssociatedEff;
+    if(fLambdaEff) delete fLambdaEff;
 
 }
 
@@ -264,13 +262,10 @@ AliAnalysisTaskLambdaHadronRatio::AliMotherContainer AliAnalysisTaskLambdaHadron
 
 }
 
-void AliAnalysisTaskLambdaHadronRatio::TestPrint(TString string) {
-    std::cout << string << std::endl;
-}
 
-void AliAnalysisTaskLambdaHadronRatio::LoadEfficiencies(TFile* inputFile) {
+void AliAnalysisTaskLambdaHadronRatio::LoadEfficiencies() {
 
-    TFile* effFile = inputFile;
+    TFile* effFile = TFile::Open(EFF_FILE_PATH);
 
     if(!effFile) {
         AliFatal("NULL INPUT FILE WHEN LOADING EFFICIENCIES, EXITING");
@@ -280,17 +275,21 @@ void AliAnalysisTaskLambdaHadronRatio::LoadEfficiencies(TFile* inputFile) {
     if(!fLambdaEff) {
         AliFatal("UNABLE TO FIND LAMBDA EFF, EXITING");
     }
+    fLambdaEff->SetDirectory(0);
     
     fAssociatedEff = (TH1D*) effFile->Get("fAssociatedEff")->Clone("fAssociatedEffClone");
     if(!fAssociatedEff) {
         AliFatal("UNABLE TO FIND ASSOCIATED EFF, EXITING");
     }
+    fAssociatedEff->SetDirectory(0);
 
     fTriggerEff = (TH1D*) effFile->Get("fTriggerEff")->Clone("fTriggerEffClone");
     if(!fTriggerEff) {
         AliFatal("UNABLE TO FIND TRIGGER EFF, EXITING");
     }
+    fTriggerEff->SetDirectory(0);
 
+    effFile->Close();
 
 }
 
@@ -614,7 +613,6 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
 
     fpidResponse = fInputHandler->GetPIDResponse();
 
-
     //Event cuts
     TString cent_estimator = CENT_ESTIMATOR;
     double multPercentile = 0;
@@ -721,29 +719,6 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_RotatedPi;
     std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_Flipped;
     std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_LS;
-
-    // for(int i = 0; i < (int)unlikelyPion_list.size(); i++) {
-    //     for(int j = 0; j < (int) unlikelyProton_list.size(); j++) {
-
-    //         double TPCNSigmaPion = 1000;
-    //         double TOFNSigmaPion = 1000;
-    //         double TPCNSigmaProton = 1000;
-    //         double TOFNSigmaProton = 1000;
-
-    //         TPCNSigmaPion = fpidResponse->NumberOfSigmasTPC(unlikelyPion_list[i], AliPID::kPion);
-    //         TOFNSigmaPion = fpidResponse->NumberOfSigmasTOF(unlikelyPion_list[i], AliPID::kPion);
-    //         TPCNSigmaProton = fpidResponse->NumberOfSigmasTPC(unlikelyProton_list[j], AliPID::kProton);
-    //         TOFNSigmaProton = fpidResponse->NumberOfSigmasTOF(unlikelyProton_list[j], AliPID::kProton);
-
-    //         AliMotherContainer mother = DaughtersToMother(unlikelyPion_list[i], unlikelyProton_list[j], 0.1396, 0.9383);
-    //         double mass = mother.particle.M();
-    //         double pt = mother.particle.Pt();
-
-    //         double signal_array[6] = {TPCNSigmaPion, TOFNSigmaPion, TPCNSigmaProton, TOFNSigmaProton, mass, pt};
-    //         fSignalAnalysis->Fill(signal_array);
-    //     }
-    // }
-
 
     for(int i = 0; i < (int)piMinus_list.size(); i++) {
         for(int j = 0; j < (int) proton_list.size(); j++) {
@@ -865,11 +840,13 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
         }
     }
 
+
     // Filling all of our single particle distribution histograms:
     FillSingleParticleDist(trigger_list, primZ, fTriggerDist);
     FillSingleParticleDist(associated_h_list, primZ, fAssociatedHDist);
     FillSingleParticleDist(all_hadron_list, primZ, fLooseDist);
     FillSingleParticleDist(lambda_list_signal_region, primZ, fLambdaDist);
+
 
     // Filling all of our correlation histograms
     MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambda, primZ, false);

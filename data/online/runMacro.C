@@ -15,6 +15,9 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   bool gridTest = false;
   int numTestFiles = 2;
 
+  // So we can access files from the grid (for eff cor and the like)
+  TGrid::Connect("alien//");
+
   gInterpreter->ProcessLine(".include $ROOTSYS/include");
   gInterpreter->ProcessLine(".include $ALICE_ROOT/include");
 
@@ -32,16 +35,8 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   //PID response:
   gInterpreter->ProcessLine(Form(".x %s(kFALSE)", gSystem->ExpandPathName("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C")));
 
-
-
   gInterpreter->LoadMacro("AliAnalysisTaskLambdaHadronRatio.cxx++g");
   AliAnalysisTaskLambdaHadronRatio *task = reinterpret_cast<AliAnalysisTaskLambdaHadronRatio*>(gInterpreter->ExecuteMacro("AddLambdaHadronRatioTask.C"));
-
-  // TFile* effFile = TFile::Open("eff_out.root");
-  // task->TestPrint("fuck the police wtf????????????????????????????????????????????????????");
-  // task->LoadEfficiencies(effFile);
-  // // effFile->Close();
-
 
   if(!manage->InitAnalysis()) return;
   manage->SetDebugLevel(2);
