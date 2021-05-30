@@ -36,7 +36,7 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     DAUGHTER_TRK_BIT = AliAODTrack::kTrkGlobalNoDCA; // = 16
     ASSOC_TRK_BIT = 1024; // global tracks with tight pt dependent dca cut (selecting primaries)
     TRIG_TRK_BIT = AliAODTrack::kIsHybridGCG; // = 2^20
-    EFF_FILE_PATH = "alien:///alice/cern.ch/user/r/rhanniga/lambda_hadron_efficiency/eff_out.root";
+    EFF_FILE_PATH = "eff_out.root";
 }
 
 AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *name) :
@@ -72,7 +72,7 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     DAUGHTER_TRK_BIT = AliAODTrack::kTrkGlobalNoDCA; // = 16
     ASSOC_TRK_BIT = 1024; // global tracks with tight pt dependent dca cut (selecting primaries)
     TRIG_TRK_BIT = AliAODTrack::kIsHybridGCG; // = 2^20
-    EFF_FILE_PATH = "alien:///alice/cern.ch/user/r/rhanniga/lambda_hadron_efficiency/eff_out.root";
+    EFF_FILE_PATH = "eff_out.root";
 }
 
 AliAnalysisTaskLambdaHadronRatio::~AliAnalysisTaskLambdaHadronRatio()
@@ -275,21 +275,16 @@ void AliAnalysisTaskLambdaHadronRatio::LoadEfficiencies() {
     if(!fLambdaEff) {
         AliFatal("UNABLE TO FIND LAMBDA EFF, EXITING");
     }
-    fLambdaEff->SetDirectory(0);
     
     fAssociatedEff = (TH1D*) effFile->Get("fAssociatedEff")->Clone("fAssociatedEffClone");
     if(!fAssociatedEff) {
         AliFatal("UNABLE TO FIND ASSOCIATED EFF, EXITING");
     }
-    fAssociatedEff->SetDirectory(0);
 
     fTriggerEff = (TH1D*) effFile->Get("fTriggerEff")->Clone("fTriggerEffClone");
     if(!fTriggerEff) {
         AliFatal("UNABLE TO FIND TRIGGER EFF, EXITING");
     }
-    fTriggerEff->SetDirectory(0);
-
-    effFile->Close();
 
 }
 

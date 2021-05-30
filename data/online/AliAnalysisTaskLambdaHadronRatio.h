@@ -57,9 +57,9 @@ class AliAnalysisTaskLambdaHadronRatio : public AliAnalysisTaskSE {
 
   AliEventPoolManager *fCorPoolMgr; //!>! correlation pool manager
   
-  TH1D* fTriggerEff; //! trigger efficiency
-  TH1D* fAssociatedEff; //! associated efficiency
-  TH1D* fLambdaEff; //! lambda efficiency
+  TH1D* fTriggerEff; ///> trigger efficiency
+  TH1D* fAssociatedEff; ///> associated efficiency
+  TH1D* fLambdaEff; ///> lambda efficiency
 
   TH2D* fTriggersAndLambdasPerEvent_All; //!>! triggers and all lambdas per event
   TH2D* fTriggersAndLambdasPerEvent_2_4; //!>! triggers and 2-4 GeV lambdas per event
@@ -85,7 +85,7 @@ class AliAnalysisTaskLambdaHadronRatio : public AliAnalysisTaskSE {
   THnSparseF* fDphiHLambdaLSMixed; //!>! hadron-proton+pion like sign mixed correlation hist
   THnSparseF* fDphiTriggerTriggerMixed;   //!>! mixed trigger-trigger correlation hist
 
-  THnSparseF* fLambdaDaughterDCA;
+  THnSparseF* fLambdaDaughterDCA; //!>!
 
   AliPIDResponse *fpidResponse; //!>!pid response
   AliMultSelection *fMultSelection; //!>!mult selection
@@ -105,7 +105,7 @@ class AliAnalysisTaskLambdaHadronRatio : public AliAnalysisTaskSE {
   bool PassTriggerCuts(AliAODTrack *track);
   bool PassAssociatedCuts(AliAODTrack *track);
 
-  ClassDef(AliAnalysisTaskLambdaHadronRatio, 0);
+  ClassDef(AliAnalysisTaskLambdaHadronRatio, 3);
 
 };
 #endif
