@@ -388,7 +388,7 @@ void plotEfficiency(){
     effTrigger_PT_mult[3]->SetName("fTriggerEff");
     effTrigger_PT_mult[3]->Write();
 
-    etaPtRefitRowsRatioLambda_PT_mult[3]->SetName("fLambdaEff");
-    etaPtRefitRowsRatioLambda_PT_mult[3]->Write();
+    etaPtRefitRowsRatioeffPT_mult[3]->SetName("fLambdaEff");
+    etaPtRefitRowsRatioeffPT_mult[3]->Write();
 
 }

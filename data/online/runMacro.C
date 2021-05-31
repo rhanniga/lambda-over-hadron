@@ -4,7 +4,7 @@
 void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
   //Starting and ending index of the array containing the run numbers, specifies which range to run over
-  int startIndex = 1;
+  int startIndex = 0;
   // int endIndex = 14;
   int endIndex = 28;
 
