@@ -33,7 +33,7 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     MULT_LOW = 0;
     MULT_HIGH = 20;
     CENT_ESTIMATOR = "V0A";
-    DAUGHTER_TRK_BIT = AliAODTrack::kTrkGlobalNoDCA; // = 16
+    DAUGHTER_TRK_BIT = AliAODTrack::kTrkGlobalNoDCA; // = 16, not used
     ASSOC_TRK_BIT = 1024; // global tracks with tight pt dependent dca cut (selecting primaries)
     TRIG_TRK_BIT = AliAODTrack::kIsHybridGCG; // = 2^20
     EFF_FILE_PATH = "eff_out.root";
@@ -69,7 +69,7 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     MULT_LOW = 0;
     MULT_HIGH = 20;
     CENT_ESTIMATOR = "V0A";
-    DAUGHTER_TRK_BIT = AliAODTrack::kTrkGlobalNoDCA; // = 16
+    DAUGHTER_TRK_BIT = AliAODTrack::kTrkGlobalNoDCA; // = 16, not used
     ASSOC_TRK_BIT = 1024; // global tracks with tight pt dependent dca cut (selecting primaries)
     TRIG_TRK_BIT = AliAODTrack::kIsHybridGCG; // = 2^20
     EFF_FILE_PATH = "eff_out.root";
@@ -561,7 +561,7 @@ bool AliAnalysisTaskLambdaHadronRatio::PassDaughterCuts(AliAODTrack *track){
     pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
     pass = pass && (track->Pt() >= 0.15);
 
-    pass = pass && (track->TestFilterMask(DAUGHTER_TRK_BIT));
+    // pass = pass && (track->TestFilterMask(DAUGHTER_TRK_BIT));
 
     pass = pass && (track->IsOn(AliAODTrack::kTPCrefit));
 
