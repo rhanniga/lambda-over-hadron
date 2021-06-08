@@ -30,8 +30,8 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     fAssociatedEff{0},
     fTriggerEff{0}
 {
-    MULT_LOW = 0;
-    MULT_HIGH = 20;
+    MULT_LOW = 20;
+    MULT_HIGH = 50;
     CENT_ESTIMATOR = "V0A";
     DAUGHTER_TRK_BIT = AliAODTrack::kTrkGlobalNoDCA; // = 16, not used
     ASSOC_TRK_BIT = 1024; // global tracks with tight pt dependent dca cut (selecting primaries)
@@ -66,8 +66,8 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
-    MULT_LOW = 0;
-    MULT_HIGH = 20;
+    MULT_LOW = 20;
+    MULT_HIGH = 50;
     CENT_ESTIMATOR = "V0A";
     DAUGHTER_TRK_BIT = AliAODTrack::kTrkGlobalNoDCA; // = 16, not used
     ASSOC_TRK_BIT = 1024; // global tracks with tight pt dependent dca cut (selecting primaries)
