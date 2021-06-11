@@ -13,34 +13,29 @@
  * provided "as is" without express or implied warranty.                  * 
  **************************************************************************/
 
+#include <iostream>
+
 #include "TChain.h"
 #include "TTree.h"
 #include "TH1F.h"
-#include "TH2F.h"
-#include "TCanvas.h"
 #include "THnSparse.h"
 #include "TParticle.h"
-#include "TStopwatch.h"
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
-
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliESDtrackCuts.h"
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
 #include "AliAODMCParticle.h"
+#include "AliAODMCHeader.h"
 #include "AliCFParticle.h"
-
-#include "AliEventPoolManager.h"
 #include "AliMultSelection.h"
-
 #include "AliPID.h"
 #include "AliESDpid.h"
 #include "AliAODPid.h"
 #include "AliPIDResponse.h"
-
 #include "AliMCEvent.h"
 #include "AliStack.h"
 #include "AliMCEventHandler.h"
@@ -65,14 +60,46 @@ fVtxY(0x0),
 fRealTotalLambdaDist(0x0),
 fRealLambdaDist(0x0),
 fRealAntiLambdaDist(0x0),
+fRecoTotalV0LambdaDist(0x0),
+fRecoEtaV0LambdaDist(0x0),
+fRecoEtaPtV0LambdaDist(0x0),
+fRecoEtaPtRefitV0LambdaDist(0x0),
+fRecoEtaPtRefitRowsV0LambdaDist(0x0),
+fRecoEtaPtRefitRowsRatioV0LambdaDist(0x0),
 fRecoTotalLambdaDist(0x0),
-fRealKDist(0),
-fRealPiDist(0),
-fRealpDist(0),
-fRealeDist(0),
-fRealMuonDist(0),
-fRealLambdaDist(0),
-fRecoLambdaDist(0)
+fRecoEtaLambdaDist(0x0),
+fRecoEtaPtLambdaDist(0x0),
+fRecoEtaPtRefitLambdaDist(0x0),
+fRecoEtaPtRefitRowsLambdaDist(0x0),
+fRecoEtaPtRefitRowsRatioLambdaDist(0x0),
+fRecoTotalLambdaFilterDist(0x0),
+fRecoLambdaDist(0x0),
+fRecoAntiLambdaDist(0x0),
+fRealChargedDist(0x0),
+fRealKDist(0x0),
+fRealPiDist(0x0),
+fRealPiFromLambdaDist(0x0),
+fRealeDist(0x0),
+fRealpDist(0x0),
+fRealpFromLambdaDist(0x0),
+fRealMuonDist(0x0),
+fRecoChargedDist(0x0),
+fRecoKDist(0x0),
+fRecoPiDist(0x0),
+fRecoeDist(0x0),
+fRecopDist(0x0),
+fRecoMuonDist(0x0),
+fRecoChargedTriggerDist(0x0),
+fRecoKTriggerDist(0x0),
+fRecoPiTriggerDist(0x0),
+fRecoeTriggerDist(0x0),
+fRecopTriggerDist(0x0),
+fRecoMuonTriggerDist(0x0),
+fRealLambdaDaughterDist(0x0),
+fRecoLambdaDaughterDist(0x0),
+fRealLambdasPerEvent(0x0),
+fRecoLambdasPerEvent(0x0),
+fReactionPlane(0x0)
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -89,49 +116,80 @@ fRecoLambdaDist(0)
 
 AliAnalysisTaskLambdaHadronEfficiency::AliAnalysisTaskLambdaHadronEfficiency()
 : AliAnalysisTaskSE("default_task"),
-fVevent(0),
-fPoolMgr(0x0),
-fLSPoolMgr(0x0),
-fHHPoolMgr(0x0),
-fESD(0),
-fAOD(0),
-fpidResponse(0),
-fOutputList(0),
-fNevents(0),
-fNumTracks(0),
-fVtxZ(0),
-fVtxX(0),
-fVtxY(0),
-fRealLambdaDist(0),
-fRecoLambdaDist(0)
+fVevent(0x0),
+fESD(0x0),
+fAOD(0x0),
+fpidResponse(0x0),
+fMultSelection(0x0),
+fOutputList(0x0),
+fNevents(0x0),
+fNumTracks(0x0),
+fVtxZ(0x0),
+fVtxX(0x0),
+fVtxY(0x0),
+fRealTotalLambdaDist(0x0),
+fRealLambdaDist(0x0),
+fRealAntiLambdaDist(0x0),
+fRecoTotalV0LambdaDist(0x0),
+fRecoEtaV0LambdaDist(0x0),
+fRecoEtaPtV0LambdaDist(0x0),
+fRecoEtaPtRefitV0LambdaDist(0x0),
+fRecoEtaPtRefitRowsV0LambdaDist(0x0),
+fRecoEtaPtRefitRowsRatioV0LambdaDist(0x0),
+fRecoTotalLambdaDist(0x0),
+fRecoEtaLambdaDist(0x0),
+fRecoEtaPtLambdaDist(0x0),
+fRecoEtaPtRefitLambdaDist(0x0),
+fRecoEtaPtRefitRowsLambdaDist(0x0),
+fRecoEtaPtRefitRowsRatioLambdaDist(0x0),
+fRecoTotalLambdaFilterDist(0x0),
+fRecoLambdaDist(0x0),
+fRecoAntiLambdaDist(0x0),
+fRealChargedDist(0x0),
+fRealKDist(0x0),
+fRealPiDist(0x0),
+fRealPiFromLambdaDist(0x0),
+fRealeDist(0x0),
+fRealpDist(0x0),
+fRealpFromLambdaDist(0x0),
+fRealMuonDist(0x0),
+fRecoChargedDist(0x0),
+fRecoKDist(0x0),
+fRecoPiDist(0x0),
+fRecoeDist(0x0),
+fRecopDist(0x0),
+fRecoMuonDist(0x0),
+fRecoChargedTriggerDist(0x0),
+fRecoKTriggerDist(0x0),
+fRecoPiTriggerDist(0x0),
+fRecoeTriggerDist(0x0),
+fRecopTriggerDist(0x0),
+fRecoMuonTriggerDist(0x0),
+fRealLambdaDaughterDist(0x0),
+fRecoLambdaDaughterDist(0x0),
+fRealLambdasPerEvent(0x0),
+fRecoLambdasPerEvent(0x0),
+fReactionPlane(0x0)
 {
-    //Default constructor
-    // Define input and output slots here
-    // Input slot #0 works with a TChain
     DefineInput(0, TChain::Class());
-    // Output slot #0 id reserved by the base class for AOD
-    // Output slot #1 writes into a TH1 container
-    // DefineOutput(1, TH1I::Class());
     DefineOutput(1, TList::Class());
-    //DefineOutput(3, TTree::Class());
     MIN_CROSSED_ROWS_TPC = 70;
     MIN_ROW_CLUSTER_RATIO = 0.8;
     MULT_LOW = 0;
     MULT_HIGH = 80;
     CENT_ESTIMATOR = "V0A";
-    // DAUGHTER_TRK_BIT = 16; not used
     ASSOC_TRK_BIT = 1024; // global tracks with tight pt dependent dca cut (selecting primaries)
     TRIG_TRK_BIT = AliAODTrack::kIsHybridGCG; // = 2^20
     DAUGHTER_ETA_CUT = 0.8;
     DAUGHTER_MIN_PT = 0.15;
 }
-//________________________________________________________________________
+
 AliAnalysisTaskLambdaHadronEfficiency::~AliAnalysisTaskLambdaHadronEfficiency()
 {
     //Destructor
     delete fOutputList;
 }
-//________________________________________________________________________
+
 void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
 {
     //printf("\n!!!!!\n Starting UserCreateOutputObjects \n\n");
@@ -157,7 +215,6 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
 
 
     Int_t numVtxZBins = 10;
-    //Double_t vtxZBins[11] = {-10.0, -6.15, -3.90, -2.13, -0.59, 0.86, 2.29, 3.77, 5.39, 7.30, 10.0};
     Double_t vtxZBins[11] = {-10.0, -8.0, -6.0, -4.0, -2.0, 0.0, 2.0, 4.0, 6.0, 8.0, 10.0};
     Int_t numMultBins = 3;
     Double_t multBins[4] = {0.0, 20.0, 50.0, 90.0};
@@ -331,65 +388,6 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
 
 }
 
-//_______________________________________________________________________
-// UInt_t AliAnalysisTaskLambdaHadronEfficiency::PassProtonCuts(AliAODTrack *track, Double_t TPCnSigma, Double_t TOFnSigma){
-//     //returns the level of cuts that the track passed
-//     //cutLevel: 1 = track cuts, 2 = TOF Hit, 4 = TPC PID cut, 8 = TOF PID cut
-//     UInt_t passLevel = 0;
-//     Bool_t pass = kTRUE;
-//     pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
-//     pass = pass && (track->Pt() >= 0.15);
-//     pass = pass && (track->TestFilterMask(ASSOC_TRK_BIT));
-//     pass = pass && (track->GetTPCCrossedRows() > 80);
-//     if(pass) passLevel |= TRACK_BIT;    
-//     if(TOFnSigma != -999){ //check if there is a TOF signal, but don't care what the signal is
-//         passLevel |= TOF_HIT_BIT;
-//     }
-//     if(TMath::Abs(TPCnSigma) <= 2.0){ // check that kaon passed the TPC nsigma cut
-//         passLevel |= TPC_PID_BIT;
-//     }
-//     if(TMath::Abs(TOFnSigma) <= 2.0){ // check that kaon passed TOF nsigma cut
-//         passLevel |= TOF_PID_BIT;
-//     }
-
-//     if(TMath::Abs(track->Eta()) <= 0.8) passLevel |= ETA_BIT;
-//     if(track->Pt() >= 0.15) passLevel |= PT_BIT;
-//     if(track->TestFilterMask(ASSOC_TRK_BIT)) passLevel |= MASK_BIT;
-//     if(track->GetTPCCrossedRows() > 80) passLevel |= ROWS_BIT;
-
-//     return passLevel;
-// }
-
-//_______________________________________________________________________
-// UInt_t AliAnalysisTaskLambdaHadronEfficiency::PassPionCuts(AliAODTrack *track, Double_t TPCnSigma, Double_t TOFnSigma){
-//     //returns the level of cuts that the track passed
-//     //cutLevel: 1 = track cuts, 2 = TOF Hit, 4 = TPC PID cut, 8 = TOF PID cut
-//     UInt_t passLevel = 0;
-//     Bool_t pass = kTRUE;
-//     pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
-//     pass = pass && (track->Pt() >= 0.15);
-//     pass = pass && (track->TestFilterMask(ASSOC_TRK_BIT));
-//     pass = pass && (track->GetTPCCrossedRows() > 80);
-//     if(pass) passLevel |= TRACK_BIT;    
-//     if(TOFnSigma != -999){ //check if there is a TOF signal, but don't care what the signal is
-//         passLevel |= TOF_HIT_BIT;
-//     }
-//     if(TMath::Abs(TPCnSigma) <= 3.0){ // check that kaon passed the TPC nsigma cut
-//         passLevel |= TPC_PID_BIT;
-//     }
-//     if(TMath::Abs(TOFnSigma) <= 3.0){ // check that kaon passed TOF nsigma cut
-//         passLevel |= TOF_PID_BIT;
-//     }
-
-//     if(TMath::Abs(track->Eta()) <= 0.8) passLevel |= ETA_BIT;
-//     if(track->Pt() >= 0.15) passLevel |= PT_BIT;
-//     if(track->TestFilterMask(ASSOC_TRK_BIT)) passLevel |= MASK_BIT;
-//     if(track->GetTPCCrossedRows() > 80) passLevel |= ROWS_BIT;
-
-//     return passLevel;
-// }
-
-//_______________________________________________________________________
 uint AliAnalysisTaskLambdaHadronEfficiency::PassDaughterCuts(AliAODTrack *track){
 
     // Reject the negative ID tracks (TPC constrained to PV, etc.)

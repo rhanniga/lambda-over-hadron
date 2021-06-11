@@ -19,7 +19,7 @@
 
 // Forward declarations order: standard, ROOT, AliRoot (for pointers in this file only)
 class TH1F;
-class THnSparseF;
+class THnSparse;
 
 class AliEventPoolManager;
 class AliESDEvent;
