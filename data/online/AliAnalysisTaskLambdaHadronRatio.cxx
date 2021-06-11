@@ -1,34 +1,81 @@
+/************************************************************************* 
+ * Copyright(c) 1998-2021, ALICE Experiment at CERN, All rights reserved. * 
+ *                                                                        * 
+ * Author: Ryan Hannigan
+ * Contributors are mentioned in the code where appropriate.              * 
+ *                                                                        * 
+ * Permission to use, copy, modify and distribute this software and its   * 
+ * documentation strictly for non-commercial purposes is hereby granted   * 
+ * without fee, provided that the above copyright notice appears in all   * 
+ * copies and that both the copyright notice and this permission notice   * 
+ * appear in the supporting documentation. The authors make no claims     * 
+ * about the suitability of this software for any purpose. It is          * 
+ * provided "as is" without express or implied warranty.                  * 
+ **************************************************************************/
+
+#include <iostream>
+
+#include "TChain.h"
+#include "TTree.h"
+#include "TH1D.h"
+#include "THnSparse.h"
+#include "TParticle.h"
+#include "TFile.h"
+
+#include "AliAnalysisTask.h"
+#include "AliAnalysisManager.h"
+#include "AliESDEvent.h"
+#include "AliESDInputHandler.h"
+#include "AliEventPoolManager.h"
+#include "AliAODEvent.h"
+#include "AliAODHandler.h"
+#include "AliAODMCHeader.h"
+#include "AliCFParticle.h"
+#include "AliMultSelection.h"
+#include "AliPID.h"
+#include "AliESDpid.h"
+#include "AliAODPid.h"
+#include "AliPIDResponse.h"
+#include "AliMCEvent.h"
+#include "AliStack.h"
+#include "AliMCEventHandler.h"
+
 #include "AliAnalysisTaskLambdaHadronRatio.h"
 
-//BOTH OF THESE ARE WEIRD, BUT APPARENTLY NECESSARRY
-class AliAnalysisTaskLambdaHadronRatio;
 ClassImp(AliAnalysisTaskLambdaHadronRatio);
-
 
 AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     AliAnalysisTaskSE(),
-    fpidResponse{0},
-    fAOD{0},
-    fOutputList{0},
-    fTriggerDist{0},
-    fAssociatedHDist{0},
-    fDphiHLambda{0},
-    fDphiHLambdaEff{0},
-    fDphiHLambdaV0{0},
-    fDphiHLambdaRotated{0},
-    fDphiHLambdaRotatedProton{0},
-    fDphiHLambdaRotatedPi{0},
-    fDphiHLambdaFlipped{0},
-    fDphiHH{0},
-    fDphiHHEff{0},
-    fDphiHLambdaLS{0},
-    fDphiHLambdaMixed{0},
-    fDphiHHMixed{0},
-    fDphiHLambdaLSMixed{0},
-    fCorPoolMgr{0},
-    fLambdaEff{0},
-    fAssociatedEff{0},
-    fTriggerEff{0}
+    fAOD(0x0),
+    fOutputList(0x0),
+    fCorPoolMgr(0x0),
+    fTriggerEff(0x0),
+    fAssociatedEff(0x0),
+    fLambdaEff(0x0),
+    fTriggersAndLambdasPerEvent_All(0x0),
+    fTriggersAndLambdasPerEvent_2_4(0x0),
+    fLooseDist(0x0),
+    fTriggerDist(0x0),
+    fAssociatedHDist(0x0),
+    fLambdaDist(0x0),
+    fDphiHLambda(0x0),
+    fDphiHLambdaEff(0x0),
+    fDphiHLambdaV0(0x0),
+    fDphiHLambdaRotated(0x0),
+    fDphiHLambdaRotatedPi(0x0),
+    fDphiHLambdaRotatedProton(0x0),
+    fDphiHLambdaFlipped(0x0),
+    fDphiHH(0x0),
+    fDphiHHEff(0x0),
+    fDphiTriggerTrigger(0x0),
+    fDphiHLambdaLS(0x0),
+    fDphiHLambdaMixed(0x0),
+    fDphiHHMixed(0x0),
+    fDphiHLambdaLSMixed(0x0),
+    fDphiTriggerTriggerMixed(0x0),
+    fLambdaDaughterDCA(0x0),
+    fpidResponse(0x0),
+    fMultSelection(0x0)
 {
     MULT_LOW = 20;
     MULT_HIGH = 50;
@@ -41,53 +88,51 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
 
 AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *name) :
     AliAnalysisTaskSE(name),
-    fpidResponse{0},
-    fAOD{0},
-    fOutputList{0},
-    fTriggerDist{0},
-    fAssociatedHDist{0},
-    fDphiHLambda{0},
-    fDphiHLambdaEff{0},
-    fDphiHLambdaV0{0},
-    fDphiHLambdaRotated{0},
-    fDphiHLambdaRotatedProton{0},
-    fDphiHLambdaRotatedPi{0},
-    fDphiHLambdaFlipped{0},
-    fDphiHH{0},
-    fDphiHHEff{0},
-    fDphiHLambdaLS{0},
-    fDphiHLambdaMixed{0},
-    fDphiHHMixed{0},
-    fDphiHLambdaLSMixed{0},
-    fCorPoolMgr{0},
-    fLambdaEff{0},
-    fAssociatedEff{0},
-    fTriggerEff{0}
+    fAOD(0x0),
+    fOutputList(0x0),
+    fCorPoolMgr(0x0),
+    fTriggerEff(0x0),
+    fAssociatedEff(0x0),
+    fLambdaEff(0x0),
+    fTriggersAndLambdasPerEvent_All(0x0),
+    fTriggersAndLambdasPerEvent_2_4(0x0),
+    fLooseDist(0x0),
+    fTriggerDist(0x0),
+    fAssociatedHDist(0x0),
+    fLambdaDist(0x0),
+    fDphiHLambda(0x0),
+    fDphiHLambdaEff(0x0),
+    fDphiHLambdaV0(0x0),
+    fDphiHLambdaRotated(0x0),
+    fDphiHLambdaRotatedPi(0x0),
+    fDphiHLambdaRotatedProton(0x0),
+    fDphiHLambdaFlipped(0x0),
+    fDphiHH(0x0),
+    fDphiHHEff(0x0),
+    fDphiTriggerTrigger(0x0),
+    fDphiHLambdaLS(0x0),
+    fDphiHLambdaMixed(0x0),
+    fDphiHHMixed(0x0),
+    fDphiHLambdaLSMixed(0x0),
+    fDphiTriggerTriggerMixed(0x0),
+    fLambdaDaughterDCA(0x0),
+    fpidResponse(0x0),
+    fMultSelection(0x0)
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
-    MULT_LOW = 20;
-    MULT_HIGH = 50;
-    CENT_ESTIMATOR = "V0A";
-    DAUGHTER_TRK_BIT = AliAODTrack::kTrkGlobalNoDCA; // = 16, not used
-    ASSOC_TRK_BIT = 1024; // global tracks with tight pt dependent dca cut (selecting primaries)
-    TRIG_TRK_BIT = AliAODTrack::kIsHybridGCG; // = 2^20
-    EFF_FILE_PATH = "eff_out.root";
 }
 
 AliAnalysisTaskLambdaHadronRatio::~AliAnalysisTaskLambdaHadronRatio()
 {
-
     if(fOutputList) delete fOutputList;
     if(fTriggerEff) delete fTriggerEff;
     if(fAssociatedEff) delete fAssociatedEff;
     if(fLambdaEff) delete fLambdaEff;
-
 }
 
 void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
 {
-
     fOutputList = new TList();
     fOutputList->SetOwner(true);
 
@@ -197,13 +242,11 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     fOutputList->Add(fLambdaDaughterDCA);
 
     PostData(1, fOutputList);
-
 }
 
 
 void AliAnalysisTaskLambdaHadronRatio::FillSingleParticleDist(std::vector<AliAODTrack*> particle_list, double zVtx, THnSparse* fDist)
 {
-
     double dist_points[4]; //Pt, Phi, Eta, zVtx
     for(int i = 0; i < (int)particle_list.size(); i++) {
         auto particle = particle_list[i];
@@ -213,12 +256,10 @@ void AliAnalysisTaskLambdaHadronRatio::FillSingleParticleDist(std::vector<AliAOD
         dist_points[3] = zVtx;
         fDist->Fill(dist_points);
     }
-
 }
 
 void AliAnalysisTaskLambdaHadronRatio::FillSingleParticleDist(std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> particle_list, double zVtx, THnSparse* fDist)
 {
-
     double dist_points[4]; //Pt, Phi, Eta, zVtx
     for(int i = 0; i < (int)particle_list.size(); i++) {
         auto particle = particle_list[i].particle;
@@ -228,26 +269,24 @@ void AliAnalysisTaskLambdaHadronRatio::FillSingleParticleDist(std::vector<AliAna
         dist_points[3] = zVtx;
         fDist->Fill(dist_points);
     }
-
 }
 
 AliAnalysisTaskLambdaHadronRatio::AliMotherContainer AliAnalysisTaskLambdaHadronRatio::DaughtersToMother(AliAODTrack* track1, AliAODTrack* track2, double mass1, double mass2)
 {
-
     AliAnalysisTaskLambdaHadronRatio::AliMotherContainer mom;
+
     mom.particle.SetPx(track1->Px() + track2->Px());
     mom.particle.SetPy(track1->Py() + track2->Py());
     mom.particle.SetPz(track1->Pz() + track2->Pz());
     mom.particle.SetE(track1->E(mass1) + track2->E(mass2));
+
     mom.daughter1ID = track1->GetID();
     mom.daughter2ID = track2->GetID();
     return mom;
-
 }
 
 AliAnalysisTaskLambdaHadronRatio::AliMotherContainer AliAnalysisTaskLambdaHadronRatio::RotatedDaughtersToMother(AliAODTrack* track1, AliAODTrack* track2, double mass1, double mass2, double angle)
 {
-
     AliAnalysisTaskLambdaHadronRatio::AliMotherContainer mom;
     // Rotating track1
     TVector3 track1Vector(track1->Px(), track1->Py(), track1->Pz());
@@ -259,12 +298,10 @@ AliAnalysisTaskLambdaHadronRatio::AliMotherContainer AliAnalysisTaskLambdaHadron
     mom.daughter1ID = track1->GetID();
     mom.daughter2ID = track2->GetID();
     return mom;
-
 }
 
 
 void AliAnalysisTaskLambdaHadronRatio::LoadEfficiencies() {
-
     TFile* effFile = TFile::Open(EFF_FILE_PATH);
 
     if(!effFile) {
@@ -285,12 +322,10 @@ void AliAnalysisTaskLambdaHadronRatio::LoadEfficiencies() {
     if(!fTriggerEff) {
         AliFatal("UNABLE TO FIND TRIGGER EFF, EXITING");
     }
-
 }
 
 AliAnalysisTaskLambdaHadronRatio::AliMotherContainer AliAnalysisTaskLambdaHadronRatio::FlippedDaughtersToMother(AliAODTrack* track1, AliAODTrack* track2, double mass1, double mass2)
 {
-
     AliAnalysisTaskLambdaHadronRatio::AliMotherContainer mom;
     // Flipping track1
     mom.particle.SetPx(-track1->Px() + track2->Px());
@@ -300,12 +335,10 @@ AliAnalysisTaskLambdaHadronRatio::AliMotherContainer AliAnalysisTaskLambdaHadron
     mom.daughter1ID = track1->GetID();
     mom.daughter2ID = track2->GetID();
     return mom;
-
 }
 
 void AliAnalysisTaskLambdaHadronRatio::MakeSameHLambdaCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx, bool eff)
 {
-
     double dphi_point[6];
 
     for(int j = 0; j < (int)trigger_list.size(); j++) {
@@ -352,12 +385,10 @@ void AliAnalysisTaskLambdaHadronRatio::MakeSameHLambdaCorrelations(std::vector<A
             }
         }
     }
-
 }
 
 void AliAnalysisTaskLambdaHadronRatio::MakeSameHHCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAODTrack*> associated_h_list, THnSparse* fDphi, double zVtx, bool eff)
 {
-
     double dphi_point[5];
 
     for(int j = 0; j < (int)trigger_list.size(); j++) {
@@ -400,12 +431,10 @@ void AliAnalysisTaskLambdaHadronRatio::MakeSameHHCorrelations(std::vector<AliAOD
             }
         }
     }
-
 }
 
 void AliAnalysisTaskLambdaHadronRatio::MakeSameTriggerTriggerCorrelations(std::vector<AliAODTrack*> trigger_list, THnSparse* fDphi, double zVtx, bool eff)
 {
-
     double dphi_point[5];
 
     for(int j = 0; j < (int)trigger_list.size(); j++) {
@@ -447,12 +476,10 @@ void AliAnalysisTaskLambdaHadronRatio::MakeSameTriggerTriggerCorrelations(std::v
             }
         }
     }
-
 }
 
 void AliAnalysisTaskLambdaHadronRatio::MakeMixedHLambdaCorrelations(AliEventPool* fPool, std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list , THnSparse* fDphi, double zVtx, bool eff)
 {
-
     double dphi_point[6];
     int numEvents = fPool->GetCurrentNEvents();
     for(int iEvent = 0; iEvent < numEvents; iEvent++) {
@@ -503,7 +530,6 @@ void AliAnalysisTaskLambdaHadronRatio::MakeMixedHLambdaCorrelations(AliEventPool
 
 void AliAnalysisTaskLambdaHadronRatio::MakeMixedHHCorrelations(AliEventPool* fPool, std::vector<AliAODTrack*> associated_h_list, THnSparse* fDphi, double zVtx, bool eff)
 {
-
     double dphi_point[5];
 
     int numEvents = fPool->GetCurrentNEvents();
@@ -551,11 +577,9 @@ void AliAnalysisTaskLambdaHadronRatio::MakeMixedHHCorrelations(AliEventPool* fPo
             }
         }
     }
-
 }
 
 bool AliAnalysisTaskLambdaHadronRatio::PassDaughterCuts(AliAODTrack *track){
-
     Bool_t pass = kTRUE;
 
     pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
@@ -574,7 +598,6 @@ bool AliAnalysisTaskLambdaHadronRatio::PassDaughterCuts(AliAODTrack *track){
 }
 
 bool AliAnalysisTaskLambdaHadronRatio::PassAssociatedCuts(AliAODTrack *track){
-
     Bool_t pass = kTRUE;
 
     pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
@@ -586,7 +609,6 @@ bool AliAnalysisTaskLambdaHadronRatio::PassAssociatedCuts(AliAODTrack *track){
 }
 
 Bool_t AliAnalysisTaskLambdaHadronRatio::PassTriggerCuts(AliAODTrack *track){
-
     Bool_t pass = kTRUE;
 
     pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
@@ -599,7 +621,6 @@ Bool_t AliAnalysisTaskLambdaHadronRatio::PassTriggerCuts(AliAODTrack *track){
 
 void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
 {
-
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     if(!fAOD){
         AliFatal("THERE IS NO AOD EVENT, CHECK EVENT HANDLER... ALSO WHERE DOES STANDARD OUT GO WHEN I RUN ON THE GRID??? also is it a good idea to use abort??? Probably not!!");
@@ -882,7 +903,6 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     }
 
     PostData(1, fOutputList);
-
 }
 
 void AliAnalysisTaskLambdaHadronRatio::Terminate(Option_t *option)

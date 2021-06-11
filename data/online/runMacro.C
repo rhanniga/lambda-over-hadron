@@ -18,7 +18,7 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   int numTestFiles = 2;
 
   // So we can access files from the grid (for eff cor and the like)
-  TGrid::Connect("alien//");
+  // TGrid::Connect("alien//");
 
   gInterpreter->ProcessLine(".include $ROOTSYS/include");
   gInterpreter->ProcessLine(".include $ALICE_ROOT/include");

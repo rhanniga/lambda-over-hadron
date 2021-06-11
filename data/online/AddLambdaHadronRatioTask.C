@@ -1,5 +1,3 @@
-#include <iostream>
-
 AliAnalysisTaskLambdaHadronRatio* AddLambdaHadronRatioTask(TString name = "lambdaHadronRatio") {
 
   AliAnalysisManager *manage = AliAnalysisManager::GetAnalysisManager();
