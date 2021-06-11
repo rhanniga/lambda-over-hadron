@@ -1,3 +1,18 @@
+/************************************************************************* 
+ * Copyright(c) 1998-2021, ALICE Experiment at CERN, All rights reserved. * 
+ *                                                                        * 
+ * Author: Ryan Hannigan
+ * Contributors are mentioned in the code where appropriate.              * 
+ *                                                                        * 
+ * Permission to use, copy, modify and distribute this software and its   * 
+ * documentation strictly for non-commercial purposes is hereby granted   * 
+ * without fee, provided that the above copyright notice appears in all   * 
+ * copies and that both the copyright notice and this permission notice   * 
+ * appear in the supporting documentation. The authors make no claims     * 
+ * about the suitability of this software for any purpose. It is          * 
+ * provided "as is" without express or implied warranty.                  * 
+ **************************************************************************/
+
 #include "TChain.h"
 #include "TTree.h"
 #include "TH1F.h"
@@ -32,26 +47,25 @@
 
 #include "AliAnalysisTaskLambdaHadronEfficiency.h"
 
-using std::cout;
-using std::endl;
-
 ClassImp(AliAnalysisTaskLambdaHadronEfficiency)
-//________________________________________________________________________
+
 AliAnalysisTaskLambdaHadronEfficiency::AliAnalysisTaskLambdaHadronEfficiency(const char *name, Float_t multLow, Float_t multHigh)
 : AliAnalysisTaskSE(name),
-fVevent(0),
-fPoolMgr(0x0),
-fLSPoolMgr(0x0),
-fHHPoolMgr(0x0),
-fESD(0),
-fAOD(0),
-fpidResponse(0),
-fOutputList(0),
-fNevents(0),
-fNumTracks(0),
-fVtxZ(0),
-fVtxX(0),
-fVtxY(0),
+fVevent(0x0),
+fESD(0x0),
+fAOD(0x0),
+fpidResponse(0x0),
+fMultSelection(0x0),
+fOutputList(0x0),
+fNevents(0x0),
+fNumTracks(0x0),
+fVtxZ(0x0),
+fVtxX(0x0),
+fVtxY(0x0),
+fRealTotalLambdaDist(0x0),
+fRealLambdaDist(0x0),
+fRealAntiLambdaDist(0x0),
+fRecoTotalLambdaDist(0x0),
 fRealKDist(0),
 fRealPiDist(0),
 fRealpDist(0),
@@ -60,28 +74,19 @@ fRealMuonDist(0),
 fRealLambdaDist(0),
 fRecoLambdaDist(0)
 {
-    // Constructor
-    // Define input and output slots here
-    // Input slot #0 works with a TChain
     DefineInput(0, TChain::Class());
-    // Output slot #0 id reserved by the base class for AOD
-    // Output slot #1 writes into a TH1 container
     DefineOutput(1, TList::Class());
-    //printf("\n\n!!!!!!!!!!]\n done with the constructor! \n");
-    //fflush(stdout);
     MIN_CROSSED_ROWS_TPC = 70;
     MIN_ROW_CLUSTER_RATIO = 0.8;
     MULT_LOW = multLow;
     MULT_HIGH = multHigh;
     CENT_ESTIMATOR = "V0A";
-    // DAUGHTER_TRK_BIT = 16; not used
     ASSOC_TRK_BIT = 1024; // global tracks with tight pt dependent dca cut (selecting primaries)
     TRIG_TRK_BIT = AliAODTrack::kIsHybridGCG; // = 2^20
     DAUGHTER_ETA_CUT = 0.8;
     DAUGHTER_MIN_PT = 0.15;
-
 }
-//________________________________________________________________________
+
 AliAnalysisTaskLambdaHadronEfficiency::AliAnalysisTaskLambdaHadronEfficiency()
 : AliAnalysisTaskSE("default_task"),
 fVevent(0),
@@ -436,47 +441,6 @@ Bool_t AliAnalysisTaskLambdaHadronEfficiency::PassTriggerCuts(AliAODTrack *track
     return pass;
 }
 
-//_______________________________________________________________________
-// Bool_t AliAnalysisTaskLambdaHadronEfficiency::PassHadronCuts(AliAODTrack *track, Bool_t isTrigger){
-//     //returns the level of cuts that the track passed
-//     //cutLevel: 1 = track cuts, 2 = TOF Hit, 4 = TPC PID cut, 8 = TOF PID cut
-//     Bool_t pass = kTRUE;
-//     pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
-//     pass = pass && (track->Pt() >= 0.15);
-//     if(isTrigger){
-//         pass = pass && (track->TestBit(TRIG_TRK_BIT));
-//     }else{
-//         pass = pass && (track->TestFilterMask(ASSOC_TRK_BIT));
-//     }
-//     return pass;
-// }
-
-
-//_______________________________________________________________________
-// AliAODTrack* AliAnalysisTaskLambdaHadronEfficiency::GetTrackFromID(AliAODEvent* inputEvent, int trackID) {
-
-//     int numTracks = inputEvent->GetNumberOfTracks();
-//     bool trackFound = false;
-//     AliAODTrack* returnTrack = 0x0;
-//     for(int itrack = 0; itrack < numTracks; itrack++) {
-//         auto currentTrack = (AliAODTrack*)inputEvent->GetTrack(itrack);
-//         int currentTrackID = currentTrack->GetID();
-//         if((currentTrackID == trackID) && !trackFound) {
-//             trackFound = true;
-//             returnTrack = currentTrack;
-//         }    
-//         else if((currentTrackID == trackID) && trackFound) {
-//             std::cout << "OKAY SO THE TRACK IDs ARE NOT UNIQUE??? WTF IS AN ID THEN???????" << std::endl;
-//             std::cout << "THE INTERSECTING ID IS: " << trackID << "\n";
-//             std::cout << "track1 stats (pt, eta, phi, filtermap):\n";
-//             std::cout << "\t" << returnTrack->Pt() << ", " << returnTrack->Eta() << ", " << returnTrack->Phi() << ", " << returnTrack->GetFilterMap() << std::endl;
-//             std::cout << "\t" << currentTrack->Pt() << ", " << currentTrack->Eta() << ", " << currentTrack->Phi() << ", " << currentTrack->GetFilterMap() << std::endl;
-//         }
-//     }
-//     return returnTrack;
-// }
-
-//________________________________________________________________________
 void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
     //masks for the different cut configurations
@@ -498,24 +462,12 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
     
 
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-    if (fAOD) {
-        //printf("fAOD available\n");
-        //return;
-    }else{
-        return;
-    }
-
-    // fESD = dynamic_cast<AliESDEvent*>(InputEvent());
-    // if(fESD) {
-    //     std::cout << "ESD FOUND!" << std::endl;
-    // }
-    // else {
-    //     std::cout << "ESD NOT FOUND" << std::endl;
-    // }
+    if (!fAOD) return;
 
     ///////////////////
     //PID initialised//
     //////////////////
+
    fpidResponse = fInputHandler->GetPIDResponse();
 
     if(!fpidResponse){

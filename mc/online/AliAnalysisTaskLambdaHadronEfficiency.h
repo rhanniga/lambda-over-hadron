@@ -1,24 +1,35 @@
+/* Copyright(c) 1998-2021, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full copyright notice */
+/*
+                AliAnalysisTaskLambdaHadronEfficiency class
+                This task is for determining the lambda, trigger, and associated 
+                particle efficiency for the AliAnalysisTaskLambdaHadronRatio task
+                (can be found in same directory)
+                Origin: Ryan Hannigan, January 2021, ryan.hannigan@cern.ch
+*/
+
 #ifndef AliAnalysisTaskLambdaHadronEfficiency_cxx
 #define AliAnalysisTaskLambdaHadronEfficiency_cxx
 
-//QA task for EMCAL electron analysis
+// Includes order: standard, ROOT, AliRoot (for objects in this file only)
+#include <map>
 
 #include "AliAnalysisTaskSE.h"
-#include "AliAODMCHeader.h"
-#include "THnSparse.h"
-#include "TObject.h"
-#include "TRandom3.h"
-#include "AliAODTrack.h"
-#include <iostream>
-#include <fstream>
+#include "TString.h"
 
+// Forward declarations order: standard, ROOT, AliRoot (for pointers in this file only)
 class TH1F;
+class THnSparseF;
+
 class AliEventPoolManager;
-class THnSparse;
 class AliESDEvent;
+class AliVEvent;
 class AliAODEvent;
-class AliAODMCParticle;
+class AliAODTrack;
+class AliAODMCHeader;
 class AliMultSelection;
+class AliPIDResponse;
+
 
 class AliAnalysisTaskLambdaHadronEfficiency : public AliAnalysisTaskSE {
 public:
@@ -27,9 +38,6 @@ public:
     virtual ~AliAnalysisTaskLambdaHadronEfficiency();
     
     virtual void   UserCreateOutputObjects();
-    // UInt_t PassProtonCuts(AliAODTrack* track, Double_t TPCnSigma, Double_t TOFnSigma);
-    // UInt_t PassPionCuts(AliAODTrack* track, Double_t TPCnSigma, Double_t TOFnSigma);
-    // Bool_t PassHadronCuts(AliAODTrack* track, Bool_t isTrigger);
     uint PassDaughterCuts(AliAODTrack* track);
     Bool_t PassAssociatedCuts(AliAODTrack* track);
     Bool_t PassTriggerCuts(AliAODTrack* track);
@@ -52,29 +60,22 @@ private:
     int MIN_CROSSED_ROWS_TPC;
     float MIN_ROW_CLUSTER_RATIO;
 
-    Float_t MULT_LOW;
-    Float_t MULT_HIGH;
-    Float_t DAUGHTER_ETA_CUT;
-    Float_t DAUGHTER_MIN_PT;
-    Float_t ASSOC_TRK_BIT;
-    Float_t TRIG_TRK_BIT;
-    TString CENT_ESTIMATOR;
+    Float_t MULT_LOW; // lower bound of mult
+    Float_t MULT_HIGH; // upper bound of mult
+    Float_t DAUGHTER_ETA_CUT; // eta cut on daughters
+    Float_t DAUGHTER_MIN_PT; // min pt of daughters
+    Float_t ASSOC_TRK_BIT; // filter bit for associated hadrons
+    Float_t TRIG_TRK_BIT; // "filter" bit for trigger hadrons
+    TString CENT_ESTIMATOR; // method used for cent estimator (default V0A)
 
-    // UInt_t TRACK_BIT = 1UL << 0;
-    // UInt_t TOF_HIT_BIT = 1UL << 1;
-    // UInt_t TPC_PID_BIT = 1UL << 2;
-    // UInt_t TOF_PID_BIT = 1UL << 3;
-    // UInt_t ETA_BIT = 1UL << 4;
-    // UInt_t PT_BIT = 1UL << 5;
-    // UInt_t MASK_BIT = 1UL << 6;
-    // UInt_t ROWS_BIT = 1UL << 7;
-
+    // Bit maps for differential efficiency investigation
     uint ETA_BIT = 1 << 0;
     uint PT_BIT = 1 << 1;
     uint TPC_REFIT_BIT = 1 << 2;
     uint CROSSED_ROWS_BIT = 1 << 3;
     uint ROW_CLUSTER_RATIO_BIT = 1 << 4;
 
+    //
     std::map<int, int> filterMap_map = {{0, 0},
                                 {1, 1},
                                 {2, 2},
@@ -92,9 +93,6 @@ private:
     };
       
     AliVEvent   *fVevent;  //!event object
-    AliEventPoolManager *fPoolMgr; //! Event pool manager for mixed event
-    AliEventPoolManager *fLSPoolMgr; //! Event pool manager for LS mixed event
-    AliEventPoolManager *fHHPoolMgr; //! Event pool manager for HH
     AliESDEvent *fESD;    //!ESD object
     AliAODEvent *fAOD;    //!AOD object
     AliPIDResponse *fpidResponse; //!pid response
@@ -103,6 +101,7 @@ private:
     TClonesArray* fMCArray; //!
     AliAODMCHeader* fMCHeader; //!
     TList       *fOutputList; //!Output list
+
     TH1F        *fNevents;//! no of events
     TH1F        *fNumTracks;//! number of Tracks/evt
     TH1F        *fVtxZ;//!Vertex z
@@ -131,14 +130,14 @@ private:
     THnSparseF  *fRecoLambdaDist;//! Dist of Recon lambda
     THnSparseF  *fRecoAntiLambdaDist;//! Dist of Recon anti lambda
 
-    THnSparseF  *fRealChargedDist;//!
-    THnSparseF  *fRealKDist;//!
-    THnSparseF  *fRealPiDist;//!
-    THnSparseF  *fRealPiFromLambdaDist;//!
-    THnSparseF  *fRealeDist;//!
-    THnSparseF  *fRealpDist;//!
-    THnSparseF  *fRealpFromLambdaDist;//!
-    THnSparseF  *fRealMuonDist;//!
+    THnSparseF  *fRealChargedDist;//! real charged hadron dist
+    THnSparseF  *fRealKDist;//! real charged K dist
+    THnSparseF  *fRealPiDist;//! real charged pion dist
+    THnSparseF  *fRealPiFromLambdaDist;//! real pions (from lambda) dist
+    THnSparseF  *fRealeDist;//! real electron dist
+    THnSparseF  *fRealpDist;//! real proton dist
+    THnSparseF  *fRealpFromLambdaDist;//! real proton (from lambda) dist
+    THnSparseF  *fRealMuonDist;//! real muon dist
    
     THnSparseF  *fRecoChargedDist;//!
     THnSparseF  *fRecoKDist;//!
