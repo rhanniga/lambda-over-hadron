@@ -52,11 +52,11 @@ public:
   };
 
 private:
-  float fMultLow;
-  float fMultHigh;
-  float fDaughterBit;
-  float fAssociatedBit;
-  float fTriggerBit;
+  float fMultLow; // lower bound for multiplicity
+  float fMultHigh; // upper bound for multiplicity
+  float fDaughterBit; // filter bit for daughter particle
+  float fAssociatedBit; // filter bit for associated particle
+  float fTriggerBit; // filter bit for trigger particle
 
   TString fCentEstimator;
   TString fEffFilePath;

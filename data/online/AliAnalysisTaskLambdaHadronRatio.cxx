@@ -75,15 +75,13 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     fDphiTriggerTriggerMixed(0x0),
     fLambdaDaughterDCA(0x0),
     fpidResponse(0x0),
-    fMultSelection(0x0)
+    fMultSelection(0x0),
+    fMultLow(0.0),
+    fMultHigh(0.0),
+    fDaughterBit(0.0),
+    fAssociatedBit(0.0),
+    fTriggerBit(0.0)
 {
-    MULT_LOW = 20;
-    MULT_HIGH = 50;
-    CENT_ESTIMATOR = "V0A";
-    DAUGHTER_TRK_BIT = AliAODTrack::kTrkGlobalNoDCA; // = 16, not used
-    ASSOC_TRK_BIT = 1024; // global tracks with tight pt dependent dca cut (selecting primaries)
-    TRIG_TRK_BIT = AliAODTrack::kIsHybridGCG; // = 2^20
-    EFF_FILE_PATH = "eff_out.root";
 }
 
 AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *name) :
@@ -117,7 +115,12 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     fDphiTriggerTriggerMixed(0x0),
     fLambdaDaughterDCA(0x0),
     fpidResponse(0x0),
-    fMultSelection(0x0)
+    fMultSelection(0x0),
+    fMultLow(0.0),
+    fMultHigh(0.0),
+    fDaughterBit(0.0),
+    fAssociatedBit(0.0),
+    fTriggerBit(0.0)
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -141,7 +144,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     int trackDepth = 1000;
 
     int numMultBins = 1;
-    double multBins[2] = {MULT_LOW, MULT_HIGH};
+    double multBins[2] = {fMultLow, fMultHigh};
 
     int numzVtxBins = 10;
     double zVtxBins[11] = {-10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10};
@@ -302,7 +305,7 @@ AliAnalysisTaskLambdaHadronRatio::AliMotherContainer AliAnalysisTaskLambdaHadron
 
 
 void AliAnalysisTaskLambdaHadronRatio::LoadEfficiencies() {
-    TFile* effFile = TFile::Open(EFF_FILE_PATH);
+    TFile* effFile = TFile::Open(fEffFilePath);
 
     if(!effFile) {
         AliFatal("NULL INPUT FILE WHEN LOADING EFFICIENCIES, EXITING");
@@ -603,7 +606,7 @@ bool AliAnalysisTaskLambdaHadronRatio::PassAssociatedCuts(AliAODTrack *track){
     pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
     pass = pass && (track->Pt() >= 0.15);
 
-    pass = pass && track->TestFilterMask(ASSOC_TRK_BIT);
+    pass = pass && track->TestFilterMask(fAssociatedBit);
 
     return pass;
 }
@@ -614,7 +617,7 @@ Bool_t AliAnalysisTaskLambdaHadronRatio::PassTriggerCuts(AliAODTrack *track){
     pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
     pass = pass && (track->Pt() >= 0.15);
 
-    pass = pass && track->TestBit(TRIG_TRK_BIT);
+    pass = pass && track->TestBit(fTriggerBit);
 
     return pass;
 }
@@ -630,14 +633,14 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     fpidResponse = fInputHandler->GetPIDResponse();
 
     //Event cuts
-    TString cent_estimator = CENT_ESTIMATOR;
+    TString cent_estimator = fCentEstimator;
     double multPercentile = 0;
 
     fMultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
     if(fMultSelection) multPercentile = fMultSelection->GetMultiplicityPercentile(cent_estimator.Data());
     else return;
 
-    if(multPercentile < MULT_LOW || multPercentile > MULT_HIGH) return;
+    if(multPercentile < fMultLow || multPercentile > fMultHigh) return;
 
     AliVVertex *prim = fAOD->GetPrimaryVertex();
     int NcontV = prim->GetNContributors();
