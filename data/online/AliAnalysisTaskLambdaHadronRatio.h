@@ -39,11 +39,12 @@ public:
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t* option);
   virtual void Terminate(Option_t* option);
-  void LoadEfficiencies();
+  void LoadEfficiencies(TString filePath);
 
   void SetMultBounds(float multLow, float multHigh);
   void SetTriggerBit(float trigBit);
   void SetAssociatedBit(float assocBit);
+  void SetCentEstimator(TString estimator);
 
   struct AliMotherContainer {
     TLorentzVector particle;
@@ -59,7 +60,6 @@ private:
   float fTriggerBit; // filter bit for trigger particle
 
   TString fCentEstimator;
-  TString fEffFilePath;
 
   AliAODEvent* fAOD; //!>! input event
   TList* fOutputList; //!>! output list

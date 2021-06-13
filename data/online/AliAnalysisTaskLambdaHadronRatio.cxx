@@ -303,9 +303,25 @@ AliAnalysisTaskLambdaHadronRatio::AliMotherContainer AliAnalysisTaskLambdaHadron
     return mom;
 }
 
+void AliAnalysisTaskLambdaHadronRatio::SetMultBounds(float multLow, float multHigh) {
+    fMultLow = multLow;
+    fMultHigh = multHigh;
+}
 
-void AliAnalysisTaskLambdaHadronRatio::LoadEfficiencies() {
-    TFile* effFile = TFile::Open(fEffFilePath);
+void AliAnalysisTaskLambdaHadronRatio::SetTriggerBit(float trigBit) {
+    fTriggerBit = trigBit;
+}
+
+void AliAnalysisTaskLambdaHadronRatio::SetAssociatedBit(float associatedBit) {
+    fAssociatedBit = associatedBit;
+}
+
+void AliAnalysisTaskLambdaHadronRatio::SetCentEstimator(TString centEstimator) {
+    fCentEstimator = centEstimator;
+}
+
+void AliAnalysisTaskLambdaHadronRatio::LoadEfficiencies(TString filePath) {
+    TFile* effFile = TFile::Open(filePath);
 
     if(!effFile) {
         AliFatal("NULL INPUT FILE WHEN LOADING EFFICIENCIES, EXITING");
