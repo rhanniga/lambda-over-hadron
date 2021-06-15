@@ -1,4 +1,4 @@
-AliAnalysisTaskLambdaHadronRatio* AddLambdaHadronRatioTask(TString name = "lambdaHadronRatio") {
+AliAnalysisTaskLambdaHadronRatio* AddLambdaHadronRatioTask(TString name = "lambdaHadronRatio", float multLow, float multHigh) {
 
   AliAnalysisManager *manage = AliAnalysisManager::GetAnalysisManager();
 
@@ -14,7 +14,7 @@ AliAnalysisTaskLambdaHadronRatio* AddLambdaHadronRatioTask(TString name = "lambd
 
   if(!task) return 0x0;
 
-  task->LoadEfficiencies();
+  task->SetMultBounds(multLow, multHigh);
 
   manage->AddTask(task);
 

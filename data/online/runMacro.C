@@ -3,16 +3,20 @@
 
 void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
+  float MULT_LOW = 20;
+  float MULT_HIGH = 50;
+  TString EFF_FILE_PATH = "eff_out.root";
+
   //Starting and ending index of the array containing the run numbers, specifies which range to run over
- int startIndex = 28;
-//  int endIndex = 14;
+  int startIndex = 28;
+  // int endIndex = 14;
 
   // int startIndex = 15;
   int endIndex = 28;
 
-  char* work_dir = "lambda_hadron_ratio";
-  char* output_dir = "eff_corr_cent_20_50";
-
+  TString work_dir = "lambda_hadron_ratio";
+  TString output_dir = "eff_corr_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH));
+  
   //If we want to download test files from grid then run in one swoop (usually just run completely locally):
   bool gridTest = false;
   int numTestFiles = 2;
@@ -39,6 +43,11 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
   gInterpreter->LoadMacro("AliAnalysisTaskLambdaHadronRatio.cxx++g");
   AliAnalysisTaskLambdaHadronRatio *task = reinterpret_cast<AliAnalysisTaskLambdaHadronRatio*>(gInterpreter->ExecuteMacro("AddLambdaHadronRatioTask.C"));
+
+  task->LoadEfficiencies(EFF_FILE_PATH);
+  task->SetMultBounds(MULT_LOW, MULT_HIGH);
+  task->SetTriggerBit(0);
+  task->SetAssociatedBit(1024);
 
   if(!manage->InitAnalysis()) return;
   manage->SetDebugLevel(2);
