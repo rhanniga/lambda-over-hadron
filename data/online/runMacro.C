@@ -1,18 +1,26 @@
-#include "AliAnalysisTaskLambdaHadronRatio.h"
 #include <iostream>
+
+#include "AliAODTrack.h"
+
+#include "AliAnalysisTaskLambdaHadronRatio.h"
+
 
 void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
   float MULT_LOW = 20;
   float MULT_HIGH = 50;
-  TString EFF_FILE_PATH = "eff_out.root";
+
+  float TRIG_BIT = AliAODTrack::kIsHybridGCG;
+  float ASSOC_BIT = 1024;
+  char *EFF_FILE_PATH = "eff_out.root";
+  char *CENT_ESTIMATOR = "V0A";
 
   //Starting and ending index of the array containing the run numbers, specifies which range to run over
-  int startIndex = 28;
-  // int endIndex = 14;
+  int startIndex = 0;
+  int endIndex = 14;
 
   // int startIndex = 15;
-  int endIndex = 28;
+  // int endIndex = 28;
 
   TString work_dir = "lambda_hadron_ratio";
   TString output_dir = "eff_corr_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH));
@@ -42,12 +50,30 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   gInterpreter->ProcessLine(Form(".x %s(kFALSE)", gSystem->ExpandPathName("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C")));
 
   gInterpreter->LoadMacro("AliAnalysisTaskLambdaHadronRatio.cxx++g");
-  AliAnalysisTaskLambdaHadronRatio *task = reinterpret_cast<AliAnalysisTaskLambdaHadronRatio*>(gInterpreter->ExecuteMacro("AddLambdaHadronRatioTask.C"));
 
-  task->LoadEfficiencies(EFF_FILE_PATH);
-  task->SetMultBounds(MULT_LOW, MULT_HIGH);
-  task->SetTriggerBit(0);
-  task->SetAssociatedBit(1024);
+  AliAnalysisTaskLambdaHadronRatio *task = reinterpret_cast<AliAnalysisTaskLambdaHadronRatio*>(gInterpreter->ProcessLine(Form(".x AddLambdaHadronRatioTask.C(\"%s\", %f, %f, %f, %f, \"%s\", \"%s\")",
+  "lambdaHadronRatio",
+  MULT_LOW,
+  MULT_HIGH,
+  TRIG_BIT,
+  ASSOC_BIT,
+  EFF_FILE_PATH,
+  CENT_ESTIMATOR)));
+
+
+  // AliAnalysisTaskLambdaHadronRatio *task = reinterpret_cast<AliAnalysisTaskLambdaHadronRatio*>(gInterpreter->ExecuteMacro(std::format(("AddLambdaHadronRatioTask.C({}, {}, {}, {}, {}, {}, {})", 
+  // "lambdaHadronRatio",
+  // MULT_LOW,
+  // MULT_HIGH,
+  // TRIG_BIT,
+  // ASSOC_BIT,
+  // EFF_FILE_PATH,
+  // CENT_ESTIMATOR)));
+
+  // task->LoadEfficiencies(EFF_FILE_PATH);
+  // task->SetMultBounds(MULT_LOW, MULT_HIGH);
+  // task->SetTriggerBit(0);
+  // task->SetAssociatedBit(1024);
 
   if(!manage->InitAnalysis()) return;
   manage->SetDebugLevel(2);

@@ -28,6 +28,7 @@
 #include "AliESDInputHandler.h"
 #include "AliEventPoolManager.h"
 #include "AliAODEvent.h"
+#include "AliAODTrack.h"
 #include "AliAODHandler.h"
 #include "AliAODMCHeader.h"
 #include "AliCFParticle.h"
