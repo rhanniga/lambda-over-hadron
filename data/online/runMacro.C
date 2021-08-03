@@ -7,8 +7,8 @@
 
 void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
-  float MULT_LOW = 20;
-  float MULT_HIGH = 50;
+  float MULT_LOW = 0;
+  float MULT_HIGH = 100;
 
   float TRIG_BIT = AliAODTrack::kIsHybridGCG;
   float ASSOC_BIT = 1024;
@@ -23,7 +23,8 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   // int endIndex = 28;
 
   TString work_dir = "lambda_hadron_ratio";
-  TString output_dir = "eff_corr_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH));
+  // TString output_dir = "eff_corr_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH));
+  TString output_dir = "mass_run";
   
   //If we want to download test files from grid then run in one swoop (usually just run completely locally):
   bool gridTest = false;
@@ -49,8 +50,8 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   //PID response:
   gInterpreter->ProcessLine(Form(".x %s(kFALSE)", gSystem->ExpandPathName("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C")));
 
+  // Generating task object
   gInterpreter->LoadMacro("AliAnalysisTaskLambdaHadronRatio.cxx++g");
-
   AliAnalysisTaskLambdaHadronRatio *task = reinterpret_cast<AliAnalysisTaskLambdaHadronRatio*>(gInterpreter->ProcessLine(Form(".x AddLambdaHadronRatioTask.C(\"%s\", %f, %f, %f, %f, \"%s\", \"%s\")",
   "lambdaHadronRatio",
   MULT_LOW,
@@ -60,21 +61,6 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   EFF_FILE_PATH,
   CENT_ESTIMATOR)));
 
-
-  // AliAnalysisTaskLambdaHadronRatio *task = reinterpret_cast<AliAnalysisTaskLambdaHadronRatio*>(gInterpreter->ExecuteMacro(std::format(("AddLambdaHadronRatioTask.C({}, {}, {}, {}, {}, {}, {})", 
-  // "lambdaHadronRatio",
-  // MULT_LOW,
-  // MULT_HIGH,
-  // TRIG_BIT,
-  // ASSOC_BIT,
-  // EFF_FILE_PATH,
-  // CENT_ESTIMATOR)));
-
-  // task->LoadEfficiencies(EFF_FILE_PATH);
-  // task->SetMultBounds(MULT_LOW, MULT_HIGH);
-  // task->SetTriggerBit(0);
-  // task->SetAssociatedBit(1024);
-
   if(!manage->InitAnalysis()) return;
   manage->SetDebugLevel(2);
   manage->PrintStatus();
@@ -82,9 +68,9 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
   if(local) {
     TChain *chain = new TChain("aodTree");
-    chain->Add("~/data/pPb_5_tev_1.root");
-    chain->Add("~/data/pPb_5_tev_69.root");
-    chain->Add("~/data/pPb_5_tev_420.root");
+    chain->Add("~/Wonderland/native/data/pPb_5_tev_1.root");
+    chain->Add("~/Wonderland/native/data/pPb_5_tev_69.root");
+    chain->Add("~/Wonderland/native/data/pPb_5_tev_420.root");
     manage->StartAnalysis("local", chain);
   }
 

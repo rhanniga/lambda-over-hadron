@@ -59,6 +59,7 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     fTriggerDist(0x0),
     fAssociatedHDist(0x0),
     fLambdaDist(0x0),
+    fTriggeredLambdaDist(0x0),
     fDphiHLambda(0x0),
     fDphiHLambdaEff(0x0),
     fDphiHLambdaV0(0x0),
@@ -99,6 +100,7 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     fTriggerDist(0x0),
     fAssociatedHDist(0x0),
     fLambdaDist(0x0),
+    fTriggeredLambdaDist(0x0),
     fDphiHLambda(0x0),
     fDphiHLambdaEff(0x0),
     fDphiHLambdaV0(0x0),
@@ -174,8 +176,16 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     fAssociatedHDist = new THnSparseF("fAssociatedHDist", "Associated Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
     fOutputList->Add(fAssociatedHDist);
 
-    fLambdaDist = new THnSparseF("fLambdaDist", "Lambda Distribution", 4, dist_bins, dist_mins, dist_maxes);
+    //Mother distribution axes are: Pt, Phi, Eta, Mass, Event multiplicity
+    int mother_dist_bins[5] = {100, 16, 20, 100, 10};
+    double mother_dist_mins[5] = {0, -3.14, -1, 1.06, 0};
+    double mother_dist_maxes[5] = {15, 3.14, 1, 1.16, 100};
+
+    fLambdaDist = new THnSparseF("fLambdaDist", "Lambda Distribution", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
     fOutputList->Add(fLambdaDist);
+
+    fTriggeredLambdaDist = new THnSparseF("fTriggeredLambdaDist", "Lambda Distribution (with triggered event)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fOutputList->Add(fTriggeredLambdaDist);
 
 
     //Correlation axes are: Trigger Pt, Associated Pt, dPhi, dEta, Inv Mass, Zvtx
@@ -262,15 +272,16 @@ void AliAnalysisTaskLambdaHadronRatio::FillSingleParticleDist(std::vector<AliAOD
     }
 }
 
-void AliAnalysisTaskLambdaHadronRatio::FillSingleParticleDist(std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> particle_list, double zVtx, THnSparse* fDist)
+void AliAnalysisTaskLambdaHadronRatio::FillMotherDist(std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> particle_list, float multPercentile, THnSparse* fDist)
 {
-    double dist_points[4]; //Pt, Phi, Eta, zVtx
+    double dist_points[5]; //Pt, Phi, Eta, M, event multiplicity
     for(int i = 0; i < (int)particle_list.size(); i++) {
         auto particle = particle_list[i].particle;
         dist_points[0] = particle.Pt();
         dist_points[1] = particle.Phi();
         dist_points[2] = particle.Eta();
-        dist_points[3] = zVtx;
+        dist_points[3] = particle.M();
+        dist_points[4] = multPercentile;
         fDist->Fill(dist_points);
     }
 }
@@ -684,6 +695,10 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     TObjArray* fMixedTrackObjArray = new TObjArray;
     fMixedTrackObjArray->SetOwner(kTRUE);
 
+    // Bool to keep track if the event has a high-pt (> 4 GeV) trigger
+    bool is_triggered_event = false;
+
+
     for(int trackNum = 0; trackNum < numTracks; trackNum++) {
     
 
@@ -698,6 +713,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
             trigger_list.push_back(track);
             AliCFParticle *triggerPart = new AliCFParticle(track->Pt(), track->Eta(), track->Phi(), track->Charge(), 0);
             fMixedTrackObjArray->Add(triggerPart);
+            if(triggerPart->Pt() > 4) is_triggered_event = true;
         }
 
         if(PassAssociatedCuts(track)) {
@@ -881,8 +897,10 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     FillSingleParticleDist(trigger_list, primZ, fTriggerDist);
     FillSingleParticleDist(associated_h_list, primZ, fAssociatedHDist);
     FillSingleParticleDist(all_hadron_list, primZ, fLooseDist);
-    FillSingleParticleDist(lambda_list_signal_region, primZ, fLambdaDist);
 
+    // Filling our single particle lambda distribution histogram:
+    if(is_triggered_event) FillMotherDist(lambda_list, multPercentile, fTriggeredLambdaDist);
+    FillMotherDist(lambda_list, multPercentile, fLambdaDist);
 
     // Filling all of our correlation histograms
     MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambda, primZ, false);
