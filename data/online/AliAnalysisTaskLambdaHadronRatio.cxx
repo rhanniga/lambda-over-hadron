@@ -188,7 +188,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     fOutputList->Add(fTriggeredLambdaDist);
 
     fTriggeredLambdaDistFilterbit = new THnSparseF("fTriggeredLambdaDistFilter", "Lambda Distribution (with triggered event, filterbit 16 on daughters)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
-    fOutputList->Add(fTriggeredLambdaDist);
+    fOutputList->Add(fTriggeredLambdaDistFilterbit);
 
     //Correlation axes are: Trigger Pt, Associated Pt, dPhi, dEta, Inv Mass, Zvtx
     int hl_cor_bins[6] = {8, 10, 16, 20, 100, 10};
