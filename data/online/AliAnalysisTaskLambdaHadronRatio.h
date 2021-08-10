@@ -79,8 +79,10 @@ private:
 
   THnSparse* fLambdaDist;  //!>! single particle lambda dist
   THnSparse* fTriggeredLambdaDist;  //!>! single particle lambda dist within a triggered event
+  THnSparse* fTriggeredLambdaDistFilterbit;  //!>! single particle lambda dist where daughters have filter bit 16 within a triggered event
 
   THnSparse* fDphiHLambda;  //!>! hadron-lambda correlation hist
+  THnSparse* fDphiHLambdaFilterBit;  //!>! hadron-lambda correlation hist where daughter has filter bit 16
   THnSparse* fDphiHLambdaEff;  //!>! hadron-lambda correlation hist (efficiency corrected)
   THnSparse* fDphiHLambdaV0;  //!>! hadron-lambda correlation hist (using v0 finder for lambda)
   THnSparse* fDphiHLambdaRotated;  //!>! hadron-lambda correlation hist with rotated pion

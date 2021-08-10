@@ -187,6 +187,8 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     fTriggeredLambdaDist = new THnSparseF("fTriggeredLambdaDist", "Lambda Distribution (with triggered event)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
     fOutputList->Add(fTriggeredLambdaDist);
 
+    fTriggeredLambdaDistFilterbit = new THnSparseF("fTriggeredLambdaDistFilter", "Lambda Distribution (with triggered event, filterbit 16 on daughters)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fOutputList->Add(fTriggeredLambdaDist);
 
     //Correlation axes are: Trigger Pt, Associated Pt, dPhi, dEta, Inv Mass, Zvtx
     int hl_cor_bins[6] = {8, 10, 16, 20, 100, 10};
@@ -195,6 +197,9 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
 
     fDphiHLambda = new THnSparseF("fDphiHLambda", "Hadron-Lambda Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fOutputList->Add(fDphiHLambda);
+
+    fDphiHLambdaFilterBit = new THnSparseF("fDphiHLambdaFilterBit", "Hadron-Lambda Correlation Histogram (daughter has filter bit kTrkGlobalNoDCA) ", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fOutputList->Add(fDphiHLambdaFilterBit);
 
     fDphiHLambdaEff = new THnSparseF("fDphiHLambdaEff", "Efficiency-corrected Hadron-Lambda Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fOutputList->Add(fDphiHLambdaEff);
@@ -616,8 +621,6 @@ bool AliAnalysisTaskLambdaHadronRatio::PassDaughterCuts(AliAODTrack *track){
     pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
     pass = pass && (track->Pt() >= 0.15);
 
-    // pass = pass && (track->TestFilterMask(DAUGHTER_TRK_BIT));
-
     pass = pass && (track->IsOn(AliAODTrack::kTPCrefit));
 
     pass = pass && (track->GetTPCCrossedRows() > 70);
@@ -686,6 +689,10 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     std::vector<AliAODTrack*> antiProton_list;
     std::vector<AliAODTrack*> piPlus_list;
     std::vector<AliAODTrack*> piMinus_list;
+    std::vector<AliAODTrack*> filterbit_proton_list;
+    std::vector<AliAODTrack*> filterbit_antiProton_list;
+    std::vector<AliAODTrack*> filterbit_piPlus_list;
+    std::vector<AliAODTrack*> filterbit_piMinus_list;
     std::vector<AliAODTrack*> trigger_list;
     std::vector<AliAODTrack*> associated_h_list;
     std::vector<AliAODTrack*> all_hadron_list;
@@ -720,6 +727,42 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
             associated_h_list.push_back(track);
         }
 
+        if(track->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA)) {
+
+            double filterbit_TPCNSigmaPion = 1000;
+            double filterbit_TOFNSigmaPion = 1000;
+
+            filterbit_TPCNSigmaPion = fpidResponse->NumberOfSigmasTPC(track, AliPID::kPion);
+            filterbit_TOFNSigmaPion = fpidResponse->NumberOfSigmasTOF(track, AliPID::kPion);
+
+            if(TMath::Abs(filterbit_TPCNSigmaPion) <= 3 && (TMath::Abs(filterbit_TOFNSigmaPion) <= 3 || filterbit_TOFNSigmaPion == 1000)) {
+
+                if(track->Charge() == 1){
+                    filterbit_piPlus_list.push_back(track);
+                }
+                else {
+                    filterbit_piMinus_list.push_back(track);
+                }
+            }
+
+            double filterbit_TPCNSigmaProton = 1000;
+            double filterbit_TOFNSigmaProton = 1000;
+
+
+            filterbit_TPCNSigmaProton = fpidResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+            filterbit_TOFNSigmaProton = fpidResponse->NumberOfSigmasTOF(track, AliPID::kProton);
+
+            if(TMath::Abs(filterbit_TPCNSigmaProton) <= 2 && (TMath::Abs(filterbit_TOFNSigmaProton) <= 2 || filterbit_TOFNSigmaProton == 1000)) {
+
+                if(track->Charge() == 1){
+                    filterbit_proton_list.push_back(track);
+                }
+                else {
+                    filterbit_antiProton_list.push_back(track);
+                }
+            }
+        } 
+            
         if(PassDaughterCuts(track)) {
             double TPCNSigmaPion = 1000;
             double TOFNSigmaPion = 1000;
@@ -763,6 +806,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     //Making list of possible lambdas (have to do +/- for proton or pi):
 
     std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list;
+    std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_filterbit_daughters;
     std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_v0;
     std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_signal_region;
     std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_signal_region_2_4;
@@ -807,6 +851,20 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
                 lambda_list_RotatedProton.push_back(lambda_RotatedProton);
 
             }
+        }
+    }
+
+    for(int i = 0; i < (int)filterbit_piMinus_list.size(); i++) {
+        for(int j = 0; j < (int) filterbit_proton_list.size(); j++) {
+            AliMotherContainer filterbit_lambda = DaughtersToMother(filterbit_piMinus_list[i], filterbit_proton_list[j], 0.1396, 0.9383);
+            lambda_list_filterbit_daughters.push_back(filterbit_lambda);
+        }
+    }
+
+    for(int i = 0; i < (int)filterbit_piPlus_list.size(); i++) {
+        for(int j = 0; j < (int) filterbit_antiProton_list.size(); j++) {
+            AliMotherContainer filterbit_lambda = DaughtersToMother(filterbit_piPlus_list[i], filterbit_antiProton_list[j], 0.1396, 0.9383);
+            lambda_list_filterbit_daughters.push_back(filterbit_lambda);
         }
     }
 
@@ -900,10 +958,12 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
 
     // Filling our single particle lambda distribution histogram:
     if(is_triggered_event) FillMotherDist(lambda_list, multPercentile, fTriggeredLambdaDist);
+    if(is_triggered_event) FillMotherDist(lambda_list_filterbit_daughters, multPercentile, fTriggeredLambdaDistFilterbit);
     FillMotherDist(lambda_list, multPercentile, fLambdaDist);
 
     // Filling all of our correlation histograms
     MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambda, primZ, false);
+    MakeSameHLambdaCorrelations(trigger_list, lambda_list_filterbit_daughters, fDphiHLambdaFilterBit, primZ, false);
     MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambdaEff, primZ, true);
     MakeSameHLambdaCorrelations(trigger_list, lambda_list_v0, fDphiHLambdaV0, primZ);
     MakeSameHLambdaCorrelations(trigger_list, lambda_list_RotatedPi, fDphiHLambdaRotatedPi, primZ);
