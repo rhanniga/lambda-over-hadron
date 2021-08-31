@@ -73,6 +73,8 @@ private:
   TH2D* fTriggersAndLambdasPerEvent_All; //!>! triggers and all lambdas per event
   TH2D* fTriggersAndLambdasPerEvent_2_4; //!>! triggers and 2-4 GeV lambdas per event
 
+  TH2D* fTofTest; //!>! tof test
+
   THnSparse* fLooseDist;  //!>! single particle all hadron dist (no cuts at all)
   THnSparse* fTriggerDist;  //!>! single particle trigger dist
   THnSparse* fAssociatedHDist;  //!>! single particle associated hadron dist
@@ -82,7 +84,7 @@ private:
   THnSparse* fTriggeredLambdaDistFilterbit;  //!>! single particle lambda dist where daughters have filter bit 16 within a triggered event
 
   THnSparse* fDphiHLambda;  //!>! hadron-lambda correlation hist
-  THnSparse* fDphiHLambdaFilterBit;  //!>! hadron-lambda correlation hist where daughter has filter bit 16
+  THnSparse* fDphiHLambdaFilterbit;  //!>! hadron-lambda correlation hist where daughter has filter bit 16
   THnSparse* fDphiHLambdaEff;  //!>! hadron-lambda correlation hist (efficiency corrected)
   THnSparse* fDphiHLambdaV0;  //!>! hadron-lambda correlation hist (using v0 finder for lambda)
   THnSparse* fDphiHLambdaRotated;  //!>! hadron-lambda correlation hist with rotated pion

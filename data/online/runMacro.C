@@ -69,8 +69,8 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   if(local) {
     TChain *chain = new TChain("aodTree");
     chain->Add("~/Wonderland/native/data/pPb_5_tev_1.root");
-    chain->Add("~/Wonderland/native/data/pPb_5_tev_69.root");
-    chain->Add("~/Wonderland/native/data/pPb_5_tev_420.root");
+    // chain->Add("~/Wonderland/native/data/pPb_5_tev_69.root");
+    // chain->Add("~/Wonderland/native/data/pPb_5_tev_420.root");
     manage->StartAnalysis("local", chain);
   }
 

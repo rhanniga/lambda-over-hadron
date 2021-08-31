@@ -60,7 +60,9 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     fAssociatedHDist(0x0),
     fLambdaDist(0x0),
     fTriggeredLambdaDist(0x0),
+    fTriggeredLambdaDistFilterbit(0x0),
     fDphiHLambda(0x0),
+    fDphiHLambdaFilterbit(0x0),
     fDphiHLambdaEff(0x0),
     fDphiHLambdaV0(0x0),
     fDphiHLambdaRotated(0x0),
@@ -82,7 +84,8 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     fMultHigh(0.0),
     fDaughterBit(0.0),
     fAssociatedBit(0.0),
-    fTriggerBit(0.0)
+    fTriggerBit(0.0),
+    fTofTest(0x0)
 {
 }
 
@@ -101,7 +104,9 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     fAssociatedHDist(0x0),
     fLambdaDist(0x0),
     fTriggeredLambdaDist(0x0),
+    fTriggeredLambdaDistFilterbit(0x0),
     fDphiHLambda(0x0),
+    fDphiHLambdaFilterbit(0x0),
     fDphiHLambdaEff(0x0),
     fDphiHLambdaV0(0x0),
     fDphiHLambdaRotated(0x0),
@@ -123,7 +128,8 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     fMultHigh(0.0),
     fDaughterBit(0.0),
     fAssociatedBit(0.0),
-    fTriggerBit(0.0)
+    fTriggerBit(0.0),
+    fTofTest(0x0)
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -198,8 +204,8 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     fDphiHLambda = new THnSparseF("fDphiHLambda", "Hadron-Lambda Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fOutputList->Add(fDphiHLambda);
 
-    fDphiHLambdaFilterBit = new THnSparseF("fDphiHLambdaFilterBit", "Hadron-Lambda Correlation Histogram (daughter has filter bit kTrkGlobalNoDCA) ", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
-    fOutputList->Add(fDphiHLambdaFilterBit);
+    fDphiHLambdaFilterbit = new THnSparseF("fDphiHLambdaFilterbit", "Hadron-Lambda Correlation Histogram (daughter has filter bit kTrkGlobalNoDCA) ", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fOutputList->Add(fDphiHLambdaFilterbit);
 
     fDphiHLambdaEff = new THnSparseF("fDphiHLambdaEff", "Efficiency-corrected Hadron-Lambda Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fOutputList->Add(fDphiHLambdaEff);
@@ -259,6 +265,9 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
 
     fLambdaDaughterDCA = new THnSparseF("fLambdaDaughterDCA", "#Lambda^{0} daughter DCA dist", 6, dca_bins, dca_mins, dca_maxes);
     fOutputList->Add(fLambdaDaughterDCA);
+
+    fTofTest = new TH2D("fTofTest", "TOF signal vs P test hist", 1000, 0, 10, 1000, 0, 40000);
+    fOutputList->Add(fTofTest);
 
     PostData(1, fOutputList);
 }
@@ -770,6 +779,9 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
             TPCNSigmaPion = fpidResponse->NumberOfSigmasTPC(track, AliPID::kPion);
             TOFNSigmaPion = fpidResponse->NumberOfSigmasTOF(track, AliPID::kPion);
 
+            fTofTest->Fill(track->P(), track->GetTOFsignal());
+            std::cout << track->GetTOFsignal() << std::endl;
+
             if(TOFNSigmaPion != 1000 && track->Charge() != 1) unlikelyPion_list.push_back(track);
 
             if(TMath::Abs(TPCNSigmaPion) <= 3 && (TMath::Abs(TOFNSigmaPion) <= 3 || TOFNSigmaPion == 1000)) {
@@ -963,7 +975,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
 
     // Filling all of our correlation histograms
     MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambda, primZ, false);
-    MakeSameHLambdaCorrelations(trigger_list, lambda_list_filterbit_daughters, fDphiHLambdaFilterBit, primZ, false);
+    MakeSameHLambdaCorrelations(trigger_list, lambda_list_filterbit_daughters, fDphiHLambdaFilterbit, primZ, false);
     MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambdaEff, primZ, true);
     MakeSameHLambdaCorrelations(trigger_list, lambda_list_v0, fDphiHLambdaV0, primZ);
     MakeSameHLambdaCorrelations(trigger_list, lambda_list_RotatedPi, fDphiHLambdaRotatedPi, primZ);

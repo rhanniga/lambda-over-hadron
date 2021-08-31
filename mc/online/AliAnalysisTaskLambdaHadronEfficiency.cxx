@@ -99,7 +99,12 @@ AliAnalysisTaskLambdaHadronEfficiency::AliAnalysisTaskLambdaHadronEfficiency(con
     fRecoLambdaDaughterDist(0x0),
     fRealLambdasPerEvent(0x0),
     fRecoLambdasPerEvent(0x0),
-    fReactionPlane(0x0)
+    fReactionPlane(0x0),
+    fPxDifference(0x0),
+    fPxDifferenceFB(0x0),
+    fPyDifference(0x0),
+    fPzDifference(0x0),
+    fPtDifference(0x0)
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -169,7 +174,12 @@ AliAnalysisTaskLambdaHadronEfficiency::AliAnalysisTaskLambdaHadronEfficiency()
     fRecoLambdaDaughterDist(0x0),
     fRealLambdasPerEvent(0x0),
     fRecoLambdasPerEvent(0x0),
-    fReactionPlane(0x0)
+    fReactionPlane(0x0),
+    fPxDifference(0x0),
+    fPxDifferenceFB(0x0),
+    fPyDifference(0x0),
+    fPzDifference(0x0),
+    fPtDifference(0x0)
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -384,16 +394,31 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     fRecoLambdasPerEvent = new TH1F("fRecoLambdasPerEvent", "Reco Lambdas per Event", 10, 0, 10);
     fOutputList->Add(fRecoLambdasPerEvent);
 
+    fPxDifference = new TH1D("fPxDifference", "Real p_x - reco p_x", 1000, -1, 1);
+    fOutputList->Add(fPxDifference);
+
+    fPxDifferenceFB = new TH1D("fPxDifferenceFB", "Real p_x - reco p_x (filter bit)", 1000, -1, 1);
+    fOutputList->Add(fPxDifferenceFB);
+
+    fPyDifference = new TH1D("fPyDifference", "Real p_y - reco p_y", 1000, -1, 1);
+    fOutputList->Add(fPyDifference);
+
+    fPzDifference = new TH1D("fPzDifference", "Real p_z - reco p_z", 1000, -1, 1);
+    fOutputList->Add(fPzDifference);
+
+    fPtDifference = new TH1D("fPtDifference", "Real p_t - reco p_t", 1000, -1, 1);
+    fOutputList->Add(fPtDifference);
+
     PostData(1,fOutputList);
 
 }
 
-uint AliAnalysisTaskLambdaHadronEfficiency::PassDaughterCuts(AliAODTrack *track){
+unsigned int AliAnalysisTaskLambdaHadronEfficiency::PassDaughterCuts(AliAODTrack *track){
 
     // Reject the negative ID tracks (TPC constrained to PV, etc.)
     if(track->GetID() < 0) return false;
 
-    uint passLevel = 0;
+    unsigned int passLevel = 0;
 
     // Bit set if track passes eta cut
     if(TMath::Abs(track->Eta()) <= DAUGHTER_ETA_CUT) passLevel |= ETA_BIT;
@@ -442,11 +467,11 @@ Bool_t AliAnalysisTaskLambdaHadronEfficiency::PassTriggerCuts(AliAODTrack *track
 void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
     //masks for the different cut configurations
-    uint maskEta = ETA_BIT;
-    uint maskEtaPt = ETA_BIT + PT_BIT;
-    uint maskEtaPtRefit = ETA_BIT + PT_BIT + TPC_REFIT_BIT;
-    uint maskEtaPtRefitRows = ETA_BIT + PT_BIT + TPC_REFIT_BIT + CROSSED_ROWS_BIT;
-    uint maskEtaPtRefitRowsRatio = ETA_BIT + PT_BIT + TPC_REFIT_BIT + CROSSED_ROWS_BIT + ROW_CLUSTER_RATIO_BIT;
+    unsigned int maskEta = ETA_BIT;
+    unsigned int maskEtaPt = ETA_BIT + PT_BIT;
+    unsigned int maskEtaPtRefit = ETA_BIT + PT_BIT + TPC_REFIT_BIT;
+    unsigned int maskEtaPtRefitRows = ETA_BIT + PT_BIT + TPC_REFIT_BIT + CROSSED_ROWS_BIT;
+    unsigned int maskEtaPtRefitRowsRatio = ETA_BIT + PT_BIT + TPC_REFIT_BIT + CROSSED_ROWS_BIT + ROW_CLUSTER_RATIO_BIT;
 
     UInt_t evSelMask=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
@@ -656,8 +681,8 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
         fRecoTotalV0LambdaDist->Fill(distPoint);
 
-        uint posPassCuts = PassDaughterCuts(ptrack);
-        uint negPassCuts = PassDaughterCuts(ntrack);
+        unsigned int posPassCuts = PassDaughterCuts(ptrack);
+        unsigned int negPassCuts = PassDaughterCuts(ntrack);
 
         if(((negPassCuts & maskEta) == maskEta) && ((posPassCuts & maskEta)== maskEta)){
             fRecoEtaV0LambdaDist->Fill(distPoint);
@@ -751,6 +776,23 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         }
 
         negPassCuts = PassDaughterCuts(aodnegtrack);
+
+        if((negPassCuts & maskEtaPtRefitRowsRatio) == maskEtaPtRefitRowsRatio) {
+            float px_dif = mcpart->Px() - aodnegtrack->Px();
+            float py_dif = mcpart->Py() - aodnegtrack->Py();
+            float pz_dif = mcpart->Pz() - aodnegtrack->Pz();
+            float pt_dif = mcpart->Pt() - aodnegtrack->Pt();
+
+            fPxDifference->Fill(px_dif);
+            fPyDifference->Fill(py_dif);
+            fPzDifference->Fill(pz_dif);
+            fPtDifference->Fill(pt_dif);
+        }
+
+        if(aodnegtrack->TestFilterBit(AliAODTrack::kTrkGlobal)) {
+            float px_dif_fb = mcpart->Px() - aodnegtrack->Px();
+            fPxDifferenceFB->Fill(px_dif_fb);
+        }
 
         AliAODMCParticle* mcnegpart = (AliAODMCParticle*)fMCArray->At(tracklabel);
         negparPDG = mcnegpart->GetPdgCode();

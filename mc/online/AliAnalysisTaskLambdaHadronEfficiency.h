@@ -40,7 +40,7 @@ public:
     virtual ~AliAnalysisTaskLambdaHadronEfficiency();
     
     virtual void   UserCreateOutputObjects();
-    uint PassDaughterCuts(AliAODTrack* track);
+    unsigned int PassDaughterCuts(AliAODTrack* track);
     Bool_t PassAssociatedCuts(AliAODTrack* track);
     Bool_t PassTriggerCuts(AliAODTrack* track);
     virtual void   UserExec(Option_t *option);
@@ -70,11 +70,11 @@ private:
     TString CENT_ESTIMATOR; // method used for cent estimator (default V0A)
 
     // Bit maps for differential efficiency investigation
-    uint ETA_BIT = 1 << 0;
-    uint PT_BIT = 1 << 1;
-    uint TPC_REFIT_BIT = 1 << 2;
-    uint CROSSED_ROWS_BIT = 1 << 3;
-    uint ROW_CLUSTER_RATIO_BIT = 1 << 4;
+    unsigned int ETA_BIT = 1 << 0;
+    unsigned int PT_BIT = 1 << 1;
+    unsigned int TPC_REFIT_BIT = 1 << 2;
+    unsigned int CROSSED_ROWS_BIT = 1 << 3;
+    unsigned int ROW_CLUSTER_RATIO_BIT = 1 << 4;
 
     //
     std::map<int, int> filterMap_map = {{0, 0},
@@ -161,6 +161,12 @@ private:
     TH1F        *fRecoLambdasPerEvent;//!
 
     TH1D        *fReactionPlane;//!
+
+    TH1D        *fPxDifference;//! distribution of difference between real px and track px
+    TH1D        *fPxDifferenceFB;//! distribution of difference between real px and track px (tracks have ktrkglobalnodca)
+    TH1D        *fPyDifference;//! distribution of difference between real py and track py
+    TH1D        *fPzDifference;//! distribution of difference between real pz and track pz
+    TH1D        *fPtDifference;//! distribution of difference between real pt (calculated from mc p) and track pt
 
 
     ClassDef(AliAnalysisTaskLambdaHadronEfficiency, 1); 
