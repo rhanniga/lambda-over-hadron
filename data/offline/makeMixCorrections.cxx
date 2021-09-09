@@ -99,13 +99,19 @@ TH2D* makehhCorrections(TH3D* same3D, TH3D* mix3D){
 }
 
 //--------------------------------------------------------------------------------------------
-void makeMixCorrections(float trigPTLow, float trigPTHigh, float assocPTLow, float assocPTHigh){
-    TFile *histoFile = new TFile("../online/output/cent_50_80.root");
+void makeMixCorrections(float trigPTLow, float TRIG_PT_HIGH, float ASSOC_PT_LOW, float ASSOC_PT_HIGH){
+    TFile *histoFile = new TFile("../online/output/cent_0_20.root");
     TList* list = (TList*) histoFile->Get("h-lambda");
-    int centLow = 50;
-    int centHigh = 80;
+    int centLow = 0;
+    int centHigh = 20;
 
     float EPSILON = 0.00001;
+    
+    float TRIG_PT_LOW = 4;
+    float TRIG_PT_HIGH = 8 - EPSILON;
+    float ASSOC_PT_LOW = 2;
+    float ASSOC_PT_HIGH = 4 - EPSILON;
+
     float LSB_MIN = 1.085;
     float LSB_MAX = 1.10 - EPSILON;
     float SIG_MIN = 1.108;
@@ -113,20 +119,21 @@ void makeMixCorrections(float trigPTLow, float trigPTHigh, float assocPTLow, flo
     float RSB_MIN = 1.14;
     float RSB_MAX = 1.155 - EPSILON;
 
+
     THnSparseF*triggerDist = (THnSparseF*)list->FindObject("fTriggerDist");
-    TH2D *trigSameUSDist = (TH2D*)triggerDist->Projection(0, 3);
-    TH2D *trigSameLSDist = (TH2D*)triggerDist->Projection(0, 3);
+    TH2D *trigSameUSDist = (TH2D*)triggerDist->Projection(3, 0);
+    TH2D *trigSameLSDist = (TH2D*)triggerDist->Projection(3, 0);
 
     float trigMixScalesUS[10] = {};
     float trigMixScalesLS[10] = {};
 
     for(int i = 0; i < 10; i++){
-        trigMixScalesUS[i] = (float) trigSameUSDist->Integral(trigSameUSDist->GetXaxis()->FindBin(trigPTLow), trigSameUSDist->GetXaxis()->FindBin(trigPTHigh), i+1, i+1);
-        trigMixScalesLS[i] = (float) trigSameLSDist->Integral(trigSameUSDist->GetXaxis()->FindBin(trigPTLow), trigSameUSDist->GetXaxis()->FindBin(trigPTHigh), i+1, i+1);
+        trigMixScalesUS[i] = (float) trigSameUSDist->Integral(trigSameUSDist->GetXaxis()->FindBin(TRIG_PT_LOW), trigSameUSDist->GetXaxis()->FindBin(TRIG_PT_HIGH), i+1, i+1);
+        trigMixScalesLS[i] = (float) trigSameLSDist->Integral(trigSameUSDist->GetXaxis()->FindBin(TRIG_PT_LOW), trigSameUSDist->GetXaxis()->FindBin(TRIG_PT_HIGH), i+1, i+1);
     }
 
-    float totalTrigSameUS = (float)trigSameUSDist->Integral(trigSameUSDist->GetXaxis()->FindBin(trigPTLow), trigSameUSDist->GetXaxis()->FindBin(trigPTHigh), 1, trigSameUSDist->GetYaxis()->GetNbins());
-    float totalTrigSameLS = (float)trigSameLSDist->Integral(trigSameLSDist->GetXaxis()->FindBin(trigPTLow), trigSameLSDist->GetXaxis()->FindBin(trigPTHigh), 1, trigSameLSDist->GetYaxis()->GetNbins());
+    float totalTrigSameUS = (float)trigSameUSDist->Integral(trigSameUSDist->GetXaxis()->FindBin(TRIG_PT_LOW), trigSameUSDist->GetXaxis()->FindBin(TRIG_PT_HIGH), 1, trigSameUSDist->GetYaxis()->GetNbins());
+    float totalTrigSameLS = (float)trigSameLSDist->Integral(trigSameLSDist->GetXaxis()->FindBin(TRIG_PT_LOW), trigSameLSDist->GetXaxis()->FindBin(TRIG_PT_HIGH), 1, trigSameLSDist->GetYaxis()->GetNbins());
 
     THnSparseF *dphiHLambda = (THnSparseF *)list->FindObject("fDphiHLambda");
     THnSparseF *dphiHLambdaMixed = (THnSparseF *)list->FindObject("fDphiHLambdaMixed");
@@ -137,19 +144,19 @@ void makeMixCorrections(float trigPTLow, float trigPTHigh, float assocPTLow, flo
     THnSparseF *dphiHHMixed = (THnSparseF*)list->FindObject("fDphiHHMixed");
 
     //make 4D THnProjections projection to do mixed event corrections
-    dphiHLambda->GetAxis(0)->SetRangeUser(trigPTLow, trigPTHigh);
-    dphiHLambda->GetAxis(1)->SetRangeUser(assocPTLow,assocPTHigh);
-    dphiHLambdaLS->GetAxis(0)->SetRangeUser(trigPTLow, trigPTHigh);
-    dphiHLambdaLS->GetAxis(1)->SetRangeUser(assocPTLow,assocPTHigh);
-    dphiHH->GetAxis(0)->SetRangeUser(trigPTLow,trigPTHigh);
-    dphiHH->GetAxis(1)->SetRangeUser(assocPTLow,assocPTHigh);
+    dphiHLambda->GetAxis(0)->SetRangeUser(TRIG_PT_LOW, TRIG_PT_HIGH);
+    dphiHLambda->GetAxis(1)->SetRangeUser(ASSOC_PT_LOW,ASSOC_PT_HIGH);
+    dphiHLambdaLS->GetAxis(0)->SetRangeUser(TRIG_PT_LOW, TRIG_PT_HIGH);
+    dphiHLambdaLS->GetAxis(1)->SetRangeUser(ASSOC_PT_LOW,ASSOC_PT_HIGH);
+    dphiHH->GetAxis(0)->SetRangeUser(TRIG_PT_LOW,TRIG_PT_HIGH);
+    dphiHH->GetAxis(1)->SetRangeUser(ASSOC_PT_LOW,ASSOC_PT_HIGH);
 
-    dphiHLambdaMixed->GetAxis(0)->SetRangeUser(trigPTLow, trigPTHigh);
-    dphiHLambdaMixed->GetAxis(1)->SetRangeUser(assocPTLow,assocPTHigh);
-    dphiHLambdaLSMixed->GetAxis(0)->SetRangeUser(trigPTLow, trigPTHigh);
-    dphiHLambdaLSMixed->GetAxis(1)->SetRangeUser(assocPTLow,assocPTHigh);
-    dphiHHMixed->GetAxis(0)->SetRangeUser(trigPTLow,trigPTHigh);
-    dphiHHMixed->GetAxis(1)->SetRangeUser(assocPTLow,assocPTHigh);
+    dphiHLambdaMixed->GetAxis(0)->SetRangeUser(TRIG_PT_LOW, TRIG_PT_HIGH);
+    dphiHLambdaMixed->GetAxis(1)->SetRangeUser(ASSOC_PT_LOW,ASSOC_PT_HIGH);
+    dphiHLambdaLSMixed->GetAxis(0)->SetRangeUser(TRIG_PT_LOW, TRIG_PT_HIGH);
+    dphiHLambdaLSMixed->GetAxis(1)->SetRangeUser(ASSOC_PT_LOW,ASSOC_PT_HIGH);
+    dphiHHMixed->GetAxis(0)->SetRangeUser(TRIG_PT_LOW,TRIG_PT_HIGH);
+    dphiHHMixed->GetAxis(1)->SetRangeUser(ASSOC_PT_LOW,ASSOC_PT_HIGH);
 
 
     dphiHLambda->GetAxis(4)->SetRange(1,dphiHLambda->GetAxis(4)->GetNbins());
@@ -283,8 +290,8 @@ void makeMixCorrections(float trigPTLow, float trigPTHigh, float assocPTLow, flo
 
 
     //Create some uncorrected same/mixed event 2D histos
-    hLambda->GetAxis(2)->SetRangeUser(1.11, 1.12);
-    hLambdaMixed->GetAxis(2)->SetRangeUser(1.11, 1.12);
+    hLambda->GetAxis(2)->SetRangeUser(SIG_MIN, SIG_MAX);
+    hLambdaMixed->GetAxis(2)->SetRangeUser(SIG_MIN, SIG_MAX);
     TH2D* uncorrhLambda2Dpeak = hLambda->Projection(0,1);
     uncorrhLambda2Dpeak->Sumw2();
     uncorrhLambda2Dpeak->SetName("uncorrhLambda2Dpeak");
@@ -292,8 +299,8 @@ void makeMixCorrections(float trigPTLow, float trigPTHigh, float assocPTLow, flo
     uncorrhLambdaMixed2Dpeak->Sumw2();
     uncorrhLambdaMixed2Dpeak->SetName("uncorrhLambdaMixed2Dpeak");
 
-    hLambda->GetAxis(2)->SetRangeUser(1.132, 1.14);
-    hLambdaMixed->GetAxis(2)->SetRangeUser(1.132, 1.14);
+    hLambda->GetAxis(2)->SetRangeUser(RSB_MIN, RSB_MAX);
+    hLambdaMixed->GetAxis(2)->SetRangeUser(RSB_MIN, RSB_MAX);
     TH2D* uncorrhLambda2DRside = hLambda->Projection(0,1);
     uncorrhLambda2DRside->Sumw2();
     uncorrhLambda2DRside->SetName("uncorrhLambda2DRside");
@@ -301,8 +308,8 @@ void makeMixCorrections(float trigPTLow, float trigPTHigh, float assocPTLow, flo
     uncorrhLambdaMixed2DRside->Sumw2();
     uncorrhLambdaMixed2DRside->SetName("uncorrhLambdaMixed2DRside");
 
-    hLambda->GetAxis(2)->SetRangeUser(1.09, 1.1);
-    hLambdaMixed->GetAxis(2)->SetRangeUser(1.09, 1.1);
+    hLambda->GetAxis(2)->SetRangeUser(LSB_MIN, LSB_MAX);
+    hLambdaMixed->GetAxis(2)->SetRangeUser(LSB_MIN, LSB_MAX);
     TH2D* uncorrhLambda2DLside = hLambda->Projection(0,1);
     uncorrhLambda2DLside->Sumw2();
     uncorrhLambda2DLside->SetName("uncorrhLambda2DLside");
@@ -327,7 +334,7 @@ void makeMixCorrections(float trigPTLow, float trigPTHigh, float assocPTLow, flo
     TH1D* mixedLSzvtx = hLambdaLSMixed->Projection(3);
     mixedLSzvtx->SetName("mixedLSzvtx");
 
-    TFile* output = new TFile(Form("trig_%i_%i_assoc_%i_%i_cent_%i_%i_mixcorr_hLambda.root", (int)trigPTLow, (int)trigPTHigh, (int)assocPTLow, (int)assocPTHigh, (int)centLow, (int)centHigh), "RECREATE");
+    TFile* output = new TFile(Form("trig_%i_%i_assoc_%i_%i_cent_%i_%i_mixcorr_hLambda.root", (int)TRIG_PT_LOW, (int)TRIG_PT_HIGH, (int)ASSOC_PT_LOW, (int)ASSOC_PT_HIGH, (int)centLow, (int)centHigh), "RECREATE");
     
     hLambda2Dpeak->Scale(1.0/totalTrigSameUS);
     hLambda2DRside->Scale(1.0/totalTrigSameUS);
