@@ -100,10 +100,18 @@ TH2D* makehhCorrections(TH3D* same3D, TH3D* mix3D){
 
 //--------------------------------------------------------------------------------------------
 void makeMixCorrections(float trigPTLow, float trigPTHigh, float assocPTLow, float assocPTHigh){
-    TFile *histoFile = new TFile("~/alice/research/lambda-over-hadron/data/online/tmp/cent_50_80.root");
+    TFile *histoFile = new TFile("../online/output/cent_50_80.root");
     TList* list = (TList*) histoFile->Get("h-lambda");
     int centLow = 50;
     int centHigh = 80;
+
+    float EPSILON = 0.00001;
+    float LSB_MIN = 1.085;
+    float LSB_MAX = 1.10 - EPSILON;
+    float SIG_MIN = 1.108;
+    float SIG_MAX = 1.124 - EPSILON;
+    float RSB_MIN = 1.14;
+    float RSB_MAX = 1.155 - EPSILON;
 
     THnSparseF*triggerDist = (THnSparseF*)list->FindObject("fTriggerDist");
     TH2D *trigSameUSDist = (TH2D*)triggerDist->Projection(0, 3);
@@ -186,37 +194,37 @@ void makeMixCorrections(float trigPTLow, float trigPTHigh, float assocPTLow, flo
     TH1D* sameLSLsideEta[10];
     TH1D* mixedLSLsideEta[10];
 
-    TH2D* hLambda2Dpeak = makeCorrections(hLambda, hLambdaMixed, 1.11, 1.12, sameUSPeakEta, mixedUSPeakEta, trigMixScalesUS, totalTrigSameUS);
+    TH2D* hLambda2Dpeak = makeCorrections(hLambda, hLambdaMixed, SIG_MIN, SIG_MAX, sameUSPeakEta, mixedUSPeakEta, trigMixScalesUS, totalTrigSameUS);
     hLambda2Dpeak->SetName("hLambda2Dpeak");
     for(int i = 0; i<10; i++){
         sameUSPeakEta[i]->SetName(Form("sameUSPeakEta_zvtx_%i", i));
         mixedUSPeakEta[i]->SetName(Form("mixedUSPeakEta_zvtx_%i", i));
     }
-    TH2D* hLambdaLS2Dpeak = makeCorrections(hLambdaLS, hLambdaLSMixed, 1.11, 1.12,  sameLSPeakEta, mixedLSPeakEta, trigMixScalesLS, totalTrigSameLS);
+    TH2D* hLambdaLS2Dpeak = makeCorrections(hLambdaLS, hLambdaLSMixed, SIG_MIN, SIG_MAX,  sameLSPeakEta, mixedLSPeakEta, trigMixScalesLS, totalTrigSameLS);
     hLambdaLS2Dpeak->SetName("hLambdaLS2Dpeak");
     for(int i = 0; i<10; i++){
         sameLSPeakEta[i]->SetName(Form("sameLSPeakEta_zvtx_%i", i));
         mixedLSPeakEta[i]->SetName(Form("mixedLSPeakEta_zvtx_%i", i));
     }
-    TH2D* hLambda2DRside = makeCorrections(hLambda, hLambdaMixed, 1.135, 1.15, sameUSRsideEta, mixedUSRsideEta, trigMixScalesUS, totalTrigSameUS);
+    TH2D* hLambda2DRside = makeCorrections(hLambda, hLambdaMixed, RSB_MIN, RSB_MAX, sameUSRsideEta, mixedUSRsideEta, trigMixScalesUS, totalTrigSameUS);
     hLambda2DRside->SetName("hLambda2DRside");
     for(int i = 0; i<10; i++){
         sameUSRsideEta[i]->SetName(Form("sameUSRsideEta_zvtx_%i", i));
         mixedUSRsideEta[i]->SetName(Form("mixedUSRsideEta_zvtx_%i", i));
     }
-    TH2D* hLambdaLS2DRside = makeCorrections(hLambdaLS, hLambdaLSMixed, 1.135, 1.15, sameLSRsideEta, mixedLSRsideEta, trigMixScalesLS, totalTrigSameLS);
+    TH2D* hLambdaLS2DRside = makeCorrections(hLambdaLS, hLambdaLSMixed, RSB_MIN, RSB_MAX, sameLSRsideEta, mixedLSRsideEta, trigMixScalesLS, totalTrigSameLS);
     hLambdaLS2DRside->SetName("hLambdaLS2DRside");
     for(int i = 0; i<10; i++){
         sameLSRsideEta[i]->SetName(Form("sameLSRsideEta_zvtx_%i", i));
         mixedLSRsideEta[i]->SetName(Form("mixedLSRsideEta_zvtx_%i", i));
     }
-    TH2D* hLambda2DLside = makeCorrections(hLambda, hLambdaMixed, 1.08, 1.095, sameUSLsideEta, mixedUSLsideEta, trigMixScalesUS, totalTrigSameUS);
+    TH2D* hLambda2DLside = makeCorrections(hLambda, hLambdaMixed, LSB_MIN, LSB_MAX, sameUSLsideEta, mixedUSLsideEta, trigMixScalesUS, totalTrigSameUS);
     hLambda2DLside->SetName("hLambda2DLside");
     for(int i = 0; i<10; i++){
         sameUSLsideEta[i]->SetName(Form("sameUSLsideEta_zvtx_%i", i));
         mixedUSLsideEta[i]->SetName(Form("mixedUSLsideEta_zvtx_%i", i));
     }
-    TH2D* hLambdaLS2DLside = makeCorrections(hLambdaLS, hLambdaLSMixed, 1.08, 1.095, sameLSLsideEta, mixedLSLsideEta, trigMixScalesLS, totalTrigSameLS);
+    TH2D* hLambdaLS2DLside = makeCorrections(hLambdaLS, hLambdaLSMixed, LSB_MIN, LSB_MAX, sameLSLsideEta, mixedLSLsideEta, trigMixScalesLS, totalTrigSameLS);
     hLambdaLS2DLside->SetName("hLambdaLS2DLside");
     for(int i = 0; i<10; i++){
         sameLSLsideEta[i]->SetName(Form("sameLSLsideEta_zvtx_%i", i));
