@@ -11,7 +11,7 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   float MULT_HIGH = 80;
 
   float TRIG_BIT = AliAODTrack::kIsHybridGCG;
-  float ASSOC_BIT = 1024;
+  float ASSOC_BIT = AliAODTrack::kTrkGlobalNoDCA;
   char *EFF_FILE_PATH = "eff_out.root";
   char *CENT_ESTIMATOR = "V0A";
 

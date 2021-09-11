@@ -57,6 +57,7 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     fTriggersAndLambdasPerEvent_2_4(0x0),
     fLooseDist(0x0),
     fTriggerDist(0x0),
+    fTriggerDistEff(0x0),
     fAssociatedHDist(0x0),
     fLambdaDist(0x0),
     fTriggeredLambdaDist(0x0),
@@ -101,6 +102,7 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     fTriggersAndLambdasPerEvent_2_4(0x0),
     fLooseDist(0x0),
     fTriggerDist(0x0),
+    fTriggerDistEff(0x0),
     fAssociatedHDist(0x0),
     fLambdaDist(0x0),
     fTriggeredLambdaDist(0x0),
@@ -178,6 +180,9 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
 
     fTriggerDist = new THnSparseF("fTriggerDist", "Trigger Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
     fOutputList->Add(fTriggerDist);
+
+    fTriggerDistEff = new THnSparseF("fTriggerDistEff", "Efficiency Corrected Trigger Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
+    fOutputList->Add(fTriggerDistEff);
 
     fAssociatedHDist = new THnSparseF("fAssociatedHDist", "Associated Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
     fOutputList->Add(fAssociatedHDist);
@@ -273,7 +278,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
 }
 
 
-void AliAnalysisTaskLambdaHadronRatio::FillSingleParticleDist(std::vector<AliAODTrack*> particle_list, double zVtx, THnSparse* fDist)
+void AliAnalysisTaskLambdaHadronRatio::FillSingleParticleDist(std::vector<AliAODTrack*> particle_list, double zVtx, THnSparse* fDist, bool trig_eff)
 {
     double dist_points[4]; //Pt, Phi, Eta, zVtx
     for(int i = 0; i < (int)particle_list.size(); i++) {
@@ -282,7 +287,17 @@ void AliAnalysisTaskLambdaHadronRatio::FillSingleParticleDist(std::vector<AliAOD
         dist_points[1] = particle->Phi();
         dist_points[2] = particle->Eta();
         dist_points[3] = zVtx;
-        fDist->Fill(dist_points);
+        bool in_pt_range = (particle->Pt() < 10 && particle->Pt() > 0.5);
+        if(trig_eff && in_pt_range) {
+            int trigBin = fTriggerEff->FindBin(particle->Pt());
+            double trigEff = fTriggerEff->GetBinContent(trigBin);
+            double triggerScale = 1.0/trigEff;
+            fDist->Fill(dist_points, triggerScale);
+        }
+        else{
+            fDist->Fill(dist_points);
+        }
+
     }
 }
 
@@ -965,6 +980,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
 
     // Filling all of our single particle distribution histograms:
     FillSingleParticleDist(trigger_list, primZ, fTriggerDist);
+    FillSingleParticleDist(trigger_list, primZ, fTriggerDistEff, true);
     FillSingleParticleDist(associated_h_list, primZ, fAssociatedHDist);
     FillSingleParticleDist(all_hadron_list, primZ, fLooseDist);
 

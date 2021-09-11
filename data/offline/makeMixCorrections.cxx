@@ -135,12 +135,12 @@ void makeMixCorrections(float trigPTLow, float TRIG_PT_HIGH, float ASSOC_PT_LOW,
     float totalTrigSameUS = (float)trigSameUSDist->Integral(trigSameUSDist->GetXaxis()->FindBin(TRIG_PT_LOW), trigSameUSDist->GetXaxis()->FindBin(TRIG_PT_HIGH), 1, trigSameUSDist->GetYaxis()->GetNbins());
     float totalTrigSameLS = (float)trigSameLSDist->Integral(trigSameLSDist->GetXaxis()->FindBin(TRIG_PT_LOW), trigSameLSDist->GetXaxis()->FindBin(TRIG_PT_HIGH), 1, trigSameLSDist->GetYaxis()->GetNbins());
 
-    THnSparseF *dphiHLambda = (THnSparseF *)list->FindObject("fDphiHLambda");
+    THnSparseF *dphiHLambda = (THnSparseF *)list->FindObject("fDphiHLambdaEff");
     THnSparseF *dphiHLambdaMixed = (THnSparseF *)list->FindObject("fDphiHLambdaMixed");
     THnSparseF *dphiHLambdaLS = (THnSparseF *)list->FindObject("fDphiHLambdaLS");
     THnSparseF *dphiHLambdaLSMixed = (THnSparseF *)list->FindObject("fDphiHLambdaLSMixed");
 
-    THnSparseF *dphiHH = (THnSparseF*)list->FindObject("fDphiHH");
+    THnSparseF *dphiHH = (THnSparseF*)list->FindObject("fDphiHHEff");
     THnSparseF *dphiHHMixed = (THnSparseF*)list->FindObject("fDphiHHMixed");
 
     //make 4D THnProjections projection to do mixed event corrections
