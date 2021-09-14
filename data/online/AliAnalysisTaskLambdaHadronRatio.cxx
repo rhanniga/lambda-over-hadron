@@ -271,7 +271,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     fLambdaDaughterDCA = new THnSparseF("fLambdaDaughterDCA", "#Lambda^{0} daughter DCA dist", 6, dca_bins, dca_mins, dca_maxes);
     fOutputList->Add(fLambdaDaughterDCA);
 
-    fTofTest = new TH2D("fTofTest", "TOF signal vs P test hist", 1000, 0, 10, 1000, 0, 40000);
+    fTofTest = new TH2D("fTofTest", "Beta vs P test hist", 1000, 0, 10, 230, 0, 2.3);
     fOutputList->Add(fTofTest);
 
     PostData(1, fOutputList);
@@ -474,15 +474,22 @@ void AliAnalysisTaskLambdaHadronRatio::MakeSameHHCorrelations(std::vector<AliAOD
 
             bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0.5) 
                                && (associate->Pt() < 10 && associate->Pt() > 0.5));
+
             if(eff && in_pt_range) {
 
                 int trigBin = fTriggerEff->FindBin(trigger->Pt());
                 double trigEff = fTriggerEff->GetBinContent(trigBin);
                 double triggerScale = 1.0/trigEff;
+
                 int associatedBin = fAssociatedEff->FindBin(associate->Pt());
                 double associatedEff = fAssociatedEff->GetBinContent(associatedBin);
                 double associatedScale = 1.0/associatedEff;
+
                 double totalScale = triggerScale*associatedScale;
+                // std::cout << "Trigger eff: " << trigEff << "\n";
+                // std::cout << "Associated eff: " << associatedEff << "\n";
+                // std::cout << "Total scale: " << totalScale << "\n";
+
                 fDphi->Fill(dphi_point, totalScale);
 
             }
@@ -794,8 +801,13 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
             TPCNSigmaPion = fpidResponse->NumberOfSigmasTPC(track, AliPID::kPion);
             TOFNSigmaPion = fpidResponse->NumberOfSigmasTOF(track, AliPID::kPion);
 
-            fTofTest->Fill(track->P(), track->GetTOFsignal());
-            std::cout << track->GetTOFsignal() << std::endl;
+            double time = track->GetTOFsignal() - fpidResponse->GetTOFResponse().GetStartTime(track->P());
+            double length = track->GetIntegratedLength();
+            double v = length/time;
+            double c = 0.0288782;
+            double beta = v/c;
+
+            fTofTest->Fill(track->P(), beta);
 
             if(TOFNSigmaPion != 1000 && track->Charge() != 1) unlikelyPion_list.push_back(track);
 

@@ -7,11 +7,11 @@
 
 void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
-  float MULT_LOW = 50;
-  float MULT_HIGH = 80;
+  float MULT_LOW = 0;
+  float MULT_HIGH = 20;
 
   float TRIG_BIT = AliAODTrack::kIsHybridGCG;
-  float ASSOC_BIT = AliAODTrack::kTrkGlobalNoDCA;
+  float ASSOC_BIT =  1024; 
   char *EFF_FILE_PATH = "eff_out.root";
   char *CENT_ESTIMATOR = "V0A";
 
@@ -23,7 +23,8 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   int endIndex = 28;
 
   TString work_dir = "lambda_hadron_ratio";
-  TString output_dir = "eff_corr_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_20210906";
+  // TString output_dir = "eff_corr_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_20210906";
+  TString output_dir = "test_assoc_filter_bit";
   
   //If we want to download test files from grid then run in one swoop (usually just run completely locally):
   bool gridTest = false;
@@ -68,8 +69,8 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   if(local) {
     TChain *chain = new TChain("aodTree");
     chain->Add("~/Wonderland/native/data/pPb_5_tev_1.root");
-    // chain->Add("~/Wonderland/native/data/pPb_5_tev_69.root");
-    // chain->Add("~/Wonderland/native/data/pPb_5_tev_420.root");
+    chain->Add("~/Wonderland/native/data/pPb_5_tev_69.root");
+    chain->Add("~/Wonderland/native/data/pPb_5_tev_420.root");
     manage->StartAnalysis("local", chain);
   }
 
