@@ -510,9 +510,6 @@ void AliAnalysisTaskLambdaHadronRatio::MakeSameHHCorrelations(std::vector<AliAOD
                 double associatedScale = 1.0/associatedEff;
 
                 double totalScale = triggerScale*associatedScale;
-                // std::cout << "Trigger eff: " << trigEff << "\n";
-                // std::cout << "Associated eff: " << associatedEff << "\n";
-                // std::cout << "Total scale: " << totalScale << "\n";
 
                 fDphi->Fill(dphi_point, totalScale);
 
@@ -1042,7 +1039,6 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
 
     fTriggersAndLambdasPerEvent_All->Fill(trigger_list.size(), lambda_list_signal_region.size());
     fTriggersAndLambdasPerEvent_2_4->Fill(trigger_list.size(), lambda_list_signal_region_2_4.size());
-
 
     if(lambda_list.size() > 0 && associated_h_list.size() > 0) {
         AliEventPool *fCorPool = fCorPoolMgr->GetEventPool(multPercentile, primZ);
