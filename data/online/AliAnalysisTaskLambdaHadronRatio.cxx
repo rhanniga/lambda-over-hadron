@@ -171,20 +171,24 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
 
 
     //Distribution axes are: Pt, Phi, Eta, zVtx
-    int dist_bins[4] = {100, 16, 20, 10};
-    double dist_mins[4] = {0, 0, -1, -10};
-    double dist_maxes[4] = {15, 6.28, 1, 10};
+    int dist_bins[4] = {200, 16, 20, 10};
+    double dist_mins[4] = {0.0, 0, -1, -10};
+    double dist_maxes[4] = {20.0, 6.28, 1, 10};
 
     fLooseDist = new THnSparseF("fLooseDist", "All Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
+    fLooseDist->Sumw2();
     fOutputList->Add(fLooseDist);
 
     fTriggerDist = new THnSparseF("fTriggerDist", "Trigger Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
+    fTriggerDist->Sumw2();
     fOutputList->Add(fTriggerDist);
 
     fTriggerDistEff = new THnSparseF("fTriggerDistEff", "Efficiency Corrected Trigger Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
+    fTriggerDistEff->Sumw2();
     fOutputList->Add(fTriggerDistEff);
 
     fAssociatedHDist = new THnSparseF("fAssociatedHDist", "Associated Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
+    fAssociatedHDist->Sumw2();
     fOutputList->Add(fAssociatedHDist);
 
     //Mother distribution axes are: Pt, Phi, Eta, Mass, Event multiplicity
@@ -193,12 +197,15 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     double mother_dist_maxes[5] = {15, 3.14, 1, 1.16, 100};
 
     fLambdaDist = new THnSparseF("fLambdaDist", "Lambda Distribution", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fLambdaDist->Sumw2();
     fOutputList->Add(fLambdaDist);
 
     fTriggeredLambdaDist = new THnSparseF("fTriggeredLambdaDist", "Lambda Distribution (with triggered event)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fTriggeredLambdaDist->Sumw2();
     fOutputList->Add(fTriggeredLambdaDist);
 
     fTriggeredLambdaDistFilterbit = new THnSparseF("fTriggeredLambdaDistFilter", "Lambda Distribution (with triggered event, filterbit 16 on daughters)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fTriggeredLambdaDistFilterbit->Sumw2();
     fOutputList->Add(fTriggeredLambdaDistFilterbit);
 
     //Correlation axes are: Trigger Pt, Associated Pt, dPhi, dEta, Inv Mass, Zvtx
@@ -207,36 +214,47 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     double hl_cor_maxes[6] = {12.0, 6, 3.0*TMath::Pi()/2.0, 2.0, 1.16, 10};
 
     fDphiHLambda = new THnSparseF("fDphiHLambda", "Hadron-Lambda Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambda->Sumw2();
     fOutputList->Add(fDphiHLambda);
 
     fDphiHLambdaFilterbit = new THnSparseF("fDphiHLambdaFilterbit", "Hadron-Lambda Correlation Histogram (daughter has filter bit kTrkGlobalNoDCA) ", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambdaFilterbit->Sumw2();
     fOutputList->Add(fDphiHLambdaFilterbit);
 
     fDphiHLambdaEff = new THnSparseF("fDphiHLambdaEff", "Efficiency-corrected Hadron-Lambda Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambdaEff->Sumw2();
     fOutputList->Add(fDphiHLambdaEff);
 
     fDphiHLambdaV0 = new THnSparseF("fDphiHLambdaV0", "Hadron-Lambda (using V0) Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambdaV0->Sumw2();
     fOutputList->Add(fDphiHLambdaV0);
 
     fDphiHLambdaRotated = new THnSparseF("fDphiHLambdaRotated", "Hadron-Lambda (rotated) Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambdaRotated->Sumw2();
     fOutputList->Add(fDphiHLambdaRotated);
 
     fDphiHLambdaRotatedPi = new THnSparseF("fDphiHLambdaRotatedPi", "Hadron-Lambda (rotated pi) Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambdaRotatedPi->Sumw2();
     fOutputList->Add(fDphiHLambdaRotatedPi);
 
     fDphiHLambdaRotatedProton = new THnSparseF("fDphiHLambdaRotatedProton", "Hadron-Lambda (proton rotated) Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambdaRotatedProton->Sumw2();
     fOutputList->Add(fDphiHLambdaRotatedProton);
 
     fDphiHLambdaFlipped = new THnSparseF("fDphiHLambdaFlipped", "Hadron-Lambda (flipped) Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambdaFlipped->Sumw2();
     fOutputList->Add(fDphiHLambdaFlipped);
 
     fDphiHLambdaLS = new THnSparseF("fDphiHLambdaLS", "Hadron-Lambda LS Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambdaLS->Sumw2();
     fOutputList->Add(fDphiHLambdaLS);
 
     fDphiHLambdaMixed = new THnSparseF("fDphiHLambdaMixed", "Mixed Hadron-Lambda Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambdaMixed->Sumw2();
     fOutputList->Add(fDphiHLambdaMixed);
 
     fDphiHLambdaLSMixed = new THnSparseF("fDphiHLambdaLSMixed", "Mixed Hadron-Lambda LS Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambdaLSMixed->Sumw2();
     fOutputList->Add(fDphiHLambdaLSMixed);
 
 
@@ -246,18 +264,23 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     double hh_cor_maxes[5] = {12, 12, 3.0*TMath::Pi()/2.0, 2.0, 10};
 
     fDphiHH = new THnSparseF("fDphiHH", "Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHH->Sumw2();
     fOutputList->Add(fDphiHH);
 
     fDphiHHEff = new THnSparseF("fDphiHHEff", "Efficiency corrected Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHHEff->Sumw2();
     fOutputList->Add(fDphiHHEff);
 
     fDphiTriggerTrigger = new THnSparseF("fDphiTriggerTrigger", "Trigger-Trigger Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiTriggerTrigger->Sumw2();
     fOutputList->Add(fDphiTriggerTrigger);
 
     fDphiHHMixed = new THnSparseF("fDphiHHMixed", "Mixed Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHHMixed->Sumw2();
     fOutputList->Add(fDphiHHMixed);
 
     fDphiTriggerTriggerMixed = new THnSparseF("fDphiTriggerTriggerMixed", "MixedTrigger-Trigger Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiTriggerTriggerMixed->Sumw2();
     fOutputList->Add(fDphiTriggerTriggerMixed);
 
 
@@ -269,6 +292,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     double dca_maxes[6] = {2.4, 2.4, 10, 10, 10, 1.16};
 
     fLambdaDaughterDCA = new THnSparseF("fLambdaDaughterDCA", "#Lambda^{0} daughter DCA dist", 6, dca_bins, dca_mins, dca_maxes);
+    fLambdaDaughterDCA->Sumw2();
     fOutputList->Add(fLambdaDaughterDCA);
 
     fTofTest = new TH2D("fTofTest", "Beta vs P test hist", 1000, 0, 10, 230, 0, 2.3);
