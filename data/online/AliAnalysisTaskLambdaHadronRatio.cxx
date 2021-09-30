@@ -86,7 +86,10 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     fDaughterBit(0.0),
     fAssociatedBit(0.0),
     fTriggerBit(0.0),
-    fTofTest(0x0)
+    fTofTest(0x0),
+    fAssociatedPtEventClass(0x0),
+    fLambdaPtEventClass(0x0),
+    fTriggerPtEventClass(0x0)
 {
 }
 
@@ -131,7 +134,10 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     fDaughterBit(0.0),
     fAssociatedBit(0.0),
     fTriggerBit(0.0),
-    fTofTest(0x0)
+    fTofTest(0x0),
+    fAssociatedPtEventClass(0x0),
+    fLambdaPtEventClass(0x0),
+    fTriggerPtEventClass(0x0)
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -297,6 +303,24 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
 
     fTofTest = new TH2D("fTofTest", "Beta vs P test hist", 1000, 0, 10, 230, 0, 2.3);
     fOutputList->Add(fTofTest);
+
+    fAssociatedPtEventClass = new TH2D("fAssociatedEventPtClass", "Associated p_{T} dist in different event classes", 3, 0, 3, 500, 0, 10);
+    fOutputList->Add(fAssociatedPtEventClass);
+
+    fTriggerPtEventClass = new TH2D("fTriggerPtEventPtClass", "Trigger p_{T} dist in different event classes", 3, 0, 3, 500, 0, 10);
+    fOutputList->Add(fTriggerPtEventClass);
+
+    fLambdaPtEventClass = new TH2D("fLambdaPtEventPtClass", "Lambda p_{T} dist in different event classes", 3, 0, 3, 500, 0, 10);
+    fOutputList->Add(fTriggerPtEventClass);
+
+    fMultDistMinBias = new TH1D("fMultDistMinBias", "Multiplicty distribution (min bias, all events)",  100, 0, 100);
+    fOutputList->Add(fMultDistMinBias);
+
+    fMultDistHHEvent = new TH1D("fMultDistHHEvent", "Multiplicty distribution (events that h-h correlation performed", 100, 0, 100);
+    fOutputList->Add(fMultDistHHEvent);
+
+    fMultDistHLambdaEvent = new TH1D("fMultDistHLambdaEvent", "Multiplicty distribution (events that h-#Lambda correlation performed", 100, 0, 100);
+    fOutputList->Add(fMultDistHLambdaEvent);
 
     PostData(1, fOutputList);
 }
@@ -747,6 +771,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     std::vector<AliAODTrack*> filterbit_piMinus_list;
     std::vector<AliAODTrack*> trigger_list;
     std::vector<AliAODTrack*> associated_h_list;
+    std::vector<AliAODTrack*> associated_h_list_2_4;
     std::vector<AliAODTrack*> all_hadron_list;
     std::vector<AliAODTrack*> k_list;
 
@@ -777,6 +802,10 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
 
         if(PassAssociatedCuts(track)) {
             associated_h_list.push_back(track);
+            if(track->Pt() < 4 && track->Pt() > 2) {
+                associated_h_list_2_4.push_back(track);
+            }
+
         }
 
         if(track->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA)) {

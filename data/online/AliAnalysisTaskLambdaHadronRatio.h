@@ -75,6 +75,14 @@ private:
 
   TH2D* fTofTest; //!>! tof test
 
+  TH2D* fAssociatedPtEventClass; //!>! Associated hadron pt distribution for different event classes
+  TH2D* fTriggerPtEventClass; //!>! Associated hadron pt distribution for different event classes
+  TH2D* fLambdaPtEventClass; //!>! Associated hadron pt distribution for different event classes
+
+  TH1D* fMultDistMinBias; //!>! Mult dist (min bias)
+  TH1D* fMultDistHHEvent; //!>! Mult dist (events that we could do HH correlation)
+  TH1D* fMultDistHLambdaEvent; //!>! Mult dist (events that we could do HH correlation)
+
   THnSparse* fLooseDist;  //!>! single particle all hadron dist (no cuts at all)
   THnSparse* fTriggerDist;  //!>! single particle trigger dist
   THnSparse* fTriggerDistEff;  //!>! single particle trigger dist (corrected for efficiency)

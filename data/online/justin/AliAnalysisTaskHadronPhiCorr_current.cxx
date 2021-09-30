@@ -133,7 +133,8 @@ fDphiHKK(0),
 fDphiHPhiMixed(0),
 fDphiHKKMixed(0),
 fDphiHH(0),
-fDphiHHMixed(0)
+fDphiHHMixed(0),
+fNumCalls(0)
 {
     // Constructor
     // Define input and output slots here
@@ -264,7 +265,8 @@ fDphiHKK(0),
 fDphiHPhiMixed(0),
 fDphiHKKMixed(0),
 fDphiHH(0),
-fDphiHHMixed(0)
+fDphiHHMixed(0),
+fNumCalls(0)
 {
     //Default constructor
     // Define input and output slots here
@@ -1577,6 +1579,8 @@ void AliAnalysisTaskHadronPhiCorr_current::UserExec(Option_t *){
                             hhAssoc->SetPhi(aassocTrack->Phi());
                             hhAssoc->SetCharge(aassocTrack->Charge());
                             if(fHHPoolMgr->GetEventPool(multPercentile, Zvertex)->IsReady()){
+                                fNumCalls += 1;
+                                std::cout << "Number of hh mix corr calls: "  << fNumCalls << std::endl;
                                 MakeHHMixCorrelations(hhAssoc, fDphiHHMixed[indexZVtx], multPercentile, Zvertex);
                             }
                         }
