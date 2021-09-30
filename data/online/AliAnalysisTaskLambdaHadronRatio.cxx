@@ -304,14 +304,14 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     fTofTest = new TH2D("fTofTest", "Beta vs P test hist", 1000, 0, 10, 230, 0, 2.3);
     fOutputList->Add(fTofTest);
 
-    fAssociatedPtEventClass = new TH2D("fAssociatedEventPtClass", "Associated p_{T} dist in different event classes", 3, 0, 3, 500, 0, 10);
+    fAssociatedPtEventClass = new TH2D("fAssociatedPtEventClass", "Associated p_{T} dist in different event classes", 3, 0, 3, 500, 0, 10);
     fOutputList->Add(fAssociatedPtEventClass);
 
-    fTriggerPtEventClass = new TH2D("fTriggerPtEventPtClass", "Trigger p_{T} dist in different event classes", 3, 0, 3, 500, 0, 10);
+    fTriggerPtEventClass = new TH2D("fTriggerPtEventClass", "Trigger p_{T} dist in different event classes", 3, 0, 3, 500, 0, 10);
     fOutputList->Add(fTriggerPtEventClass);
 
-    fLambdaPtEventClass = new TH2D("fLambdaPtEventPtClass", "Lambda p_{T} dist in different event classes", 3, 0, 3, 500, 0, 10);
-    fOutputList->Add(fTriggerPtEventClass);
+    fLambdaPtEventClass = new TH2D("fLambdaPtEventClass", "Lambda p_{T} dist in different event classes", 3, 0, 3, 500, 0, 10);
+    fOutputList->Add(fLambdaPtEventClass);
 
     fMultDistMinBias = new TH1D("fMultDistMinBias", "Multiplicty distribution (min bias, all events)",  100, 0, 100);
     fOutputList->Add(fMultDistMinBias);
@@ -1065,9 +1065,42 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     MakeSameTriggerTriggerCorrelations(trigger_list, fDphiTriggerTrigger, primZ);
     MakeSameHLambdaCorrelations(trigger_list, lambda_list_LS, fDphiHLambdaLS, primZ);
 
-
     fTriggersAndLambdasPerEvent_All->Fill(trigger_list.size(), lambda_list_signal_region.size());
     fTriggersAndLambdasPerEvent_2_4->Fill(trigger_list.size(), lambda_list_signal_region_2_4.size());
+
+    if(is_triggered_event) {
+        for(auto part : trigger_list) {
+            fTriggerPtEventClass->Fill(0.1, part->Pt());
+        }
+        for(auto part : associated_h_list) {
+            fAssociatedPtEventClass->Fill(0.1, part->Pt());
+        }
+        for(auto part : lambda_list_signal_region) {
+            fLambdaPtEventClass->Fill(0.1, part.particle.Pt());
+        }
+        if(associated_h_list_2_4.size()) {
+            for(auto part : trigger_list) {
+                fTriggerPtEventClass->Fill(1.1, part->Pt());
+            }
+            for(auto part : associated_h_list) {
+                fAssociatedPtEventClass->Fill(1.1, part->Pt());
+            }
+            for(auto part : lambda_list_signal_region) {
+                fLambdaPtEventClass->Fill(1.1, part.particle.Pt());
+            }
+            if(lambda_list_signal_region_2_4.size()) {
+                for(auto part : trigger_list) {
+                    fTriggerPtEventClass->Fill(2.1, part->Pt());
+                }
+                for(auto part : associated_h_list) {
+                    fAssociatedPtEventClass->Fill(2.1, part->Pt());
+                }
+                for(auto part : lambda_list_signal_region) {
+                    fLambdaPtEventClass->Fill(2.1, part.particle.Pt());
+                }
+            }
+        }
+    }
 
     if(lambda_list.size() > 0 && associated_h_list.size() > 0) {
         AliEventPool *fCorPool = fCorPoolMgr->GetEventPool(multPercentile, primZ);
