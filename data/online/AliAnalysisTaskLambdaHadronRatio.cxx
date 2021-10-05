@@ -1011,6 +1011,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     int numV0s = fAOD->GetNumberOfV0s();
     for(int i = 0; i < numV0s; i++) {
         AliAODv0 *v0 = fAOD->GetV0(i);
+        if(v0->GetOnFlyStatus()) continue;
 
         AliAODTrack* posTrack = (AliAODTrack*) v0->GetDaughter(0);
         AliAODTrack* negTrack = (AliAODTrack*) v0->GetDaughter(1);
