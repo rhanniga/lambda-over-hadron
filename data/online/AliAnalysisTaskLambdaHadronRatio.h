@@ -86,6 +86,7 @@ private:
   THnSparse* fLooseDist;  //!>! single particle all hadron dist (no cuts at all)
   THnSparse* fTriggerDist;  //!>! single particle trigger dist
   THnSparse* fTriggerDistEff;  //!>! single particle trigger dist (corrected for efficiency)
+  THnSparse* fTriggerDistEff_highestPt;  //!>! single particle trigger dist (corrected for efficiency, highest pt between 4 and 8)
   THnSparse* fAssociatedHDist;  //!>! single particle associated hadron dist
 
   THnSparse* fLambdaDist;  //!>! single particle lambda dist
@@ -95,6 +96,7 @@ private:
   THnSparse* fDphiHLambda;  //!>! hadron-lambda correlation hist
   THnSparse* fDphiHLambdaFilterbit;  //!>! hadron-lambda correlation hist where daughter has filter bit 16
   THnSparse* fDphiHLambdaEff;  //!>! hadron-lambda correlation hist (efficiency corrected)
+  THnSparse* fDphiHLambdaEff_highestPt;  //!>! hadron-lambda correlation hist (efficiency corrected, highest pt trigger between 4 and 8)
   THnSparse* fDphiHLambdaV0;  //!>! hadron-lambda correlation hist (using v0 finder for lambda)
   THnSparse* fDphiHLambdaRotated;  //!>! hadron-lambda correlation hist with rotated pion
   THnSparse* fDphiHLambdaRotatedPi;  //!>! hadron-lambda correlation hist with daughter rotated by pi
@@ -102,10 +104,13 @@ private:
   THnSparse* fDphiHLambdaFlipped;  //!>! hadron-lambda correlation hist with flipped pion
   THnSparse* fDphiHH;   //!>! hadron-hadron correlation hist
   THnSparse* fDphiHHEff;   //!>! hadron-hadron correlation hist (efficiency corrected)
+  THnSparse* fDphiHHEff_highestPt;   //!>! hadron-hadron correlation hist (efficiency corrected, highest pt trigger between 4 and 8)
   THnSparse* fDphiTriggerTrigger;   //!>! trigger-trigger correlation hist
   THnSparse* fDphiHLambdaLS; //!>! hadron-proton+pion like sign correlation hist
-  THnSparse* fDphiHLambdaMixed; //!>! hadron-lambda mixed correlation hist
+  THnSparse* fDphiHLambdaMixed_highestPt; //!>! hadron-lambda mixed correlation hist (highest pt trigger between 4 and 8)
+  THnSparse* fDphiHLambdaMixed; //!>! hadron-lambda mixed correlation hist (highest pt trigger between 4 and 8)
   THnSparse* fDphiHHMixed; //!>! hadron-hadron mixed correlation hist
+  THnSparse* fDphiHHMixed_highestPt; //!>! hadron-hadron mixed correlation hist (highest pt trigger between 4 and 8)
   THnSparse* fDphiHLambdaLSMixed; //!>! hadron-proton+pion like sign mixed correlation hist
   THnSparse* fDphiTriggerTriggerMixed;   //!>! mixed trigger-trigger correlation hist
 

@@ -58,6 +58,7 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     fLooseDist(0x0),
     fTriggerDist(0x0),
     fTriggerDistEff(0x0),
+    fTriggerDistEff_highestPt(0x0),
     fAssociatedHDist(0x0),
     fLambdaDist(0x0),
     fTriggeredLambdaDist(0x0),
@@ -65,6 +66,7 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     fDphiHLambda(0x0),
     fDphiHLambdaFilterbit(0x0),
     fDphiHLambdaEff(0x0),
+    fDphiHLambdaEff_highestPt(0x0),
     fDphiHLambdaV0(0x0),
     fDphiHLambdaRotated(0x0),
     fDphiHLambdaRotatedPi(0x0),
@@ -75,7 +77,9 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     fDphiTriggerTrigger(0x0),
     fDphiHLambdaLS(0x0),
     fDphiHLambdaMixed(0x0),
+    fDphiHLambdaMixed_highestPt(0x0),
     fDphiHHMixed(0x0),
+    fDphiHHMixed_highestPt(0x0),
     fDphiHLambdaLSMixed(0x0),
     fDphiTriggerTriggerMixed(0x0),
     fLambdaDaughterDCA(0x0),
@@ -106,6 +110,7 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     fLooseDist(0x0),
     fTriggerDist(0x0),
     fTriggerDistEff(0x0),
+    fTriggerDistEff_highestPt(0x0),
     fAssociatedHDist(0x0),
     fLambdaDist(0x0),
     fTriggeredLambdaDist(0x0),
@@ -113,6 +118,7 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     fDphiHLambda(0x0),
     fDphiHLambdaFilterbit(0x0),
     fDphiHLambdaEff(0x0),
+    fDphiHLambdaEff_highestPt(0x0),
     fDphiHLambdaV0(0x0),
     fDphiHLambdaRotated(0x0),
     fDphiHLambdaRotatedPi(0x0),
@@ -123,7 +129,9 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     fDphiTriggerTrigger(0x0),
     fDphiHLambdaLS(0x0),
     fDphiHLambdaMixed(0x0),
+    fDphiHLambdaMixed_highestPt(0x0),
     fDphiHHMixed(0x0),
+    fDphiHHMixed_highestPt(0x0),
     fDphiHLambdaLSMixed(0x0),
     fDphiTriggerTriggerMixed(0x0),
     fLambdaDaughterDCA(0x0),
@@ -192,6 +200,10 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     fTriggerDistEff = new THnSparseF("fTriggerDistEff", "Efficiency Corrected Trigger Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
     fTriggerDistEff->Sumw2();
     fOutputList->Add(fTriggerDistEff);
+
+    fTriggerDistEff_highestPt = new THnSparseF("fTriggerDistEff_highestPt", "Efficiency Corrected Highest p_{t} Trigger Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
+    fTriggerDistEff_highestPt->Sumw2();
+    fOutputList->Add(fTriggerDistEff_highestPt);
 
     fAssociatedHDist = new THnSparseF("fAssociatedHDist", "Associated Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
     fAssociatedHDist->Sumw2();
