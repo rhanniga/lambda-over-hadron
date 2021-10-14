@@ -50,6 +50,7 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     fAOD(0x0),
     fOutputList(0x0),
     fCorPoolMgr(0x0),
+    fCorPoolMgr_highestPt(0x0),
     fTriggerEff(0x0),
     fAssociatedEff(0x0),
     fLambdaEff(0x0),
@@ -102,6 +103,7 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     fAOD(0x0),
     fOutputList(0x0),
     fCorPoolMgr(0x0),
+    fCorPoolMgr_highestPt(0x0),
     fTriggerEff(0x0),
     fAssociatedEff(0x0),
     fLambdaEff(0x0),
@@ -176,6 +178,9 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
 
     fCorPoolMgr = new AliEventPoolManager(poolSize, trackDepth, numMultBins, multBins, numzVtxBins, zVtxBins);
     fCorPoolMgr->SetTargetValues(trackDepth, 0.1, 5);
+
+    fCorPoolMgr_highestPt = new AliEventPoolManager(poolSize, trackDepth, numMultBins, multBins, numzVtxBins, zVtxBins);
+    fCorPoolMgr_highestPt->SetTargetValues(trackDepth, 0.1, 5);
 
     fTriggersAndLambdasPerEvent_All = new TH2D("fTriggersAndLambdasPerEvent_All", "Triggers and Lambdas per event (all p_{T})", 10, 0, 10, 10, 0, 10);
     fOutputList->Add(fTriggersAndLambdasPerEvent_All);
@@ -275,6 +280,10 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     fDphiHLambdaMixed->Sumw2();
     fOutputList->Add(fDphiHLambdaMixed);
 
+    fDphiHLambdaMixed_highestPt = new THnSparseF("fDphiHLambdaMixed_highestPt", "Mixed Hadron-Lambda Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambdaMixed_highestPt->Sumw2();
+    fOutputList->Add(fDphiHLambdaMixed_highestPt);
+
     fDphiHLambdaLSMixed = new THnSparseF("fDphiHLambdaLSMixed", "Mixed Hadron-Lambda LS Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambdaLSMixed->Sumw2();
     fOutputList->Add(fDphiHLambdaLSMixed);
@@ -304,6 +313,10 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     fDphiHHMixed = new THnSparseF("fDphiHHMixed", "Mixed Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fDphiHHMixed->Sumw2();
     fOutputList->Add(fDphiHHMixed);
+
+    fDphiHHMixed_highestPt = new THnSparseF("fDphiHHMixed_highestPt", "Mixed Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHHMixed_highestPt->Sumw2();
+    fOutputList->Add(fDphiHHMixed_highestPt);
 
     fDphiTriggerTriggerMixed = new THnSparseF("fDphiTriggerTriggerMixed", "MixedTrigger-Trigger Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fDphiTriggerTriggerMixed->Sumw2();
@@ -800,6 +813,9 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     TObjArray* fMixedTrackObjArray = new TObjArray;
     fMixedTrackObjArray->SetOwner(kTRUE);
 
+    TObjArray* fMixedTrackObjArray_highestPt = new TObjArray;
+    fMixedTrackObjArray_highestPt->SetOwner(kTRUE);
+
     // Bool to keep track if the event has a high-pt (> 4 GeV) trigger
     bool is_triggered_event = false;
 
@@ -925,7 +941,12 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
         }
     }
 
-    if(maxTrigger) trigger_list_highestPt.push_back(maxTrigger); 
+    if(maxTrigger){
+        trigger_list_highestPt.push_back(maxTrigger); 
+        AliCFParticle *triggerPart_highestPt = new AliCFParticle(maxTrigger->Pt(), maxTrigger->Eta(), maxTrigger->Phi(), maxTrigger->Charge(), 0);
+        fMixedTrackObjArray_highestPt->Add(triggerPart_highestPt);
+    }
+
 
     //Making list of possible lambdas (have to do +/- for proton or pi):
 
@@ -1149,11 +1170,10 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
 
     if(lambda_list.size() > 0 && associated_h_list.size() > 0) {
         AliEventPool *fCorPool = fCorPoolMgr->GetEventPool(multPercentile, primZ);
+        AliEventPool *fCorPool_highestPt = fCorPoolMgr_highestPt->GetEventPool(multPercentile, primZ);
         if(!fCorPool) {
             AliFatal(Form("No pool found for multiplicity = %f, zVtx = %f", multPercentile, primZ));
         }
-
-
         else {
             if(fCorPool->IsReady()) {
                 MakeMixedHLambdaCorrelations(fCorPool, lambda_list, fDphiHLambdaMixed, primZ);
@@ -1161,8 +1181,15 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
                 MakeMixedHHCorrelations(fCorPool, associated_h_list, fDphiHHMixed, primZ);
                 MakeMixedHHCorrelations(fCorPool, trigger_list, fDphiTriggerTriggerMixed, primZ);
             }
+            if(fCorPool_highestPt->IsReady()) {
+                MakeMixedHLambdaCorrelations(fCorPool_highestPt, lambda_list, fDphiHLambdaMixed_highestPt, primZ);
+                MakeMixedHHCorrelations(fCorPool_highestPt, associated_h_list, fDphiHHMixed_highestPt, primZ);
+            }
             if(fMixedTrackObjArray->GetEntries() > 0) {
                 fCorPool->UpdatePool(fMixedTrackObjArray);
+            }
+            if(fMixedTrackObjArray_highestPt->GetEntries() > 0) {
+                fCorPool_highestPt->UpdatePool(fMixedTrackObjArray_highestPt);
             }
         }
     }

@@ -65,6 +65,7 @@ private:
   TList* fOutputList; //!>! output list
 
   AliEventPoolManager *fCorPoolMgr; //!>! correlation pool manager
+  AliEventPoolManager *fCorPoolMgr_highestPt; //!>! correlation pool manager for highest pt trigger
   
   TH1D* fTriggerEff; ///> trigger efficiency
   TH1D* fAssociatedEff; ///> associated efficiency
