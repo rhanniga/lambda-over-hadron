@@ -947,7 +947,6 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
         fMixedTrackObjArray_highestPt->Add(triggerPart_highestPt);
     }
 
-
     //Making list of possible lambdas (have to do +/- for proton or pi):
 
     std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list;
@@ -960,6 +959,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_RotatedPi;
     std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_Flipped;
     std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_LS;
+
 
     for(int i = 0; i < (int)piMinus_list.size(); i++) {
         for(int j = 0; j < (int) proton_list.size(); j++) {
@@ -1100,7 +1100,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     // Filling all of our single particle distribution histograms:
     FillSingleParticleDist(trigger_list, primZ, fTriggerDist);
     FillSingleParticleDist(trigger_list, primZ, fTriggerDistEff, true);
-    FillSingleParticleDist(trigger_list_highestPt, primZ, fTriggerDist, true);
+    FillSingleParticleDist(trigger_list_highestPt, primZ, fTriggerDistEff_highestPt, true);
     FillSingleParticleDist(associated_h_list, primZ, fAssociatedHDist);
     FillSingleParticleDist(all_hadron_list, primZ, fLooseDist);
 
@@ -1112,7 +1112,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     fMultDistMinBias->Fill(NCharged);
 
     // Filling all of our correlation histograms (only if we have lambda candidate)
-    if(trigger_list.size() && lambda_list_signal_region_2_4.size() && associated_h_list.size()) {
+    if(trigger_list.size() && lambda_list.size() && associated_h_list.size()) {
         MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambda, primZ, false);
         MakeSameHLambdaCorrelations(trigger_list, lambda_list_filterbit_daughters, fDphiHLambdaFilterbit, primZ, false);
         MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambdaEff, primZ, true);
