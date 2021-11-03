@@ -1112,7 +1112,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     fMultDistMinBias->Fill(NCharged);
 
     // Filling all of our correlation histograms (only if we have lambda candidate)
-    if(trigger_list.size() && lambda_list.size() && associated_h_list.size()) {
+    if(trigger_list.size() && lambda_list_signal_region_2_4.size() && associated_h_list.size()) {
         MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambda, primZ, false);
         MakeSameHLambdaCorrelations(trigger_list, lambda_list_filterbit_daughters, fDphiHLambdaFilterbit, primZ, false);
         MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambdaEff, primZ, true);
