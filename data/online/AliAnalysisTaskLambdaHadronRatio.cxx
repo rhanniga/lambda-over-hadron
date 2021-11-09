@@ -188,7 +188,6 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     fTriggersAndLambdasPerEvent_2_4 = new TH2D("fTriggersAndLambdasPerEvent_2_4", "Triggers and Lambdas per event (2-4 p_{T})", 10, 0, 10, 10, 0, 10);
     fOutputList->Add(fTriggersAndLambdasPerEvent_2_4);
 
-
     //Distribution axes are: Pt, Phi, Eta, zVtx
     int dist_bins[4] = {200, 16, 20, 10};
     double dist_mins[4] = {0.0, 0, -1, -10};
@@ -287,12 +286,13 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     fDphiHLambdaLSMixed = new THnSparseF("fDphiHLambdaLSMixed", "Mixed Hadron-Lambda LS Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambdaLSMixed->Sumw2();
     fOutputList->Add(fDphiHLambdaLSMixed);
+    
 
 
     //Correlation axes are: Trigger Pt, Associated Pt, dPhi, dEta, Zvtx
-    int hh_cor_bins[5] = {20, 20, 16, 20, 10};
-    double hh_cor_mins[5] = {2, 2, -1.0*TMath::Pi()/2.0, -2.0, -10};
-    double hh_cor_maxes[5] = {12, 12, 3.0*TMath::Pi()/2.0, 2.0, 10};
+    int hh_cor_bins[5] = {16, 10, 16, 20, 10};
+    double hh_cor_mins[5] = {4, 1, -1.0*TMath::Pi()/2.0, -2.0, -10};
+    double hh_cor_maxes[5] = {12, 6, 3.0*TMath::Pi()/2.0, 2.0, 10};
 
     fDphiHH = new THnSparseF("fDphiHH", "Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fDphiHH->Sumw2();
@@ -357,7 +357,6 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
 
     PostData(1, fOutputList);
 }
-
 
 void AliAnalysisTaskLambdaHadronRatio::FillSingleParticleDist(std::vector<AliAODTrack*> particle_list, double zVtx, THnSparse* fDist, bool trig_eff)
 {
@@ -1111,25 +1110,22 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
 
     fMultDistMinBias->Fill(NCharged);
 
-    // Filling all of our correlation histograms (only if we have lambda candidate)
-    if(trigger_list.size() && lambda_list_signal_region_2_4.size() && associated_h_list.size()) {
-        MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambda, primZ, false);
-        MakeSameHLambdaCorrelations(trigger_list, lambda_list_filterbit_daughters, fDphiHLambdaFilterbit, primZ, false);
-        MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambdaEff, primZ, true);
-        MakeSameHLambdaCorrelations(trigger_list, lambda_list_v0, fDphiHLambdaV0, primZ);
-        MakeSameHLambdaCorrelations(trigger_list, lambda_list_RotatedPi, fDphiHLambdaRotatedPi, primZ);
-        MakeSameHLambdaCorrelations(trigger_list, lambda_list_Flipped, fDphiHLambdaFlipped, primZ);
-        MakeSameHLambdaCorrelations(trigger_list, lambda_list_RotatedPion, fDphiHLambdaRotated, primZ);
-        MakeSameHLambdaCorrelations(trigger_list, lambda_list_RotatedProton, fDphiHLambdaRotatedProton, primZ);
-        MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHH, primZ, false);
-        MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHHEff, primZ, true);
-        MakeSameTriggerTriggerCorrelations(trigger_list, fDphiTriggerTrigger, primZ);
-        MakeSameHLambdaCorrelations(trigger_list, lambda_list_LS, fDphiHLambdaLS, primZ);
-        // Highest pt trigger correlations
-        MakeSameHLambdaCorrelations(trigger_list_highestPt, lambda_list, fDphiHLambdaEff_highestPt, primZ, true);
-        MakeSameHHCorrelations(trigger_list_highestPt, associated_h_list, fDphiHHEff_highestPt, primZ, true);
-        fMultDistHLambdaEvent->Fill(NCharged);
-    }
+    MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambda, primZ, false);
+    MakeSameHLambdaCorrelations(trigger_list, lambda_list_filterbit_daughters, fDphiHLambdaFilterbit, primZ, false);
+    MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambdaEff, primZ, true);
+    MakeSameHLambdaCorrelations(trigger_list, lambda_list_v0, fDphiHLambdaV0, primZ);
+    MakeSameHLambdaCorrelations(trigger_list, lambda_list_RotatedPi, fDphiHLambdaRotatedPi, primZ);
+    MakeSameHLambdaCorrelations(trigger_list, lambda_list_Flipped, fDphiHLambdaFlipped, primZ);
+    MakeSameHLambdaCorrelations(trigger_list, lambda_list_RotatedPion, fDphiHLambdaRotated, primZ);
+    MakeSameHLambdaCorrelations(trigger_list, lambda_list_RotatedProton, fDphiHLambdaRotatedProton, primZ);
+    MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHH, primZ, false);
+    MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHHEff, primZ, true);
+    MakeSameTriggerTriggerCorrelations(trigger_list, fDphiTriggerTrigger, primZ);
+    MakeSameHLambdaCorrelations(trigger_list, lambda_list_LS, fDphiHLambdaLS, primZ);
+    // Highest pt trigger correlations
+    MakeSameHLambdaCorrelations(trigger_list_highestPt, lambda_list, fDphiHLambdaEff_highestPt, primZ, true);
+    MakeSameHHCorrelations(trigger_list_highestPt, associated_h_list, fDphiHHEff_highestPt, primZ, true);
+    fMultDistHLambdaEvent->Fill(NCharged);
 
     fTriggersAndLambdasPerEvent_All->Fill(trigger_list.size(), lambda_list_signal_region.size());
     fTriggersAndLambdasPerEvent_2_4->Fill(trigger_list.size(), lambda_list_signal_region_2_4.size());
