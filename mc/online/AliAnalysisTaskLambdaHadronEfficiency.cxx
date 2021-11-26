@@ -1067,11 +1067,8 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
             if(pdgcode == 3122) {
                 fRealLambdaDist->Fill(distPoint); 
             }
-            else if(pdgcode == -3122) {
+            else {
                 fRealAntiLambdaDist->Fill(distPoint);
-            }
-            else{
-                std::cout << "OH FUCK OH SHIT OH NO, THIS ISN'T A LAMBDA, THE PDG CODE IS INCORRECT: " << pdgcode << std::endl;
             }
         } 
     }
