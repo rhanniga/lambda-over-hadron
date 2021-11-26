@@ -11,7 +11,7 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   //  int startIndex = 15;
   //  int endIndex = 28;
    char* work_dir = "lambda_hadron_efficiency";
-   char* output_dir = "fix_trigger_eff";
+   char* output_dir = "test_offline_v0";
 
    bool gridTest = false;
    int numTestFiles = 2;

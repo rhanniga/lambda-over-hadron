@@ -594,13 +594,13 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
     int numRealLambdas = 0;
     int numRecoLambdas = 0;
 
-    std::vector<std::vector<int>> trackIDsV0;
-
     // quick test loop over V0's to determine filter mask range for daughter tracks
     int numV0s = fAOD->GetNumberOfV0s();
     for(int iv0 = 0; iv0 < numV0s; iv0++) {
+
         AliAODv0 *vZero = fAOD->GetV0(iv0);
         if(!vZero) continue;
+        if(vZero->GetOnFlyStatus()) continue;
 
         AliAODTrack *ptrack=(AliAODTrack *)vZero->GetDaughter(0);
         AliAODTrack *ntrack=(AliAODTrack *)vZero->GetDaughter(1);
@@ -630,6 +630,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(posmomlabel);
 
         if(!(TMath::Abs(mcmother->GetPdgCode()) == 3122)) continue;
+        if(!mcmother->IsPhysicalPrimary()) continue;
 
 
         double distPoint[6];
@@ -657,27 +658,8 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         distPoint[3] = Zvertex;
         distPoint[4] = recoM;
         distPoint[5] = multPercentile;
-        
-        int posTrackID = ptrack->GetID();
-        int negTrackID = ntrack->GetID();
 
-        bool alreadyFilled = false;
-        for(int i = 0; i < trackIDsV0.size(); i++) {
-            if(posTrackID == trackIDsV0[i][0] && negTrackID == trackIDsV0[i][1]) alreadyFilled = true;
-        }
 
-        if(alreadyFilled) {
-            std::cout << "There are duplicate V0s (whose daughters have exactly the same IDs: " << std::endl;
-            std::cout << "\tPositive track ID: " << posTrackID << "; Negative track ID: " << negTrackID << std::endl;
-            continue;
-        }
-        else {
-            std::vector<int> v0tracks;
-            v0tracks.push_back(posTrackID);
-            v0tracks.push_back(negTrackID);
-            trackIDsV0.push_back(v0tracks);
-        }
-        
 
         fRecoTotalV0LambdaDist->Fill(distPoint);
 
@@ -1064,7 +1046,9 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
         if(((TMath::Abs(firstDaughter->GetPdgCode()) == 211 && TMath::Abs(secondDaughter->GetPdgCode()) == 2212) ||
             (TMath::Abs(firstDaughter->GetPdgCode()) == 2212 && TMath::Abs(secondDaughter->GetPdgCode()) == 211)) && (firstDaughter->GetPdgCode())*(secondDaughter->GetPdgCode()) < 0){
-
+            
+            // check if mother is primary
+            if(!AODMCtrack->IsPhysicalPrimary()) continue;
 
             numRealLambdas += 1;
             distPoint[0] = AODMCtrack->Pt();

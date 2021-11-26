@@ -724,6 +724,9 @@ void AliAnalysisTaskLambdaHadronRatio::MakeMixedHHCorrelations(AliEventPool* fPo
 }
 
 bool AliAnalysisTaskLambdaHadronRatio::PassDaughterCuts(AliAODTrack *track){
+
+    if(track->GetID() < 0) return false;
+
     Bool_t pass = kTRUE;
 
     pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
