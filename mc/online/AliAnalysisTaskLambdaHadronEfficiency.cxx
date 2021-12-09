@@ -104,7 +104,15 @@ AliAnalysisTaskLambdaHadronEfficiency::AliAnalysisTaskLambdaHadronEfficiency(con
     fPxDifferenceFB(0x0),
     fPyDifference(0x0),
     fPzDifference(0x0),
-    fPtDifference(0x0)
+    fPtDifference(0x0),
+    fRealPrimaryLambdaPtDist(0x0),
+    fRealSecondaryLambdaPtDist(0x0),
+    fInvMassAntiLambdaReal(0x0),
+    fInvMassLambdaReal(0x0),
+    fInvMassLambdaResonance(0x0),
+    fInvMassAntiLambdaResonance(0x0),
+    fInvMassLambdaV0(0x0),
+    fInvMassAntiLambdaV0(0x0)
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -179,7 +187,16 @@ AliAnalysisTaskLambdaHadronEfficiency::AliAnalysisTaskLambdaHadronEfficiency()
     fPxDifferenceFB(0x0),
     fPyDifference(0x0),
     fPzDifference(0x0),
-    fPtDifference(0x0)
+    fPtDifference(0x0),
+    fRealPrimaryLambdaPtDist(0x0),
+    fRealSecondaryLambdaPtDist(0x0),
+    fInvMassAntiLambdaReal(0x0),
+    fInvMassLambdaReal(0x0),
+    fInvMassLambdaResonance(0x0),
+    fInvMassAntiLambdaResonance(0x0),
+    fInvMassLambdaV0(0x0),
+    fInvMassAntiLambdaV0(0x0)
+
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -409,6 +426,38 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     fPtDifference = new TH1D("fPtDifference", "Real p_t - reco p_t", 1000, -1, 1);
     fOutputList->Add(fPtDifference);
 
+
+    // Invariant mass comparison between resonance and V0
+    fInvMassLambdaResonance = new TH1D("fInvMassLambdaResonance", "Invariant Mass of #Lambda Resonance", 1000, 1.06, 1.16);
+    fOutputList->Add(fInvMassLambdaResonance);
+
+    fInvMassAntiLambdaResonance = new TH1D("fInvMassAntiLambdaResonance", "Invariant Mass of #bar{#Lambda} Resonance", 1000, 1.06, 1.16);
+    fOutputList->Add(fInvMassAntiLambdaResonance);
+
+    fInvMassLambdaV0 = new TH1D("fInvMassLambdaV0", "Invariant Mass of #Lambda V0", 1000, 1.06, 1.16);
+    fOutputList->Add(fInvMassLambdaV0);
+
+    fInvMassAntiLambdaV0 = new TH1D("fInvMassAntiLambdaV0", "Invariant Mass of #bar{#Lambda} V0", 1000, 1.06, 1.16);
+    fOutputList->Add(fInvMassAntiLambdaV0);
+
+    fInvMassLambdaDifference = new TH1D("fInvMassLambdaDifference", "Invariant MassLambda Difference", 1000, -0.2, 0.2);
+    fOutputList->Add(fInvMassLambdaDifference);
+
+    fInvMassAntiLambdaDifference = new TH1D("fInvMassAntiLambdaDifference", "Invariant MassAntiLambda Difference", 1000, -0.2, 0.2);
+    fOutputList->Add(fInvMassAntiLambdaDifference);
+
+    fInvMassLambdaReal = new TH1D("fInvMassLambdaReal", "Invariant Mass of Real #Lambda", 1000, 1.06, 1.16);
+    fOutputList->Add(fInvMassLambdaReal);
+
+    fInvMassAntiLambdaReal = new TH1D("fInvMassAntiLambdaReal", "Invariant Mass of Real #bar{#Lambda}", 1000, 1.06, 1.16);
+    fOutputList->Add(fInvMassAntiLambdaReal);
+
+    fRealPrimaryLambdaPtDist = new TH1D("fRealPrimaryLambdaPtDist", "Real Primary #Lambda p_{T} Distribution", 100, 0, 10);
+    fOutputList->Add(fRealPrimaryLambdaPtDist);
+
+    fRealSecondaryLambdaPtDist = new TH1D("fRealSecondaryLambdaPtDist", "Real Secondary #Lambda p_{T} Distribution", 100, 0, 10);
+    fOutputList->Add(fRealSecondaryLambdaPtDist);
+
     PostData(1,fOutputList);
 
 }
@@ -424,6 +473,7 @@ unsigned int AliAnalysisTaskLambdaHadronEfficiency::PassDaughterCuts(AliAODTrack
     if(TMath::Abs(track->Eta()) <= DAUGHTER_ETA_CUT) passLevel |= ETA_BIT;
 
     // Bit set if track passes pt cut
+
     if(track->Pt() >= DAUGHTER_MIN_PT) passLevel |= PT_BIT;
 
     // Bit set if track has TPC refit flag enabled
@@ -629,8 +679,10 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
         AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(posmomlabel);
 
-        if(!(TMath::Abs(mcmother->GetPdgCode()) == 3122)) continue;
-        if(!mcmother->IsPhysicalPrimary()) continue;
+        int motherPDG = mcmother->GetPdgCode();
+
+        if(!(TMath::Abs(motherPDG) == 3122)) continue;
+        // if(!mcmother->IsPhysicalPrimary()) continue;
 
 
         double distPoint[6];
@@ -639,7 +691,15 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         double recoPz = ntrack->Pz() + ptrack->Pz();
         
         double recoP = TMath::Sqrt(recoPx*recoPx + recoPy*recoPy + recoPz*recoPz);
-        double recoE = TMath::Sqrt(ntrack->Px()*ntrack->Px() + ntrack->Py()*ntrack->Py() + ntrack->Pz()*ntrack->Pz() + 0.13957*0.13957) + TMath::Sqrt(ptrack->Px()*ptrack->Px() + ptrack->Py()*ptrack->Py() + ptrack->Pz()*ptrack->Pz() + 0.9383*0.9383);
+        double recoE;
+
+        if(motherPDG < 0) {
+            recoE = TMath::Sqrt(ptrack->Px()*ptrack->Px() + ptrack->Py()*ptrack->Py() + ptrack->Pz()*ptrack->Pz() + 0.13957*0.13957) + TMath::Sqrt(ntrack->Px()*ntrack->Px() + ntrack->Py()*ntrack->Py() + ntrack->Pz()*ntrack->Pz() + 0.9383*0.9383);
+        }
+        else {
+            recoE = TMath::Sqrt(ntrack->Px()*ntrack->Px() + ntrack->Py()*ntrack->Py() + ntrack->Pz()*ntrack->Pz() + 0.13957*0.13957) + TMath::Sqrt(ptrack->Px()*ptrack->Px() + ptrack->Py()*ptrack->Py() + ptrack->Pz()*ptrack->Pz() + 0.9383*0.9383);
+        }
+
         double recoM = TMath::Sqrt(recoE*recoE - recoP*recoP);
         double recoPt = TMath::Sqrt(recoPx*recoPx + recoPy*recoPy);
         double recoEta = 0.5*TMath::Log((recoP + recoPz)/(recoP -  recoPz));
@@ -684,7 +744,26 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
         if(((negPassCuts & maskEtaPtRefitRowsRatio) == maskEtaPtRefitRowsRatio) && ((posPassCuts & maskEtaPtRefitRowsRatio)== maskEtaPtRefitRowsRatio)){
             fRecoEtaPtRefitRowsRatioV0LambdaDist->Fill(distPoint);
+            if (motherPDG < 0) {
+                double massAntiLambdaReal = mcmother->M();
+                double massAntiLambdaV0 = vZero->MassAntiLambda();
+                double massAntiLambdaResonance = recoM;
+                fInvMassLambdaDifference->Fill(massAntiLambdaV0 - massAntiLambdaResonance);
+                fInvMassAntiLambdaResonance->Fill(massAntiLambdaResonance);
+                fInvMassAntiLambdaV0->Fill(massAntiLambdaV0);
+                fInvMassAntiLambdaReal->Fill(massAntiLambdaReal);
+            }
+            else {
+                double massLambdaReal = mcmother->M();
+                double massLambdaV0 = vZero->MassLambda();
+                double massLambdaResonance = recoM;
+                fInvMassLambdaDifference->Fill(massLambdaV0 - massLambdaResonance);
+                fInvMassLambdaResonance->Fill(massLambdaResonance);
+                fInvMassLambdaV0->Fill(massLambdaV0);
+                fInvMassLambdaReal->Fill(massLambdaReal);
+            }
         }
+
 
     }
     
@@ -874,7 +953,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         }
     }
 
-    //second loop over tracks to get antiprotons minuses, find lambda daughters and fill Reco Dist
+    //second loop over tracks to get antiprotons, find lambda daughters and fill Reco Dist
     for(int itrack = 0; itrack < ntracks; itrack++){
         AliVParticle *vnegpart = dynamic_cast<AliVParticle*>(fVevent->GetTrack(itrack));
         AliVTrack *negtrack = dynamic_cast<AliVTrack*>(vnegpart);
@@ -1048,7 +1127,12 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
             (TMath::Abs(firstDaughter->GetPdgCode()) == 2212 && TMath::Abs(secondDaughter->GetPdgCode()) == 211)) && (firstDaughter->GetPdgCode())*(secondDaughter->GetPdgCode()) < 0){
             
             // check if mother is primary
-            if(!AODMCtrack->IsPhysicalPrimary()) continue;
+            if(AODMCtrack->IsPhysicalPrimary()) {
+                fRealPrimaryLambdaPtDist->Fill(AODMCtrack->Pt());
+            }
+            else {
+                fRealSecondaryLambdaPtDist->Fill(AODMCtrack->Pt());
+            }
 
             numRealLambdas += 1;
             distPoint[0] = AODMCtrack->Pt();

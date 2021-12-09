@@ -168,6 +168,19 @@ private:
     TH1D        *fPzDifference;//! distribution of difference between real pz and track pz
     TH1D        *fPtDifference;//! distribution of difference between real pt (calculated from mc p) and track pt
 
+    // Invariant mass comparison histograms
+
+    TH1D       *fInvMassLambdaResonance; //!
+    TH1D       *fInvMassAntiLambdaResonance; //!
+    TH1D       *fInvMassLambdaV0; //!
+    TH1D       *fInvMassAntiLambdaV0; //!
+    TH1D       *fInvMassLambdaDifference; //!
+    TH1D       *fInvMassAntiLambdaDifference; //!
+    TH1D       *fInvMassLambdaReal; //!
+    TH1D       *fInvMassAntiLambdaReal; //!
+
+    TH1D       *fRealPrimaryLambdaPtDist; //!
+    TH1D       *fRealSecondaryLambdaPtDist; //!
 
     ClassDef(AliAnalysisTaskLambdaHadronEfficiency, 1); 
 };
