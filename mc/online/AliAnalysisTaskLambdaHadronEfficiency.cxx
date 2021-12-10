@@ -748,7 +748,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 double massAntiLambdaReal = mcmother->M();
                 double massAntiLambdaV0 = vZero->MassAntiLambda();
                 double massAntiLambdaResonance = recoM;
-                fInvMassLambdaDifference->Fill(massAntiLambdaV0 - massAntiLambdaResonance);
+                fInvMassAntiLambdaDifference->Fill(massAntiLambdaV0 - massAntiLambdaResonance);
                 fInvMassAntiLambdaResonance->Fill(massAntiLambdaResonance);
                 fInvMassAntiLambdaV0->Fill(massAntiLambdaV0);
                 fInvMassAntiLambdaReal->Fill(massAntiLambdaReal);
