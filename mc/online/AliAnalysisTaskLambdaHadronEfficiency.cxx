@@ -682,7 +682,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         int motherPDG = mcmother->GetPdgCode();
 
         if(!(TMath::Abs(motherPDG) == 3122)) continue;
-        // if(!mcmother->IsPhysicalPrimary()) continue;
+        if(!mcmother->IsPhysicalPrimary()) continue;
 
 
         double distPoint[6];
@@ -712,11 +712,16 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
             recoPhi -= 2.0*TMath::Pi();
         }
 
-        distPoint[0] = recoPt;
-        distPoint[1] = recoPhi;
-        distPoint[2] = recoEta;
+        distPoint[0] = vZero->Pt();
+        distPoint[1] = vZero->Phi();
+        distPoint[2] = vZero->Eta();
         distPoint[3] = Zvertex;
-        distPoint[4] = recoM;
+        if(motherPDG < 0) {
+            distPoint[4] = vZero->MassAntiLambda();
+        }
+        else {
+            distPoint[4] = vZero->MassLambda();
+        }
         distPoint[5] = multPercentile;
 
 
@@ -1133,6 +1138,8 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
             else {
                 fRealSecondaryLambdaPtDist->Fill(AODMCtrack->Pt());
             }
+
+            if(!AODMCtrack->IsPhysicalPrimary()) continue;
 
             numRealLambdas += 1;
             distPoint[0] = AODMCtrack->Pt();
