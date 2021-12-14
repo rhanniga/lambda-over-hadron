@@ -110,8 +110,11 @@ void plotEfficiency(){
 
     Float_t mult[4] = {0.0, 20.0, 50.0, 80.0};
     
-    TFile* infile = new TFile("../online/output/fix_trigger_eff.root");
+    TFile* infile = new TFile("~/v0_corr.root");
     TList* list = (TList*)infile->Get("h-lambda_eff");
+    
+    float SIG_MIN = 1.104;
+    float SIG_MAX = 1.128;
     
     //single track histos
     THnSparseF* realTrigger = (THnSparseF*)list->FindObject("fRealChargedDist");
@@ -260,21 +263,20 @@ void plotEfficiency(){
 
 
     // MASS AXIS  
-    realLambda->GetAxis(4)->SetRangeUser(1.11, 1.12);
+    realLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
+    recoLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
+    etaLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
+    etaPtLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
+    etaPtRefitLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
+    etaPtRefitRowsLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
+    etaPtRefitRowsRatioLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
 
-    recoLambda->GetAxis(4)->SetRangeUser(1.11, 1.12);
-    etaLambda->GetAxis(4)->SetRangeUser(1.11, 1.12);
-    etaPtLambda->GetAxis(4)->SetRangeUser(1.11, 1.12);
-    etaPtRefitLambda->GetAxis(4)->SetRangeUser(1.11, 1.12);
-    etaPtRefitRowsLambda->GetAxis(4)->SetRangeUser(1.11, 1.12);
-    etaPtRefitRowsRatioLambda->GetAxis(4)->SetRangeUser(1.11, 1.12);
-
-    recoLambdaV0->GetAxis(4)->SetRangeUser(1.11, 1.12);
-    etaLambdaV0->GetAxis(4)->SetRangeUser(1.11, 1.12);
-    etaPtLambdaV0->GetAxis(4)->SetRangeUser(1.11, 1.12);
-    etaPtRefitLambdaV0->GetAxis(4)->SetRangeUser(1.11, 1.12);
-    etaPtRefitRowsLambdaV0->GetAxis(4)->SetRangeUser(1.11, 1.12);
-    etaPtRefitRowsRatioLambdaV0->GetAxis(4)->SetRangeUser(1.11, 1.12);
+    recoLambdaV0->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
+    etaLambdaV0->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
+    etaPtLambdaV0->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
+    etaPtRefitLambdaV0->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
+    etaPtRefitRowsLambdaV0->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
+    etaPtRefitRowsRatioLambdaV0->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
 
 
     realLambda->Sumw2();
