@@ -685,32 +685,35 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         if(!mcmother->IsPhysicalPrimary()) continue;
 
 
-        double distPoint[6];
-        double recoPx = ntrack->Px() + ptrack->Px();
-        double recoPy = ntrack->Py() + ptrack->Py();
-        double recoPz = ntrack->Pz() + ptrack->Pz();
+        // THIS IS NOT BEING USED, NOW USE V0 METHODS TO CALCULATE KINEMATIC VARIABLES
+
+        /* double recoPx = ntrack->Px() + ptrack->Px(); */
+        /* double recoPy = ntrack->Py() + ptrack->Py(); */
+        /* double recoPz = ntrack->Pz() + ptrack->Pz(); */
         
-        double recoP = TMath::Sqrt(recoPx*recoPx + recoPy*recoPy + recoPz*recoPz);
-        double recoE;
+        /* double recoP = TMath::Sqrt(recoPx*recoPx + recoPy*recoPy + recoPz*recoPz); */
+        /* double recoE; */
 
-        if(motherPDG < 0) {
-            recoE = TMath::Sqrt(ptrack->Px()*ptrack->Px() + ptrack->Py()*ptrack->Py() + ptrack->Pz()*ptrack->Pz() + 0.13957*0.13957) + TMath::Sqrt(ntrack->Px()*ntrack->Px() + ntrack->Py()*ntrack->Py() + ntrack->Pz()*ntrack->Pz() + 0.9383*0.9383);
-        }
-        else {
-            recoE = TMath::Sqrt(ntrack->Px()*ntrack->Px() + ntrack->Py()*ntrack->Py() + ntrack->Pz()*ntrack->Pz() + 0.13957*0.13957) + TMath::Sqrt(ptrack->Px()*ptrack->Px() + ptrack->Py()*ptrack->Py() + ptrack->Pz()*ptrack->Pz() + 0.9383*0.9383);
-        }
+        /* if(motherPDG < 0) { */
+        /*     recoE = TMath::Sqrt(ptrack->Px()*ptrack->Px() + ptrack->Py()*ptrack->Py() + ptrack->Pz()*ptrack->Pz() + 0.13957*0.13957) + TMath::Sqrt(ntrack->Px()*ntrack->Px() + ntrack->Py()*ntrack->Py() + ntrack->Pz()*ntrack->Pz() + 0.9383*0.9383); */
+        /* } */
+        /* else { */
+        /*     recoE = TMath::Sqrt(ntrack->Px()*ntrack->Px() + ntrack->Py()*ntrack->Py() + ntrack->Pz()*ntrack->Pz() + 0.13957*0.13957) + TMath::Sqrt(ptrack->Px()*ptrack->Px() + ptrack->Py()*ptrack->Py() + ptrack->Pz()*ptrack->Pz() + 0.9383*0.9383); */
+        /* } */
 
-        double recoM = TMath::Sqrt(recoE*recoE - recoP*recoP);
-        double recoPt = TMath::Sqrt(recoPx*recoPx + recoPy*recoPy);
-        double recoEta = 0.5*TMath::Log((recoP + recoPz)/(recoP -  recoPz));
-        double recoY = 0.5*TMath::Log((recoE + recoPz)/(recoE - recoPz));
-        double recoPhi = TMath::ATan2(recoPy, recoPx);
+        /* double recoM = TMath::Sqrt(recoE*recoE - recoP*recoP); */
+        /* double recoPt = TMath::Sqrt(recoPx*recoPx + recoPy*recoPy); */
+        /* double recoEta = 0.5*TMath::Log((recoP + recoPz)/(recoP -  recoPz)); */
+        /* double recoY = 0.5*TMath::Log((recoE + recoPz)/(recoE - recoPz)); */
+        /* double recoPhi = TMath::ATan2(recoPy, recoPx); */
 
-        if(recoPhi < -TMath::Pi()){
-            recoPhi += 2.0*TMath::Pi();
-        }else if(recoPhi > TMath::Pi()){
-            recoPhi -= 2.0*TMath::Pi();
-        }
+        /* if(recoPhi < -TMath::Pi()){ */
+        /*     recoPhi += 2.0*TMath::Pi(); */
+        /* }else if(recoPhi > TMath::Pi()){ */
+        /*     recoPhi -= 2.0*TMath::Pi(); */
+        /* } */
+
+        double distPoint[6];
 
         distPoint[0] = vZero->Pt();
         distPoint[1] = vZero->Phi();
@@ -871,6 +874,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(motherIndex);
         motherPDG = mcmother->GetPdgCode();
         if(motherPDG != 3122) continue;
+        if(!mcmother->IsPhysicalPrimary()) continue;
 
         for(int jtrack = 0; jtrack < ntracks; jtrack++){
             AliVParticle *vpospart = dynamic_cast<AliVParticle*>(fVevent->GetTrack(jtrack));
@@ -980,6 +984,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(motherIndex);
         motherPDG = mcmother->GetPdgCode();
         if(motherPDG != -3122) continue;
+        if(!mcmother->IsPhysicalPrimary()) continue;
 
         for(int jtrack = 0; jtrack < ntracks; jtrack++){
             AliVParticle *vpospart = dynamic_cast<AliVParticle*>(fVevent->GetTrack(jtrack));
