@@ -70,7 +70,7 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     fMultHigh(0.0),
     fDaughterBit(0.0),
     fAssociatedBit(0.0),
-    fTriggerBit(0.0),
+    fTriggerBit(0.0)
 {
 }
 
@@ -99,7 +99,7 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     fMultHigh(0.0),
     fDaughterBit(0.0),
     fAssociatedBit(0.0),
-    fTriggerBit(0.0),
+    fTriggerBit(0.0)
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -133,12 +133,6 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
 
     fCorPoolMgr_highestPt = new AliEventPoolManager(poolSize, trackDepth, numMultBins, multBins, numzVtxBins, zVtxBins);
     fCorPoolMgr_highestPt->SetTargetValues(trackDepth, 0.1, 5);
-
-    fTriggersAndLambdasPerEvent_All = new TH2D("fTriggersAndLambdasPerEvent_All", "Triggers and Lambdas per event (all p_{T})", 10, 0, 10, 10, 0, 10);
-    fOutputList->Add(fTriggersAndLambdasPerEvent_All);
-
-    fTriggersAndLambdasPerEvent_2_4 = new TH2D("fTriggersAndLambdasPerEvent_2_4", "Triggers and Lambdas per event (2-4 p_{T})", 10, 0, 10, 10, 0, 10);
-    fOutputList->Add(fTriggersAndLambdasPerEvent_2_4);
 
     //Distribution axes are: Pt, Phi, Eta, zVtx
     int dist_bins[4] = {200, 16, 20, 10};
@@ -240,11 +234,11 @@ void AliAnalysisTaskLambdaHadronRatio::FillMotherDist(std::vector<AliAnalysisTas
 {
     double dist_points[5]; //Pt, Phi, Eta, M, event multiplicity
     for(int i = 0; i < (int)particle_list.size(); i++) {
-        auto particle = particle_list[i].particle;
-        dist_points[0] = particle.Pt();
-        dist_points[1] = particle.Phi();
-        dist_points[2] = particle.Eta();
-        dist_points[3] = particle.M();
+        auto particle = particle_list[i].vzero;
+        dist_points[0] = particle->Pt();
+        dist_points[1] = particle->Phi();
+        dist_points[2] = particle->Eta();
+        dist_points[3] = particle->M();
         dist_points[4] = multPercentile;
         fDist->Fill(dist_points);
     }
@@ -290,7 +284,7 @@ void AliAnalysisTaskLambdaHadronRatio::LoadEfficiencies(TString filePath) {
     }
 }
 
-void AliAnalysisTaskLambdaHadronRatio::MakeSameHLambdaCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx, bool eff)
+void AliAnalysisTaskLambdaHadronRatio::MakeSameHLambdaCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx, bool eff, bool isAntiLambda)
 {
     double dphi_point[6];
 
@@ -304,8 +298,8 @@ void AliAnalysisTaskLambdaHadronRatio::MakeSameHLambdaCorrelations(std::vector<A
             //Make sure trigger isn't one of the daughters of lambda
             if((trigger->GetID() == lambda.daughter1ID) || (trigger->GetID() == lambda.daughter2ID)) continue;
 
-            dphi_point[1] = lambda.particle.Pt();
-            dphi_point[2] = trigger->Phi() - lambda.particle.Phi();
+            dphi_point[1] = lambda.vzero->Pt();
+            dphi_point[2] = trigger->Phi() - lambda.vzero->Phi();
 
             if(dphi_point[2] < -TMath::Pi()/2.0) {
                 dphi_point[2] += 2.0*TMath::Pi();
@@ -314,19 +308,20 @@ void AliAnalysisTaskLambdaHadronRatio::MakeSameHLambdaCorrelations(std::vector<A
                 dphi_point[2] -= 2.0*TMath::Pi();
             }
 
-            dphi_point[3] = trigger->Eta() - lambda.particle.Eta();
-            dphi_point[4] = lambda.particle.M();
+            dphi_point[3] = trigger->Eta() - lambda.vzero->Eta();
+            if(isAntiLambda) dphi_point[4] = lambda.vzero->MassAntiLambda();
+            else dphi_point[4] = lambda.vzero->MassLambda();
             dphi_point[5] = zVtx;
 
             bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0.5) 
-                               && (lambda.particle.Pt() < 10 && lambda.particle.Pt() > 0.5));
+                               && (lambda.vzero->Pt() < 10 && lambda.vzero->Pt() > 0.5));
 
             if(eff && in_pt_range) {
 
                 int trigBin = fTriggerEff->FindBin(trigger->Pt());
                 double trigEff = fTriggerEff->GetBinContent(trigBin);
                 double triggerScale = 1.0/trigEff;
-                int lambdaBin = fLambdaEff->FindBin(lambda.particle.Pt());
+                int lambdaBin = fLambdaEff->FindBin(lambda.vzero->Pt());
                 double lambdaEff = fLambdaEff->GetBinContent(lambdaBin);
                 double lambdaScale = 1.0/lambdaEff;
                 double totalScale = triggerScale*lambdaScale;
@@ -339,6 +334,7 @@ void AliAnalysisTaskLambdaHadronRatio::MakeSameHLambdaCorrelations(std::vector<A
         }
     }
 }
+
 
 void AliAnalysisTaskLambdaHadronRatio::MakeSameHHCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAODTrack*> associated_h_list, THnSparse* fDphi, double zVtx, bool eff)
 {
@@ -390,7 +386,7 @@ void AliAnalysisTaskLambdaHadronRatio::MakeSameHHCorrelations(std::vector<AliAOD
     }
 }
 
-void AliAnalysisTaskLambdaHadronRatio::MakeMixedHLambdaCorrelations(AliEventPool* fPool, std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list , THnSparse* fDphi, double zVtx, bool eff)
+void AliAnalysisTaskLambdaHadronRatio::MakeMixedHLambdaCorrelations(AliEventPool* fPool, std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list , THnSparse* fDphi, double zVtx, bool eff, bool isAntiLambda)
 {
     double dphi_point[6];
     int numEvents = fPool->GetCurrentNEvents();
@@ -407,8 +403,8 @@ void AliAnalysisTaskLambdaHadronRatio::MakeMixedHLambdaCorrelations(AliEventPool
             for(int j = 0; j < (int)lambda_list.size(); j++) {
                 auto lambda = lambda_list[j];
 
-                dphi_point[1] = lambda.particle.Pt();
-                dphi_point[2] = trigger->Phi() - lambda.particle.Phi();
+                dphi_point[1] = lambda.vzero->Pt();
+                dphi_point[2] = trigger->Phi() - lambda.vzero->Phi();
 
                 if(dphi_point[2] < -TMath::Pi()/2.0) {
                     dphi_point[2] += 2.0*TMath::Pi();
@@ -417,16 +413,19 @@ void AliAnalysisTaskLambdaHadronRatio::MakeMixedHLambdaCorrelations(AliEventPool
                     dphi_point[2] -= 2.0*TMath::Pi();
                 }
 
-                dphi_point[3] = trigger->Eta() - lambda.particle.Eta();
-                dphi_point[4] = lambda.particle.M();
+                dphi_point[3] = trigger->Eta() - lambda.vzero->Eta();
+                
+                if(isAntiLambda) dphi_point[4] = lambda.vzero->MassAntiLambda();
+                else dphi_point[4] = lambda.vzero->MassLambda();
+
                 dphi_point[5] = zVtx;
                 bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0.5) 
-                                && (lambda.particle.Pt() < 10 && lambda.particle.Pt() > 0.5));
+                                && (lambda.vzero->Pt() < 10 && lambda.vzero->Pt() > 0.5));
                 if(eff && in_pt_range) {
                     int trigBin = fTriggerEff->FindBin(trigger->Pt());
                     double trigEff = fTriggerEff->GetBinContent(trigBin);
                     double triggerScale = 1.0/trigEff;
-                    int lambdaBin = fLambdaEff->FindBin(lambda.particle.Pt());
+                    int lambdaBin = fLambdaEff->FindBin(lambda.vzero->Pt());
                     double lambdaEff = fLambdaEff->GetBinContent(lambdaBin);
                     double lambdaScale = 1.0/lambdaEff;
                     double totalScale = triggerScale*lambdaScale;
@@ -587,8 +586,6 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(trackNum));
         if(!track) continue;
 
-        //List for comparison with cuts/filter bits
-
         //Filter for trigger particles
         if(PassTriggerCuts(track)) {
             trigger_list.push_back(track);
@@ -604,96 +601,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
         }
 
         if(PassAssociatedCuts(track)) {
-            // Keeping track of "primary" particles that fall within eta range for mult dist
-            NCharged++;
             associated_h_list.push_back(track);
-            if(track->Pt() < 4 && track->Pt() > 2) {
-                associated_h_list_2_4.push_back(track);
-            }
-
-        }
-
-        if(track->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA)) {
-
-            double filterbit_TPCNSigmaPion = 1000;
-            double filterbit_TOFNSigmaPion = 1000;
-
-            filterbit_TPCNSigmaPion = fpidResponse->NumberOfSigmasTPC(track, AliPID::kPion);
-            filterbit_TOFNSigmaPion = fpidResponse->NumberOfSigmasTOF(track, AliPID::kPion);
-
-            if(TMath::Abs(filterbit_TPCNSigmaPion) <= 3 && (TMath::Abs(filterbit_TOFNSigmaPion) <= 3 || filterbit_TOFNSigmaPion == 1000)) {
-
-                if(track->Charge() == 1){
-                    filterbit_piPlus_list.push_back(track);
-                }
-                else {
-                    filterbit_piMinus_list.push_back(track);
-                }
-            }
-
-            double filterbit_TPCNSigmaProton = 1000;
-            double filterbit_TOFNSigmaProton = 1000;
-
-
-            filterbit_TPCNSigmaProton = fpidResponse->NumberOfSigmasTPC(track, AliPID::kProton);
-            filterbit_TOFNSigmaProton = fpidResponse->NumberOfSigmasTOF(track, AliPID::kProton);
-
-            if(TMath::Abs(filterbit_TPCNSigmaProton) <= 2 && (TMath::Abs(filterbit_TOFNSigmaProton) <= 2 || filterbit_TOFNSigmaProton == 1000)) {
-
-                if(track->Charge() == 1){
-                    filterbit_proton_list.push_back(track);
-                }
-                else {
-                    filterbit_antiProton_list.push_back(track);
-                }
-            }
-        } 
-            
-        if(PassDaughterCuts(track)) {
-            double TPCNSigmaPion = 1000;
-            double TOFNSigmaPion = 1000;
-
-            TPCNSigmaPion = fpidResponse->NumberOfSigmasTPC(track, AliPID::kPion);
-            TOFNSigmaPion = fpidResponse->NumberOfSigmasTOF(track, AliPID::kPion);
-
-            double time = track->GetTOFsignal() - fpidResponse->GetTOFResponse().GetStartTime(track->P());
-            double length = track->GetIntegratedLength();
-            double v = length/time;
-            double c = 0.0288782;
-            double beta = v/c;
-
-            fTofTest->Fill(track->P(), beta);
-
-            if(TOFNSigmaPion != 1000 && track->Charge() != 1) unlikelyPion_list.push_back(track);
-
-            if(TMath::Abs(TPCNSigmaPion) <= 3 && (TMath::Abs(TOFNSigmaPion) <= 3 || TOFNSigmaPion == 1000)) {
-
-                if(track->Charge() == 1){
-                    piPlus_list.push_back(track);
-                }
-                else {
-                    piMinus_list.push_back(track);
-                }
-            }
-
-            double TPCNSigmaProton = 1000;
-            double TOFNSigmaProton = 1000;
-
-
-            TPCNSigmaProton = fpidResponse->NumberOfSigmasTPC(track, AliPID::kProton);
-            TOFNSigmaProton = fpidResponse->NumberOfSigmasTOF(track, AliPID::kProton);
-
-            if(TOFNSigmaProton != 1000 && track->Charge() == 1) unlikelyProton_list.push_back(track);
-
-            if(TMath::Abs(TPCNSigmaProton) <= 2 && (TMath::Abs(TOFNSigmaProton) <= 2 || TOFNSigmaProton == 1000)) {
-
-                if(track->Charge() == 1){
-                    proton_list.push_back(track);
-                }
-                else {
-                    antiProton_list.push_back(track);
-                }
-            }
         }
     }
 
@@ -705,121 +613,10 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
 
     //Making list of possible lambdas (have to do +/- for proton or pi):
 
+    std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> antilambda_list;
     std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list;
-    std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_filterbit_daughters;
-    std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_v0;
-    std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_signal_region;
-    std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_signal_region_2_4;
-    std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_RotatedPion;
-    std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_RotatedProton;
-    std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_RotatedPi;
-    std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_Flipped;
-    std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_LS;
-
-
-    for(int i = 0; i < (int)piMinus_list.size(); i++) {
-        for(int j = 0; j < (int) proton_list.size(); j++) {
-            AliMotherContainer lambda = DaughtersToMother(piMinus_list[i], proton_list[j], 0.1396, 0.9383);
-            auto pion = piMinus_list[i];
-            auto proton = proton_list[j];
-            
-            double pion_dz[2];
-            double pion_covar[3];
-
-            double proton_dz[2];
-            double proton_covar[3];
-
-            bool is_pionDCA = piMinus_list[i]->PropagateToDCA(prim, fAOD->GetMagneticField(), 20., pion_dz, pion_covar);
-            bool is_protonDCA = proton_list[j]->PropagateToDCA(prim, fAOD->GetMagneticField(), 20., proton_dz, proton_covar);
-
-            if(is_pionDCA && is_protonDCA) {
-                double fillArray[6] = {pion_dz[0], proton_dz[0], pion->Pt(), proton->Pt(), lambda.particle.Pt(), lambda.particle.M()};
-                fLambdaDaughterDCA->Fill(fillArray);
-            }
-
-            AliMotherContainer lambda_RotatedPi = RotatedDaughtersToMother(piMinus_list[i], proton_list[j], 0.1396, 0.9383, TMath::Pi());
-            AliMotherContainer lambda_Flipped = FlippedDaughtersToMother(piMinus_list[i], proton_list[j], 0.1396, 0.9383);
-            lambda_list.push_back(lambda);
-            lambda_list_RotatedPi.push_back(lambda_RotatedPi);
-            lambda_list_Flipped.push_back(lambda_Flipped);
-
-            AliMotherContainer lambda_Rotated;
-            AliMotherContainer lambda_RotatedProton;
-            for(int k = 1; k < 12; k++) {
-                lambda_Rotated = RotatedDaughtersToMother(piMinus_list[i], proton_list[j], 0.1396, 0.9383, (2*TMath::Pi()*k)/12);
-                lambda_RotatedProton = RotatedDaughtersToMother(proton_list[j], piMinus_list[i], 0.9383, 0.1396, (2*TMath::Pi()*k)/12);
-                lambda_list_RotatedPion.push_back(lambda_Rotated);
-                lambda_list_RotatedProton.push_back(lambda_RotatedProton);
-
-            }
-        }
-    }
-
-    for(int i = 0; i < (int)filterbit_piMinus_list.size(); i++) {
-        for(int j = 0; j < (int) filterbit_proton_list.size(); j++) {
-            AliMotherContainer filterbit_lambda = DaughtersToMother(filterbit_piMinus_list[i], filterbit_proton_list[j], 0.1396, 0.9383);
-            lambda_list_filterbit_daughters.push_back(filterbit_lambda);
-        }
-    }
-
-    for(int i = 0; i < (int)filterbit_piPlus_list.size(); i++) {
-        for(int j = 0; j < (int) filterbit_antiProton_list.size(); j++) {
-            AliMotherContainer filterbit_lambda = DaughtersToMother(filterbit_piPlus_list[i], filterbit_antiProton_list[j], 0.1396, 0.9383);
-            lambda_list_filterbit_daughters.push_back(filterbit_lambda);
-        }
-    }
-
-    for(int i = 0; i < (int)piPlus_list.size(); i++) {
-        for(int j = 0; j < (int) antiProton_list.size(); j++) {
-            AliMotherContainer lambda = DaughtersToMother(piPlus_list[i], antiProton_list[j], 0.1396, 0.9383);
-            AliMotherContainer lambda_RotatedPi = RotatedDaughtersToMother(piPlus_list[i], antiProton_list[j], 0.1396, 0.9383, TMath::Pi());
-            AliMotherContainer lambda_Flipped = FlippedDaughtersToMother(piPlus_list[i], antiProton_list[j], 0.1396, 0.9383);
-            lambda_list.push_back(lambda);
-            lambda_list_RotatedPi.push_back(lambda_RotatedPi);
-            lambda_list_Flipped.push_back(lambda_Flipped);
-
-            AliMotherContainer lambda_Rotated;
-            AliMotherContainer lambda_RotatedProton;
-            for(int k = 1; k < 12; k++) {
-                lambda_Rotated = RotatedDaughtersToMother(piPlus_list[i], antiProton_list[j], 0.1396, 0.9383, (2*TMath::Pi()*k)/12);
-                lambda_RotatedProton = RotatedDaughtersToMother(antiProton_list[j], piPlus_list[i], 0.9383, 0.1396, (2*TMath::Pi()*k)/12);
-                lambda_list_RotatedPion.push_back(lambda_Rotated);
-                lambda_list_RotatedProton.push_back(lambda_RotatedProton);
-
-            }
-
-        }
-    }
-
-    for(int i = 0; i < (int)piPlus_list.size(); i++) {
-        for(int j = 0; j < (int) proton_list.size(); j++) {
-            if(piPlus_list[i]->GetID() == proton_list[j]->GetID()) continue;
-            AliMotherContainer lambda = DaughtersToMother(piPlus_list[i], proton_list[j], 0.1396, 0.9383);
-            lambda_list_LS.push_back(lambda);
-        }
-    }
-
-    for(int i = 0; i < (int)piMinus_list.size(); i++) {
-        for(int j = 0; j < (int) antiProton_list.size(); j++) {
-            if(piMinus_list[i]->GetID() == antiProton_list[j]->GetID()) continue;
-            AliMotherContainer lambda = DaughtersToMother(piMinus_list[i], antiProton_list[j], 0.1396, 0.9383);
-            lambda_list_LS.push_back(lambda);
-        }
-    }
-
-
-    for(int i = 0; i < (int)lambda_list.size(); i++) {
-        if(lambda_list[i].particle.M() < 1.125 && lambda_list[i].particle.M() > 1.105) {
-            lambda_list_signal_region.push_back(lambda_list[i]);
-            if(lambda_list[i].particle.Pt() < 4 && lambda_list[i].particle.Pt() > 2) {
-                lambda_list_signal_region_2_4.push_back(lambda_list[i]);
-            }
-        }
-    }
-
 
     // V0 SECTION
-
     int numV0s = fAOD->GetNumberOfV0s();
     for(int i = 0; i < numV0s; i++) {
         AliAODv0 *v0 = fAOD->GetV0(i);
@@ -833,93 +630,68 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
         if(!(PassDaughterCuts(posTrack) && PassDaughterCuts(negTrack))) continue;
 
 
-        double TPCNSigmaProton = 1000;
-        double TOFNSigmaProton = 1000;
-        double TPCNSigmaPion = 1000;
-        double TOFNSigmaPion = 1000;
+        double pos_TPCNSigmaProton = 1000;
+        double pos_TOFNSigmaProton = 1000;
+        double neg_TPCNSigmaPion = 1000;
+        double neg_TOFNSigmaPion = 1000;
 
-        TPCNSigmaProton = fpidResponse->NumberOfSigmasTPC(posTrack, AliPID::kProton);
-        TOFNSigmaProton = fpidResponse->NumberOfSigmasTOF(posTrack, AliPID::kProton);
-        TPCNSigmaPion = fpidResponse->NumberOfSigmasTPC(negTrack, AliPID::kPion);
-        TOFNSigmaPion = fpidResponse->NumberOfSigmasTOF(negTrack, AliPID::kPion);
+        double neg_TPCNSigmaProton = 1000;
+        double neg_TOFNSigmaProton = 1000;
+        double pos_TPCNSigmaPion = 1000;
+        double pos_TOFNSigmaPion = 1000;
 
-        bool isNegTrackPion = TMath::Abs(TPCNSigmaPion) <= 3 && (TMath::Abs(TOFNSigmaPion) <= 3 || TOFNSigmaPion == 1000);
-        bool isPosTrackProton = TMath::Abs(TPCNSigmaProton) <= 2 && (TMath::Abs(TOFNSigmaProton) <= 2 || TOFNSigmaProton == 1000);
+        pos_TPCNSigmaProton = fpidResponse->NumberOfSigmasTPC(posTrack, AliPID::kProton);
+        pos_TOFNSigmaProton = fpidResponse->NumberOfSigmasTOF(posTrack, AliPID::kProton);
+        neg_TPCNSigmaPion = fpidResponse->NumberOfSigmasTPC(negTrack, AliPID::kPion);
+        neg_TOFNSigmaPion = fpidResponse->NumberOfSigmasTOF(negTrack, AliPID::kPion);
 
-        if(isNegTrackPion && isPosTrackProton) {
-            auto lambda = DaughtersToMother(negTrack, posTrack, 0.1396, 0.9383);
-            lambda_list_v0.push_back(lambda);
+        neg_TPCNSigmaProton = fpidResponse->NumberOfSigmasTPC(negTrack, AliPID::kProton);
+        neg_TOFNSigmaProton = fpidResponse->NumberOfSigmasTOF(negTrack, AliPID::kProton);
+        pos_TPCNSigmaPion = fpidResponse->NumberOfSigmasTPC(posTrack, AliPID::kPion);
+        pos_TOFNSigmaPion = fpidResponse->NumberOfSigmasTOF(posTrack, AliPID::kPion);
+
+        bool isNegTrackPion = TMath::Abs(neg_TPCNSigmaPion) <= 3 && (TMath::Abs(neg_TOFNSigmaPion) <= 3 || neg_TOFNSigmaPion == 1000);
+        bool isPosTrackProton = TMath::Abs(pos_TPCNSigmaProton) <= 2 && (TMath::Abs(pos_TOFNSigmaProton) <= 2 || pos_TOFNSigmaProton == 1000);
+
+        bool isPosTrackPion = TMath::Abs(pos_TPCNSigmaPion) <= 3 && (TMath::Abs(pos_TOFNSigmaPion) <= 3 || pos_TOFNSigmaPion == 1000);
+        bool isNegTrackProton = TMath::Abs(neg_TPCNSigmaProton) <= 2 && (TMath::Abs(neg_TOFNSigmaProton) <= 2 || neg_TOFNSigmaProton == 1000);
+
+        if((isNegTrackPion && isPosTrackProton)) {
+            AliMotherContainer lambda;
+            lambda.vzero = v0;
+            lambda.daughter1ID = posTrack->GetID();
+            lambda.daughter2ID = negTrack->GetID();
+            lambda_list.push_back(lambda);
         }
+
+        if((isPosTrackPion && isNegTrackProton)) {
+            AliMotherContainer antilambda;
+            antilambda.vzero = v0;
+            antilambda.daughter1ID = posTrack->GetID();
+            antilambda.daughter2ID = negTrack->GetID();
+            lambda_list.push_back(antilambda);
+        }
+
     }
 
 
     // Filling all of our single particle distribution histograms:
-    FillSingleParticleDist(trigger_list, primZ, fTriggerDist);
     FillSingleParticleDist(trigger_list, primZ, fTriggerDistEff, true);
     FillSingleParticleDist(trigger_list_highestPt, primZ, fTriggerDistEff_highestPt, true);
     FillSingleParticleDist(associated_h_list, primZ, fAssociatedHDist);
-    FillSingleParticleDist(all_hadron_list, primZ, fLooseDist);
 
     // Filling our single particle lambda distribution histogram:
     if(is_triggered_event) FillMotherDist(lambda_list, multPercentile, fTriggeredLambdaDist);
-    if(is_triggered_event) FillMotherDist(lambda_list_filterbit_daughters, multPercentile, fTriggeredLambdaDistFilterbit);
-    FillMotherDist(lambda_list, multPercentile, fLambdaDist);
 
-    fMultDistMinBias->Fill(NCharged);
+    MakeSameHLambdaCorrelations(trigger_list, antilambda_list, fDphiHLambdaEff, primZ, true, true);
+    MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambdaEff, primZ, true, false);
 
-    MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambda, primZ, false);
-    MakeSameHLambdaCorrelations(trigger_list, lambda_list_filterbit_daughters, fDphiHLambdaFilterbit, primZ, false);
-    MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambdaEff, primZ, true);
-    MakeSameHLambdaCorrelations(trigger_list, lambda_list_v0, fDphiHLambdaV0, primZ);
-    MakeSameHLambdaCorrelations(trigger_list, lambda_list_RotatedPi, fDphiHLambdaRotatedPi, primZ);
-    MakeSameHLambdaCorrelations(trigger_list, lambda_list_Flipped, fDphiHLambdaFlipped, primZ);
-    MakeSameHLambdaCorrelations(trigger_list, lambda_list_RotatedPion, fDphiHLambdaRotated, primZ);
-    MakeSameHLambdaCorrelations(trigger_list, lambda_list_RotatedProton, fDphiHLambdaRotatedProton, primZ);
-    MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHH, primZ, false);
     MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHHEff, primZ, true);
-    MakeSameTriggerTriggerCorrelations(trigger_list, fDphiTriggerTrigger, primZ);
-    MakeSameHLambdaCorrelations(trigger_list, lambda_list_LS, fDphiHLambdaLS, primZ);
+
     // Highest pt trigger correlations
-    MakeSameHLambdaCorrelations(trigger_list_highestPt, lambda_list, fDphiHLambdaEff_highestPt, primZ, true);
+    MakeSameHLambdaCorrelations(trigger_list_highestPt, antilambda_list, fDphiHLambdaEff_highestPt, primZ, true, true);
+    MakeSameHLambdaCorrelations(trigger_list_highestPt, lambda_list, fDphiHLambdaEff_highestPt, primZ, true, false);
     MakeSameHHCorrelations(trigger_list_highestPt, associated_h_list, fDphiHHEff_highestPt, primZ, true);
-    fMultDistHLambdaEvent->Fill(NCharged);
-
-    fTriggersAndLambdasPerEvent_All->Fill(trigger_list.size(), lambda_list_signal_region.size());
-    fTriggersAndLambdasPerEvent_2_4->Fill(trigger_list.size(), lambda_list_signal_region_2_4.size());
-
-    if(is_triggered_event) {
-        for(auto part : trigger_list) {
-            fTriggerPtEventClass->Fill(0.1, part->Pt());
-        }
-        for(auto part : associated_h_list) {
-            fAssociatedPtEventClass->Fill(0.1, part->Pt());
-        }
-        for(auto part : lambda_list_signal_region) {
-            fLambdaPtEventClass->Fill(0.1, part.particle.Pt());
-        }
-        if(associated_h_list_2_4.size()) {
-            for(auto part : trigger_list) {
-                fTriggerPtEventClass->Fill(1.1, part->Pt());
-            }
-            for(auto part : associated_h_list) {
-                fAssociatedPtEventClass->Fill(1.1, part->Pt());
-            }
-            for(auto part : lambda_list_signal_region) {
-                fLambdaPtEventClass->Fill(1.1, part.particle.Pt());
-            }
-            if(lambda_list_signal_region_2_4.size()) {
-                for(auto part : trigger_list) {
-                    fTriggerPtEventClass->Fill(2.1, part->Pt());
-                }
-                for(auto part : associated_h_list) {
-                    fAssociatedPtEventClass->Fill(2.1, part->Pt());
-                }
-                for(auto part : lambda_list_signal_region) {
-                    fLambdaPtEventClass->Fill(2.1, part.particle.Pt());
-                }
-            }
-        }
-    }
 
     if(lambda_list.size() > 0 && associated_h_list.size() > 0) {
         AliEventPool *fCorPool = fCorPoolMgr->GetEventPool(multPercentile, primZ);
@@ -929,13 +701,13 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
         }
         else {
             if(fCorPool->IsReady()) {
-                MakeMixedHLambdaCorrelations(fCorPool, lambda_list, fDphiHLambdaMixed, primZ);
-                MakeMixedHLambdaCorrelations(fCorPool, lambda_list_LS, fDphiHLambdaLSMixed, primZ);
+                MakeMixedHLambdaCorrelations(fCorPool, antilambda_list, fDphiHLambdaMixed, primZ, true, true);
+                MakeMixedHLambdaCorrelations(fCorPool, lambda_list, fDphiHLambdaMixed, primZ, true, false);
                 MakeMixedHHCorrelations(fCorPool, associated_h_list, fDphiHHMixed, primZ);
-                MakeMixedHHCorrelations(fCorPool, trigger_list, fDphiTriggerTriggerMixed, primZ);
             }
             if(fCorPool_highestPt->IsReady()) {
-                MakeMixedHLambdaCorrelations(fCorPool_highestPt, lambda_list, fDphiHLambdaMixed_highestPt, primZ);
+                MakeMixedHLambdaCorrelations(fCorPool_highestPt, antilambda_list, fDphiHLambdaMixed_highestPt, primZ, true, true);
+                MakeMixedHLambdaCorrelations(fCorPool_highestPt, lambda_list, fDphiHLambdaMixed_highestPt, primZ, true, false);
                 MakeMixedHHCorrelations(fCorPool_highestPt, associated_h_list, fDphiHHMixed_highestPt, primZ);
             }
             if(fMixedTrackObjArray->GetEntries() > 0) {
