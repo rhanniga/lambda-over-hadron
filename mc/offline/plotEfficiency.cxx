@@ -110,7 +110,7 @@ void plotEfficiency(){
 
     Float_t mult[4] = {0.0, 20.0, 50.0, 80.0};
     
-    TFile* infile = new TFile("~/v0_corr.root");
+    TFile* infile = new TFile("~/AnalysisResults.root");
     TList* list = (TList*)infile->Get("h-lambda_eff");
     
     float SIG_MIN = 1.104;
