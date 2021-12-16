@@ -46,10 +46,10 @@
 ClassImp(AliAnalysisTaskLambdaHadronRatio);
 
 AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
+
     AliAnalysisTaskSE(),
     fAOD(0x0),
     fOutputList(0x0),
-    fMultSelection(0x0),
     fCorPoolMgr(0x0),
     fCorPoolMgr_highestPt(0x0),
     fTriggerEff(0x0),
@@ -62,10 +62,14 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     fDphiHLambdaEff(0x0),
     fDphiHLambdaEff_highestPt(0x0),
     fDphiHHEff(0x0),
+    fDphiHHEff_highestPt(0x0),
     fDphiHLambdaMixed(0x0),
     fDphiHLambdaMixed_highestPt(0x0),
     fDphiHHMixed(0x0),
     fDphiHHMixed_highestPt(0x0),
+    fpidResponse(0x0),
+    fMultSelection(0x0),
+    fCentEstimator(0x0),
     fMultLow(0.0),
     fMultHigh(0.0),
     fDaughterBit(0.0),
@@ -75,10 +79,9 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
 }
 
 AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *name) :
-    AliAnalysisTaskSE(),
+    AliAnalysisTaskSE(name),
     fAOD(0x0),
     fOutputList(0x0),
-    fMultSelection(0x0),
     fCorPoolMgr(0x0),
     fCorPoolMgr_highestPt(0x0),
     fTriggerEff(0x0),
@@ -91,15 +94,20 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     fDphiHLambdaEff(0x0),
     fDphiHLambdaEff_highestPt(0x0),
     fDphiHHEff(0x0),
+    fDphiHHEff_highestPt(0x0),
     fDphiHLambdaMixed(0x0),
     fDphiHLambdaMixed_highestPt(0x0),
     fDphiHHMixed(0x0),
     fDphiHHMixed_highestPt(0x0),
+    fpidResponse(0x0),
+    fMultSelection(0x0),
+    fCentEstimator(0x0),
     fMultLow(0.0),
     fMultHigh(0.0),
     fDaughterBit(0.0),
     fAssociatedBit(0.0),
     fTriggerBit(0.0)
+
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
