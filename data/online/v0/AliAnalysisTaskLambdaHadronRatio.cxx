@@ -238,7 +238,7 @@ void AliAnalysisTaskLambdaHadronRatio::FillSingleParticleDist(std::vector<AliAOD
     }
 }
 
-void AliAnalysisTaskLambdaHadronRatio::FillMotherDist(std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> particle_list, float multPercentile, THnSparse* fDist)
+void AliAnalysisTaskLambdaHadronRatio::FillMotherDist(std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> particle_list, float multPercentile, THnSparse* fDist, bool isAntiLambda)
 {
     double dist_points[5]; //Pt, Phi, Eta, M, event multiplicity
     for(int i = 0; i < (int)particle_list.size(); i++) {
@@ -246,7 +246,12 @@ void AliAnalysisTaskLambdaHadronRatio::FillMotherDist(std::vector<AliAnalysisTas
         dist_points[0] = particle->Pt();
         dist_points[1] = particle->Phi();
         dist_points[2] = particle->Eta();
-        dist_points[3] = particle->M();
+        if(isAntiLambda) {
+            dist_points[3] = particle->MassAntiLambda();
+        }
+        else{
+            dist_points[3] = particle->MassLambda();
+        }
         dist_points[4] = multPercentile;
         fDist->Fill(dist_points);
     }
@@ -689,7 +694,8 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     FillSingleParticleDist(associated_h_list, primZ, fAssociatedHDist);
 
     // Filling our single particle lambda distribution histogram:
-    if(is_triggered_event) FillMotherDist(lambda_list, multPercentile, fTriggeredLambdaDist);
+    if(is_triggered_event) FillMotherDist(lambda_list, multPercentile, fTriggeredLambdaDist, false);
+    if(is_triggered_event) FillMotherDist(antilambda_list, multPercentile, fTriggeredLambdaDist, true);
 
     MakeSameHLambdaCorrelations(trigger_list, antilambda_list, fDphiHLambdaEff, primZ, true, true);
     MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambdaEff, primZ, true, false);
