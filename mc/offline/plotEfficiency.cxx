@@ -110,7 +110,7 @@ void plotEfficiency(){
 
     Float_t mult[4] = {0.0, 20.0, 50.0, 80.0};
     
-    TFile* infile = new TFile("~/AnalysisResults.root");
+    TFile* infile = new TFile("~/OneDrive/Research/Output/lambda-over-hadron/efficiency_run.root");
     TList* list = (TList*)infile->Get("h-lambda_eff");
     
     float SIG_MIN = 1.104;
@@ -264,6 +264,7 @@ void plotEfficiency(){
 
     // MASS AXIS  
     realLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
+
     recoLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
     etaLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
     etaPtLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
@@ -392,5 +393,8 @@ void plotEfficiency(){
 
     etaPtRefitRowsRatioeffPT_mult[3]->SetName("fLambdaEff");
     etaPtRefitRowsRatioeffPT_mult[3]->Write();
+
+    etaPtRefitRowsRatioeffV0PT_mult[3]->SetName("fLambdaV0Eff");
+    etaPtRefitRowsRatioeffV0PT_mult[3]->Write();
 
 }
