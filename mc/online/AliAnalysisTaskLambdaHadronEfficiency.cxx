@@ -682,7 +682,6 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         int motherPDG = mcmother->GetPdgCode();
 
         if(!(TMath::Abs(motherPDG) == 3122)) continue;
-        if(!mcmother->IsPhysicalPrimary()) continue;
 
 
         // THIS IS NOT BEING USED, NOW USE V0 METHODS TO CALCULATE KINEMATIC VARIABLES
@@ -874,7 +873,6 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(motherIndex);
         motherPDG = mcmother->GetPdgCode();
         if(motherPDG != 3122) continue;
-        if(!mcmother->IsPhysicalPrimary()) continue;
 
         for(int jtrack = 0; jtrack < ntracks; jtrack++){
             AliVParticle *vpospart = dynamic_cast<AliVParticle*>(fVevent->GetTrack(jtrack));
@@ -984,7 +982,6 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(motherIndex);
         motherPDG = mcmother->GetPdgCode();
         if(motherPDG != -3122) continue;
-        if(!mcmother->IsPhysicalPrimary()) continue;
 
         for(int jtrack = 0; jtrack < ntracks; jtrack++){
             AliVParticle *vpospart = dynamic_cast<AliVParticle*>(fVevent->GetTrack(jtrack));
@@ -1143,8 +1140,6 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
             else {
                 fRealSecondaryLambdaPtDist->Fill(AODMCtrack->Pt());
             }
-
-            if(!AODMCtrack->IsPhysicalPrimary()) continue;
 
             numRealLambdas += 1;
             distPoint[0] = AODMCtrack->Pt();
