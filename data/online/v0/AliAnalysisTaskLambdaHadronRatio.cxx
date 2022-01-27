@@ -281,7 +281,7 @@ void AliAnalysisTaskLambdaHadronRatio::LoadEfficiencies(TString filePath) {
         AliFatal("NULL INPUT FILE WHEN LOADING EFFICIENCIES, EXITING");
     }
 
-    fLambdaEff = (TH1D*) effFile->Get("fLambdaEff")->Clone("fLambdaEffClone");
+    fLambdaEff = (TH1D*) effFile->Get("fLambdaV0Eff")->Clone("fLambdaV0EffClone");
     if(!fLambdaEff) {
         AliFatal("UNABLE TO FIND LAMBDA EFF, EXITING");
     }

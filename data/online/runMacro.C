@@ -19,11 +19,11 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   int startIndex = 0;
   int endIndex = 14;
 
-  // int startIndex = 15;
-  // int endIndex = 28;
+  /* int startIndex = 15; */
+  /* int endIndex = 28; */
 
   TString work_dir = "lambda_hadron_ratio";
-  TString output_dir = "eff_corr_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_20211109-lower-assoch-pt";
+  TString output_dir = "eff_corr_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_CORRECT_RES_EFF";
   
   //If we want to download test files from grid then run in one swoop (usually just run completely locally):
   bool gridTest = false;
