@@ -113,8 +113,8 @@ void plotEfficiency(){
     TFile* infile = new TFile("~/OneDrive/Research/Output/lambda-over-hadron/efficiency_run.root");
     TList* list = (TList*)infile->Get("h-lambda_eff");
     
-    float SIG_MIN = 1.104;
-    float SIG_MAX = 1.128;
+    float SIG_MIN = 1.08;
+    float SIG_MAX = 1.16 - 0.00000001;
     
     //single track histos
     THnSparseF* realTrigger = (THnSparseF*)list->FindObject("fRealChargedDist");

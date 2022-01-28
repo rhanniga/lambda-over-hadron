@@ -17,13 +17,15 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
   //Starting and ending index of the array containing the run numbers, specifies which range to run over
   int startIndex = 0;
-  int endIndex = 14;
+  // int endIndex = 14;
+  int endIndex = 0;
 
   /* int startIndex = 15; */
   /* int endIndex = 28; */
 
   TString work_dir = "lambda_hadron_ratio";
-  TString output_dir = "eff_corr_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_CORRECT_RES_EFF";
+  // TString output_dir = "eff_corr_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_CORRECT_RES_EFF";
+  TString output_dir = "4test";
   
   //If we want to download test files from grid then run in one swoop (usually just run completely locally):
   bool gridTest = false;
@@ -67,9 +69,15 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
   if(local) {
     TChain *chain = new TChain("aodTree");
-    chain->Add("~/Wonderland/native/data/pPb_5_tev_1.root");
-    chain->Add("~/Wonderland/native/data/pPb_5_tev_69.root");
-    chain->Add("~/Wonderland/native/data/pPb_5_tev_420.root");
+    chain->Add("~/Wonderland/native/data/265525_0001.root");
+    chain->Add("~/Wonderland/native/data/265525_0002.root");
+    chain->Add("~/Wonderland/native/data/265525_0003.root");
+    chain->Add("~/Wonderland/native/data/265525_0004.root");
+    chain->Add("~/Wonderland/native/data/265525_0005.root");
+    chain->Add("~/Wonderland/native/data/265525_0006.root");
+    chain->Add("~/Wonderland/native/data/265525_0007.root");
+    chain->Add("~/Wonderland/native/data/265525_0008.root");
+    chain->Add("~/Wonderland/native/data/265525_0009.root");
     manage->StartAnalysis("local", chain);
   }
 
