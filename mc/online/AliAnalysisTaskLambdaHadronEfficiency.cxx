@@ -72,6 +72,7 @@ AliAnalysisTaskLambdaHadronEfficiency::AliAnalysisTaskLambdaHadronEfficiency(con
     fRecoEtaPtRefitLambdaDist(0x0),
     fRecoEtaPtRefitRowsLambdaDist(0x0),
     fRecoEtaPtRefitRowsRatioLambdaDist(0x0),
+    fRecoEtaPtRefitRowsRatioLambdaFilterDist(0x0),
     fRecoTotalLambdaFilterDist(0x0),
     fRecoLambdaDist(0x0),
     fRecoAntiLambdaDist(0x0),
@@ -112,7 +113,13 @@ AliAnalysisTaskLambdaHadronEfficiency::AliAnalysisTaskLambdaHadronEfficiency(con
     fInvMassLambdaResonance(0x0),
     fInvMassAntiLambdaResonance(0x0),
     fInvMassLambdaV0(0x0),
-    fInvMassAntiLambdaV0(0x0)
+    fInvMassAntiLambdaV0(0x0),
+    fPhiDifferenceResV0(0x0),
+    fPhiDifferenceResReal(0x0),
+    fPhiDifferenceV0Real(0x0),
+    fPhiV0(0x0),
+    fPhiRes(0x0),
+    fPhiReal(0x0)
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -155,6 +162,7 @@ AliAnalysisTaskLambdaHadronEfficiency::AliAnalysisTaskLambdaHadronEfficiency()
     fRecoEtaPtRefitLambdaDist(0x0),
     fRecoEtaPtRefitRowsLambdaDist(0x0),
     fRecoEtaPtRefitRowsRatioLambdaDist(0x0),
+    fRecoEtaPtRefitRowsRatioLambdaFilterDist(0x0),
     fRecoTotalLambdaFilterDist(0x0),
     fRecoLambdaDist(0x0),
     fRecoAntiLambdaDist(0x0),
@@ -195,7 +203,13 @@ AliAnalysisTaskLambdaHadronEfficiency::AliAnalysisTaskLambdaHadronEfficiency()
     fInvMassLambdaResonance(0x0),
     fInvMassAntiLambdaResonance(0x0),
     fInvMassLambdaV0(0x0),
-    fInvMassAntiLambdaV0(0x0)
+    fInvMassAntiLambdaV0(0x0),
+    fPhiDifferenceResV0(0x0),
+    fPhiDifferenceResReal(0x0),
+    fPhiDifferenceV0Real(0x0),
+    fPhiV0(0x0),
+    fPhiRes(0x0),
+    fPhiReal(0x0)
 
 {
     DefineInput(0, TChain::Class());
@@ -203,7 +217,7 @@ AliAnalysisTaskLambdaHadronEfficiency::AliAnalysisTaskLambdaHadronEfficiency()
     MIN_CROSSED_ROWS_TPC = 70;
     MIN_ROW_CLUSTER_RATIO = 0.8;
     MULT_LOW = 0;
-    MULT_HIGH = 80;
+    MULT_HIGH = 20;
     CENT_ESTIMATOR = "V0A";
     ASSOC_TRK_BIT = 1024; // global tracks with tight pt dependent dca cut (selecting primaries)
     TRIG_TRK_BIT = AliAODTrack::kIsHybridGCG; // = 2^20
@@ -265,7 +279,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     
     fVtxZ = new TH1F("fVtxZ","Z vertex position;Vtx_{z};counts",1000,-50,50);
     fOutputList->Add(fVtxZ);
-    
+
     fVtxY = new TH1F("fVtxY","Y vertex position;Vtx_{y};counts",1000,-50,50);
     fOutputList->Add(fVtxY);
     
@@ -339,9 +353,9 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
 
     // Lambda ditributions used for eff calc
     
-    Int_t numbins[6] = {100, 64, 64, 10, 80, 10};
+    Int_t numbins[6] = {100, 64, 64, 10, 140, 10};
     Double_t minval[6] = {0, -3.14159, -2., -10, 1.06, 0.0};
-    Double_t maxval[6] = {10.0, 3.14159,  2.,  10, 1.16, 100.0};
+    Double_t maxval[6] = {10.0, 3.14159,  2.,  10, 1.2, 100.0};
 
     fRealTotalLambdaDist = new THnSparseF("fRealTotalLambdaDist", "Real (#Lambda + #bar{#Lambda}) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{KK};Multiplicity Pctl.", 6, numbins, minval, maxval);
     fOutputList->Add(fRealTotalLambdaDist);
@@ -398,12 +412,15 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     fOutputList->Add(fReactionPlane);
 
     // Same lambda distributions now with info on daughter filter maps (last two are proton filter map, pion filter map)
-    Int_t numbinsFilter[8] = {100, 64, 64, 10, 80, 10, 9, 9};
+    Int_t numbinsFilter[8] = {100, 64, 64, 10, 140, 10, 9, 9};
     Double_t minvalFilter[8] = {0, -3.14159, -2., -10, 1.06, 0.0, 0, 0};
-    Double_t maxvalFilter[8] = {10.0, 3.14159,  2.,  10, 1.16, 100.0, 9, 9};
+    Double_t maxvalFilter[8] = {10.0, 3.14159,  2.,  10, 1.2, 100.0, 9, 9};
 
     fRecoTotalLambdaFilterDist = new THnSparseF("fRecoTotalLambdaFilterDist", "Reco (#Lambda + #bar{#Lambda}) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 8, numbinsFilter, minvalFilter, maxvalFilter);
     fOutputList->Add(fRecoTotalLambdaFilterDist);
+
+    fRecoEtaPtRefitRowsRatioLambdaFilterDist = new THnSparseF("fRecoEtaPtRefitRowsRatioLambdaFilterDist", "Reco (#Lambda + #bar{#Lambda}) distribution (eta + pt + refit + rows + ratio cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 8, numbinsFilter, minvalFilter, maxvalFilter);
+    fOutputList->Add(fRecoEtaPtRefitRowsRatioLambdaFilterDist);
 
     fRealLambdasPerEvent = new TH1F("fRealLambdasPerEvent", "Real Lambdas per Event", 10, 0, 10);
     fOutputList->Add(fRealLambdasPerEvent);
@@ -457,6 +474,24 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
 
     fRealSecondaryLambdaPtDist = new TH1D("fRealSecondaryLambdaPtDist", "Real Secondary #Lambda p_{T} Distribution", 100, 0, 10);
     fOutputList->Add(fRealSecondaryLambdaPtDist);
+
+    fPhiDifferenceResV0 = new TH1D("fPhiDifferenceResV0", "#phi Difference between Resonance and V0", 128, -3.14159, 3.14159);
+    fOutputList->Add(fPhiDifferenceResV0);
+
+    fPhiDifferenceResReal = new TH1D("fPhiDifferenceResReal", "#phi Difference between Resonance and Real", 128, -3.14159, 3.14159);
+    fOutputList->Add(fPhiDifferenceResReal);
+
+    fPhiDifferenceV0Real = new TH1D("fPhiDifferenceV0Real", "#phi Difference between V0 and Real", 128, -3.14159, 3.14159);
+    fOutputList->Add(fPhiDifferenceV0Real);
+
+    fPhiReal = new TH1D("fPhiReal", "#phi of Real", 64, -3.14159, 3.14159);
+    fOutputList->Add(fPhiReal);
+
+    fPhiRes = new TH1D("fPhiRes", "#phi of Resonance", 64, -3.14159, 3.14159);
+    fOutputList->Add(fPhiRes);
+
+    fPhiV0 = new TH1D("fPhiV0", "#phi of V0", 64, -3.14159, 3.14159);
+    fOutputList->Add(fPhiV0);
 
     PostData(1,fOutputList);
 
@@ -686,32 +721,28 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
         // THIS IS NOT BEING USED, NOW USE V0 METHODS TO CALCULATE KINEMATIC VARIABLES
 
-        /* double recoPx = ntrack->Px() + ptrack->Px(); */
-        /* double recoPy = ntrack->Py() + ptrack->Py(); */
-        /* double recoPz = ntrack->Pz() + ptrack->Pz(); */
-        
-        /* double recoP = TMath::Sqrt(recoPx*recoPx + recoPy*recoPy + recoPz*recoPz); */
-        /* double recoE; */
+         double recoPx = ntrack->Px() + ptrack->Px();
+         double recoPy = ntrack->Py() + ptrack->Py();
+         double recoPz = ntrack->Pz() + ptrack->Pz();
 
-        /* if(motherPDG < 0) { */
-        /*     recoE = TMath::Sqrt(ptrack->Px()*ptrack->Px() + ptrack->Py()*ptrack->Py() + ptrack->Pz()*ptrack->Pz() + 0.13957*0.13957) + TMath::Sqrt(ntrack->Px()*ntrack->Px() + ntrack->Py()*ntrack->Py() + ntrack->Pz()*ntrack->Pz() + 0.9383*0.9383); */
-        /* } */
-        /* else { */
-        /*     recoE = TMath::Sqrt(ntrack->Px()*ntrack->Px() + ntrack->Py()*ntrack->Py() + ntrack->Pz()*ntrack->Pz() + 0.13957*0.13957) + TMath::Sqrt(ptrack->Px()*ptrack->Px() + ptrack->Py()*ptrack->Py() + ptrack->Pz()*ptrack->Pz() + 0.9383*0.9383); */
-        /* } */
-
-        /* double recoM = TMath::Sqrt(recoE*recoE - recoP*recoP); */
-        /* double recoPt = TMath::Sqrt(recoPx*recoPx + recoPy*recoPy); */
-        /* double recoEta = 0.5*TMath::Log((recoP + recoPz)/(recoP -  recoPz)); */
-        /* double recoY = 0.5*TMath::Log((recoE + recoPz)/(recoE - recoPz)); */
-        /* double recoPhi = TMath::ATan2(recoPy, recoPx); */
-
-        /* if(recoPhi < -TMath::Pi()){ */
-        /*     recoPhi += 2.0*TMath::Pi(); */
-        /* }else if(recoPhi > TMath::Pi()){ */
-        /*     recoPhi -= 2.0*TMath::Pi(); */
-        /* } */
-
+         double recoP = TMath::Sqrt(recoPx*recoPx + recoPy*recoPy + recoPz*recoPz);
+         double recoE;
+         if(motherPDG < 0) { 
+             recoE = TMath::Sqrt(ptrack->Px()*ptrack->Px() + ptrack->Py()*ptrack->Py() + ptrack->Pz()*ptrack->Pz() + 0.13957*0.13957) + TMath::Sqrt(ntrack->Px()*ntrack->Px() + ntrack->Py()*ntrack->Py() + ntrack->Pz()*ntrack->Pz() + 0.9383*0.9383);
+         } 
+         else { 
+             recoE = TMath::Sqrt(ntrack->Px()*ntrack->Px() + ntrack->Py()*ntrack->Py() + ntrack->Pz()*ntrack->Pz() + 0.13957*0.13957) + TMath::Sqrt(ptrack->Px()*ptrack->Px() + ptrack->Py()*ptrack->Py() + ptrack->Pz()*ptrack->Pz() + 0.9383*0.9383);
+         } 
+         double recoM = TMath::Sqrt(recoE*recoE - recoP*recoP); 
+         double recoPt = TMath::Sqrt(recoPx*recoPx + recoPy*recoPy); 
+         double recoEta = 0.5*TMath::Log((recoP + recoPz)/(recoP -  recoPz)); 
+         double recoY = 0.5*TMath::Log((recoE + recoPz)/(recoE - recoPz)); 
+         double recoPhi = TMath::ATan2(recoPy, recoPx);
+         if(recoPhi < -TMath::Pi()){ 
+             recoPhi += 2.0*TMath::Pi(); 
+         }else if(recoPhi > TMath::Pi()){ 
+             recoPhi -= 2.0*TMath::Pi(); 
+         } 
         double distPoint[6];
 
         distPoint[0] = vZero->Pt();
@@ -751,6 +782,36 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
         if(((negPassCuts & maskEtaPtRefitRowsRatio) == maskEtaPtRefitRowsRatio) && ((posPassCuts & maskEtaPtRefitRowsRatio)== maskEtaPtRefitRowsRatio)){
             fRecoEtaPtRefitRowsRatioV0LambdaDist->Fill(distPoint);
+
+            float newPhiV0;
+            if(vZero->Phi() < -TMath::Pi()){
+                newPhiV0 = vZero->Phi() + 2.0*TMath::Pi();
+            }
+            else if(vZero->Phi() > TMath::Pi()){
+                newPhiV0 = vZero->Phi() - 2.0*TMath::Pi();
+            }
+            else{
+                newPhiV0 = vZero->Phi();
+            }
+
+            float newPhiReal;
+            if(mcmother->Phi() < -TMath::Pi()){
+                newPhiReal = mcmother->Phi() + 2.0*TMath::Pi();
+            }
+            else if(mcmother->Phi() > TMath::Pi()){
+                newPhiReal = mcmother->Phi() - 2.0*TMath::Pi();
+            }
+            else{
+                newPhiReal = mcmother->Phi();
+            }
+
+            fPhiDifferenceResV0->Fill(recoPhi - newPhiV0);
+            fPhiDifferenceResReal->Fill(recoPhi - newPhiReal);
+            fPhiDifferenceV0Real->Fill(newPhiV0 - newPhiReal);
+            fPhiV0->Fill(newPhiV0);
+            fPhiRes->Fill(recoPhi);
+            fPhiReal->Fill(newPhiReal);
+
             if (motherPDG < 0) {
                 double massAntiLambdaReal = mcmother->M();
                 double massAntiLambdaV0 = vZero->MassAntiLambda();
@@ -954,6 +1015,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
                 if(((negPassCuts & maskEtaPtRefitRowsRatio) == maskEtaPtRefitRowsRatio) && ((posPassCuts & maskEtaPtRefitRowsRatio)== maskEtaPtRefitRowsRatio)){
                     fRecoEtaPtRefitRowsRatioLambdaDist->Fill(distPoint);
+                    fRecoEtaPtRefitRowsRatioLambdaFilterDist->Fill(filter_distPoint);
                     numRecoLambdas += 1;
                 }
             }

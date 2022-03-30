@@ -128,6 +128,7 @@ private:
     THnSparse  *fRecoEtaPtRefitRowsRatioLambdaDist;//! Dist of Recon lambda and anti lambda ( eta pt refit rows ratio cut on daughters)
 
     THnSparse  *fRecoTotalLambdaFilterDist;//! Dist of Recon lambda and anti lambda with filter bit of daughters
+    THnSparse  *fRecoEtaPtRefitRowsRatioLambdaFilterDist;//! Dist of Recon lambda and anti lambda with filter bit of daughters
     THnSparse  *fRecoLambdaDist;//! Dist of Recon lambda
     THnSparse  *fRecoAntiLambdaDist;//! Dist of Recon anti lambda
 
@@ -181,6 +182,15 @@ private:
 
     TH1D       *fRealPrimaryLambdaPtDist; //!
     TH1D       *fRealSecondaryLambdaPtDist; //!
+
+    // Lambda phi comparisons
+
+    TH1D      *fPhiDifferenceResV0; //!
+    TH1D      *fPhiDifferenceResReal; //!
+    TH1D      *fPhiDifferenceV0Real; //!
+    TH1D      *fPhiV0; //!
+    TH1D      *fPhiRes; //!
+    TH1D      *fPhiReal; //!
 
     ClassDef(AliAnalysisTaskLambdaHadronEfficiency, 1); 
 };
