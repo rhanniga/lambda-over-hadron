@@ -203,6 +203,19 @@ void AliAnalysisTaskLambdaHadronV0Closure::FillSingleParticleDist(std::vector<Al
     }
 }
 
+void AliAnalysisTaskLambdaHadronV0Closure::FillSingleMCParticleDist(std::vector<AliAODMCParticle*> particle_list, double zVtx, THnSparse* fDist)
+{
+    double dist_points[4]; //Pt, Phi, Eta, zVtx
+    for(int i = 0; i < (int)particle_list.size(); i++) {
+        auto particle = particle_list[i];
+        dist_points[0] = particle->Pt();
+        dist_points[1] = particle->Phi();
+        dist_points[2] = particle->Eta();
+        dist_points[3] = zVtx;
+        fDist->Fill(dist_points);
+    }
+}
+
 void AliAnalysisTaskLambdaHadronV0Closure::FillMotherDist(std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> particle_list, float multPercentile, THnSparse* fDist, bool isAntiLambda)
 {
     double dist_points[5]; //Pt, Phi, Eta, M, event multiplicity
@@ -742,6 +755,13 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
         if(PassMCLambdaCuts(mc_particle)) real_lambda_list.push_back(mc_particle);
 
     }
+
+    FillSingleMCParticleDist(real_trigger_list, primZ, fTriggerDist_MC);
+    FillSingleMCParticleDist(real_associated_list, primZ, fMCAssociatedDist_MC);
+
+    MakeSameHLambdaCorrelations(real_trigger_list, real_lambda_list, fDphiHLambda_MC, primZ);
+
+    MakeSameHHCorrelations(real_trigger_list, real_associated_list, fDphiHH_MC, primZ);
 
     if(real_associated_list.size() > 0 && real_lambda_list.size() > 0) {
         AliEventPool *fMCCorPool = fMCCorPoolMgr->GetEventPool(multPercentile, primZ);
