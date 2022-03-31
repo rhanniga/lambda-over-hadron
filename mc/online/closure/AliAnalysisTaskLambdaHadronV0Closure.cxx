@@ -737,53 +737,26 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
 
         AliAODMCParticle *mc_particle = (AliAODMCParticle*)fMCArray->At(mc_index);
 
-        // For now we have trigger and associated as physical primary, subject to change upon lord justin's command
         if(PassMCTriggerCuts(mc_particle)) real_trigger_list.push_back(mc_particle);
         if(PassMCAssociatedCuts(mc_particle)) real_trigger_list.push_back(mc_particle);
         if(PassMCLambdaCuts(mc_particle)) real_lambda_list.push_back(mc_particle);
 
-        //select phis
-        if(TMath::Abs(pdgcode) != 3122) continue;
-        Int_t indexFirstDaughter = 0, indexSecondDaughter = 0;
-        indexFirstDaughter = AODMCtrack->GetDaughterFirst();
-        indexSecondDaughter = AODMCtrack->GetDaughterLast();
+    }
 
-        if(indexFirstDaughter < 0 || indexSecondDaughter < 0) continue;
-        AliAODMCParticle* firstDaughter = (AliAODMCParticle*)fMCArray->At(indexFirstDaughter);
-        AliAODMCParticle* secondDaughter = (AliAODMCParticle*)fMCArray->At(indexSecondDaughter);
-
-        if(((TMath::Abs(firstDaughter->GetPdgCode()) == 211 && TMath::Abs(secondDaughter->GetPdgCode()) == 2212) ||
-            (TMath::Abs(firstDaughter->GetPdgCode()) == 2212 && TMath::Abs(secondDaughter->GetPdgCode()) == 211)) && (firstDaughter->GetPdgCode())*(secondDaughter->GetPdgCode()) < 0){
-            
-            // check if mother is primary
-            if(AODMCtrack->IsPhysicalPrimary()) {
-                fRealPrimaryLambdaPtDist->Fill(AODMCtrack->Pt());
+    if(real_associated_list.size() > 0 && real_lambda_list.size() > 0) {
+        AliEventPool *fMCCorPool = fMCCorPoolMgr->GetEventPool(multPercentile, primZ);
+        if(!fMCCorPool) {
+            AliFatal(Form("No pool found for multiplicity = %f, zVtx = %f", multPercentile, primZ));
+        }
+        else {
+            if(fMCCorPool->IsReady()) {
+                MakeMixedMCHLambdaCorrelations(fMCCorPool, real_lambda_list, fDphiHLambdaMixed_MC, primZ, true, true);
+                MakeMixedMCHHCorrelations(fMCCorPool, real_associated_list, fDphiHHMixed_MC, primZ);
             }
-            else {
-                fRealSecondaryLambdaPtDist->Fill(AODMCtrack->Pt());
+            if(fMixedTrackObjArray->GetEntries() > 0) {
+                fCorPool->UpdatePool(fMixedTrackObjArray);
             }
-
-            numRealLambdas += 1;
-            distPoint[0] = AODMCtrack->Pt();
-            distPoint[1] = AODMCtrack->Phi();
-            if(distPoint[1] > TMath::Pi()){
-                distPoint[1] -= 2.0*TMath::Pi();
-            }else if(distPoint[1] < -1.0*TMath::Pi()){
-                distPoint[1] += 2.0*TMath::Pi();
-            }
-            distPoint[2] = AODMCtrack->Eta();
-            distPoint[3] = Zvertex;
-            distPoint[4] = AODMCtrack->GetCalcMass();
-            distPoint[5] = multPercentile;
-            fRealTotalLambdaDist->Fill(distPoint);
-
-            if(pdgcode == 3122) {
-                fRealLambdaDist->Fill(distPoint); 
-            }
-            else {
-                fRealAntiLambdaDist->Fill(distPoint);
-            }
-        } 
+        }
     }
 
     PostData(1, fOutputList);
