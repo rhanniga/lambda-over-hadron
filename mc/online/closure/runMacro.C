@@ -1,76 +1,89 @@
-#include "TRint.h"
-#include "AliAnalysisTaskLambdaHadronEfficiency.h"
-
+#include "AliAnalysisTaskLambdaHadronV0Closure.h"
 
 void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
+  float MULT_LOW = 0;
+  float MULT_HIGH = 20;
 
-   //Starting and ending index of the array containing the run numbers, specifies which range to run over
-   int startIndex = 0;
-   int endIndex = 20;
-  //  int startIndex = 15;
-  //  int endIndex = 28;
-   char* work_dir = "lambda_hadron_efficiency";
-   char* output_dir = "extend_mass_range";
+  float TRIG_BIT = AliAODTrack::kIsHybridGCG;
+  float ASSOC_BIT =  1024; 
+  char *EFF_FILE_PATH = "eff_out.root";
+  char *CENT_ESTIMATOR = "V0A";
 
-   bool gridTest = false;
-   int numTestFiles = 2;
+  //Starting and ending index of the array containing the run numbers, specifies which range to run over
+  int startIndex = 0; 
+  int endIndex = 14;
 
-   gInterpreter->ProcessLine(".include $ROOTSYS/include");
-   gInterpreter->ProcessLine(".include $ALICE_ROOT/include");
+  // int startIndex = 15;
+  // int endIndex = 28;
 
-   // create and customize the alien handler
-   AliAnalysisManager *manage = new AliAnalysisManager("");
-   AliAODInputHandler *aodH = new AliAODInputHandler();
-   manage->SetInputEventHandler(aodH);
+  TString work_dir = "lambda_hadron_v0closure";
+  TString output_dir = "closure_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_v3";
+  
+  //If we want to download test files from grid then run in one swoop (usually just run completely locally):
+  bool gridTest = false;
+  int numTestFiles = 2;
+
+  // So we can access files from the grid (for eff cor and the like)
+  // TGrid::Connect("alien//");
+
+  gInterpreter->ProcessLine(".include $ROOTSYS/include");
+  gInterpreter->ProcessLine(".include $ALICE_ROOT/include");
+
+  AliAnalysisManager *manage = new AliAnalysisManager("");
+  AliAODInputHandler *aodH = new AliAODInputHandler();
+  manage->SetInputEventHandler(aodH);
+
 
   //MULT SELECTION:
   gInterpreter->ProcessLine(Form(".x %s", gSystem->ExpandPathName("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C")));
 
   //SELECTION TASK:
-  AliPhysicsSelectionTask* physSelTask = reinterpret_cast<AliPhysicsSelectionTask*>(gInterpreter->ProcessLine(Form(".x %s(kTRUE, kTRUE)", gSystem->ExpandPathName("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C"))));
+  AliPhysicsSelectionTask* physSelTask = reinterpret_cast<AliPhysicsSelectionTask*>(gInterpreter->ProcessLine(Form(".x %s(kFALSE, kTRUE)", gSystem->ExpandPathName("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C"))));
 
   //PID response:
   gInterpreter->ProcessLine(Form(".x %s(kFALSE)", gSystem->ExpandPathName("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C")));
 
-  gInterpreter->LoadMacro("AliAnalysisTaskLambdaHadronEfficiency.cxx++g");
-  AliAnalysisTaskLambdaHadronEfficiency *task = reinterpret_cast<AliAnalysisTaskLambdaHadronEfficiency*>(gInterpreter->ExecuteMacro("AddLambdaHadronEfficiencyTask.C"));
+  // Generating task object
+  gInterpreter->LoadMacro("AliAnalysisTaskLambdaHadronV0Closure.cxx++g");
+  AliAnalysisTaskLambdaHadronV0Closure *task = reinterpret_cast<AliAnalysisTaskLambdaHadronV0Closure*>(gInterpreter->ProcessLine(Form(".x AddLambdaHadronV0ClosureTask.C(\"%s\", %f, %f, %f, %f, \"%s\", \"%s\")",
+  "lambdaHadronV0Closure",
+  MULT_LOW,
+  MULT_HIGH,
+  TRIG_BIT,
+  ASSOC_BIT,
+  EFF_FILE_PATH,
+  CENT_ESTIMATOR)));
 
   if(!manage->InitAnalysis()) return;
-  // manage->SetDebugLevel(2);
-  // manage->PrintStatus();
-  // manage->SetUseProgressBar(1, 25);
+  manage->SetDebugLevel(2);
+  manage->PrintStatus();
+  manage->SetUseProgressBar(1, 25);
 
   if(local) {
     TChain *chain = new TChain("aodTree");
     chain->Add("~/Wonderland/native/sim/265309_2.root");
-    // chain->Add("~/Wonderland/native/sim/265309_3.root");
-    // chain->Add("~/Wonderland/native/sim/265309_4.root");
-    // chain->Add("~/Wonderland/native/sim/265309_5.root");
-    // chain->Add("~/Wonderland/native/sim/265309_6.root");
-    // chain->Add("~/Wonderland/native/sim/265309_7.root");
-    // chain->Add("~/Wonderland/native/sim/265309_8.root");
-    // chain->Add("~/Wonderland/native/sim/265309_9.root");
     manage->StartAnalysis("local", chain);
   }
 
-
-   else{
-
+  else {
     // if we want to run on grid, we create and configure the plugin
     AliAnalysisAlien *alienHandler = new AliAnalysisAlien();
     // also specify the include (header) paths on grid
     alienHandler->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
     // make sure your source files get copied to grid
-    alienHandler->SetAdditionalLibs("AliAnalysisTaskLambdaHadronEfficiency.cxx AliAnalysisTaskLambdaHadronEfficiency.h");
-    alienHandler->SetAnalysisSource("AliAnalysisTaskLambdaHadronEfficiency.cxx");
+    alienHandler->SetAdditionalLibs("AliAnalysisTaskLambdaHadronV0Closure.cxx AliAnalysisTaskLambdaHadronV0Closure.h");
+    alienHandler->SetAnalysisSource("AliAnalysisTaskLambdaHadronV0Closure.cxx");
     // select the aliphysics version. all other packages
     // are LOADED AUTOMATICALLY!
     alienHandler->SetAliPhysicsVersion("vAN-20201026_ROOT6-1");
     alienHandler->SetAPIVersion("V1.1x");
     // select the input data
-   alienHandler->SetGridDataDir("//alice/sim/2017/LHC17f2b_fast/");
-   alienHandler->SetDataPattern("/AOD202/*/*AOD.root");
+    alienHandler->SetGridDataDir("//alice/sim/2017/LHC17f2b_fast/");
+    alienHandler->SetDataPattern("/AOD202/*/*AOD.root");
+    // MC has no prefix, data has prefix 000
+    alienHandler->SetRunPrefix("");
+
 
     // addding runs
     int runArray[] = {265525, 265521, 265501, 265499, 265435, 265427, 265426, 265425, 265424, 265422, 265421, 265420, 265419, 265388, 265387, 265385, 265384, 265383, 265381, 265378, 265377, 265344, 265343, 265342, 265339, 265338, 265336, 265334, 265332, 265309};
@@ -90,10 +103,10 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
      alienHandler->AddRunNumber(runArray[i]);
     }
 
-   // number of files per subjob
+    // number of files per subjob
     alienHandler->SetSplitMaxInputFileNumber(40);
-    alienHandler->SetExecutable("LambdaHadronEfficiency.sh");
-    alienHandler->SetJDLName("LambdaHadronEfficiency.jdl");
+    alienHandler->SetExecutable("LambdaHadronV0Closure.sh");
+    alienHandler->SetJDLName("LambdaHadronV0Closure.jdl");
     alienHandler->SetTTL(30000);
     alienHandler->SetOutputToRunNo(kTRUE);
     alienHandler->SetKeepLogs(kTRUE);

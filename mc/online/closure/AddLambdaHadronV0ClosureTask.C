@@ -1,24 +1,41 @@
-AliAnalysisTaskLambdaHadronV0Closure *AddLambdaHadronV0ClosureTask(Float_t multLow = 0.0, Float_t multHigh = 80.0){
-    //get the current analysis manager
-    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+AliAnalysisTaskLambdaHadronV0Closure* AddLambdaHadronV0ClosureTask(
+  TString name = "lambdaHadronV0Closure",
+  float multLow = 0, 
+  float multHigh = 80,
+  float trigBit = 1048576,
+  float assocBit = 1024,
+  TString effFilePath = "eff_out.root",
+  TString centEstimator = "V0A"
+  ) {
 
-    if (!mgr) return 0x0;
+  // NOTE: The default arguments are placeholders ONLY, everything should be set within the run macro before function is called
+  // 1024 is primary tracks (tight DCA cut, BIT(10))
+  // 1048576 is kIsHybridGCG (BIT(20))
 
-    if (!mgr->GetInputEventHandler()) return 0x0;
+  AliAnalysisManager *manage = AliAnalysisManager::GetAnalysisManager();
+  if (!manage) return 0x0;
 
-    TString file_name = AliAnalysisManager::GetCommonFileName();
-    TString task_name = "h-lambda_eff";
-
-    AliAnalysisTaskLambdaHadronV0Closure *lambdaEff = new AliAnalysisTaskLambdaHadronV0Closure(task_name.Data(), multLow, multHigh); 
-
-    lambdaEff->SelectCollisionCandidates(AliVEvent::kINT7);
+  if(!manage->GetInputEventHandler()) return 0x0;
 
 
-    mgr->AddTask(lambdaEff);
 
-    mgr->ConnectInput(lambdaEff, 0, mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(lambdaEff, 1, mgr->CreateContainer("h-lambda_eff", TList::Class(), AliAnalysisManager::kOutputContainer, file_name.Data()));
+  TString file_name = AliAnalysisManager::GetCommonFileName();
 
-    return lambdaEff;
+  AliAnalysisTaskLambdaHadronV0Closure* task = new AliAnalysisTaskLambdaHadronV0Closure(name.Data());
+
+  if(!task) return 0x0;
+
+  task->SetMultBounds(multLow, multHigh);
+  task->SetTriggerBit(trigBit);
+  task->SetAssociatedBit(assocBit);
+  task->LoadEfficiencies(effFilePath);
+  task->SetCentEstimator(centEstimator);
+
+  manage->AddTask(task);
+
+  manage->ConnectInput(task, 0, manage->GetCommonInputContainer());
+  manage->ConnectOutput(task, 1, manage->CreateContainer("h-lambda", TList::Class(), AliAnalysisManager::kOutputContainer, file_name.Data()));
+
+  return task;
 
 }

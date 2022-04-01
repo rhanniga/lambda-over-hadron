@@ -21,6 +21,7 @@
 #include "THnSparse.h"
 #include "TParticle.h"
 #include "TFile.h"
+#include "TClonesArray.h"
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -50,6 +51,7 @@ AliAnalysisTaskLambdaHadronV0Closure::AliAnalysisTaskLambdaHadronV0Closure() :
 
     AliAnalysisTaskSE(),
     fAOD(0x0),
+    fMCArray(0x0),
     fOutputList(0x0),
     fCorPoolMgr(0x0),
     fTriggerEff(0x0),
@@ -69,13 +71,22 @@ AliAnalysisTaskLambdaHadronV0Closure::AliAnalysisTaskLambdaHadronV0Closure() :
     fMultHigh(0.0),
     fDaughterBit(0.0),
     fAssociatedBit(0.0),
-    fTriggerBit(0.0)
+    fTriggerBit(0.0),
+    fMCCorPoolMgr(0x0),
+    fLambdaDist_MC(0x0),
+    fTriggerDist_MC(0x0),
+    fAssociatedDist_MC(0x0),
+    fDphiHLambda_MC(0x0),
+    fDphiHH_MC(0x0),
+    fDphiHLambdaMixed_MC(0x0),
+    fDphiHHMixed_MC(0x0)
 {
 }
 
 AliAnalysisTaskLambdaHadronV0Closure::AliAnalysisTaskLambdaHadronV0Closure(const char *name) :
     AliAnalysisTaskSE(name),
     fAOD(0x0),
+    fMCArray(0x0),
     fOutputList(0x0),
     fCorPoolMgr(0x0),
     fTriggerEff(0x0),
@@ -95,7 +106,15 @@ AliAnalysisTaskLambdaHadronV0Closure::AliAnalysisTaskLambdaHadronV0Closure(const
     fMultHigh(0.0),
     fDaughterBit(0.0),
     fAssociatedBit(0.0),
-    fTriggerBit(0.0)
+    fTriggerBit(0.0),
+    fMCCorPoolMgr(0x0),
+    fLambdaDist_MC(0x0),
+    fTriggerDist_MC(0x0),
+    fAssociatedDist_MC(0x0),
+    fDphiHLambda_MC(0x0),
+    fDphiHH_MC(0x0),
+    fDphiHLambdaMixed_MC(0x0),
+    fDphiHHMixed_MC(0x0)
 
 {
     DefineInput(0, TChain::Class());
@@ -128,6 +147,9 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserCreateOutputObjects()
     fCorPoolMgr = new AliEventPoolManager(poolSize, trackDepth, numMultBins, multBins, numzVtxBins, zVtxBins);
     fCorPoolMgr->SetTargetValues(trackDepth, 0.1, 5);
 
+    fMCCorPoolMgr = new AliEventPoolManager(poolSize, trackDepth, numMultBins, multBins, numzVtxBins, zVtxBins);
+    fMCCorPoolMgr->SetTargetValues(trackDepth, 0.1, 5);
+
     //Distribution axes are: Pt, Phi, Eta, zVtx
     int dist_bins[4] = {200, 16, 20, 10};
     double dist_mins[4] = {0.0, 0, -1, -10};
@@ -137,9 +159,17 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserCreateOutputObjects()
     fTriggerDistEff->Sumw2();
     fOutputList->Add(fTriggerDistEff);
 
+    fTriggerDist_MC = new THnSparseF("fTriggerDist_MC", "Trigger Hadron Distribution (MC truth)", 4, dist_bins, dist_mins, dist_maxes);
+    fTriggerDist_MC->Sumw2();
+    fOutputList->Add(fTriggerDist_MC);
+
     fAssociatedHDist = new THnSparseF("fAssociatedHDist", "Associated Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
     fAssociatedHDist->Sumw2();
     fOutputList->Add(fAssociatedHDist);
+
+    fAssociatedDist_MC = new THnSparseF("fAssociatedDist_MC", "Associated Hadron Distribution (MC truth)", 4, dist_bins, dist_mins, dist_maxes);
+    fAssociatedDist_MC->Sumw2();
+    fOutputList->Add(fAssociatedDist_MC);
 
     //Mother distribution axes are: Pt, Phi, Eta, Mass, Event multiplicity
     int mother_dist_bins[5] = {100, 16, 20, 100, 10};
@@ -150,6 +180,10 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserCreateOutputObjects()
     fTriggeredLambdaDist->Sumw2();
     fOutputList->Add(fTriggeredLambdaDist);
 
+    fLambdaDist_MC = new THnSparseF("fLambdaDist_MC", "Lambda Distribution (MC truth)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fLambdaDist_MC->Sumw2();
+    fOutputList->Add(fLambdaDist_MC);
+
     //Correlation axes are: Trigger Pt, Associated Pt, dPhi, dEta, Inv Mass, Zvtx
     int hl_cor_bins[6] = {8, 10, 16, 20, 100, 10};
     double hl_cor_mins[6] = {4.0, 1, -1.0*TMath::Pi()/2.0, -2.0, 1.06, -10};
@@ -159,9 +193,17 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserCreateOutputObjects()
     fDphiHLambdaEff->Sumw2();
     fOutputList->Add(fDphiHLambdaEff);
 
+    fDphiHLambda_MC = new THnSparseF("fDphiHLambda_MC", "Hadron-Lambda Correlation Histogram (MC truth)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambda_MC->Sumw2();
+    fOutputList->Add(fDphiHLambda_MC);
+
     fDphiHLambdaMixed = new THnSparseF("fDphiHLambdaMixed", "Mixed Hadron-Lambda Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambdaMixed->Sumw2();
     fOutputList->Add(fDphiHLambdaMixed);
+
+    fDphiHLambdaMixed_MC = new THnSparseF("fDphiHLambdaMixed_MC", "Mixed Hadron-Lambda Correlation Histogram (MC truth)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambdaMixed_MC->Sumw2();
+    fOutputList->Add(fDphiHLambdaMixed_MC);
 
     //Correlation axes are: Trigger Pt, Associated Pt, dPhi, dEta, Zvtx
     int hh_cor_bins[5] = {16, 10, 16, 20, 10};
@@ -172,9 +214,17 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserCreateOutputObjects()
     fDphiHHEff->Sumw2();
     fOutputList->Add(fDphiHHEff);
 
+    fDphiHH_MC = new THnSparseF("fDphiHH_MC", "Hadron-Hadron Correlation Histogram (MC truth)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHH_MC->Sumw2();
+    fOutputList->Add(fDphiHH_MC);
+
     fDphiHHMixed = new THnSparseF("fDphiHHMixed", "Mixed Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fDphiHHMixed->Sumw2();
     fOutputList->Add(fDphiHHMixed);
+
+    fDphiHHMixed_MC = new THnSparseF("fDphiHHMixed_MC", "Mixed Hadron-Hadron Correlation Histogram (MC truth)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHHMixed_MC->Sumw2();
+    fOutputList->Add(fDphiHHMixed_MC);
 
     PostData(1, fOutputList);
 
@@ -326,6 +376,45 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeSameHLambdaCorrelations(std::vect
     }
 }
 
+void AliAnalysisTaskLambdaHadronV0Closure::MakeSameMCHLambdaCorrelations(std::vector<AliAODMCParticle*> trigger_list, std::vector<AliAODMCParticle*> lambda_list, THnSparse* fDphi, double zVtx)
+{
+    double dphi_point[6];
+
+    for(int j = 0; j < (int)trigger_list.size(); j++) {
+        auto trigger = trigger_list[j];
+        dphi_point[0] = trigger->Pt();
+
+        for(int i = 0; i < (int)lambda_list.size(); i++) {
+            auto lambda = lambda_list[i];
+
+            int first_daughter_index = lambda->GetDaughterFirst();
+            int second_daughter_index = lambda->GetDaughterLast();
+
+            // guaranteed to exist since lambda already passes cuts at this point
+            AliAODMCParticle* first_daughter = (AliAODMCParticle*)fMCArray->At(first_daughter_index);
+            AliAODMCParticle* second_daughter = (AliAODMCParticle*)fMCArray->At(second_daughter_index);
+
+            //Make sure trigger isn't one of the daughters of lambda
+            if((trigger->GetLabel() == first_daughter->GetLabel()) || (trigger->GetLabel() == second_daughter->GetLabel())) continue;
+
+            dphi_point[1] = lambda->Pt();
+            dphi_point[2] = trigger->Phi() - lambda->Phi();
+
+            if(dphi_point[2] < -TMath::Pi()/2.0) {
+                dphi_point[2] += 2.0*TMath::Pi();
+            }
+            else if(dphi_point[2] > 3.0*TMath::Pi()/2.0) {
+                dphi_point[2] -= 2.0*TMath::Pi();
+            }
+
+            dphi_point[3] = trigger->Eta() - lambda->Eta();
+            dphi_point[4] = lambda->M();
+            dphi_point[5] = zVtx;
+            fDphi->Fill(dphi_point);
+        }
+    }
+}
+
 
 void AliAnalysisTaskLambdaHadronV0Closure::MakeSameHHCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAODTrack*> associated_h_list, THnSparse* fDphi, double zVtx, bool eff)
 {
@@ -373,6 +462,38 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeSameHHCorrelations(std::vector<Al
             else{
                 fDphi->Fill(dphi_point);
             }
+        }
+    }
+}
+void AliAnalysisTaskLambdaHadronV0Closure::MakeSameMCHHCorrelations(std::vector<AliAODMCParticle*> trigger_list, std::vector<AliAODMCParticle*> associated_h_list, THnSparse* fDphi, double zVtx)
+{
+    double dphi_point[5];
+
+    for(int j = 0; j < (int)trigger_list.size(); j++) {
+        auto trigger = trigger_list[j];
+
+        dphi_point[0] = trigger->Pt();
+
+        for(int i = 0; i < (int)associated_h_list.size(); i++) {
+            auto associate = associated_h_list[i];
+
+            dphi_point[1] = associate->Pt();
+            dphi_point[2] = trigger->Phi() - associate->Phi();
+
+            if(dphi_point[2] < -TMath::Pi()/2.0) {
+                dphi_point[2] += 2.0*TMath::Pi();
+            }
+            else if(dphi_point[2] > 3.0*TMath::Pi()/2.0) {
+                dphi_point[2] -= 2.0*TMath::Pi();
+            }
+
+            dphi_point[3] = trigger->Eta() - associate->Eta();
+            dphi_point[4] = zVtx;
+
+            bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0.5) 
+                               && (associate->Pt() < 10 && associate->Pt() > 0.5));
+
+            fDphi->Fill(dphi_point);
         }
     }
 }
@@ -430,6 +551,42 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeMixedHLambdaCorrelations(AliEvent
     }
 }
 
+void AliAnalysisTaskLambdaHadronV0Closure::MakeMixedMCHLambdaCorrelations(AliEventPool* fPool, std::vector<AliAODMCParticle*> lambda_list , THnSparse* fDphi, double zVtx)
+{
+    double dphi_point[6];
+    int numEvents = fPool->GetCurrentNEvents();
+    for(int iEvent = 0; iEvent < numEvents; iEvent++) {
+        TObjArray *tracks = fPool->GetEvent(iEvent);
+        tracks->SetName(Form("%d_Zvtx", (int)zVtx));
+        int numTracks = tracks->GetEntriesFast();
+
+        for(int i = 0; i < numTracks; i++) {
+            AliCFParticle *trigger = (AliCFParticle*) tracks->At(i);
+            if(!trigger) continue;
+            dphi_point[0] = trigger->Pt();
+
+            for(int j = 0; j < (int)lambda_list.size(); j++) {
+                auto lambda = lambda_list[j];
+
+                dphi_point[1] = lambda->Pt();
+                dphi_point[2] = trigger->Phi() - lambda->Phi();
+
+                if(dphi_point[2] < -TMath::Pi()/2.0) {
+                    dphi_point[2] += 2.0*TMath::Pi();
+                }
+                else if(dphi_point[2] > 3.0*TMath::Pi()/2.0) {
+                    dphi_point[2] -= 2.0*TMath::Pi();
+                }
+
+                dphi_point[3] = trigger->Eta() - lambda->Eta();
+                dphi_point[4] = lambda->M();
+                dphi_point[5] = zVtx;
+                fDphi->Fill(dphi_point);
+            }
+        }
+    }
+}
+
 void AliAnalysisTaskLambdaHadronV0Closure::MakeMixedHHCorrelations(AliEventPool* fPool, std::vector<AliAODTrack*> associated_h_list, THnSparse* fDphi, double zVtx, bool eff)
 {
     double dphi_point[5];
@@ -442,6 +599,7 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeMixedHHCorrelations(AliEventPool*
 
         for(int i = 0; i < numTracks; i++) {
             AliCFParticle *trigger = (AliCFParticle*) tracks->At(i);
+            std::cout << trigger->Pt() << std::endl;
             dphi_point[0] = trigger->Pt();
 
             for(int j = 0; j < (int)associated_h_list.size(); j++) {
@@ -476,6 +634,42 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeMixedHHCorrelations(AliEventPool*
                 else{
                     fDphi->Fill(dphi_point);
                 }
+            }
+        }
+    }
+}
+
+void AliAnalysisTaskLambdaHadronV0Closure::MakeMixedMCHHCorrelations(AliEventPool* fPool, std::vector<AliAODMCParticle*> associated_h_list, THnSparse* fDphi, double zVtx)
+{
+    double dphi_point[5];
+
+    int numEvents = fPool->GetCurrentNEvents();
+
+    for(int iEvent = 0; iEvent < numEvents; iEvent++) {
+        TObjArray *tracks = fPool->GetEvent(iEvent);
+        int numTracks = tracks->GetEntriesFast();
+
+        for(int i = 0; i < numTracks; i++) {
+            AliCFParticle *trigger = (AliCFParticle*) tracks->At(i);
+            dphi_point[0] = trigger->Pt();
+
+            for(int j = 0; j < (int)associated_h_list.size(); j++) {
+                auto associate = associated_h_list[j];
+
+                dphi_point[1] = associate->Pt();
+                dphi_point[2] = trigger->Phi() - associate->Phi();
+
+                if(dphi_point[2] < -TMath::Pi()/2.0) {
+                    dphi_point[2] += 2.0*TMath::Pi();
+                }
+                else if(dphi_point[2] > 3.0*TMath::Pi()/2.0) {
+                    dphi_point[2] -= 2.0*TMath::Pi();
+                }
+
+                dphi_point[3] = trigger->Eta() - associate->Eta();
+                dphi_point[4] = zVtx;
+
+                fDphi->Fill(dphi_point);
             }
         }
     }
@@ -529,7 +723,8 @@ bool AliAnalysisTaskLambdaHadronV0Closure::IsMCChargedHadron(int pdg_code) {
         || (TMath::Abs(pdg_code) == 2212)
         || (TMath::Abs(pdg_code) == 11)
         || (TMath::Abs(pdg_code) == 13)) return true;
-    else return false;
+
+    return false;
 }
 
 bool AliAnalysisTaskLambdaHadronV0Closure::PassMCTriggerCuts(AliAODMCParticle *mc_particle){
@@ -554,7 +749,7 @@ bool AliAnalysisTaskLambdaHadronV0Closure::PassMCAssociatedCuts(AliAODMCParticle
 
 bool AliAnalysisTaskLambdaHadronV0Closure::PassMCLambdaCuts(AliAODMCParticle *mc_particle){
 
-    if(!(TMath::Abs(pdgcode) == 3122)) return false;
+    if(!(TMath::Abs(mc_particle->GetPdgCode()) == 3122)) return false;
     if(!(TMath::Abs(mc_particle->Eta()) <= 0.8)) return false;
 
     int first_daughter_index = 0;
@@ -571,7 +766,7 @@ bool AliAnalysisTaskLambdaHadronV0Closure::PassMCLambdaCuts(AliAODMCParticle *mc
     // make sure lambda decays into p-pi
     if(!(((TMath::Abs(first_daughter->GetPdgCode()) == 211 && TMath::Abs(second_daughter->GetPdgCode()) == 2212) 
         ||  (TMath::Abs(first_daughter->GetPdgCode()) == 2212 && TMath::Abs(second_daughter->GetPdgCode()) == 211)) 
-        && (first_daughter->GetPdgCode())*(secondDaughter->GetPdgCode()) < 0)) return false;
+        && (first_daughter->GetPdgCode())*(second_daughter->GetPdgCode()) < 0)) return false;
     
     return true;
 }
@@ -584,6 +779,11 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
         AliFatal("THERE IS NO AOD EVENT, CHECK EVENT HANDLER... ALSO WHERE DOES STANDARD OUT GO WHEN I RUN ON THE GRID??? also is it a good idea to use abort??? Probably not!!");
     }
 
+    fMCArray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+    if(!fMCArray){
+        AliError("Array of MC particles not found");
+        return;
+    }
 
     fpidResponse = fInputHandler->GetPIDResponse();
 
@@ -613,6 +813,10 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
     //Trigger list used for event mixing
     TObjArray* fMixedTrackObjArray = new TObjArray;
     fMixedTrackObjArray->SetOwner(kTRUE);
+
+    //MC trigger list used for event mixing
+    TObjArray* fMixedMCTrackObjArray = new TObjArray;
+    fMixedMCTrackObjArray->SetOwner(kTRUE);
 
     // Bool to keep track if the event has a high-pt (> 4 GeV) trigger
     bool is_triggered_event = false;
@@ -724,7 +928,7 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
 
     MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHHEff, primZ, true);
 
-    if(lambda_list.size() > 0 && associated_h_list.size() > 0) {
+    if(/*lambda_list.size() > 0 && */ associated_h_list.size() > 0) {
         AliEventPool *fCorPool = fCorPoolMgr->GetEventPool(multPercentile, primZ);
         if(!fCorPool) {
             AliFatal(Form("No pool found for multiplicity = %f, zVtx = %f", multPercentile, primZ));
@@ -742,6 +946,7 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
     }
     
 
+
     std::vector<AliAODMCParticle*> real_trigger_list;
     std::vector<AliAODMCParticle*> real_associated_list;
     std::vector<AliAODMCParticle*> real_lambda_list;
@@ -750,31 +955,35 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
 
         AliAODMCParticle *mc_particle = (AliAODMCParticle*)fMCArray->At(mc_index);
 
-        if(PassMCTriggerCuts(mc_particle)) real_trigger_list.push_back(mc_particle);
-        if(PassMCAssociatedCuts(mc_particle)) real_trigger_list.push_back(mc_particle);
+        if(PassMCTriggerCuts(mc_particle)) {
+            real_trigger_list.push_back(mc_particle);
+            AliCFParticle *trigger_particle = new AliCFParticle(mc_particle->Pt(), mc_particle->Eta(), mc_particle->Phi(), mc_particle->Charge(), 0);
+            fMixedMCTrackObjArray->Add(trigger_particle);
+        }
+        if(PassMCAssociatedCuts(mc_particle)) real_associated_list.push_back(mc_particle);
         if(PassMCLambdaCuts(mc_particle)) real_lambda_list.push_back(mc_particle);
 
     }
 
     FillSingleMCParticleDist(real_trigger_list, primZ, fTriggerDist_MC);
-    FillSingleMCParticleDist(real_associated_list, primZ, fMCAssociatedDist_MC);
+    FillSingleMCParticleDist(real_associated_list, primZ, fAssociatedDist_MC);
+    FillSingleMCParticleDist(real_lambda_list, primZ, fLambdaDist_MC);
 
-    MakeSameHLambdaCorrelations(real_trigger_list, real_lambda_list, fDphiHLambda_MC, primZ);
+    MakeSameMCHLambdaCorrelations(real_trigger_list, real_lambda_list, fDphiHLambda_MC, primZ);
+    MakeSameMCHHCorrelations(real_trigger_list, real_associated_list, fDphiHH_MC, primZ);
 
-    MakeSameHHCorrelations(real_trigger_list, real_associated_list, fDphiHH_MC, primZ);
-
-    if(real_associated_list.size() > 0 && real_lambda_list.size() > 0) {
+    if(real_associated_list.size() > 0 /*&& real_lambda_list.size() > 0*/) {
         AliEventPool *fMCCorPool = fMCCorPoolMgr->GetEventPool(multPercentile, primZ);
         if(!fMCCorPool) {
             AliFatal(Form("No pool found for multiplicity = %f, zVtx = %f", multPercentile, primZ));
         }
         else {
             if(fMCCorPool->IsReady()) {
-                MakeMixedMCHLambdaCorrelations(fMCCorPool, real_lambda_list, fDphiHLambdaMixed_MC, primZ, true, true);
+                MakeMixedMCHLambdaCorrelations(fMCCorPool, real_lambda_list, fDphiHLambdaMixed_MC, primZ);
                 MakeMixedMCHHCorrelations(fMCCorPool, real_associated_list, fDphiHHMixed_MC, primZ);
             }
-            if(fMixedTrackObjArray->GetEntries() > 0) {
-                fCorPool->UpdatePool(fMixedTrackObjArray);
+            if(fMixedMCTrackObjArray->GetEntries() > 0) {
+                fMCCorPool->UpdatePool(fMixedMCTrackObjArray);
             }
         }
     }
