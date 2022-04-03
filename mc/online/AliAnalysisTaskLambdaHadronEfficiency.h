@@ -133,6 +133,7 @@ private:
     THnSparse  *fRecoAntiLambdaDist;//! Dist of Recon anti lambda
 
     THnSparse  *fRealChargedDist;//! real charged hadron dist
+    THnSparse  *fRealTriggerDist;//! real trigger hadron dist (charged hadron, not always physical primary)
     THnSparse  *fRealKDist;//! real charged K dist
     THnSparse  *fRealPiDist;//! real charged pion dist
     THnSparse  *fRealPiFromLambdaDist;//! real pions (from lambda) dist

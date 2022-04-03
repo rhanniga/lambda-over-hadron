@@ -77,6 +77,7 @@ AliAnalysisTaskLambdaHadronEfficiency::AliAnalysisTaskLambdaHadronEfficiency(con
     fRecoLambdaDist(0x0),
     fRecoAntiLambdaDist(0x0),
     fRealChargedDist(0x0),
+    fRealTriggerDist(0x0),
     fRealKDist(0x0),
     fRealPiDist(0x0),
     fRealPiFromLambdaDist(0x0),
@@ -167,6 +168,7 @@ AliAnalysisTaskLambdaHadronEfficiency::AliAnalysisTaskLambdaHadronEfficiency()
     fRecoLambdaDist(0x0),
     fRecoAntiLambdaDist(0x0),
     fRealChargedDist(0x0),
+    fRealTriggerDist(0x0),
     fRealKDist(0x0),
     fRealPiDist(0x0),
     fRealPiFromLambdaDist(0x0),
@@ -293,6 +295,9 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
 
     fRealChargedDist = new THnSparseF("fRealChargedDist", "Real Charged Hadron distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
     fOutputList->Add(fRealChargedDist);
+
+    fRealTriggerDist = new THnSparseF("fRealTriggerDist", "Real Trigger Hadron distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fOutputList->Add(fRealTriggerDist);
 
     fRealKDist = new THnSparseF("fRealKDist", "Real Kaon distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
     fOutputList->Add(fRealKDist);
@@ -882,24 +887,25 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                     fRecoChargedDist->Fill(singledistPoint);
                 }
             }
-            if(triggerPass){
-                if(TMath::Abs(pdgcode) == 321){
-                    fRecoKTriggerDist->Fill(singledistPoint);
-                    fRecoChargedTriggerDist->Fill(singledistPoint);
-                }else if(TMath::Abs(pdgcode) == 211){
-                    fRecoPiTriggerDist->Fill(singledistPoint);
-                    fRecoChargedTriggerDist->Fill(singledistPoint);
-                }else if(TMath::Abs(pdgcode) == 2212){
-                    fRecopTriggerDist->Fill(singledistPoint);
-                    fRecoChargedTriggerDist->Fill(singledistPoint);
-            }else if(TMath::Abs(pdgcode) == 11){
-                    fRecoeTriggerDist->Fill(singledistPoint);
-                    fRecoChargedTriggerDist->Fill(singledistPoint);
-                }else if(TMath::Abs(pdgcode) == 13){
-                    fRecoMuonTriggerDist->Fill(singledistPoint);
-                    fRecoChargedTriggerDist->Fill(singledistPoint);
-                }
 
+        }
+
+        if(triggerPass){
+            if(TMath::Abs(pdgcode) == 321){
+                fRecoKTriggerDist->Fill(singledistPoint);
+                fRecoChargedTriggerDist->Fill(singledistPoint);
+            }else if(TMath::Abs(pdgcode) == 211){
+                fRecoPiTriggerDist->Fill(singledistPoint);
+                fRecoChargedTriggerDist->Fill(singledistPoint);
+            }else if(TMath::Abs(pdgcode) == 2212){
+                fRecopTriggerDist->Fill(singledistPoint);
+                fRecoChargedTriggerDist->Fill(singledistPoint);
+        }else if(TMath::Abs(pdgcode) == 11){
+                fRecoeTriggerDist->Fill(singledistPoint);
+                fRecoChargedTriggerDist->Fill(singledistPoint);
+            }else if(TMath::Abs(pdgcode) == 13){
+                fRecoMuonTriggerDist->Fill(singledistPoint);
+                fRecoChargedTriggerDist->Fill(singledistPoint);
             }
 
         }
@@ -1163,7 +1169,23 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 fRealChargedDist->Fill(singledistPoint);
                 numCharged += 1;
             }
+        }
 
+        if(TMath::Abs(pdgcode) == 321){
+            fRealTriggerDist->Fill(singledistPoint);
+            numCharged += 1;
+        }else if(TMath::Abs(pdgcode) == 211){
+            fRealTriggerDist->Fill(singledistPoint);
+            numCharged += 1;
+        }else if(TMath::Abs(pdgcode) == 2212){
+            fRealTriggerDist->Fill(singledistPoint);
+            numCharged += 1;
+        }else if(TMath::Abs(pdgcode) == 11){
+            fRealTriggerDist->Fill(singledistPoint);
+            numCharged += 1;
+        }else if(TMath::Abs(pdgcode) == 13){
+            fRealTriggerDist->Fill(singledistPoint);
+            numCharged += 1;
         }
 
         // Get protons and pions that came from lambdas (would not be physical primaries) 
