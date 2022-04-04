@@ -60,6 +60,7 @@ AliAnalysisTaskLambdaHadronV0Closure::AliAnalysisTaskLambdaHadronV0Closure() :
     fTriggerDistEff(0x0),
     fAssociatedHDist(0x0),
     fTriggeredLambdaDist(0x0),
+    fLambdaDist(0x0),
     fDphiHLambdaEff(0x0),
     fDphiHHEff(0x0),
     fDphiHLambdaMixed(0x0),
@@ -95,6 +96,7 @@ AliAnalysisTaskLambdaHadronV0Closure::AliAnalysisTaskLambdaHadronV0Closure(const
     fTriggerDistEff(0x0),
     fAssociatedHDist(0x0),
     fTriggeredLambdaDist(0x0),
+    fLambdaDist(0x0),
     fDphiHLambdaEff(0x0),
     fDphiHHEff(0x0),
     fDphiHLambdaMixed(0x0),
@@ -179,6 +181,10 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserCreateOutputObjects()
     fTriggeredLambdaDist = new THnSparseF("fTriggeredLambdaDist", "Lambda Distribution (with triggered event)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
     fTriggeredLambdaDist->Sumw2();
     fOutputList->Add(fTriggeredLambdaDist);
+
+    fLambdaDist = new THnSparseF("fLambdaDist", "Lambda Distribution (reco with v0 finder)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fLambdaDist->Sumw2();
+    fOutputList->Add(fLambdaDist);
 
     fLambdaDist_MC = new THnSparseF("fLambdaDist_MC", "Lambda Distribution (MC truth)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
     fLambdaDist_MC->Sumw2();
@@ -599,7 +605,6 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeMixedHHCorrelations(AliEventPool*
 
         for(int i = 0; i < numTracks; i++) {
             AliCFParticle *trigger = (AliCFParticle*) tracks->At(i);
-            std::cout << trigger->Pt() << std::endl;
             dphi_point[0] = trigger->Pt();
 
             for(int j = 0; j < (int)associated_h_list.size(); j++) {
@@ -918,6 +923,8 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
     // Filling all of our single particle distribution histograms:
     FillSingleParticleDist(trigger_list, primZ, fTriggerDistEff, true);
     FillSingleParticleDist(associated_h_list, primZ, fAssociatedHDist);
+    FillMotherDist(lambda_list, primZ, fLambdaDist, false);
+    FillMotherDist(antilambda_list, primZ, fLambdaDist, true);
 
     // Filling our single particle lambda distribution histogram:
     if(is_triggered_event) FillMotherDist(lambda_list, multPercentile, fTriggeredLambdaDist, false);
@@ -971,6 +978,10 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
 
     MakeSameMCHLambdaCorrelations(real_trigger_list, real_lambda_list, fDphiHLambda_MC, primZ);
     MakeSameMCHHCorrelations(real_trigger_list, real_associated_list, fDphiHH_MC, primZ);
+    
+
+    std::cout << "# of real lambdas: " << real_lambda_list.size() << std::endl;
+    std::cout << "# of reco lambdas: " << lambda_list.size() + antilambda_list.size() << std::endl;
 
     if(real_associated_list.size() > 0 /*&& real_lambda_list.size() > 0*/) {
         AliEventPool *fMCCorPool = fMCCorPoolMgr->GetEventPool(multPercentile, primZ);
@@ -986,6 +997,47 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
                 fMCCorPool->UpdatePool(fMixedMCTrackObjArray);
             }
         }
+    }
+
+    // scratch code
+    for(int iv0 = 0; iv0 < numV0s; iv0++) {
+
+        AliAODv0 *vZero = fAOD->GetV0(iv0);
+        if(!vZero) continue;
+        if(vZero->GetOnFlyStatus()) continue;
+
+        AliAODTrack *ptrack=(AliAODTrack *)vZero->GetDaughter(0);
+        AliAODTrack *ntrack=(AliAODTrack *)vZero->GetDaughter(1);
+        
+        int plabel = ptrack->GetLabel();
+        int nlabel = ntrack->GetLabel();
+
+        if(plabel < 0 || nlabel < 0) continue;
+
+        AliAODMCParticle* mcpospart = (AliAODMCParticle*)fMCArray->At(plabel);
+        AliAODMCParticle* mcnegpart = (AliAODMCParticle*)fMCArray->At(nlabel);
+
+        int posPDG = mcpospart->GetPdgCode();
+        int negPDG = mcnegpart->GetPdgCode();
+
+        if(!((posPDG == 2212 && negPDG == -211) || (posPDG == 211 && negPDG == -2212))) continue;
+
+        int posmomlabel = mcpospart->GetMother(); 
+        int negmomlabel = mcnegpart->GetMother(); 
+
+        if(posmomlabel < 0 || negmomlabel < 0) continue;
+
+        if(posmomlabel != negmomlabel) {
+            continue ;
+        }
+
+        AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(posmomlabel);
+
+        int motherPDG = mcmother->GetPdgCode();
+
+        std::cout << "here" << std::endl;
+        if(!(TMath::Abs(motherPDG) == 3122)) continue;
+        std::cout << "THERE WAS v0 lambda here!!" << std::endl;
     }
 
     PostData(1, fOutputList);

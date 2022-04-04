@@ -76,6 +76,7 @@ private:
   THnSparse* fTriggerDistEff;  //!>! single particle trigger dist (corrected for efficiency)
   THnSparse* fAssociatedHDist;  //!>! single particle associated hadron dist
   THnSparse* fTriggeredLambdaDist;  //!>! single particle lambda dist within a triggered event
+  THnSparse* fLambdaDist;  //!>! single particle lambda dist
 
   THnSparse* fTriggerDist_MC;  //!>! single particle trigger dist (MC truth)
   THnSparse* fAssociatedDist_MC;  //!>! single particle associated hadron dist (MC truth)
