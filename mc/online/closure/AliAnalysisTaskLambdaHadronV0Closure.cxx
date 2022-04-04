@@ -292,6 +292,20 @@ void AliAnalysisTaskLambdaHadronV0Closure::FillMotherDist(std::vector<AliAnalysi
     }
 }
 
+void AliAnalysisTaskLambdaHadronV0Closure::FillMCMotherDist(std::vector<AliAODMCParticle*> particle_list, float multPercentile, THnSparse* fDist)
+{
+    double dist_points[5]; //Pt, Phi, Eta, M, event multiplicity
+    for(int i = 0; i < (int)particle_list.size(); i++) {
+        auto particle = particle_list[i];
+        dist_points[0] = particle->Pt();
+        dist_points[1] = particle->Phi();
+        dist_points[2] = particle->Eta();
+        dist_points[3] = particle->M();
+        dist_points[4] = multPercentile;
+        fDist->Fill(dist_points);
+    }
+}
+
 void AliAnalysisTaskLambdaHadronV0Closure::SetMultBounds(float multLow, float multHigh) {
     fMultLow = multLow;
     fMultHigh = multHigh;
@@ -703,7 +717,7 @@ bool AliAnalysisTaskLambdaHadronV0Closure::PassDaughterCuts(AliAODTrack *track){
 uint8_t AliAnalysisTaskLambdaHadronV0Closure::PassV0LambdaCuts(AliAODv0 *v0) {
 
     if(v0->GetOnFlyStatus()) return 0;
-    if(!TMath::Abs(v0->Eta()) < 0.8) return 0;
+    if(!(TMath::Abs(v0->Eta()) < 0.8)) return 0;
 
     AliAODTrack *ptrack=(AliAODTrack *)v0->GetDaughter(0);
     AliAODTrack *ntrack=(AliAODTrack *)v0->GetDaughter(1);
@@ -734,25 +748,37 @@ uint8_t AliAnalysisTaskLambdaHadronV0Closure::PassV0LambdaCuts(AliAODv0 *v0) {
 }
 
 bool AliAnalysisTaskLambdaHadronV0Closure::PassAssociatedCuts(AliAODTrack *track){
-    bool pass = true;
 
-    pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
-    pass = pass && (track->Pt() >= 0.15);
+    if(!(TMath::Abs(track->Eta()) <= 0.8)) return false;
+    if(!(track->Pt() >= 0.15)) return false;
+    if(!track->TestFilterMask(fAssociatedBit)) return false;
 
-    pass = pass && track->TestFilterMask(fAssociatedBit);
+    int label = track->GetLabel();
+    if(label < 0) return false;
 
-    return pass;
+    AliAODMCParticle* mcpart = (AliAODMCParticle*)fMCArray->At(label);
+
+    int pdg = mcpart->GetPdgCode();
+    if(!IsMCChargedHadron(pdg)) return false;
+
+    return true;
 }
 
 bool AliAnalysisTaskLambdaHadronV0Closure::PassTriggerCuts(AliAODTrack *track){
-    bool pass = true;
 
-    pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
-    pass = pass && (track->Pt() >= 0.15);
+    if(!(TMath::Abs(track->Eta()) <= 0.8)) return false;
+    if(!(track->Pt() >= 0.15)) return false;
+    if(!track->TestBit(fTriggerBit)) return false;
 
-    pass = pass && track->TestBit(fTriggerBit);
+    int label = track->GetLabel();
+    if(label < 0) return false;
 
-    return pass;
+    AliAODMCParticle* mcpart = (AliAODMCParticle*)fMCArray->At(label);
+
+    int pdg = mcpart->GetPdgCode();
+    if(!IsMCChargedHadron(pdg)) return false;
+
+    return true;
 }
 
 bool AliAnalysisTaskLambdaHadronV0Closure::IsMCChargedHadron(int pdg_code) {
@@ -916,7 +942,7 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
             antilambda.vzero = v0;
             antilambda.daughter1ID = posTrack->GetID();
             antilambda.daughter2ID = negTrack->GetID();
-            lambda_list.push_back(antilambda);
+            antilambda_list.push_back(antilambda);
         }
 
     }
@@ -976,14 +1002,12 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
 
     FillSingleMCParticleDist(real_trigger_list, primZ, fTriggerDist_MC);
     FillSingleMCParticleDist(real_associated_list, primZ, fAssociatedDist_MC);
-    FillSingleMCParticleDist(real_lambda_list, primZ, fLambdaDist_MC);
+    FillMCMotherDist(real_lambda_list, primZ, fLambdaDist_MC);
 
     MakeSameMCHLambdaCorrelations(real_trigger_list, real_lambda_list, fDphiHLambda_MC, primZ);
     MakeSameMCHHCorrelations(real_trigger_list, real_associated_list, fDphiHH_MC, primZ);
     
 
-    std::cout << "# of real lambdas: " << real_lambda_list.size() << std::endl;
-    std::cout << "# of reco lambdas: " << lambda_list.size() + antilambda_list.size() << std::endl;
 
     if(real_associated_list.size() > 0 /*&& real_lambda_list.size() > 0*/) {
         AliEventPool *fMCCorPool = fMCCorPoolMgr->GetEventPool(multPercentile, primZ);
@@ -999,47 +1023,6 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
                 fMCCorPool->UpdatePool(fMixedMCTrackObjArray);
             }
         }
-    }
-
-    // scratch code
-    for(int iv0 = 0; iv0 < numV0s; iv0++) {
-
-        AliAODv0 *vZero = fAOD->GetV0(iv0);
-        if(!vZero) continue;
-        if(vZero->GetOnFlyStatus()) continue;
-
-        AliAODTrack *ptrack=(AliAODTrack *)vZero->GetDaughter(0);
-        AliAODTrack *ntrack=(AliAODTrack *)vZero->GetDaughter(1);
-        
-        int plabel = ptrack->GetLabel();
-        int nlabel = ntrack->GetLabel();
-
-        if(plabel < 0 || nlabel < 0) continue;
-
-        AliAODMCParticle* mcpospart = (AliAODMCParticle*)fMCArray->At(plabel);
-        AliAODMCParticle* mcnegpart = (AliAODMCParticle*)fMCArray->At(nlabel);
-
-        int posPDG = mcpospart->GetPdgCode();
-        int negPDG = mcnegpart->GetPdgCode();
-
-        if(!((posPDG == 2212 && negPDG == -211) || (posPDG == 211 && negPDG == -2212))) continue;
-
-        int posmomlabel = mcpospart->GetMother(); 
-        int negmomlabel = mcnegpart->GetMother(); 
-
-        if(posmomlabel < 0 || negmomlabel < 0) continue;
-
-        if(posmomlabel != negmomlabel) {
-            continue ;
-        }
-
-        AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(posmomlabel);
-
-        int motherPDG = mcmother->GetPdgCode();
-
-        std::cout << "here" << std::endl;
-        if(!(TMath::Abs(motherPDG) == 3122)) continue;
-        std::cout << "THERE WAS v0 lambda here!!" << std::endl;
     }
 
     PostData(1, fOutputList);
