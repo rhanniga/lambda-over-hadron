@@ -110,13 +110,14 @@ private:
   void MakeMixedMCHLambdaCorrelations(AliEventPool *fPool, std::vector<AliAODMCParticle*> lambda_list, THnSparse* fDphi, double zVtx);
   void MakeMixedMCHHCorrelations(AliEventPool *fPool, std::vector<AliAODMCParticle*> associated_h_list , THnSparse* fDphi, double zVtx);
 
-  bool PassDaughterCuts(AliAODTrack *track);
-  bool PassTriggerCuts(AliAODTrack *track);
-  bool PassAssociatedCuts(AliAODTrack *track);
-  bool PassMCTriggerCuts(AliAODMCParticle *mc_track);
-  bool PassMCAssociatedCuts(AliAODMCParticle *mc_track);
-  bool PassMCLambdaCuts(AliAODMCParticle *mc_track);
-  bool IsMCChargedHadron(int pdg_code);
+  bool PassDaughterCuts(AliAODTrack *track); // check if the AOD track passes the daughter cuts
+  bool PassTriggerCuts(AliAODTrack *track); // check if the AOD track passes the trigger cuts 
+  bool PassAssociatedCuts(AliAODTrack *track); // check if the AOD track passes the associated cuts
+  uint8_t PassV0LambdaCuts(AliAODv0 *v0); // check if the AOD v0 passes the lambda cuts (0 = no, 1 = yes and lambda, 2 = yes and anti-lambda)
+  bool PassMCTriggerCuts(AliAODMCParticle *mc_track); // check if the MC particle passes the trigger cuts
+  bool PassMCAssociatedCuts(AliAODMCParticle *mc_track); // check if the MC particle passes the associated cuts
+  bool PassMCLambdaCuts(AliAODMCParticle *mc_track); // check if the MC particle passes the lambda cuts 
+  bool IsMCChargedHadron(int pdg_code); // check if the MC particle is a charged hadron
 
   ClassDef(AliAnalysisTaskLambdaHadronV0Closure, 3);
 

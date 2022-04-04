@@ -42,6 +42,7 @@
 #include "AliMCEvent.h"
 #include "AliStack.h"
 #include "AliMCEventHandler.h"
+#include "AliAODv0.h"
 
 #include "AliAnalysisTaskLambdaHadronV0Closure.h"
 
@@ -699,6 +700,39 @@ bool AliAnalysisTaskLambdaHadronV0Closure::PassDaughterCuts(AliAODTrack *track){
     return pass;
 }
 
+uint8_t AliAnalysisTaskLambdaHadronV0Closure::PassV0LambdaCuts(AliAODv0 *v0) {
+
+    if(v0->GetOnFlyStatus()) return 0;
+    if(!TMath::Abs(v0->Eta()) < 0.8) return 0;
+
+    AliAODTrack *ptrack=(AliAODTrack *)v0->GetDaughter(0);
+    AliAODTrack *ntrack=(AliAODTrack *)v0->GetDaughter(1);
+
+    if(!PassDaughterCuts(ptrack)) return 0;
+    if(!PassDaughterCuts(ntrack)) return 0;
+        
+    int plabel = ptrack->GetLabel();
+    int nlabel = ntrack->GetLabel();
+
+
+    if(plabel < 0 || nlabel < 0) return 0;
+
+    AliAODMCParticle* mcpospart = (AliAODMCParticle*)fMCArray->At(plabel);
+    AliAODMCParticle* mcnegpart = (AliAODMCParticle*)fMCArray->At(nlabel);
+
+    int posPDG = mcpospart->GetPdgCode();
+    int negPDG = mcnegpart->GetPdgCode();
+
+    if(posPDG == 2212 && negPDG == -211) {
+        return 1;
+    } else if(posPDG == 211 && negPDG == -2212) {
+        return 2;
+    }
+    else {
+        return 0;
+    }
+}
+
 bool AliAnalysisTaskLambdaHadronV0Closure::PassAssociatedCuts(AliAODTrack *track){
     bool pass = true;
 
@@ -865,43 +899,11 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
     int numV0s = fAOD->GetNumberOfV0s();
     for(int i = 0; i < numV0s; i++) {
         AliAODv0 *v0 = fAOD->GetV0(i);
-        if(v0->GetOnFlyStatus()) continue;
 
-        AliAODTrack* posTrack = (AliAODTrack*) v0->GetDaughter(0);
-        AliAODTrack* negTrack = (AliAODTrack*) v0->GetDaughter(1);
+        AliAODTrack *posTrack=(AliAODTrack *)v0->GetDaughter(0);
+        AliAODTrack *negTrack=(AliAODTrack *)v0->GetDaughter(1);
 
-        // Occasionally returns null, not quite sure why...
-        if(!posTrack || !negTrack) continue;
-        if(!(PassDaughterCuts(posTrack) && PassDaughterCuts(negTrack))) continue;
-
-
-        double pos_TPCNSigmaProton = 1000;
-        double pos_TOFNSigmaProton = 1000;
-        double neg_TPCNSigmaPion = 1000;
-        double neg_TOFNSigmaPion = 1000;
-
-        double neg_TPCNSigmaProton = 1000;
-        double neg_TOFNSigmaProton = 1000;
-        double pos_TPCNSigmaPion = 1000;
-        double pos_TOFNSigmaPion = 1000;
-
-        pos_TPCNSigmaProton = fpidResponse->NumberOfSigmasTPC(posTrack, AliPID::kProton);
-        pos_TOFNSigmaProton = fpidResponse->NumberOfSigmasTOF(posTrack, AliPID::kProton);
-        neg_TPCNSigmaPion = fpidResponse->NumberOfSigmasTPC(negTrack, AliPID::kPion);
-        neg_TOFNSigmaPion = fpidResponse->NumberOfSigmasTOF(negTrack, AliPID::kPion);
-
-        neg_TPCNSigmaProton = fpidResponse->NumberOfSigmasTPC(negTrack, AliPID::kProton);
-        neg_TOFNSigmaProton = fpidResponse->NumberOfSigmasTOF(negTrack, AliPID::kProton);
-        pos_TPCNSigmaPion = fpidResponse->NumberOfSigmasTPC(posTrack, AliPID::kPion);
-        pos_TOFNSigmaPion = fpidResponse->NumberOfSigmasTOF(posTrack, AliPID::kPion);
-
-        bool isNegTrackPion = TMath::Abs(neg_TPCNSigmaPion) <= 3 && (TMath::Abs(neg_TOFNSigmaPion) <= 3 || neg_TOFNSigmaPion == 1000);
-        bool isPosTrackProton = TMath::Abs(pos_TPCNSigmaProton) <= 2 && (TMath::Abs(pos_TOFNSigmaProton) <= 2 || pos_TOFNSigmaProton == 1000);
-
-        bool isPosTrackPion = TMath::Abs(pos_TPCNSigmaPion) <= 3 && (TMath::Abs(pos_TOFNSigmaPion) <= 3 || pos_TOFNSigmaPion == 1000);
-        bool isNegTrackProton = TMath::Abs(neg_TPCNSigmaProton) <= 2 && (TMath::Abs(neg_TOFNSigmaProton) <= 2 || neg_TOFNSigmaProton == 1000);
-
-        if((isNegTrackPion && isPosTrackProton)) {
+        if(PassV0LambdaCuts(v0) == 1) {
             AliMotherContainer lambda;
             lambda.vzero = v0;
             lambda.daughter1ID = posTrack->GetID();
@@ -909,7 +911,7 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
             lambda_list.push_back(lambda);
         }
 
-        if((isPosTrackPion && isNegTrackProton)) {
+        if(PassV0LambdaCuts(v0) == 2) {
             AliMotherContainer antilambda;
             antilambda.vzero = v0;
             antilambda.daughter1ID = posTrack->GetID();
