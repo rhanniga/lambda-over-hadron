@@ -730,7 +730,7 @@ bool AliAnalysisTaskLambdaHadronV0Closure::IsMCChargedHadron(int pdg_code) {
 bool AliAnalysisTaskLambdaHadronV0Closure::PassMCTriggerCuts(AliAODMCParticle *mc_particle){
 
     if(!IsMCChargedHadron(mc_particle->PdgCode())) return false;
-    if(!mc_particle->IsPhysicalPrimary()) return false; // for now trigger is physical primary, could change
+    // if(!mc_particle->IsPhysicalPrimary()) return false; // for now trigger is physical primary, could change
     if(!(TMath::Abs(mc_particle->Eta()) <= 0.8)) return false;
     if(!(mc_particle->Pt() >= 0.15)) return false;
 
