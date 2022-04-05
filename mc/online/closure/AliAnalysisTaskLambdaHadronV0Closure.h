@@ -29,6 +29,7 @@ class AliPIDResponse;
 class AliMultSelection;
 class AliEventPool;
 class AliAODTrack;
+class AliAODMCParticle;
 class AliAODv0;
 
 
@@ -98,7 +99,7 @@ private:
 
   void FillSingleParticleDist(std::vector<AliAODTrack*> particle_list, double zVtx, THnSparse* fDist, bool trig_eff=false);
   void FillSingleMCParticleDist(std::vector<AliAODMCParticle*> particle_list, double zVtx, THnSparse* fDist);
-  void FillMotherDist(std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> particle_list, float multPercentile, THnSparse* fDist, bool isAntiLambda);
+  void FillMotherDist(std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> particle_list, float multPercentile, THnSparse* fDist, bool isAntiLambda, bool lambdaEff=true);
   void FillMCMotherDist(std::vector<AliAODMCParticle*> particle_list, float multPercentile, THnSparse* fDist);
 
   void MakeSameHLambdaCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx, bool eff, bool isAntiLambda);

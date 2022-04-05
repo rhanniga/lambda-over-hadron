@@ -273,7 +273,7 @@ void AliAnalysisTaskLambdaHadronV0Closure::FillSingleMCParticleDist(std::vector<
     }
 }
 
-void AliAnalysisTaskLambdaHadronV0Closure::FillMotherDist(std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> particle_list, float multPercentile, THnSparse* fDist, bool isAntiLambda)
+void AliAnalysisTaskLambdaHadronV0Closure::FillMotherDist(std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> particle_list, float multPercentile, THnSparse* fDist, bool isAntiLambda, bool lambdaEff)
 {
     double dist_points[5]; //Pt, Phi, Eta, M, event multiplicity
     for(int i = 0; i < (int)particle_list.size(); i++) {
@@ -288,7 +288,16 @@ void AliAnalysisTaskLambdaHadronV0Closure::FillMotherDist(std::vector<AliAnalysi
             dist_points[3] = particle->MassLambda();
         }
         dist_points[4] = multPercentile;
-        fDist->Fill(dist_points);
+        bool in_pt_range = (particle->Pt() < 10 && particle->Pt() > 0.5);
+        if(lambdaEff && in_pt_range) {
+            int lambdaBin = fLambdaEff->FindBin(particle->Pt());
+            double lambdaEff = fLambdaEff->GetBinContent(lambdaBin);
+            double lambdaScale = 1.0/lambdaEff;
+            fDist->Fill(dist_points, lambdaScale);
+        }
+        else{
+            fDist->Fill(dist_points);
+        }
     }
 }
 
@@ -724,10 +733,11 @@ uint8_t AliAnalysisTaskLambdaHadronV0Closure::PassV0LambdaCuts(AliAODv0 *v0) {
 
     if(!PassDaughterCuts(ptrack)) return 0;
     if(!PassDaughterCuts(ntrack)) return 0;
+
+
         
     int plabel = ptrack->GetLabel();
     int nlabel = ntrack->GetLabel();
-
 
     if(plabel < 0 || nlabel < 0) return 0;
 
@@ -736,6 +746,20 @@ uint8_t AliAnalysisTaskLambdaHadronV0Closure::PassV0LambdaCuts(AliAODv0 *v0) {
 
     int posPDG = mcpospart->GetPdgCode();
     int negPDG = mcnegpart->GetPdgCode();
+
+    int mlabel_pos = mcpospart->GetMother();
+    int mlabel_neg = mcnegpart->GetMother();
+
+    if(mlabel_pos < 0 || mlabel_neg < 0) return 0;
+    if(mlabel_pos != mlabel_neg) return 0;
+
+    AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(mlabel_pos);
+    if(!mcmother->IsPhysicalPrimary()) return 0;
+    std::cout << "here 1" << std::endl;
+
+    int momPDG = mcmother->GetPdgCode();
+    if(TMath::Abs(momPDG) != 3122) return 0;
+    std::cout << "here 2" << std::endl;
 
     if(posPDG == 2212 && negPDG == -211) {
         return 1;
@@ -815,6 +839,7 @@ bool AliAnalysisTaskLambdaHadronV0Closure::PassMCAssociatedCuts(AliAODMCParticle
 bool AliAnalysisTaskLambdaHadronV0Closure::PassMCLambdaCuts(AliAODMCParticle *mc_particle){
 
     if(!(TMath::Abs(mc_particle->GetPdgCode()) == 3122)) return false;
+    if(!(mc_particle->IsPhysicalPrimary())) return false; // testing, testing, 1 2 3
     if(!(TMath::Abs(mc_particle->Eta()) <= 0.8)) return false;
 
     int first_daughter_index = 0;
