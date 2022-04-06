@@ -59,11 +59,16 @@ AliAnalysisTaskLambdaHadronV0Closure::AliAnalysisTaskLambdaHadronV0Closure() :
     fAssociatedEff(0x0),
     fLambdaEff(0x0),
     fTriggerDistEff(0x0),
+    fTriggerDistEff_checkMC(0x0),
+    fTriggerDist(0x0),
     fAssociatedHDist(0x0),
+    fAssociatedHDist_checkMC(0x0),
     fTriggeredLambdaDist(0x0),
     fLambdaDist(0x0),
     fDphiHLambdaEff(0x0),
+    fDphiHLambdaEff_MCKin(0x0),
     fDphiHHEff(0x0),
+    fDphiHHEff_checkMC(0x0),
     fDphiHLambdaMixed(0x0),
     fDphiHHMixed(0x0),
     fpidResponse(0x0),
@@ -95,11 +100,16 @@ AliAnalysisTaskLambdaHadronV0Closure::AliAnalysisTaskLambdaHadronV0Closure(const
     fAssociatedEff(0x0),
     fLambdaEff(0x0),
     fTriggerDistEff(0x0),
+    fTriggerDistEff_checkMC(0x0),
+    fTriggerDist(0x0),
     fAssociatedHDist(0x0),
+    fAssociatedHDist_checkMC(0x0),
     fTriggeredLambdaDist(0x0),
     fLambdaDist(0x0),
     fDphiHLambdaEff(0x0),
+    fDphiHLambdaEff_MCKin(0x0),
     fDphiHHEff(0x0),
+    fDphiHHEff_checkMC(0x0),
     fDphiHLambdaMixed(0x0),
     fDphiHHMixed(0x0),
     fpidResponse(0x0),
@@ -162,6 +172,14 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserCreateOutputObjects()
     fTriggerDistEff->Sumw2();
     fOutputList->Add(fTriggerDistEff);
 
+    fTriggerDistEff_checkMC = new THnSparseF("fTriggerDistEff_checkMC", "Efficiency Corrected Trigger Hadron Distribution (is MC hadron, is MC physical primary)", 4, dist_bins, dist_mins, dist_maxes);
+    fTriggerDistEff_checkMC->Sumw2();
+    fOutputList->Add(fTriggerDistEff_checkMC);
+
+    fTriggerDist = new THnSparseF("fTriggerDist", "Non-Efficiency Corrected Trigger Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
+    fTriggerDist->Sumw2();
+    fOutputList->Add(fTriggerDist);
+
     fTriggerDist_MC = new THnSparseF("fTriggerDist_MC", "Trigger Hadron Distribution (MC truth)", 4, dist_bins, dist_mins, dist_maxes);
     fTriggerDist_MC->Sumw2();
     fOutputList->Add(fTriggerDist_MC);
@@ -169,6 +187,10 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserCreateOutputObjects()
     fAssociatedHDist = new THnSparseF("fAssociatedHDist", "Associated Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
     fAssociatedHDist->Sumw2();
     fOutputList->Add(fAssociatedHDist);
+
+    fAssociatedHDist_checkMC = new THnSparseF("fAssociatedHDist_checkMC", "Associated Hadron Distribution (is MC hadron, is MC physical primary)", 4, dist_bins, dist_mins, dist_maxes);
+    fAssociatedHDist_checkMC->Sumw2();
+    fOutputList->Add(fAssociatedHDist_checkMC);
 
     fAssociatedDist_MC = new THnSparseF("fAssociatedDist_MC", "Associated Hadron Distribution (MC truth)", 4, dist_bins, dist_mins, dist_maxes);
     fAssociatedDist_MC->Sumw2();
@@ -200,6 +222,10 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserCreateOutputObjects()
     fDphiHLambdaEff->Sumw2();
     fOutputList->Add(fDphiHLambdaEff);
 
+    fDphiHLambdaEff_MCKin = new THnSparseF("fDphiHLambdaEff_MCKin", "Efficiency-corrected Hadron-Lambda Correlation Histogram (using MC kinematics on V0)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambdaEff_MCKin->Sumw2();
+    fOutputList->Add(fDphiHLambdaEff_MCKin);
+
     fDphiHLambda_MC = new THnSparseF("fDphiHLambda_MC", "Hadron-Lambda Correlation Histogram (MC truth)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambda_MC->Sumw2();
     fOutputList->Add(fDphiHLambda_MC);
@@ -220,6 +246,10 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserCreateOutputObjects()
     fDphiHHEff = new THnSparseF("fDphiHHEff", "Efficiency corrected Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fDphiHHEff->Sumw2();
     fOutputList->Add(fDphiHHEff);
+
+    fDphiHHEff_checkMC = new THnSparseF("fDphiHHEff_checkMC", "Efficiency corrected Hadron-Hadron Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHHEff_checkMC->Sumw2();
+    fOutputList->Add(fDphiHHEff_checkMC);
 
     fDphiHH_MC = new THnSparseF("fDphiHH_MC", "Hadron-Hadron Correlation Histogram (MC truth)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fDphiHH_MC->Sumw2();
@@ -393,6 +423,62 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeSameHLambdaCorrelations(std::vect
                 double trigEff = fTriggerEff->GetBinContent(trigBin);
                 double triggerScale = 1.0/trigEff;
                 int lambdaBin = fLambdaEff->FindBin(lambda.vzero->Pt());
+                double lambdaEff = fLambdaEff->GetBinContent(lambdaBin);
+                double lambdaScale = 1.0/lambdaEff;
+                double totalScale = triggerScale*lambdaScale;
+                fDphi->Fill(dphi_point, totalScale);
+
+            }
+            else{
+                fDphi->Fill(dphi_point);
+            }
+        }
+    }
+}
+void AliAnalysisTaskLambdaHadronV0Closure::MakeSameHLambdaCorrelations_withMCKin(std::vector<AliAODTrack*> trigger_list, std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx, bool eff)
+{
+    double dphi_point[6];
+
+    for(int j = 0; j < (int)trigger_list.size(); j++) {
+        auto trigger = trigger_list[j];
+        dphi_point[0] = trigger->Pt();
+
+        for(int i = 0; i < (int)lambda_list.size(); i++) {
+
+            auto lambda = lambda_list[i];
+            AliAODTrack *posTrack=(AliAODTrack *)lambda.vzero->GetDaughter(0);
+                    
+            int plabel = posTrack->GetLabel();
+            AliAODMCParticle* mcpospart = (AliAODMCParticle*)fMCArray->At(plabel);
+            int mlabel_pos = mcpospart->GetMother();
+            AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(mlabel_pos);
+
+            //Make sure trigger isn't one of the daughters of lambda
+            if((trigger->GetID() == lambda.daughter1ID) || (trigger->GetID() == lambda.daughter2ID)) continue;
+
+            dphi_point[1] = mcmother->Pt();
+            dphi_point[2] = trigger->Phi() - mcmother->Phi();
+
+            if(dphi_point[2] < -TMath::Pi()/2.0) {
+                dphi_point[2] += 2.0*TMath::Pi();
+            }
+            else if(dphi_point[2] > 3.0*TMath::Pi()/2.0) {
+                dphi_point[2] -= 2.0*TMath::Pi();
+            }
+
+            dphi_point[3] = trigger->Eta() - mcmother->Eta();
+            dphi_point[4] = mcmother->M();
+            dphi_point[5] = zVtx;
+
+            bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0.5) 
+                               && (mcmother->Pt() < 10 && mcmother->Pt() > 0.5));
+
+            if(eff && in_pt_range) {
+
+                int trigBin = fTriggerEff->FindBin(trigger->Pt());
+                double trigEff = fTriggerEff->GetBinContent(trigBin);
+                double triggerScale = 1.0/trigEff;
+                int lambdaBin = fLambdaEff->FindBin(mcmother->Pt());
                 double lambdaEff = fLambdaEff->GetBinContent(lambdaBin);
                 double lambdaScale = 1.0/lambdaEff;
                 double totalScale = triggerScale*lambdaScale;
@@ -754,12 +840,10 @@ uint8_t AliAnalysisTaskLambdaHadronV0Closure::PassV0LambdaCuts(AliAODv0 *v0) {
     if(mlabel_pos != mlabel_neg) return 0;
 
     AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(mlabel_pos);
-    if(!mcmother->IsPhysicalPrimary()) return 0;
-    std::cout << "here 1" << std::endl;
+    // if(!mcmother->IsPhysicalPrimary()) return 0;
 
     int momPDG = mcmother->GetPdgCode();
     if(TMath::Abs(momPDG) != 3122) return 0;
-    std::cout << "here 2" << std::endl;
 
     if(posPDG == 2212 && negPDG == -211) {
         return 1;
@@ -771,36 +855,42 @@ uint8_t AliAnalysisTaskLambdaHadronV0Closure::PassV0LambdaCuts(AliAODv0 *v0) {
     }
 }
 
-bool AliAnalysisTaskLambdaHadronV0Closure::PassAssociatedCuts(AliAODTrack *track){
+bool AliAnalysisTaskLambdaHadronV0Closure::PassAssociatedCuts(AliAODTrack *track, bool checkMC){
 
     if(!(TMath::Abs(track->Eta()) <= 0.8)) return false;
     if(!(track->Pt() >= 0.15)) return false;
     if(!track->TestFilterMask(fAssociatedBit)) return false;
 
-    int label = track->GetLabel();
-    if(label < 0) return false;
+    if(checkMC) {
+        int label = track->GetLabel();
+        if(label < 0) return false;
 
-    AliAODMCParticle* mcpart = (AliAODMCParticle*)fMCArray->At(label);
+        AliAODMCParticle* mcpart = (AliAODMCParticle*)fMCArray->At(label);
 
-    int pdg = mcpart->GetPdgCode();
-    if(!IsMCChargedHadron(pdg)) return false;
+        int pdg = mcpart->GetPdgCode();
+        if(!IsMCChargedHadron(pdg)) return false;
+        if(!mcpart->IsPhysicalPrimary()) return false;
+    }
 
     return true;
 }
 
-bool AliAnalysisTaskLambdaHadronV0Closure::PassTriggerCuts(AliAODTrack *track){
+bool AliAnalysisTaskLambdaHadronV0Closure::PassTriggerCuts(AliAODTrack *track, bool checkMC){
 
     if(!(TMath::Abs(track->Eta()) <= 0.8)) return false;
     if(!(track->Pt() >= 0.15)) return false;
     if(!track->TestBit(fTriggerBit)) return false;
 
-    int label = track->GetLabel();
-    if(label < 0) return false;
+    if(checkMC) {
+        int label = track->GetLabel();
+        if(label < 0) return false;
 
-    AliAODMCParticle* mcpart = (AliAODMCParticle*)fMCArray->At(label);
+        AliAODMCParticle* mcpart = (AliAODMCParticle*)fMCArray->At(label);
 
-    int pdg = mcpart->GetPdgCode();
-    if(!IsMCChargedHadron(pdg)) return false;
+        int pdg = mcpart->GetPdgCode();
+        if(!IsMCChargedHadron(pdg)) return false;
+        if(!mcpart->IsPhysicalPrimary()) return false;
+    }
 
     return true;
 }
@@ -819,7 +909,7 @@ bool AliAnalysisTaskLambdaHadronV0Closure::IsMCChargedHadron(int pdg_code) {
 bool AliAnalysisTaskLambdaHadronV0Closure::PassMCTriggerCuts(AliAODMCParticle *mc_particle){
 
     if(!IsMCChargedHadron(mc_particle->PdgCode())) return false;
-    // if(!mc_particle->IsPhysicalPrimary()) return false; // for now trigger is physical primary, could change
+    if(!mc_particle->IsPhysicalPrimary()) return false; // for now trigger is physical primary, could change
     if(!(TMath::Abs(mc_particle->Eta()) <= 0.8)) return false;
     if(!(mc_particle->Pt() >= 0.15)) return false;
 
@@ -839,7 +929,7 @@ bool AliAnalysisTaskLambdaHadronV0Closure::PassMCAssociatedCuts(AliAODMCParticle
 bool AliAnalysisTaskLambdaHadronV0Closure::PassMCLambdaCuts(AliAODMCParticle *mc_particle){
 
     if(!(TMath::Abs(mc_particle->GetPdgCode()) == 3122)) return false;
-    if(!(mc_particle->IsPhysicalPrimary())) return false; // testing, testing, 1 2 3
+    // if(!(mc_particle->IsPhysicalPrimary())) return false; // testing, testing, 1 2 3
     if(!(TMath::Abs(mc_particle->Eta()) <= 0.8)) return false;
 
     int first_daughter_index = 0;
@@ -900,6 +990,9 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
     std::vector<AliAODTrack*> trigger_list;
     std::vector<AliAODTrack*> associated_h_list;
 
+    std::vector<AliAODTrack*> trigger_list_checkMC;
+    std::vector<AliAODTrack*> associated_h_list_checkMC;
+
     //Trigger list used for event mixing
     TObjArray* fMixedTrackObjArray = new TObjArray;
     fMixedTrackObjArray->SetOwner(kTRUE);
@@ -939,12 +1032,21 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
         if(PassAssociatedCuts(track)) {
             associated_h_list.push_back(track);
         }
+
+        if(PassTriggerCuts(track, true)) {
+            trigger_list_checkMC.push_back(track);
+        }
+
+        if(PassAssociatedCuts(track, true)) {
+            associated_h_list_checkMC.push_back(track);
+        }
     }
 
     //Making list of possible lambdas (have to do +/- for proton or pi):
 
     std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> antilambda_list;
     std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> lambda_list;
+
 
     // V0 SECTION
     int numV0s = fAOD->GetNumberOfV0s();
@@ -975,7 +1077,10 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
 
     // Filling all of our single particle distribution histograms:
     FillSingleParticleDist(trigger_list, primZ, fTriggerDistEff, true);
+    FillSingleParticleDist(trigger_list, primZ, fTriggerDist, false);
+    FillSingleParticleDist(trigger_list_checkMC, primZ, fTriggerDistEff_checkMC, true);
     FillSingleParticleDist(associated_h_list, primZ, fAssociatedHDist);
+    FillSingleParticleDist(associated_h_list_checkMC, primZ, fAssociatedHDist);
     FillMotherDist(lambda_list, primZ, fLambdaDist, false);
     FillMotherDist(antilambda_list, primZ, fLambdaDist, true);
 
@@ -985,8 +1090,11 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
 
     MakeSameHLambdaCorrelations(trigger_list, antilambda_list, fDphiHLambdaEff, primZ, true, true);
     MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambdaEff, primZ, true, false);
+    MakeSameHLambdaCorrelations_withMCKin(trigger_list, antilambda_list, fDphiHLambdaEff_MCKin, primZ, true);
+    MakeSameHLambdaCorrelations_withMCKin(trigger_list, lambda_list, fDphiHLambdaEff_MCKin, primZ, true);
 
     MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHHEff, primZ, true);
+    MakeSameHHCorrelations(trigger_list_checkMC, associated_h_list_checkMC, fDphiHHEff_checkMC, primZ, true);
 
     if(/*lambda_list.size() > 0 && */ associated_h_list.size() > 0) {
         AliEventPool *fCorPool = fCorPoolMgr->GetEventPool(multPercentile, primZ);

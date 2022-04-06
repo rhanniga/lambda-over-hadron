@@ -626,8 +626,8 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
 
     //Making list of possible lambdas (have to do +/- for proton or pi):
 
-    std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> antilambda_list;
     std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list;
+    std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> antilambda_list;
 
     // V0 SECTION
     int numV0s = fAOD->GetNumberOfV0s();
@@ -682,7 +682,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
             antilambda.vzero = v0;
             antilambda.daughter1ID = posTrack->GetID();
             antilambda.daughter2ID = negTrack->GetID();
-            lambda_list.push_back(antilambda);
+            antilambda_list.push_back(antilambda);
         }
 
     }

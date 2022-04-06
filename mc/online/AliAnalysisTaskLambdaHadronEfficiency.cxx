@@ -890,24 +890,25 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
         }
 
-        if(triggerPass){
-            if(TMath::Abs(pdgcode) == 321){
-                fRecoKTriggerDist->Fill(singledistPoint);
-                fRecoChargedTriggerDist->Fill(singledistPoint);
-            }else if(TMath::Abs(pdgcode) == 211){
-                fRecoPiTriggerDist->Fill(singledistPoint);
-                fRecoChargedTriggerDist->Fill(singledistPoint);
-            }else if(TMath::Abs(pdgcode) == 2212){
-                fRecopTriggerDist->Fill(singledistPoint);
-                fRecoChargedTriggerDist->Fill(singledistPoint);
-        }else if(TMath::Abs(pdgcode) == 11){
-                fRecoeTriggerDist->Fill(singledistPoint);
-                fRecoChargedTriggerDist->Fill(singledistPoint);
-            }else if(TMath::Abs(pdgcode) == 13){
-                fRecoMuonTriggerDist->Fill(singledistPoint);
-                fRecoChargedTriggerDist->Fill(singledistPoint);
+        if(mcpart->IsPhysicalPrimary()){
+            if(triggerPass){
+                if(TMath::Abs(pdgcode) == 321){
+                    fRecoKTriggerDist->Fill(singledistPoint);
+                    fRecoChargedTriggerDist->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 211){
+                    fRecoPiTriggerDist->Fill(singledistPoint);
+                    fRecoChargedTriggerDist->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 2212){
+                    fRecopTriggerDist->Fill(singledistPoint);
+                    fRecoChargedTriggerDist->Fill(singledistPoint);
+            }else if(TMath::Abs(pdgcode) == 11){
+                    fRecoeTriggerDist->Fill(singledistPoint);
+                    fRecoChargedTriggerDist->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 13){
+                    fRecoMuonTriggerDist->Fill(singledistPoint);
+                    fRecoChargedTriggerDist->Fill(singledistPoint);
+                }
             }
-
         }
 
         negPassCuts = PassDaughterCuts(aodnegtrack);
@@ -1171,21 +1172,23 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
             }
         }
 
-        if(TMath::Abs(pdgcode) == 321){
-            fRealTriggerDist->Fill(singledistPoint);
-            numCharged += 1;
-        }else if(TMath::Abs(pdgcode) == 211){
-            fRealTriggerDist->Fill(singledistPoint);
-            numCharged += 1;
-        }else if(TMath::Abs(pdgcode) == 2212){
-            fRealTriggerDist->Fill(singledistPoint);
-            numCharged += 1;
-        }else if(TMath::Abs(pdgcode) == 11){
-            fRealTriggerDist->Fill(singledistPoint);
-            numCharged += 1;
-        }else if(TMath::Abs(pdgcode) == 13){
-            fRealTriggerDist->Fill(singledistPoint);
-            numCharged += 1;
+        if(AODMCtrack->IsPhysicalPrimary()){
+            if(TMath::Abs(pdgcode) == 321){
+                fRealTriggerDist->Fill(singledistPoint);
+                numCharged += 1;
+            }else if(TMath::Abs(pdgcode) == 211){
+                fRealTriggerDist->Fill(singledistPoint);
+                numCharged += 1;
+            }else if(TMath::Abs(pdgcode) == 2212){
+                fRealTriggerDist->Fill(singledistPoint);
+                numCharged += 1;
+            }else if(TMath::Abs(pdgcode) == 11){
+                fRealTriggerDist->Fill(singledistPoint);
+                numCharged += 1;
+            }else if(TMath::Abs(pdgcode) == 13){
+                fRealTriggerDist->Fill(singledistPoint);
+                numCharged += 1;
+            }
         }
 
         // Get protons and pions that came from lambdas (would not be physical primaries) 

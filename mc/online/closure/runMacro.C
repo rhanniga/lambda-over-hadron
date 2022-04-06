@@ -12,13 +12,14 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
   //Starting and ending index of the array containing the run numbers, specifies which range to run over
   int startIndex = 0; 
-  int endIndex = 28;
+  int endIndex = 5;
 
   // int startIndex = 15;
   // int endIndex = 28;
 
   TString work_dir = "lambda_hadron_v0closure";
-  TString output_dir = "closure_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_prim_lambdas";
+  TString output_dir = "closure_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_prim_mc_trigger";
+  // TString output_dir = "closure_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_comp_with_eff";
   
   //If we want to download test files from grid then run in one swoop (usually just run completely locally):
   bool gridTest = false;

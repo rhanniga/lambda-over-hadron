@@ -75,7 +75,10 @@ private:
   TH1D* fLambdaEff; ///> lambda efficiency
 
   THnSparse* fTriggerDistEff;  //!>! single particle trigger dist (corrected for efficiency)
+  THnSparse* fTriggerDistEff_checkMC;  //!>! single particle trigger dist (corrected for efficiency)
+  THnSparse* fTriggerDist;  //!>! single particle trigger dist (not corrected for efficiency, is MC hadron, is MC primary)
   THnSparse* fAssociatedHDist;  //!>! single particle associated hadron dist
+  THnSparse* fAssociatedHDist_checkMC;  //!>! single particle associated hadron dist (is MC hadron, is MC primary)
   THnSparse* fTriggeredLambdaDist;  //!>! single particle lambda dist within a triggered event
   THnSparse* fLambdaDist;  //!>! single particle lambda dist
 
@@ -84,7 +87,9 @@ private:
   THnSparse* fLambdaDist_MC;  //!>! single particle lambda dist within a triggered event (MC truth)
 
   THnSparse* fDphiHLambdaEff;  //!>! hadron-lambda correlation hist (efficiency corrected)
+  THnSparse* fDphiHLambdaEff_MCKin;  //!>! hadron-lambda correlation hist (efficiency corrected, using MC kinematics)
   THnSparse* fDphiHHEff;   //!>! hadron-hadron correlation hist (efficiency corrected)
+  THnSparse* fDphiHHEff_checkMC;   //!>! hadron-hadron correlation hist (efficiency corrected, trig and assoc are MC primary)
   THnSparse* fDphiHLambdaMixed; //!>! hadron-lambda mixed correlation hist
   THnSparse* fDphiHHMixed; //!>! hadron-hadron mixed correlation hist
 
@@ -103,6 +108,7 @@ private:
   void FillMCMotherDist(std::vector<AliAODMCParticle*> particle_list, float multPercentile, THnSparse* fDist);
 
   void MakeSameHLambdaCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx, bool eff, bool isAntiLambda);
+  void MakeSameHLambdaCorrelations_withMCKin(std::vector<AliAODTrack*> trigger_list, std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx, bool eff);
   void MakeSameHHCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAODTrack*> associated_h_list, THnSparse* fDphi, double zVtx, bool eff=true);
   void MakeMixedHLambdaCorrelations(AliEventPool *fPool, std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx, bool eff, bool isAntiLambda);
   void MakeMixedHHCorrelations(AliEventPool *fPool, std::vector<AliAODTrack*> associated_h_list , THnSparse* fDphi, double zVtx, bool eff=true);
@@ -113,8 +119,8 @@ private:
   void MakeMixedMCHHCorrelations(AliEventPool *fPool, std::vector<AliAODMCParticle*> associated_h_list , THnSparse* fDphi, double zVtx);
 
   bool PassDaughterCuts(AliAODTrack *track); // check if the AOD track passes the daughter cuts
-  bool PassTriggerCuts(AliAODTrack *track); // check if the AOD track passes the trigger cuts 
-  bool PassAssociatedCuts(AliAODTrack *track); // check if the AOD track passes the associated cuts
+  bool PassTriggerCuts(AliAODTrack *track, bool checkMC = false); // check if the AOD track passes the trigger cuts 
+  bool PassAssociatedCuts(AliAODTrack *track, bool checkMC = false); // check if the AOD track passes the associated cuts
   uint8_t PassV0LambdaCuts(AliAODv0 *v0); // check if the AOD v0 passes the lambda cuts (0 = no, 1 = yes and lambda, 2 = yes and anti-lambda)
   bool PassMCTriggerCuts(AliAODMCParticle *mc_track); // check if the MC particle passes the trigger cuts
   bool PassMCAssociatedCuts(AliAODMCParticle *mc_track); // check if the MC particle passes the associated cuts

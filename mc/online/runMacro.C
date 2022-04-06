@@ -6,12 +6,12 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
 
    //Starting and ending index of the array containing the run numbers, specifies which range to run over
-   int startIndex = 0;
-   int endIndex = 25;
+   int startIndex = 3;
+   int endIndex = 3;
   //  int startIndex = 15;
   //  int endIndex = 28;
    char* work_dir = "lambda_hadron_efficiency";
-   char* output_dir = "change_trigger_eff";
+   char* output_dir = "comp_with_closure";
 
    bool gridTest = false;
    int numTestFiles = 2;
