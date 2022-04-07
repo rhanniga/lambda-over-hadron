@@ -796,8 +796,8 @@ bool AliAnalysisTaskLambdaHadronV0Closure::PassDaughterCuts(AliAODTrack *track){
 
     bool pass = true;
 
-    pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
-    pass = pass && (track->Pt() >= 0.15);
+    pass = pass && (TMath::Abs(track->Eta()) < 0.8);
+    pass = pass && (track->Pt() > 0.15);
 
     pass = pass && (track->IsOn(AliAODTrack::kTPCrefit));
 
@@ -857,8 +857,8 @@ uint8_t AliAnalysisTaskLambdaHadronV0Closure::PassV0LambdaCuts(AliAODv0 *v0) {
 
 bool AliAnalysisTaskLambdaHadronV0Closure::PassAssociatedCuts(AliAODTrack *track, bool checkMC){
 
-    if(!(TMath::Abs(track->Eta()) <= 0.8)) return false;
-    if(!(track->Pt() >= 0.15)) return false;
+    if(!(TMath::Abs(track->Eta()) < 0.8)) return false;
+    if(!(track->Pt() > 0.15)) return false;
     if(!track->TestFilterMask(fAssociatedBit)) return false;
 
     if(checkMC) {
@@ -877,8 +877,8 @@ bool AliAnalysisTaskLambdaHadronV0Closure::PassAssociatedCuts(AliAODTrack *track
 
 bool AliAnalysisTaskLambdaHadronV0Closure::PassTriggerCuts(AliAODTrack *track, bool checkMC){
 
-    if(!(TMath::Abs(track->Eta()) <= 0.8)) return false;
-    if(!(track->Pt() >= 0.15)) return false;
+    if(!(TMath::Abs(track->Eta()) < 0.8)) return false;
+    if(!(track->Pt() > 0.15)) return false;
     if(!track->TestBit(fTriggerBit)) return false;
 
     if(checkMC) {
@@ -910,8 +910,8 @@ bool AliAnalysisTaskLambdaHadronV0Closure::PassMCTriggerCuts(AliAODMCParticle *m
 
     if(!IsMCChargedHadron(mc_particle->PdgCode())) return false;
     if(!mc_particle->IsPhysicalPrimary()) return false; // for now trigger is physical primary, could change
-    if(!(TMath::Abs(mc_particle->Eta()) <= 0.8)) return false;
-    if(!(mc_particle->Pt() >= 0.15)) return false;
+    if(!(TMath::Abs(mc_particle->Eta()) < 0.8)) return false;
+    if(!(mc_particle->Pt() > 0.15)) return false;
 
     return true;
 }
@@ -920,8 +920,8 @@ bool AliAnalysisTaskLambdaHadronV0Closure::PassMCAssociatedCuts(AliAODMCParticle
 
     if(!IsMCChargedHadron(mc_particle->PdgCode())) return false;
     if(!mc_particle->IsPhysicalPrimary()) return false;
-    if(!(TMath::Abs(mc_particle->Eta()) <= 0.8)) return false;
-    if(!(mc_particle->Pt() >= 0.15)) return false;
+    if(!(TMath::Abs(mc_particle->Eta()) < 0.8)) return false;
+    if(!(mc_particle->Pt() > 0.15)) return false;
 
     return true;
 }
@@ -930,7 +930,7 @@ bool AliAnalysisTaskLambdaHadronV0Closure::PassMCLambdaCuts(AliAODMCParticle *mc
 
     if(!(TMath::Abs(mc_particle->GetPdgCode()) == 3122)) return false;
     // if(!(mc_particle->IsPhysicalPrimary())) return false; // testing, testing, 1 2 3
-    if(!(TMath::Abs(mc_particle->Eta()) <= 0.8)) return false;
+    if(!(TMath::Abs(mc_particle->Eta()) < 0.8)) return false;
 
     int first_daughter_index = 0;
     int second_daughter_index = 0;

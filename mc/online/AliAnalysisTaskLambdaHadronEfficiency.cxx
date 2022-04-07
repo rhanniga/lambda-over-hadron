@@ -289,9 +289,9 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     fOutputList->Add(fVtxX);
     
     // Single Particle and inclusive charged hadron histos
-    Int_t numbinsSingle[5] = {100, 64, 64, 10, 10};
-    Double_t minvalSingle[5] = {0, -3.14159, -2.0, -10.0, 0.0};
-    Double_t maxvalSingle[5] = {10.0, 3.14159, 2.0, 10.0, 100.0};
+    Int_t numbinsSingle[5] = {100, 64, 20, 10, 10};
+    Double_t minvalSingle[5] = {0, -3.14159, -1.0, -10.0, 0.0};
+    Double_t maxvalSingle[5] = {10.0, 3.14159, 1.0, 10.0, 100.0};
 
     fRealChargedDist = new THnSparseF("fRealChargedDist", "Real Charged Hadron distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
     fOutputList->Add(fRealChargedDist);
@@ -358,9 +358,9 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
 
     // Lambda ditributions used for eff calc
     
-    Int_t numbins[6] = {100, 64, 64, 10, 140, 10};
-    Double_t minval[6] = {0, -3.14159, -2., -10, 1.06, 0.0};
-    Double_t maxval[6] = {10.0, 3.14159,  2.,  10, 1.2, 100.0};
+    Int_t numbins[6] = {100, 64, 20, 10, 140, 10};
+    Double_t minval[6] = {0, -3.14159, -1., -10, 1.06, 0.0};
+    Double_t maxval[6] = {10.0, 3.14159,  1.,  10, 1.2, 100.0};
 
     fRealTotalLambdaDist = new THnSparseF("fRealTotalLambdaDist", "Real (#Lambda + #bar{#Lambda}) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{KK};Multiplicity Pctl.", 6, numbins, minval, maxval);
     fOutputList->Add(fRealTotalLambdaDist);
@@ -417,9 +417,9 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     fOutputList->Add(fReactionPlane);
 
     // Same lambda distributions now with info on daughter filter maps (last two are proton filter map, pion filter map)
-    Int_t numbinsFilter[8] = {100, 64, 64, 10, 140, 10, 9, 9};
-    Double_t minvalFilter[8] = {0, -3.14159, -2., -10, 1.06, 0.0, 0, 0};
-    Double_t maxvalFilter[8] = {10.0, 3.14159,  2.,  10, 1.2, 100.0, 9, 9};
+    Int_t numbinsFilter[8] = {100, 64, 20, 10, 140, 10, 9, 9};
+    Double_t minvalFilter[8] = {0, -3.14159, -1, -10, 1.06, 0.0, 0, 0};
+    Double_t maxvalFilter[8] = {10.0, 3.14159,  1,  10, 1.2, 100.0, 9, 9};
 
     fRecoTotalLambdaFilterDist = new THnSparseF("fRecoTotalLambdaFilterDist", "Reco (#Lambda + #bar{#Lambda}) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 8, numbinsFilter, minvalFilter, maxvalFilter);
     fOutputList->Add(fRecoTotalLambdaFilterDist);
@@ -510,7 +510,7 @@ unsigned int AliAnalysisTaskLambdaHadronEfficiency::PassDaughterCuts(AliAODTrack
     unsigned int passLevel = 0;
 
     // Bit set if track passes eta cut
-    if(TMath::Abs(track->Eta()) <= DAUGHTER_ETA_CUT) passLevel |= ETA_BIT;
+    if(TMath::Abs(track->Eta()) < DAUGHTER_ETA_CUT) passLevel |= ETA_BIT;
 
     // Bit set if track passes pt cut
 
@@ -534,8 +534,8 @@ Bool_t AliAnalysisTaskLambdaHadronEfficiency::PassAssociatedCuts(AliAODTrack *tr
 
     Bool_t pass = kTRUE;
 
-    pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
-    pass = pass && (track->Pt() >= 0.15);
+    pass = pass && (TMath::Abs(track->Eta()) < 0.8);
+    pass = pass && (track->Pt() > 0.15);
 
     pass = pass && track->TestFilterMask(ASSOC_TRK_BIT);
 
@@ -546,8 +546,8 @@ Bool_t AliAnalysisTaskLambdaHadronEfficiency::PassTriggerCuts(AliAODTrack *track
 
     Bool_t pass = kTRUE;
 
-    pass = pass && (TMath::Abs(track->Eta()) <= 0.8);
-    pass = pass && (track->Pt() >= 0.15);
+    pass = pass && (TMath::Abs(track->Eta()) < 0.8);
+    pass = pass && (track->Pt() > 0.15);
 
     pass = pass && track->TestBit(TRIG_TRK_BIT);
 
@@ -1144,48 +1144,35 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         }else if(singledistPoint[1] < -1.0*TMath::Pi()){
             singledistPoint[1] += 2.0*TMath::Pi();
         }
-        singledistPoint[2] = AODMCtrack->Eta();
+        float mcEta = AODMCtrack->Eta();
+        singledistPoint[2] = mcEta;
         singledistPoint[3] = Zvertex;
         singledistPoint[4] = multPercentile;
 
-        if(AODMCtrack->IsPhysicalPrimary()){
+        if(AODMCtrack->IsPhysicalPrimary() && TMath::Abs(mcEta) < 0.8){
             if(TMath::Abs(pdgcode) == 321){
                 fRealKDist->Fill(singledistPoint);
                 fRealChargedDist->Fill(singledistPoint);
+                fRealTriggerDist->Fill(singledistPoint);
                 numCharged += 1;
             }else if(TMath::Abs(pdgcode) == 211){
                 fRealPiDist->Fill(singledistPoint);
                 fRealChargedDist->Fill(singledistPoint);
+                fRealTriggerDist->Fill(singledistPoint);
                 numCharged += 1;
             }else if(TMath::Abs(pdgcode) == 2212){
                 fRealpDist->Fill(singledistPoint);
                 fRealChargedDist->Fill(singledistPoint);
+                fRealTriggerDist->Fill(singledistPoint);
                 numCharged += 1;
             }else if(TMath::Abs(pdgcode) == 11){
                 fRealeDist->Fill(singledistPoint);
                 fRealChargedDist->Fill(singledistPoint);
+                fRealTriggerDist->Fill(singledistPoint);
                 numCharged += 1;
             }else if(TMath::Abs(pdgcode) == 13){
                 fRealMuonDist->Fill(singledistPoint);
                 fRealChargedDist->Fill(singledistPoint);
-                numCharged += 1;
-            }
-        }
-
-        if(AODMCtrack->IsPhysicalPrimary()){
-            if(TMath::Abs(pdgcode) == 321){
-                fRealTriggerDist->Fill(singledistPoint);
-                numCharged += 1;
-            }else if(TMath::Abs(pdgcode) == 211){
-                fRealTriggerDist->Fill(singledistPoint);
-                numCharged += 1;
-            }else if(TMath::Abs(pdgcode) == 2212){
-                fRealTriggerDist->Fill(singledistPoint);
-                numCharged += 1;
-            }else if(TMath::Abs(pdgcode) == 11){
-                fRealTriggerDist->Fill(singledistPoint);
-                numCharged += 1;
-            }else if(TMath::Abs(pdgcode) == 13){
                 fRealTriggerDist->Fill(singledistPoint);
                 numCharged += 1;
             }
@@ -1236,17 +1223,21 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
             }else if(distPoint[1] < -1.0*TMath::Pi()){
                 distPoint[1] += 2.0*TMath::Pi();
             }
-            distPoint[2] = AODMCtrack->Eta();
+            float mcLambdaEta = AODMCtrack->Eta();
+            distPoint[2] = mcLambdaEta;
             distPoint[3] = Zvertex;
             distPoint[4] = AODMCtrack->GetCalcMass();
             distPoint[5] = multPercentile;
-            fRealTotalLambdaDist->Fill(distPoint);
 
-            if(pdgcode == 3122) {
-                fRealLambdaDist->Fill(distPoint); 
-            }
-            else {
-                fRealAntiLambdaDist->Fill(distPoint);
+            if(TMath::Abs(mcLambdaEta) < 0.8){
+                fRealTotalLambdaDist->Fill(distPoint);
+
+                if(pdgcode == 3122) {
+                    fRealLambdaDist->Fill(distPoint); 
+                }
+                else {
+                    fRealAntiLambdaDist->Fill(distPoint);
+                }
             }
         } 
     }

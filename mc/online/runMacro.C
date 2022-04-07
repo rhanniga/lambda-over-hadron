@@ -6,12 +6,12 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
 
    //Starting and ending index of the array containing the run numbers, specifies which range to run over
-   int startIndex = 3;
-   int endIndex = 3;
+   int startIndex = 0;
+   int endIndex = 28;
   //  int startIndex = 15;
   //  int endIndex = 28;
    char* work_dir = "lambda_hadron_efficiency";
-   char* output_dir = "comp_with_closure";
+   char* output_dir = "eta_cut_online";
 
    bool gridTest = false;
    int numTestFiles = 2;
@@ -43,14 +43,16 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
   if(local) {
     TChain *chain = new TChain("aodTree");
-    chain->Add("~/Wonderland/native/sim/265309_2.root");
-    // chain->Add("~/Wonderland/native/sim/265309_3.root");
-    // chain->Add("~/Wonderland/native/sim/265309_4.root");
-    // chain->Add("~/Wonderland/native/sim/265309_5.root");
-    // chain->Add("~/Wonderland/native/sim/265309_6.root");
-    // chain->Add("~/Wonderland/native/sim/265309_7.root");
-    // chain->Add("~/Wonderland/native/sim/265309_8.root");
-    // chain->Add("~/Wonderland/native/sim/265309_9.root");
+    chain->Add("~/Wonderland/native/sim/265525_0001.root");
+    chain->Add("~/Wonderland/native/sim/265525_0002.root");
+    chain->Add("~/Wonderland/native/sim/265525_0003.root");
+    chain->Add("~/Wonderland/native/sim/265525_0004.root");
+    chain->Add("~/Wonderland/native/sim/265525_0005.root");
+    chain->Add("~/Wonderland/native/sim/265525_0006.root");
+    chain->Add("~/Wonderland/native/sim/265525_0007.root");
+    chain->Add("~/Wonderland/native/sim/265525_0008.root");
+    chain->Add("~/Wonderland/native/sim/265525_0009.root");
+    chain->Add("~/Wonderland/native/sim/265525_0010.root");
     manage->StartAnalysis("local", chain);
   }
 
