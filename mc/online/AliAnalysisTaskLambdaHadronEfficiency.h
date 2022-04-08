@@ -128,7 +128,9 @@ private:
     THnSparse  *fRecoEtaPtRefitRowsRatioLambdaDist;//! Dist of Recon lambda and anti lambda ( eta pt refit rows ratio cut on daughters)
 
     THnSparse  *fRecoTotalLambdaFilterDist;//! Dist of Recon lambda and anti lambda with filter bit of daughters
-    THnSparse  *fRecoEtaPtRefitRowsRatioLambdaFilterDist;//! Dist of Recon lambda and anti lambda with filter bit of daughters
+    THnSparse  *fRecoEtaPtRefitRowsRatioLambdaFilterDist;//! Dist of Recon lambda and anti lambda with filter bit of daughters (proton then pion)
+    THnSparse  *fRecoEtaPtRefitRowsRatioLambdaDCADist;//! Dist of Recon lambda and anti lambda with DCA of daughters (proton then pion)
+    
     THnSparse  *fRecoLambdaDist;//! Dist of Recon lambda
     THnSparse  *fRecoAntiLambdaDist;//! Dist of Recon anti lambda
 

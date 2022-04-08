@@ -73,6 +73,7 @@ AliAnalysisTaskLambdaHadronEfficiency::AliAnalysisTaskLambdaHadronEfficiency(con
     fRecoEtaPtRefitRowsLambdaDist(0x0),
     fRecoEtaPtRefitRowsRatioLambdaDist(0x0),
     fRecoEtaPtRefitRowsRatioLambdaFilterDist(0x0),
+    fRecoEtaPtRefitRowsRatioLambdaDCADist(0x0),
     fRecoTotalLambdaFilterDist(0x0),
     fRecoLambdaDist(0x0),
     fRecoAntiLambdaDist(0x0),
@@ -164,6 +165,7 @@ AliAnalysisTaskLambdaHadronEfficiency::AliAnalysisTaskLambdaHadronEfficiency()
     fRecoEtaPtRefitRowsLambdaDist(0x0),
     fRecoEtaPtRefitRowsRatioLambdaDist(0x0),
     fRecoEtaPtRefitRowsRatioLambdaFilterDist(0x0),
+    fRecoEtaPtRefitRowsRatioLambdaDCADist(0x0),
     fRecoTotalLambdaFilterDist(0x0),
     fRecoLambdaDist(0x0),
     fRecoAntiLambdaDist(0x0),
@@ -294,66 +296,87 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     Double_t maxvalSingle[5] = {10.0, 3.14159, 1.0, 10.0, 100.0};
 
     fRealChargedDist = new THnSparseF("fRealChargedDist", "Real Charged Hadron distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRealChargedDist->Sumw2();
     fOutputList->Add(fRealChargedDist);
 
     fRealTriggerDist = new THnSparseF("fRealTriggerDist", "Real Trigger Hadron distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRealTriggerDist->Sumw2();
     fOutputList->Add(fRealTriggerDist);
 
     fRealKDist = new THnSparseF("fRealKDist", "Real Kaon distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRealKDist->Sumw2();
     fOutputList->Add(fRealKDist);
 
     fRealPiDist = new THnSparseF("fRealPiDist", "Real Pion distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRealPiDist->Sumw2();
     fOutputList->Add(fRealPiDist);
 
     fRealPiFromLambdaDist = new THnSparseF("fRealPiFromLambdaDist", "Real Pion (from #Lambda) distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRealPiFromLambdaDist->Sumw2();
     fOutputList->Add(fRealPiFromLambdaDist);
 
     fRealpDist = new THnSparseF("fRealpDist", "Real proton distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRealpDist->Sumw2();
     fOutputList->Add(fRealpDist);
 
     fRealpFromLambdaDist = new THnSparseF("fRealpFromLambdaDist", "Real proton (from #Lambda) distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRealpFromLambdaDist->Sumw2();
     fOutputList->Add(fRealpFromLambdaDist);
 
     fRealeDist = new THnSparseF("fRealeDist", "Real electron distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRealeDist->Sumw2();
     fOutputList->Add(fRealeDist);
 
     fRealMuonDist = new THnSparseF("fRealMuonDist", "Real Muon distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRealMuonDist->Sumw2();
     fOutputList->Add(fRealMuonDist);
 
     fRecoChargedDist = new THnSparseF("fRecoChargedDist", "Reco Charged Hadron distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRecoChargedDist->Sumw2();
     fOutputList->Add(fRecoChargedDist);
 
     fRecoKDist = new THnSparseF("fRecoKDist", "Reco Kaon distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRecoKDist->Sumw2();
     fOutputList->Add(fRecoKDist);
 
     fRecoPiDist = new THnSparseF("fRecoPiDist", "Reco Pion distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRecoPiDist->Sumw2();
     fOutputList->Add(fRecoPiDist);
 
     fRecopDist = new THnSparseF("fRecopDist", "Reco proton distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRecopDist->Sumw2();
     fOutputList->Add(fRecopDist);
 
     fRecoeDist = new THnSparseF("fRecoeDist", "Reco electron distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRecoeDist->Sumw2();
     fOutputList->Add(fRecoeDist);
 
     fRecoMuonDist = new THnSparseF("fRecoMuonDist", "Reco Muon distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRecoMuonDist->Sumw2();
     fOutputList->Add(fRecoMuonDist);
 
     fRecoChargedTriggerDist = new THnSparseF("fRecoChargedTriggerDist", "Reco Charged Hadron Trigger distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRecoChargedTriggerDist->Sumw2();
     fOutputList->Add(fRecoChargedTriggerDist);
 
     fRecoKTriggerDist = new THnSparseF("fRecoKTriggerDist", "Reco Kaon Trigger distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRecoKTriggerDist->Sumw2();
     fOutputList->Add(fRecoKTriggerDist);
     
     fRecoPiTriggerDist = new THnSparseF("fRecoPiTriggerDist", "Reco Pion Trigger distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRecoPiTriggerDist->Sumw2();
     fOutputList->Add(fRecoPiTriggerDist);
 
     fRecopTriggerDist = new THnSparseF("fRecopTriggerDist", "Reco proton Trigger distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRecopTriggerDist->Sumw2();
     fOutputList->Add(fRecopTriggerDist);
 
     fRecoeTriggerDist = new THnSparseF("fRecoeTriggerDist", "Reco electron Trigger distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRecoeTriggerDist->Sumw2();
     fOutputList->Add(fRecoeTriggerDist);
 
     fRecoMuonTriggerDist = new THnSparseF("fRecoMuonTriggerDist", "Reco Muon Trigger distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRecoMuonTriggerDist->Sumw2();
     fOutputList->Add(fRecoMuonTriggerDist);
 
     // Lambda ditributions used for eff calc
@@ -363,58 +386,84 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     Double_t maxval[6] = {10.0, 3.14159,  1.,  10, 1.2, 100.0};
 
     fRealTotalLambdaDist = new THnSparseF("fRealTotalLambdaDist", "Real (#Lambda + #bar{#Lambda}) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{KK};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRealTotalLambdaDist->Sumw2();
     fOutputList->Add(fRealTotalLambdaDist);
 
     fRealLambdaDist = new THnSparseF("fRealLambdaDist", "Real #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{KK};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRealLambdaDist->Sumw2();
     fOutputList->Add(fRealLambdaDist);
 
     fRealAntiLambdaDist = new THnSparseF("fRealAntiLambdaDist", "Real #bar{#Lambda} distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{KK};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRealAntiLambdaDist->Sumw2();
     fOutputList->Add(fRealAntiLambdaDist);
 
     fRecoTotalV0LambdaDist = new THnSparseF("fRecoTotalV0LambdaDist", "Reco (#Lambda + #bar{#Lambda}) from V^{0} distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRecoTotalV0LambdaDist->Sumw2();
     fOutputList->Add(fRecoTotalV0LambdaDist);
 
     fRecoEtaV0LambdaDist = new THnSparseF("fRecoEtaV0LambdaDist", "Reco (#Lambda + #bar{#Lambda}) from V^{0} distribution (eta cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRecoEtaV0LambdaDist->Sumw2();
     fOutputList->Add(fRecoEtaV0LambdaDist);
 
     fRecoEtaPtV0LambdaDist = new THnSparseF("fRecoEtaPtV0LambdaDist", "Reco (#Lambda + #bar{#Lambda}) from V^{0} distribution (eta + pt cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRecoEtaPtV0LambdaDist->Sumw2();
     fOutputList->Add(fRecoEtaPtV0LambdaDist);
 
     fRecoEtaPtRefitV0LambdaDist = new THnSparseF("fRecoEtaPtRefitV0LambdaDist", "Reco (#Lambda + #bar{#Lambda}) from V^{0} distribution (eta + pt + refit cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRecoEtaPtRefitV0LambdaDist->Sumw2();
     fOutputList->Add(fRecoEtaPtRefitV0LambdaDist);
 
     fRecoEtaPtRefitRowsV0LambdaDist = new THnSparseF("fRecoEtaPtRefitRowsV0LambdaDist", "Reco (#Lambda + #bar{#Lambda}) from V^{0} distribution (eta + pt + refit + rows cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRecoEtaPtRefitRowsV0LambdaDist->Sumw2();
     fOutputList->Add(fRecoEtaPtRefitRowsV0LambdaDist);
 
     fRecoEtaPtRefitRowsRatioV0LambdaDist = new THnSparseF("fRecoEtaPtRefitRowsRatioV0LambdaDist", "Reco (#Lambda + #bar{#Lambda}) from V^{0} distribution (eta + pt + refit + rows + ratio cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRecoEtaPtRefitRowsRatioV0LambdaDist->Sumw2();
     fOutputList->Add(fRecoEtaPtRefitRowsRatioV0LambdaDist);
 
     fRecoEtaLambdaDist = new THnSparseF("fRecoEtaLambdaDist", "Reco (#Lambda + #bar{#Lambda})  distribution (eta cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRecoEtaLambdaDist->Sumw2();
     fOutputList->Add(fRecoEtaLambdaDist);
 
     fRecoEtaPtLambdaDist = new THnSparseF("fRecoEtaPtLambdaDist", "Reco (#Lambda + #bar{#Lambda})  distribution (eta + pt cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRecoEtaPtLambdaDist->Sumw2();
     fOutputList->Add(fRecoEtaPtLambdaDist);
 
     fRecoEtaPtRefitLambdaDist = new THnSparseF("fRecoEtaPtRefitLambdaDist", "Reco (#Lambda + #bar{#Lambda}) distribution (eta + pt + refit cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRecoEtaPtRefitLambdaDist->Sumw2();
     fOutputList->Add(fRecoEtaPtRefitLambdaDist);
 
     fRecoEtaPtRefitRowsLambdaDist = new THnSparseF("fRecoEtaPtRefitRowsLambdaDist", "Reco (#Lambda + #bar{#Lambda}) distribution (eta + pt + refit + rows cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRecoEtaPtRefitRowsLambdaDist->Sumw2();
     fOutputList->Add(fRecoEtaPtRefitRowsLambdaDist);
 
     fRecoEtaPtRefitRowsRatioLambdaDist = new THnSparseF("fRecoEtaPtRefitRowsRatioLambdaDist", "Reco (#Lambda + #bar{#Lambda}) distribution (eta + pt + refit + rows + ratio cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRecoEtaPtRefitRowsRatioLambdaDist->Sumw2();
     fOutputList->Add(fRecoEtaPtRefitRowsRatioLambdaDist);
 
     fRecoTotalLambdaDist = new THnSparseF("fRecoTotalLambdaDist", "Reco (#Lambda + #bar{#Lambda}) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRecoTotalLambdaDist->Sumw2();
     fOutputList->Add(fRecoTotalLambdaDist);
 
     fRecoLambdaDist = new THnSparseF("fRecoLambdaDist", "Reco #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRecoLambdaDist->Sumw2();
     fOutputList->Add(fRecoLambdaDist);
 
     fRecoAntiLambdaDist = new THnSparseF("fRecoAntiLambdaDist", "Reco #Lambda (anti) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRecoAntiLambdaDist->Sumw2();
     fOutputList->Add(fRecoAntiLambdaDist);
 
     fReactionPlane = new TH1D("fReactionPlane", "Reaction Plane Angle; Angle", 64, -3.14159, 3.14159);
     fOutputList->Add(fReactionPlane);
+
+    // Same lambda distributions now with info on daughter dca (last two are proton dca, pion dca)
+    Int_t numbinsDCA[8] = {100, 64, 20, 10, 140, 10, 100, 100};
+    Double_t minvalDCA[8] = {0, -3.14159, -1, -10, 1.06, 0.0, -10, -10};
+    Double_t maxvalDCA[8] = {10.0, 3.14159,  1,  10, 1.2, 100.0, 10, 10};
+
+    fRecoEtaPtRefitRowsRatioLambdaDCADist = new THnSparseF("fRecoEtaPtRefitRowsRatioLambdaDCADist", "Reco (#Lambda + #bar{#Lambda}) distribution (eta + pt + refit + rows + ratio cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 8, numbinsDCA, minvalDCA, maxvalDCA);
+    fRecoEtaPtRefitRowsRatioLambdaDCADist->Sumw2();
+    fOutputList->Add(fRecoEtaPtRefitRowsRatioLambdaDCADist);
 
     // Same lambda distributions now with info on daughter filter maps (last two are proton filter map, pion filter map)
     Int_t numbinsFilter[8] = {100, 64, 20, 10, 140, 10, 9, 9};
@@ -422,9 +471,11 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     Double_t maxvalFilter[8] = {10.0, 3.14159,  1,  10, 1.2, 100.0, 9, 9};
 
     fRecoTotalLambdaFilterDist = new THnSparseF("fRecoTotalLambdaFilterDist", "Reco (#Lambda + #bar{#Lambda}) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 8, numbinsFilter, minvalFilter, maxvalFilter);
+    fRecoTotalLambdaFilterDist->Sumw2();
     fOutputList->Add(fRecoTotalLambdaFilterDist);
 
     fRecoEtaPtRefitRowsRatioLambdaFilterDist = new THnSparseF("fRecoEtaPtRefitRowsRatioLambdaFilterDist", "Reco (#Lambda + #bar{#Lambda}) distribution (eta + pt + refit + rows + ratio cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 8, numbinsFilter, minvalFilter, maxvalFilter);
+    fRecoEtaPtRefitRowsRatioLambdaFilterDist->Sumw2();
     fOutputList->Add(fRecoEtaPtRefitRowsRatioLambdaFilterDist);
 
     fRealLambdasPerEvent = new TH1F("fRealLambdasPerEvent", "Real Lambdas per Event", 10, 0, 10);
@@ -1001,6 +1052,13 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 filter_distPoint[5] = multPercentile;
                 filter_distPoint[6] = filterMap_map[aodpostrack->GetFilterMap()];
                 filter_distPoint[7] = filterMap_map[aodnegtrack->GetFilterMap()];
+
+                double proton_dz[2];
+                double proton_covar[3];
+                double pion_dz[2];
+                double pion_covar[3];
+                bool is_protonDCA = aodpostrack->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 20., proton_dz, proton_covar);
+                bool is_pionDCA = aodnegtrack->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 20., pion_dz, pion_covar);
                 
                 fRecoTotalLambdaFilterDist->Fill(filter_distPoint);
 
@@ -1023,6 +1081,18 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 if(((negPassCuts & maskEtaPtRefitRowsRatio) == maskEtaPtRefitRowsRatio) && ((posPassCuts & maskEtaPtRefitRowsRatio)== maskEtaPtRefitRowsRatio)){
                     fRecoEtaPtRefitRowsRatioLambdaDist->Fill(distPoint);
                     fRecoEtaPtRefitRowsRatioLambdaFilterDist->Fill(filter_distPoint);
+                    if(is_pionDCA && is_protonDCA) {
+                        double dca_distPoint[8];
+                        dca_distPoint[0] = recoPt;
+                        dca_distPoint[1] = recoPhi;
+                        dca_distPoint[2] = recoEta;
+                        dca_distPoint[3] = Zvertex;
+                        dca_distPoint[4] = recoM;
+                        dca_distPoint[5] = multPercentile;
+                        dca_distPoint[6] = proton_dz[0];
+                        dca_distPoint[7] = pion_dz[0];
+                        fRecoEtaPtRefitRowsRatioLambdaDCADist->Fill(dca_distPoint);
+                    }
                     numRecoLambdas += 1;
                 }
             }
@@ -1104,6 +1174,13 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 filter_distPoint[6] = filterMap_map[aodnegtrack->GetFilterMap()];
                 filter_distPoint[7] = filterMap_map[aodpostrack->GetFilterMap()];
 
+                double proton_dz[2];
+                double proton_covar[3];
+                double pion_dz[2];
+                double pion_covar[3];
+                bool is_protonDCA = aodnegtrack->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 20., proton_dz, proton_covar);
+                bool is_pionDCA = aodpostrack->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 20., pion_dz, pion_covar);
+
                 fRecoTotalLambdaFilterDist->Fill(filter_distPoint);
 
                 if(((negPassCuts & maskEta) == maskEta) && ((posPassCuts & maskEta)== maskEta)){
@@ -1125,6 +1202,18 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 if(((negPassCuts & maskEtaPtRefitRowsRatio) == maskEtaPtRefitRowsRatio) && ((posPassCuts & maskEtaPtRefitRowsRatio)== maskEtaPtRefitRowsRatio)){
                     fRecoEtaPtRefitRowsRatioLambdaDist->Fill(distPoint);
                     numRecoLambdas += 1;
+                    if(is_pionDCA && is_protonDCA) {
+                        double dca_distPoint[8];
+                        dca_distPoint[0] = recoPt;
+                        dca_distPoint[1] = recoPhi;
+                        dca_distPoint[2] = recoEta;
+                        dca_distPoint[3] = Zvertex;
+                        dca_distPoint[4] = recoM;
+                        dca_distPoint[5] = multPercentile;
+                        dca_distPoint[6] = proton_dz[0];
+                        dca_distPoint[7] = pion_dz[0];
+                        fRecoEtaPtRefitRowsRatioLambdaDCADist->Fill(dca_distPoint);
+                    }
                 }
             }
         }
