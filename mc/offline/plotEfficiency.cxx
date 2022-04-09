@@ -110,7 +110,7 @@ void plotEfficiency(){
 
     Float_t mult[4] = {0.0, 20.0, 50.0, 80.0};
     
-    TFile* infile = new TFile("~/OneDrive/Research/Output/lambda-over-hadron/efficiency_run.root");
+    TFile* infile = new TFile("~/OneDrive/Research/Output/lambda-over-hadron/mc/efficiency_run_etacutonline.root");
     TList* list = (TList*)infile->Get("h-lambda_eff");
     
     float SIG_MIN = 1.08;
@@ -127,10 +127,11 @@ void plotEfficiency(){
     realCharged->GetAxis(0)->SetRangeUser(0.5, 10.0);
     recoCharged->GetAxis(0)->SetRangeUser(0.5, 10.0);
 
-    recoTrigger->GetAxis(2)->SetRangeUser(-0.8, 0.8);
-    realTrigger->GetAxis(2)->SetRangeUser(-0.8, 0.8);
-    recoCharged->GetAxis(2)->SetRangeUser(-0.8, 0.8);
-    realCharged->GetAxis(2)->SetRangeUser(-0.8, 0.8);
+    // offline eta cuts no longer required
+    //recoTrigger->GetAxis(2)->SetRangeUser(-0.8, 0.8);
+    // realTrigger->GetAxis(2)->SetRangeUser(-0.8, 0.8);
+    //recoCharged->GetAxis(2)->SetRangeUser(-0.8, 0.8);
+    // realCharged->GetAxis(2)->SetRangeUser(-0.8, 0.8);
 
     realTrigger->GetAxis(3)->SetRangeUser(-10.0, 10.0);
     recoTrigger->GetAxis(3)->SetRangeUser(-10.0, 10.0);
