@@ -809,7 +809,7 @@ bool AliAnalysisTaskLambdaHadronV0Closure::PassDaughterCuts(AliAODTrack *track){
     return pass;
 }
 
-uint8_t AliAnalysisTaskLambdaHadronV0Closure::PassV0LambdaCuts(AliAODv0 *v0) {
+uint8_t AliAnalysisTaskLambdaHadronV0Closure::PassV0LambdaCuts(AliAODv0 *v0, bool checkMotherPDG) {
 
     if(v0->GetOnFlyStatus()) return 0;
     if(!(TMath::Abs(v0->Eta()) < 0.8)) return 0;
@@ -819,8 +819,6 @@ uint8_t AliAnalysisTaskLambdaHadronV0Closure::PassV0LambdaCuts(AliAODv0 *v0) {
 
     if(!PassDaughterCuts(ptrack)) return 0;
     if(!PassDaughterCuts(ntrack)) return 0;
-
-
         
     int plabel = ptrack->GetLabel();
     int nlabel = ntrack->GetLabel();
@@ -830,20 +828,21 @@ uint8_t AliAnalysisTaskLambdaHadronV0Closure::PassV0LambdaCuts(AliAODv0 *v0) {
     AliAODMCParticle* mcpospart = (AliAODMCParticle*)fMCArray->At(plabel);
     AliAODMCParticle* mcnegpart = (AliAODMCParticle*)fMCArray->At(nlabel);
 
+    if(checkMotherPDG) {
+        int mlabel_pos = mcpospart->GetMother();
+        int mlabel_neg = mcnegpart->GetMother();
+
+        if(mlabel_pos < 0 || mlabel_neg < 0) return 0;
+        if(mlabel_pos != mlabel_neg) return 0;
+
+        AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(mlabel_pos);
+
+        int momPDG = mcmother->GetPdgCode();
+        if(TMath::Abs(momPDG) != 3122) return 0;
+    }
+
     int posPDG = mcpospart->GetPdgCode();
     int negPDG = mcnegpart->GetPdgCode();
-
-    int mlabel_pos = mcpospart->GetMother();
-    int mlabel_neg = mcnegpart->GetMother();
-
-    if(mlabel_pos < 0 || mlabel_neg < 0) return 0;
-    if(mlabel_pos != mlabel_neg) return 0;
-
-    AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(mlabel_pos);
-    // if(!mcmother->IsPhysicalPrimary()) return 0;
-
-    int momPDG = mcmother->GetPdgCode();
-    if(TMath::Abs(momPDG) != 3122) return 0;
 
     if(posPDG == 2212 && negPDG == -211) {
         return 1;
@@ -1046,6 +1045,8 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
 
     std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> antilambda_list;
     std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> lambda_list;
+    std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> antilambda_list_checkMotherPDG;
+    std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> lambda_list_checkMotherPDG;
 
 
     // V0 SECTION
@@ -1072,6 +1073,22 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
             antilambda_list.push_back(antilambda);
         }
 
+        if(PassV0LambdaCuts(v0, true) == 1) {
+            AliMotherContainer lambda;
+            lambda.vzero = v0;
+            lambda.daughter1ID = posTrack->GetID();
+            lambda.daughter2ID = negTrack->GetID();
+            lambda_list_checkMotherPDG.push_back(lambda);
+        }
+
+        if(PassV0LambdaCuts(v0, true) == 2) {
+            AliMotherContainer antilambda;
+            antilambda.vzero = v0;
+            antilambda.daughter1ID = posTrack->GetID();
+            antilambda.daughter2ID = negTrack->GetID();
+            antilambda_list_checkMotherPDG.push_back(antilambda);
+        }
+
     }
 
 
@@ -1090,8 +1107,8 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
 
     MakeSameHLambdaCorrelations(trigger_list, antilambda_list, fDphiHLambdaEff, primZ, true, true);
     MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambdaEff, primZ, true, false);
-    MakeSameHLambdaCorrelations_withMCKin(trigger_list, antilambda_list, fDphiHLambdaEff_MCKin, primZ, true);
-    MakeSameHLambdaCorrelations_withMCKin(trigger_list, lambda_list, fDphiHLambdaEff_MCKin, primZ, true);
+    MakeSameHLambdaCorrelations_withMCKin(trigger_list, antilambda_list_checkMotherPDG, fDphiHLambdaEff_MCKin, primZ, true);
+    MakeSameHLambdaCorrelations_withMCKin(trigger_list, lambda_list_checkMotherPDG, fDphiHLambdaEff_MCKin, primZ, true);
 
     MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHHEff, primZ, true);
     MakeSameHHCorrelations(trigger_list_checkMC, associated_h_list_checkMC, fDphiHHEff_checkMC, primZ, true);

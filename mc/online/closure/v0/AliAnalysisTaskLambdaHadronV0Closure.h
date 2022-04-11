@@ -121,7 +121,7 @@ private:
   bool PassDaughterCuts(AliAODTrack *track); // check if the AOD track passes the daughter cuts
   bool PassTriggerCuts(AliAODTrack *track, bool checkMC = false); // check if the AOD track passes the trigger cuts 
   bool PassAssociatedCuts(AliAODTrack *track, bool checkMC = false); // check if the AOD track passes the associated cuts
-  uint8_t PassV0LambdaCuts(AliAODv0 *v0); // check if the AOD v0 passes the lambda cuts (0 = no, 1 = yes and lambda, 2 = yes and anti-lambda)
+  uint8_t PassV0LambdaCuts(AliAODv0 *v0, bool checkMotherPDG = false); // check if the AOD v0 passes the lambda cuts (0 = no, 1 = yes and lambda, 2 = yes and anti-lambda, checkMotherPDG verifies if the mother is a lambda or anti-lambda)
   bool PassMCTriggerCuts(AliAODMCParticle *mc_track); // check if the MC particle passes the trigger cuts
   bool PassMCAssociatedCuts(AliAODMCParticle *mc_track); // check if the MC particle passes the associated cuts
   bool PassMCLambdaCuts(AliAODMCParticle *mc_track); // check if the MC particle passes the lambda cuts 

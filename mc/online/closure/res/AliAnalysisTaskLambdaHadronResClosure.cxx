@@ -809,7 +809,7 @@ bool AliAnalysisTaskLambdaHadronResClosure::PassDaughterCuts(AliAODTrack *track)
     return pass;
 }
 
-uint8_t AliAnalysisTaskLambdaHadronResClosure::PassV0LambdaCuts(AliAODv0 *v0) {
+uint8_t AliAnalysisTaskLambdaHadronResClosure::PassV0LambdaCuts(AliAODv0 *v0, bool checkMotherPDG) {
 
     if(v0->GetOnFlyStatus()) return 0;
     if(!(TMath::Abs(v0->Eta()) < 0.8)) return 0;
@@ -819,8 +819,6 @@ uint8_t AliAnalysisTaskLambdaHadronResClosure::PassV0LambdaCuts(AliAODv0 *v0) {
 
     if(!PassDaughterCuts(ptrack)) return 0;
     if(!PassDaughterCuts(ntrack)) return 0;
-
-
         
     int plabel = ptrack->GetLabel();
     int nlabel = ntrack->GetLabel();
@@ -830,20 +828,21 @@ uint8_t AliAnalysisTaskLambdaHadronResClosure::PassV0LambdaCuts(AliAODv0 *v0) {
     AliAODMCParticle* mcpospart = (AliAODMCParticle*)fMCArray->At(plabel);
     AliAODMCParticle* mcnegpart = (AliAODMCParticle*)fMCArray->At(nlabel);
 
+    if(checkMotherPDG) {
+        int mlabel_pos = mcpospart->GetMother();
+        int mlabel_neg = mcnegpart->GetMother();
+
+        if(mlabel_pos < 0 || mlabel_neg < 0) return 0;
+        if(mlabel_pos != mlabel_neg) return 0;
+
+        AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(mlabel_pos);
+
+        int momPDG = mcmother->GetPdgCode();
+        if(TMath::Abs(momPDG) != 3122) return 0;
+    }
+
     int posPDG = mcpospart->GetPdgCode();
     int negPDG = mcnegpart->GetPdgCode();
-
-    int mlabel_pos = mcpospart->GetMother();
-    int mlabel_neg = mcnegpart->GetMother();
-
-    if(mlabel_pos < 0 || mlabel_neg < 0) return 0;
-    if(mlabel_pos != mlabel_neg) return 0;
-
-    AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(mlabel_pos);
-    // if(!mcmother->IsPhysicalPrimary()) return 0;
-
-    int momPDG = mcmother->GetPdgCode();
-    if(TMath::Abs(momPDG) != 3122) return 0;
 
     if(posPDG == 2212 && negPDG == -211) {
         return 1;
