@@ -65,7 +65,10 @@ AliAnalysisTaskLambdaHadronV0Closure::AliAnalysisTaskLambdaHadronV0Closure() :
     fAssociatedHDist_checkMC(0x0),
     fTriggeredLambdaDist(0x0),
     fLambdaDist(0x0),
+    fGuaranteedLambdaDist(0x0),
+    fTriggeredLambdaDist_MC(0x0),
     fDphiHLambdaEff(0x0),
+    fDphiHGuaranteedLambdaEff(0x0),
     fDphiHLambdaEff_MCKin(0x0),
     fDphiHHEff(0x0),
     fDphiHHEff_checkMC(0x0),
@@ -106,7 +109,10 @@ AliAnalysisTaskLambdaHadronV0Closure::AliAnalysisTaskLambdaHadronV0Closure(const
     fAssociatedHDist_checkMC(0x0),
     fTriggeredLambdaDist(0x0),
     fLambdaDist(0x0),
+    fGuaranteedLambdaDist(0x0),
+    fTriggeredLambdaDist_MC(0x0),
     fDphiHLambdaEff(0x0),
+    fDphiHGuaranteedLambdaEff(0x0),
     fDphiHLambdaEff_MCKin(0x0),
     fDphiHHEff(0x0),
     fDphiHHEff_checkMC(0x0),
@@ -209,9 +215,17 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserCreateOutputObjects()
     fLambdaDist->Sumw2();
     fOutputList->Add(fLambdaDist);
 
+    fGuaranteedLambdaDist = new THnSparseF("fGuaranteedLambdaDist", "Lambda Distribution (reco with v0 finder, checked MC to guarantee lambda)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fGuaranteedLambdaDist->Sumw2();
+    fOutputList->Add(fGuaranteedLambdaDist);
+
     fLambdaDist_MC = new THnSparseF("fLambdaDist_MC", "Lambda Distribution (MC truth)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
     fLambdaDist_MC->Sumw2();
     fOutputList->Add(fLambdaDist_MC);
+
+    fTriggeredLambdaDist_MC = new THnSparseF("fTriggeredLambdaDist_MC", "Lambda Distribution (MC truth, with triggered event)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fTriggeredLambdaDist_MC->Sumw2();
+    fOutputList->Add(fTriggeredLambdaDist_MC);
 
     //Correlation axes are: Trigger Pt, Associated Pt, dPhi, dEta, Inv Mass, Zvtx
     int hl_cor_bins[6] = {8, 10, 16, 20, 100, 10};
@@ -221,6 +235,10 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserCreateOutputObjects()
     fDphiHLambdaEff = new THnSparseF("fDphiHLambdaEff", "Efficiency-corrected Hadron-Lambda Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambdaEff->Sumw2();
     fOutputList->Add(fDphiHLambdaEff);
+
+    fDphiHGuaranteedLambdaEff = new THnSparseF("fDphiHGuaranteedLambdaEff", "Efficiency-corrected Hadron-Lambda Correlation Histogram (from guaranteed lambda)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHGuaranteedLambdaEff->Sumw2();
+    fOutputList->Add(fDphiHGuaranteedLambdaEff);
 
     fDphiHLambdaEff_MCKin = new THnSparseF("fDphiHLambdaEff_MCKin", "Efficiency-corrected Hadron-Lambda Correlation Histogram (using MC kinematics on V0)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambdaEff_MCKin->Sumw2();
@@ -1107,6 +1125,8 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
 
     MakeSameHLambdaCorrelations(trigger_list, antilambda_list, fDphiHLambdaEff, primZ, true, true);
     MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambdaEff, primZ, true, false);
+    MakeSameHLambdaCorrelations(trigger_list, antilambda_list, fDphiHGuaranteedLambdaEff, primZ, true, true);
+    MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHGuaranteedLambdaEff, primZ, true, false);
     MakeSameHLambdaCorrelations_withMCKin(trigger_list, antilambda_list_checkMotherPDG, fDphiHLambdaEff_MCKin, primZ, true);
     MakeSameHLambdaCorrelations_withMCKin(trigger_list, lambda_list_checkMotherPDG, fDphiHLambdaEff_MCKin, primZ, true);
 
@@ -1136,12 +1156,15 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
     std::vector<AliAODMCParticle*> real_associated_list;
     std::vector<AliAODMCParticle*> real_lambda_list;
 
+    bool is_triggered_event_MC = false;
+
     for(int mc_index = 0; mc_index < fMCArray->GetEntries(); mc_index++){
 
         AliAODMCParticle *mc_particle = (AliAODMCParticle*)fMCArray->At(mc_index);
 
         if(PassMCTriggerCuts(mc_particle)) {
             real_trigger_list.push_back(mc_particle);
+            if(mc_particle->Pt() > 4) is_triggered_event_MC = true;
             AliCFParticle *trigger_particle = new AliCFParticle(mc_particle->Pt(), mc_particle->Eta(), mc_particle->Phi(), mc_particle->Charge(), 0);
             fMixedMCTrackObjArray->Add(trigger_particle);
         }
@@ -1153,6 +1176,7 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
     FillSingleMCParticleDist(real_trigger_list, primZ, fTriggerDist_MC);
     FillSingleMCParticleDist(real_associated_list, primZ, fAssociatedDist_MC);
     FillMCMotherDist(real_lambda_list, primZ, fLambdaDist_MC);
+    if(is_triggered_event_MC) FillMCMotherDist(real_lambda_list, multPercentile, fTriggeredLambdaDist_MC);
 
     MakeSameMCHLambdaCorrelations(real_trigger_list, real_lambda_list, fDphiHLambda_MC, primZ);
     MakeSameMCHHCorrelations(real_trigger_list, real_associated_list, fDphiHH_MC, primZ);
