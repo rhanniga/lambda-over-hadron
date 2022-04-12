@@ -1118,6 +1118,8 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
     FillSingleParticleDist(associated_h_list_checkMC, primZ, fAssociatedHDist);
     FillMotherDist(lambda_list, primZ, fLambdaDist, false);
     FillMotherDist(antilambda_list, primZ, fLambdaDist, true);
+    FillMotherDist(lambda_list_checkMotherPDG, primZ, fGuaranteedLambdaDist, false);
+    FillMotherDist(antilambda_list_checkMotherPDG, primZ, fGuaranteedLambdaDist, true);
 
     // Filling our single particle lambda distribution histogram:
     if(is_triggered_event) FillMotherDist(lambda_list, multPercentile, fTriggeredLambdaDist, false);
@@ -1125,11 +1127,10 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
 
     MakeSameHLambdaCorrelations(trigger_list, antilambda_list, fDphiHLambdaEff, primZ, true, true);
     MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambdaEff, primZ, true, false);
-    MakeSameHLambdaCorrelations(trigger_list, antilambda_list, fDphiHGuaranteedLambdaEff, primZ, true, true);
-    MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHGuaranteedLambdaEff, primZ, true, false);
+    MakeSameHLambdaCorrelations(trigger_list, antilambda_list_checkMotherPDG, fDphiHGuaranteedLambdaEff, primZ, true, true);
+    MakeSameHLambdaCorrelations(trigger_list, lambda_list_checkMotherPDG, fDphiHGuaranteedLambdaEff, primZ, true, false);
     MakeSameHLambdaCorrelations_withMCKin(trigger_list, antilambda_list_checkMotherPDG, fDphiHLambdaEff_MCKin, primZ, true);
     MakeSameHLambdaCorrelations_withMCKin(trigger_list, lambda_list_checkMotherPDG, fDphiHLambdaEff_MCKin, primZ, true);
-
     MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHHEff, primZ, true);
     MakeSameHHCorrelations(trigger_list_checkMC, associated_h_list_checkMC, fDphiHHEff_checkMC, primZ, true);
 
