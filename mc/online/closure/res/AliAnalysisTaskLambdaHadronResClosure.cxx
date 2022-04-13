@@ -222,7 +222,7 @@ void AliAnalysisTaskLambdaHadronResClosure::UserCreateOutputObjects()
     fDphiHLambdaEff->Sumw2();
     fOutputList->Add(fDphiHLambdaEff);
 
-    fDphiHLambdaEff_MCKin = new THnSparseF("fDphiHLambdaEff_MCKin", "Efficiency-corrected Hadron-Lambda Correlation Histogram (using MC kinematics on V0)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambdaEff_MCKin = new THnSparseF("fDphiHLambdaEff_MCKin", "Efficiency-corrected Hadron-Lambda Correlation Histogram (using MC kinematics on lambda)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambdaEff_MCKin->Sumw2();
     fOutputList->Add(fDphiHLambdaEff_MCKin);
 
@@ -267,6 +267,20 @@ void AliAnalysisTaskLambdaHadronResClosure::UserCreateOutputObjects()
 
 }
 
+AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer AliAnalysisTaskLambdaHadronResClosure::DaughtersToMother(AliAODTrack* track1, AliAODTrack* track2, double mass1, double mass2)
+{
+    AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer mom;
+
+    mom.particle.SetPx(track1->Px() + track2->Px());
+    mom.particle.SetPy(track1->Py() + track2->Py());
+    mom.particle.SetPz(track1->Pz() + track2->Pz());
+    mom.particle.SetE(track1->E(mass1) + track2->E(mass2));
+
+    mom.daughter1ID = track1->GetID();
+    mom.daughter2ID = track2->GetID();
+    return mom;
+}
+
 void AliAnalysisTaskLambdaHadronResClosure::FillSingleParticleDist(std::vector<AliAODTrack*> particle_list, double zVtx, THnSparse* fDist, bool trig_eff)
 {
     double dist_points[4]; //Pt, Phi, Eta, zVtx
@@ -307,20 +321,15 @@ void AliAnalysisTaskLambdaHadronResClosure::FillMotherDist(std::vector<AliAnalys
 {
     double dist_points[5]; //Pt, Phi, Eta, M, event multiplicity
     for(int i = 0; i < (int)particle_list.size(); i++) {
-        auto particle = particle_list[i].vzero;
-        dist_points[0] = particle->Pt();
-        dist_points[1] = particle->Phi();
-        dist_points[2] = particle->Eta();
-        if(isAntiLambda) {
-            dist_points[3] = particle->MassAntiLambda();
-        }
-        else{
-            dist_points[3] = particle->MassLambda();
-        }
+        auto particle = particle_list[i].particle;
+        dist_points[0] = particle.Pt();
+        dist_points[1] = particle.Phi();
+        dist_points[2] = particle.Eta();
+        dist_points[3] = particle.M();
         dist_points[4] = multPercentile;
-        bool in_pt_range = (particle->Pt() < 10 && particle->Pt() > 0.5);
+        bool in_pt_range = (particle.Pt() < 10 && particle.Pt() > 0.5);
         if(lambdaEff && in_pt_range) {
-            int lambdaBin = fLambdaEff->FindBin(particle->Pt());
+            int lambdaBin = fLambdaEff->FindBin(particle.Pt());
             double lambdaEff = fLambdaEff->GetBinContent(lambdaBin);
             double lambdaScale = 1.0/lambdaEff;
             fDist->Fill(dist_points, lambdaScale);
@@ -369,7 +378,7 @@ void AliAnalysisTaskLambdaHadronResClosure::LoadEfficiencies(TString filePath) {
         AliFatal("NULL INPUT FILE WHEN LOADING EFFICIENCIES, EXITING");
     }
 
-    fLambdaEff = (TH1D*) effFile->Get("fLambdaV0Eff")->Clone("fLambdaV0EffClone");
+    fLambdaEff = (TH1D*) effFile->Get("fLambdaEff")->Clone("fLambdaEffClone");
     if(!fLambdaEff) {
         AliFatal("UNABLE TO FIND LAMBDA EFF, EXITING");
     }
@@ -399,8 +408,8 @@ void AliAnalysisTaskLambdaHadronResClosure::MakeSameHLambdaCorrelations(std::vec
             //Make sure trigger isn't one of the daughters of lambda
             if((trigger->GetID() == lambda.daughter1ID) || (trigger->GetID() == lambda.daughter2ID)) continue;
 
-            dphi_point[1] = lambda.vzero->Pt();
-            dphi_point[2] = trigger->Phi() - lambda.vzero->Phi();
+            dphi_point[1] = lambda.particle.Pt();
+            dphi_point[2] = trigger->Phi() - lambda.particle.Phi();
 
             if(dphi_point[2] < -TMath::Pi()/2.0) {
                 dphi_point[2] += 2.0*TMath::Pi();
@@ -409,20 +418,18 @@ void AliAnalysisTaskLambdaHadronResClosure::MakeSameHLambdaCorrelations(std::vec
                 dphi_point[2] -= 2.0*TMath::Pi();
             }
 
-            dphi_point[3] = trigger->Eta() - lambda.vzero->Eta();
-            if(isAntiLambda) dphi_point[4] = lambda.vzero->MassAntiLambda();
-            else dphi_point[4] = lambda.vzero->MassLambda();
+            dphi_point[3] = trigger->Eta() - lambda.particle.Eta();
+            dphi_point[4] = lambda.particle.M();
             dphi_point[5] = zVtx;
-
             bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0.5) 
-                               && (lambda.vzero->Pt() < 10 && lambda.vzero->Pt() > 0.5));
+                               && (lambda.particle.Pt() < 10 && lambda.particle.Pt() > 0.5));
 
             if(eff && in_pt_range) {
 
                 int trigBin = fTriggerEff->FindBin(trigger->Pt());
                 double trigEff = fTriggerEff->GetBinContent(trigBin);
                 double triggerScale = 1.0/trigEff;
-                int lambdaBin = fLambdaEff->FindBin(lambda.vzero->Pt());
+                int lambdaBin = fLambdaEff->FindBin(lambda.particle.Pt());
                 double lambdaEff = fLambdaEff->GetBinContent(lambdaBin);
                 double lambdaScale = 1.0/lambdaEff;
                 double totalScale = triggerScale*lambdaScale;
@@ -446,12 +453,7 @@ void AliAnalysisTaskLambdaHadronResClosure::MakeSameHLambdaCorrelations_withMCKi
         for(int i = 0; i < (int)lambda_list.size(); i++) {
 
             auto lambda = lambda_list[i];
-            AliAODTrack *posTrack=(AliAODTrack *)lambda.vzero->GetDaughter(0);
-                    
-            int plabel = posTrack->GetLabel();
-            AliAODMCParticle* mcpospart = (AliAODMCParticle*)fMCArray->At(plabel);
-            int mlabel_pos = mcpospart->GetMother();
-            AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(mlabel_pos);
+            AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(lambda.motherLabel);
 
             //Make sure trigger isn't one of the daughters of lambda
             if((trigger->GetID() == lambda.daughter1ID) || (trigger->GetID() == lambda.daughter2ID)) continue;
@@ -631,8 +633,8 @@ void AliAnalysisTaskLambdaHadronResClosure::MakeMixedHLambdaCorrelations(AliEven
             for(int j = 0; j < (int)lambda_list.size(); j++) {
                 auto lambda = lambda_list[j];
 
-                dphi_point[1] = lambda.vzero->Pt();
-                dphi_point[2] = trigger->Phi() - lambda.vzero->Phi();
+                dphi_point[1] = lambda.particle.Pt();
+                dphi_point[2] = trigger->Phi() - lambda.particle.Phi();
 
                 if(dphi_point[2] < -TMath::Pi()/2.0) {
                     dphi_point[2] += 2.0*TMath::Pi();
@@ -641,19 +643,18 @@ void AliAnalysisTaskLambdaHadronResClosure::MakeMixedHLambdaCorrelations(AliEven
                     dphi_point[2] -= 2.0*TMath::Pi();
                 }
 
-                dphi_point[3] = trigger->Eta() - lambda.vzero->Eta();
+                dphi_point[3] = trigger->Eta() - lambda.particle.Eta();
                 
-                if(isAntiLambda) dphi_point[4] = lambda.vzero->MassAntiLambda();
-                else dphi_point[4] = lambda.vzero->MassLambda();
+                dphi_point[4] = lambda.particle.M();
 
                 dphi_point[5] = zVtx;
                 bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0.5) 
-                                && (lambda.vzero->Pt() < 10 && lambda.vzero->Pt() > 0.5));
+                                && (lambda.particle.Pt() < 10 && lambda.particle.Pt() > 0.5));
                 if(eff && in_pt_range) {
                     int trigBin = fTriggerEff->FindBin(trigger->Pt());
                     double trigEff = fTriggerEff->GetBinContent(trigBin);
                     double triggerScale = 1.0/trigEff;
-                    int lambdaBin = fLambdaEff->FindBin(lambda.vzero->Pt());
+                    int lambdaBin = fLambdaEff->FindBin(lambda.particle.Pt());
                     double lambdaEff = fLambdaEff->GetBinContent(lambdaBin);
                     double lambdaScale = 1.0/lambdaEff;
                     double totalScale = triggerScale*lambdaScale;
@@ -809,51 +810,6 @@ bool AliAnalysisTaskLambdaHadronResClosure::PassDaughterCuts(AliAODTrack *track)
     return pass;
 }
 
-uint8_t AliAnalysisTaskLambdaHadronResClosure::PassV0LambdaCuts(AliAODv0 *v0, bool checkMotherPDG) {
-
-    if(v0->GetOnFlyStatus()) return 0;
-    if(!(TMath::Abs(v0->Eta()) < 0.8)) return 0;
-
-    AliAODTrack *ptrack=(AliAODTrack *)v0->GetDaughter(0);
-    AliAODTrack *ntrack=(AliAODTrack *)v0->GetDaughter(1);
-
-    if(!PassDaughterCuts(ptrack)) return 0;
-    if(!PassDaughterCuts(ntrack)) return 0;
-        
-    int plabel = ptrack->GetLabel();
-    int nlabel = ntrack->GetLabel();
-
-    if(plabel < 0 || nlabel < 0) return 0;
-
-    AliAODMCParticle* mcpospart = (AliAODMCParticle*)fMCArray->At(plabel);
-    AliAODMCParticle* mcnegpart = (AliAODMCParticle*)fMCArray->At(nlabel);
-
-    if(checkMotherPDG) {
-        int mlabel_pos = mcpospart->GetMother();
-        int mlabel_neg = mcnegpart->GetMother();
-
-        if(mlabel_pos < 0 || mlabel_neg < 0) return 0;
-        if(mlabel_pos != mlabel_neg) return 0;
-
-        AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(mlabel_pos);
-
-        int momPDG = mcmother->GetPdgCode();
-        if(TMath::Abs(momPDG) != 3122) return 0;
-    }
-
-    int posPDG = mcpospart->GetPdgCode();
-    int negPDG = mcnegpart->GetPdgCode();
-
-    if(posPDG == 2212 && negPDG == -211) {
-        return 1;
-    } else if(posPDG == 211 && negPDG == -2212) {
-        return 2;
-    }
-    else {
-        return 0;
-    }
-}
-
 bool AliAnalysisTaskLambdaHadronResClosure::PassAssociatedCuts(AliAODTrack *track, bool checkMC){
 
     if(!(TMath::Abs(track->Eta()) < 0.8)) return false;
@@ -988,6 +944,12 @@ void AliAnalysisTaskLambdaHadronResClosure::UserExec(Option_t*)
 
     std::vector<AliAODTrack*> trigger_list;
     std::vector<AliAODTrack*> associated_h_list;
+    
+    // The following lists contain tracks that pass daughter cuts
+    std::vector<AliAODTrack*> piminus_list;
+    std::vector<AliAODTrack*> piplus_list;
+    std::vector<AliAODTrack*> proton_list;
+    std::vector<AliAODTrack*> antiproton_list;
 
     std::vector<AliAODTrack*> trigger_list_checkMC;
     std::vector<AliAODTrack*> associated_h_list_checkMC;
@@ -1039,6 +1001,24 @@ void AliAnalysisTaskLambdaHadronResClosure::UserExec(Option_t*)
         if(PassAssociatedCuts(track, true)) {
             associated_h_list_checkMC.push_back(track);
         }
+        
+        if(PassDaughterCuts(track)) {
+            int mc_label = track->GetLabel();
+            if(mc_label < 0) continue;
+            AliAODMCParticle* mc_part = (AliAODMCParticle*)fMCArray->At(mc_label);
+            if(mc_part->GetPdgCode() == 211) {
+                piplus_list.push_back(track);
+            }
+            if(mc_part->GetPdgCode() == -211) {
+                piminus_list.push_back(track);
+            }
+            if(mc_part->GetPdgCode() == 2212) {
+                proton_list.push_back(track);
+            }
+            if(mc_part->GetPdgCode() == -2212) {
+                antiproton_list.push_back(track);
+            }
+        }
     }
 
     //Making list of possible lambdas (have to do +/- for proton or pi):
@@ -1046,31 +1026,43 @@ void AliAnalysisTaskLambdaHadronResClosure::UserExec(Option_t*)
     std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> antilambda_list;
     std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> lambda_list;
 
-
-    // V0 SECTION
-    int numV0s = fAOD->GetNumberOfV0s();
-    for(int i = 0; i < numV0s; i++) {
-        AliAODv0 *v0 = fAOD->GetV0(i);
-
-        AliAODTrack *posTrack=(AliAODTrack *)v0->GetDaughter(0);
-        AliAODTrack *negTrack=(AliAODTrack *)v0->GetDaughter(1);
-
-        if(PassV0LambdaCuts(v0) == 1) {
-            AliMotherContainer lambda;
-            lambda.vzero = v0;
-            lambda.daughter1ID = posTrack->GetID();
-            lambda.daughter2ID = negTrack->GetID();
+    // For now we guarantee the p-pi pair came from an actual lambda, and that the mothers of each daughter are the same
+    for(int i = 0; i < (int)proton_list.size(); i++) {
+        for(int j = 0; j < (int) piminus_list.size(); j++) {
+            auto proton = proton_list[i];
+            auto piminus = piminus_list[j];
+            if(proton->GetID() == piminus->GetID()) continue;
+            auto proton_mc = (AliAODMCParticle*)fMCArray->At(proton->GetLabel());
+            auto piminus_mc = (AliAODMCParticle*)fMCArray->At(piminus->GetLabel());
+            int mlabel_pos = proton_mc->GetMother();
+            int mlabel_neg = piminus_mc->GetMother();
+            if(mlabel_pos < 0 || mlabel_neg < 0) continue;
+            if(mlabel_pos != mlabel_neg) continue;
+            auto mother = (AliAODMCParticle*)fMCArray->At(mlabel_pos);
+            if(mother->GetPdgCode() != 3122) continue;
+            AliMotherContainer lambda = DaughtersToMother(proton, piminus, 0.9383, 0.1396);
+            lambda.motherLabel = mlabel_pos;
             lambda_list.push_back(lambda);
         }
+    }
 
-        if(PassV0LambdaCuts(v0) == 2) {
-            AliMotherContainer antilambda;
-            antilambda.vzero = v0;
-            antilambda.daughter1ID = posTrack->GetID();
-            antilambda.daughter2ID = negTrack->GetID();
+    for(int i = 0; i < (int)antiproton_list.size(); i++) {
+        for(int j = 0; j < (int) piplus_list.size(); j++) {
+            auto antiproton = antiproton_list[i];
+            auto piplus = piplus_list[j];
+            if(antiproton->GetID() == piplus->GetID()) continue;
+            auto antiproton_mc = (AliAODMCParticle*)fMCArray->At(antiproton->GetLabel());
+            auto piplus_mc = (AliAODMCParticle*)fMCArray->At(piplus->GetLabel());
+            int mlabel_pos = antiproton_mc->GetMother();
+            int mlabel_neg = piplus_mc->GetMother();
+            if(mlabel_pos < 0 || mlabel_neg < 0) continue;
+            if(mlabel_pos != mlabel_neg) continue;
+            auto mother = (AliAODMCParticle*)fMCArray->At(mlabel_pos);
+            if(mother->GetPdgCode() != 3122) continue;
+            AliMotherContainer antilambda = DaughtersToMother(antiproton, piplus, 0.9383, 0.1396);
+            antilambda.motherLabel = mlabel_pos;
             antilambda_list.push_back(antilambda);
         }
-
     }
 
 

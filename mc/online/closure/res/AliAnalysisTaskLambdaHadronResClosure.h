@@ -49,9 +49,10 @@ public:
   void SetCentEstimator(TString estimator);
 
   struct AliMotherContainer {
-    AliAODv0* vzero;
+    TLorentzVector particle;
     int daughter1ID;
     int daughter2ID;
+    int motherLabel;
   };
 
 private:
@@ -102,6 +103,7 @@ private:
   AliMultSelection *fMultSelection; //!>!mult selection
 
 
+  AliMotherContainer DaughtersToMother(AliAODTrack* track1, AliAODTrack* track2, double mass1, double mass2);
   void FillSingleParticleDist(std::vector<AliAODTrack*> particle_list, double zVtx, THnSparse* fDist, bool trig_eff=false);
   void FillSingleMCParticleDist(std::vector<AliAODMCParticle*> particle_list, double zVtx, THnSparse* fDist);
   void FillMotherDist(std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> particle_list, float multPercentile, THnSparse* fDist, bool isAntiLambda, bool lambdaEff=true);
