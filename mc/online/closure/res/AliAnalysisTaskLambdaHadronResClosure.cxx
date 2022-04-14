@@ -70,6 +70,7 @@ AliAnalysisTaskLambdaHadronResClosure::AliAnalysisTaskLambdaHadronResClosure() :
     fDphiHHEff(0x0),
     fDphiHHEff_checkMC(0x0),
     fDphiHLambdaMixed(0x0),
+    fDphiHLambdaMixed_MCKin(0x0),
     fDphiHHMixed(0x0),
     fpidResponse(0x0),
     fMultSelection(0x0),
@@ -111,6 +112,7 @@ AliAnalysisTaskLambdaHadronResClosure::AliAnalysisTaskLambdaHadronResClosure(con
     fDphiHHEff(0x0),
     fDphiHHEff_checkMC(0x0),
     fDphiHLambdaMixed(0x0),
+    fDphiHLambdaMixed_MCKin(0x0),
     fDphiHHMixed(0x0),
     fpidResponse(0x0),
     fMultSelection(0x0),
@@ -197,9 +199,9 @@ void AliAnalysisTaskLambdaHadronResClosure::UserCreateOutputObjects()
     fOutputList->Add(fAssociatedDist_MC);
 
     //Mother distribution axes are: Pt, Phi, Eta, Mass, Event multiplicity
-    int mother_dist_bins[5] = {100, 16, 20, 100, 10};
+    int mother_dist_bins[5] = {100, 16, 20, 140, 10};
     double mother_dist_mins[5] = {0, -3.14, -1, 1.06, 0};
-    double mother_dist_maxes[5] = {15, 3.14, 1, 1.16, 100};
+    double mother_dist_maxes[5] = {15, 3.14, 1, 1.2, 100};
 
     fTriggeredLambdaDist = new THnSparseF("fTriggeredLambdaDist", "Lambda Distribution (with triggered event)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
     fTriggeredLambdaDist->Sumw2();
@@ -214,9 +216,9 @@ void AliAnalysisTaskLambdaHadronResClosure::UserCreateOutputObjects()
     fOutputList->Add(fLambdaDist_MC);
 
     //Correlation axes are: Trigger Pt, Associated Pt, dPhi, dEta, Inv Mass, Zvtx
-    int hl_cor_bins[6] = {8, 10, 16, 20, 100, 10};
-    double hl_cor_mins[6] = {4.0, 1, -1.0*TMath::Pi()/2.0, -2.0, 1.06, -10};
-    double hl_cor_maxes[6] = {12.0, 6, 3.0*TMath::Pi()/2.0, 2.0, 1.16, 10};
+    int hl_cor_bins[6] = {9, 10, 16, 20, 140, 10};
+    double hl_cor_mins[6] = {1.0, 1, -1.0*TMath::Pi()/2.0, -2.0, 1.06, -10};
+    double hl_cor_maxes[6] = {10.0, 6, 3.0*TMath::Pi()/2.0, 2.0, 1.2, 10};
 
     fDphiHLambdaEff = new THnSparseF("fDphiHLambdaEff", "Efficiency-corrected Hadron-Lambda Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambdaEff->Sumw2();
@@ -234,14 +236,18 @@ void AliAnalysisTaskLambdaHadronResClosure::UserCreateOutputObjects()
     fDphiHLambdaMixed->Sumw2();
     fOutputList->Add(fDphiHLambdaMixed);
 
+    fDphiHLambdaMixed_MCKin = new THnSparseF("fDphiHLambdaMixed_MCKin", "Mixed_MCKin Hadron-Lambda Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambdaMixed_MCKin->Sumw2();
+    fOutputList->Add(fDphiHLambdaMixed_MCKin);
+
     fDphiHLambdaMixed_MC = new THnSparseF("fDphiHLambdaMixed_MC", "Mixed Hadron-Lambda Correlation Histogram (MC truth)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambdaMixed_MC->Sumw2();
     fOutputList->Add(fDphiHLambdaMixed_MC);
 
     //Correlation axes are: Trigger Pt, Associated Pt, dPhi, dEta, Zvtx
-    int hh_cor_bins[5] = {16, 10, 16, 20, 10};
-    double hh_cor_mins[5] = {4, 1, -1.0*TMath::Pi()/2.0, -2.0, -10};
-    double hh_cor_maxes[5] = {12, 6, 3.0*TMath::Pi()/2.0, 2.0, 10};
+    int hh_cor_bins[5] = {9, 10, 16, 20, 10};
+    double hh_cor_mins[5] = {1, 1, -1.0*TMath::Pi()/2.0, -2.0, -10};
+    double hh_cor_maxes[5] = {10, 6, 3.0*TMath::Pi()/2.0, 2.0, 10};
 
     fDphiHHEff = new THnSparseF("fDphiHHEff", "Efficiency corrected Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fDphiHHEff->Sumw2();
@@ -404,9 +410,12 @@ void AliAnalysisTaskLambdaHadronResClosure::MakeSameHLambdaCorrelations(std::vec
 
         for(int i = 0; i < (int)lambda_list.size(); i++) {
             auto lambda = lambda_list[i];
+            auto lambda_mc = (AliAODMCParticle*)fMCArray->At(lambda.motherLabel);
 
             //Make sure trigger isn't one of the daughters of lambda
-            if((trigger->GetID() == lambda.daughter1ID) || (trigger->GetID() == lambda.daughter2ID)) continue;
+            if((trigger->GetID() == lambda.daughter1ID) || (trigger->GetID() == lambda.daughter2ID)) {
+                continue;
+            }
 
             dphi_point[1] = lambda.particle.Pt();
             dphi_point[2] = trigger->Phi() - lambda.particle.Phi();
@@ -512,8 +521,10 @@ void AliAnalysisTaskLambdaHadronResClosure::MakeSameMCHLambdaCorrelations(std::v
             AliAODMCParticle* first_daughter = (AliAODMCParticle*)fMCArray->At(first_daughter_index);
             AliAODMCParticle* second_daughter = (AliAODMCParticle*)fMCArray->At(second_daughter_index);
 
-            //Make sure trigger isn't one of the daughters of lambda
-            if((trigger->GetLabel() == first_daughter->GetLabel()) || (trigger->GetLabel() == second_daughter->GetLabel())) continue;
+            //Make sure trigger isn't one of the daughters of lambda, this is not necessarry if trigger is physical primary (oh well)
+            if((trigger->GetLabel() == first_daughter_index) || (trigger->GetLabel() == second_daughter_index)) {
+                continue;
+            }
 
             dphi_point[1] = lambda->Pt();
             dphi_point[2] = trigger->Phi() - lambda->Phi();
@@ -655,6 +666,59 @@ void AliAnalysisTaskLambdaHadronResClosure::MakeMixedHLambdaCorrelations(AliEven
                     double trigEff = fTriggerEff->GetBinContent(trigBin);
                     double triggerScale = 1.0/trigEff;
                     int lambdaBin = fLambdaEff->FindBin(lambda.particle.Pt());
+                    double lambdaEff = fLambdaEff->GetBinContent(lambdaBin);
+                    double lambdaScale = 1.0/lambdaEff;
+                    double totalScale = triggerScale*lambdaScale;
+                    fDphi->Fill(dphi_point, totalScale);
+                }
+                else{
+                    fDphi->Fill(dphi_point);
+                }
+            }
+        }
+    }
+}
+
+void AliAnalysisTaskLambdaHadronResClosure::MakeMixedHLambdaCorrelations_withMCKin(AliEventPool* fPool, std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> lambda_list , THnSparse* fDphi, double zVtx, bool eff)
+{
+    double dphi_point[6];
+    int numEvents = fPool->GetCurrentNEvents();
+    for(int iEvent = 0; iEvent < numEvents; iEvent++) {
+        TObjArray *tracks = fPool->GetEvent(iEvent);
+        tracks->SetName(Form("%d_Zvtx", (int)zVtx));
+        int numTracks = tracks->GetEntriesFast();
+
+        for(int i = 0; i < numTracks; i++) {
+            AliCFParticle *trigger = (AliCFParticle*) tracks->At(i);
+            if(!trigger) continue;
+            dphi_point[0] = trigger->Pt();
+
+            for(int j = 0; j < (int)lambda_list.size(); j++) {
+                auto lambda = lambda_list[j];
+                AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(lambda.motherLabel);
+
+                dphi_point[1] = mcmother->Pt();
+                dphi_point[2] = trigger->Phi() - mcmother->Phi();
+
+                if(dphi_point[2] < -TMath::Pi()/2.0) {
+                    dphi_point[2] += 2.0*TMath::Pi();
+                }
+                else if(dphi_point[2] > 3.0*TMath::Pi()/2.0) {
+                    dphi_point[2] -= 2.0*TMath::Pi();
+                }
+
+                dphi_point[3] = trigger->Eta() - mcmother->Eta();
+                
+                dphi_point[4] = mcmother->M();
+
+                dphi_point[5] = zVtx;
+                bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0.5) 
+                                && (mcmother->Pt() < 10 && mcmother->Pt() > 0.5));
+                if(eff && in_pt_range) {
+                    int trigBin = fTriggerEff->FindBin(trigger->Pt());
+                    double trigEff = fTriggerEff->GetBinContent(trigBin);
+                    double triggerScale = 1.0/trigEff;
+                    int lambdaBin = fLambdaEff->FindBin(mcmother->Pt());
                     double lambdaEff = fLambdaEff->GetBinContent(lambdaBin);
                     double lambdaScale = 1.0/lambdaEff;
                     double totalScale = triggerScale*lambdaScale;
@@ -1096,6 +1160,8 @@ void AliAnalysisTaskLambdaHadronResClosure::UserExec(Option_t*)
             if(fCorPool->IsReady()) {
                 MakeMixedHLambdaCorrelations(fCorPool, antilambda_list, fDphiHLambdaMixed, primZ, true, true);
                 MakeMixedHLambdaCorrelations(fCorPool, lambda_list, fDphiHLambdaMixed, primZ, true, false);
+                MakeMixedHLambdaCorrelations_withMCKin(fCorPool, antilambda_list, fDphiHLambdaMixed_MCKin, primZ, true);
+                MakeMixedHLambdaCorrelations_withMCKin(fCorPool, lambda_list, fDphiHLambdaMixed_MCKin, primZ, true);
                 MakeMixedHHCorrelations(fCorPool, associated_h_list, fDphiHHMixed, primZ);
             }
             if(fMixedTrackObjArray->GetEntries() > 0) {

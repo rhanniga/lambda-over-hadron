@@ -92,6 +92,7 @@ private:
   THnSparse* fDphiHHEff;   //!>! hadron-hadron correlation hist (efficiency corrected)
   THnSparse* fDphiHHEff_checkMC;   //!>! hadron-hadron correlation hist (efficiency corrected, trig and assoc are MC primary)
   THnSparse* fDphiHLambdaMixed; //!>! hadron-lambda mixed correlation hist
+  THnSparse* fDphiHLambdaMixed_MCKin; //!>! hadron-lambda mixed correlation hist (using MC kinematics)
   THnSparse* fDphiHHMixed; //!>! hadron-hadron mixed correlation hist
 
   THnSparse* fDphiHLambda_MC;  //!>! hadron-lambda correlation hist (MC truth)
@@ -113,6 +114,7 @@ private:
   void MakeSameHLambdaCorrelations_withMCKin(std::vector<AliAODTrack*> trigger_list, std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx, bool eff);
   void MakeSameHHCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAODTrack*> associated_h_list, THnSparse* fDphi, double zVtx, bool eff=true);
   void MakeMixedHLambdaCorrelations(AliEventPool *fPool, std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx, bool eff, bool isAntiLambda);
+  void MakeMixedHLambdaCorrelations_withMCKin(AliEventPool *fPool, std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx, bool eff);
   void MakeMixedHHCorrelations(AliEventPool *fPool, std::vector<AliAODTrack*> associated_h_list , THnSparse* fDphi, double zVtx, bool eff=true);
 
   void MakeSameMCHLambdaCorrelations(std::vector<AliAODMCParticle*> trigger_list, std::vector<AliAODMCParticle*> lambda_list, THnSparse* fDphi, double zVtx);

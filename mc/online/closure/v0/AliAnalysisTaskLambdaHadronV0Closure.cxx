@@ -228,9 +228,9 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserCreateOutputObjects()
     fOutputList->Add(fTriggeredLambdaDist_MC);
 
     //Correlation axes are: Trigger Pt, Associated Pt, dPhi, dEta, Inv Mass, Zvtx
-    int hl_cor_bins[6] = {8, 10, 16, 20, 100, 10};
-    double hl_cor_mins[6] = {4.0, 1, -1.0*TMath::Pi()/2.0, -2.0, 1.06, -10};
-    double hl_cor_maxes[6] = {12.0, 6, 3.0*TMath::Pi()/2.0, 2.0, 1.16, 10};
+    int hl_cor_bins[6] = {18, 18, 16, 20, 100, 10};
+    double hl_cor_mins[6] = {1, 1, -1.0*TMath::Pi()/2.0, -2.0, 1.06, -10};
+    double hl_cor_maxes[6] = {10, 10, 3.0*TMath::Pi()/2.0, 2.0, 1.16, 10};
 
     fDphiHLambdaEff = new THnSparseF("fDphiHLambdaEff", "Efficiency-corrected Hadron-Lambda Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambdaEff->Sumw2();
@@ -257,9 +257,9 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserCreateOutputObjects()
     fOutputList->Add(fDphiHLambdaMixed_MC);
 
     //Correlation axes are: Trigger Pt, Associated Pt, dPhi, dEta, Zvtx
-    int hh_cor_bins[5] = {16, 10, 16, 20, 10};
-    double hh_cor_mins[5] = {4, 1, -1.0*TMath::Pi()/2.0, -2.0, -10};
-    double hh_cor_maxes[5] = {12, 6, 3.0*TMath::Pi()/2.0, 2.0, 10};
+    int hh_cor_bins[5] = {18, 18, 16, 20, 10};
+    double hh_cor_mins[5] = {1, 1, -1.0*TMath::Pi()/2.0, -2.0, -10};
+    double hh_cor_maxes[5] = {10, 10, 3.0*TMath::Pi()/2.0, 2.0, 10};
 
     fDphiHHEff = new THnSparseF("fDphiHHEff", "Efficiency corrected Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fDphiHHEff->Sumw2();
