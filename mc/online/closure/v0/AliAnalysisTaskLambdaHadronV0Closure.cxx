@@ -453,6 +453,56 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeSameHLambdaCorrelations(std::vect
         }
     }
 }
+void AliAnalysisTaskLambdaHadronV0Closure::MakeSameRecoHRealLambdaCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAODMCParticle*> lambda_list, THnSparse* fDphi, double zVtx, bool eff)
+{
+    double dphi_point[6];
+
+    for(int j = 0; j < (int)trigger_list.size(); j++) {
+        auto trigger = trigger_list[j];
+        dphi_point[0] = trigger->Pt();
+
+        for(int i = 0; i < (int)lambda_list.size(); i++) {
+            auto lambda = lambda_list[i];
+
+            //Make sure trigger isn't one of the daughters of lambda
+            if((trigger->GetLabel() == lambda->GetDaughterFirst()) || (trigger->GetID() == lambda->GetDaughterLast())) continue;
+
+            dphi_point[1] = lambda->Pt();
+            dphi_point[2] = trigger->Phi() - lambda->Phi();
+
+            if(dphi_point[2] < -TMath::Pi()/2.0) {
+                dphi_point[2] += 2.0*TMath::Pi();
+            }
+            else if(dphi_point[2] > 3.0*TMath::Pi()/2.0) {
+                dphi_point[2] -= 2.0*TMath::Pi();
+            }
+
+            dphi_point[3] = trigger->Eta() - lambda->Eta();
+            dphi_point[4] = lambda->M();
+            dphi_point[5] = zVtx;
+
+            bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0.5) 
+                               && (lambda->Pt() < 10 && lambda->Pt() > 0.5));
+
+            if(eff && in_pt_range) {
+
+                int trigBin = fTriggerEff->FindBin(trigger->Pt());
+                double trigEff = fTriggerEff->GetBinContent(trigBin);
+                double triggerScale = 1.0/trigEff;
+                int lambdaBin = fLambdaEff->FindBin(lambda->Pt());
+                double lambdaEff = fLambdaEff->GetBinContent(lambdaBin);
+                double lambdaScale = 1.0/lambdaEff;
+                double totalScale = triggerScale*lambdaScale;
+                fDphi->Fill(dphi_point, totalScale);
+
+            }
+            else{
+                fDphi->Fill(dphi_point);
+            }
+        }
+    }
+}
+
 void AliAnalysisTaskLambdaHadronV0Closure::MakeSameHLambdaCorrelations_withMCKin(std::vector<AliAODTrack*> trigger_list, std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx, bool eff)
 {
     double dphi_point[6];
@@ -672,6 +722,56 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeMixedHLambdaCorrelations(AliEvent
                     double trigEff = fTriggerEff->GetBinContent(trigBin);
                     double triggerScale = 1.0/trigEff;
                     int lambdaBin = fLambdaEff->FindBin(lambda.vzero->Pt());
+                    double lambdaEff = fLambdaEff->GetBinContent(lambdaBin);
+                    double lambdaScale = 1.0/lambdaEff;
+                    double totalScale = triggerScale*lambdaScale;
+                    fDphi->Fill(dphi_point, totalScale);
+                }
+                else{
+                    fDphi->Fill(dphi_point);
+                }
+            }
+        }
+    }
+}
+
+void AliAnalysisTaskLambdaHadronV0Closure::MakeMixedHLambdaCorrelations_withMCKin(AliEventPool* fPool, std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> lambda_list , THnSparse* fDphi, double zVtx, bool eff)
+{
+    double dphi_point[6];
+    int numEvents = fPool->GetCurrentNEvents();
+    for(int iEvent = 0; iEvent < numEvents; iEvent++) {
+        TObjArray *tracks = fPool->GetEvent(iEvent);
+        tracks->SetName(Form("%d_Zvtx", (int)zVtx));
+        int numTracks = tracks->GetEntriesFast();
+
+        for(int i = 0; i < numTracks; i++) {
+            AliCFParticle *trigger = (AliCFParticle*) tracks->At(i);
+            if(!trigger) continue;
+            dphi_point[0] = trigger->Pt();
+
+            for(int j = 0; j < (int)lambda_list.size(); j++) {
+                auto lambda = (AliAODMCParticle*)fMCArray->At(lambda_list[j].motherLabel);
+
+                dphi_point[1] = lambda->Pt();
+                dphi_point[2] = trigger->Phi() - lambda->Phi();
+
+                if(dphi_point[2] < -TMath::Pi()/2.0) {
+                    dphi_point[2] += 2.0*TMath::Pi();
+                }
+                else if(dphi_point[2] > 3.0*TMath::Pi()/2.0) {
+                    dphi_point[2] -= 2.0*TMath::Pi();
+                }
+
+                dphi_point[3] = trigger->Eta() - lambda->Eta();
+                dphi_point[4] = lambda->M();
+                dphi_point[5] = zVtx;
+                bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0.5) 
+                                && (lambda->Pt() < 10 && lambda->Pt() > 0.5));
+                if(eff && in_pt_range) {
+                    int trigBin = fTriggerEff->FindBin(trigger->Pt());
+                    double trigEff = fTriggerEff->GetBinContent(trigBin);
+                    double triggerScale = 1.0/trigEff;
+                    int lambdaBin = fLambdaEff->FindBin(lambda->Pt());
                     double lambdaEff = fLambdaEff->GetBinContent(lambdaBin);
                     double lambdaScale = 1.0/lambdaEff;
                     double totalScale = triggerScale*lambdaScale;
