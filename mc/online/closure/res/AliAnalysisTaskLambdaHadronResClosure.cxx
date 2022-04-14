@@ -1058,7 +1058,7 @@ void AliAnalysisTaskLambdaHadronResClosure::UserExec(Option_t*)
             if(mlabel_pos < 0 || mlabel_neg < 0) continue;
             if(mlabel_pos != mlabel_neg) continue;
             auto mother = (AliAODMCParticle*)fMCArray->At(mlabel_pos);
-            if(mother->GetPdgCode() != 3122) continue;
+            if(mother->GetPdgCode() != -3122) continue;
             AliMotherContainer antilambda = DaughtersToMother(antiproton, piplus, 0.9383, 0.1396);
             antilambda.motherLabel = mlabel_pos;
             antilambda_list.push_back(antilambda);
