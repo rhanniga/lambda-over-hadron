@@ -481,20 +481,14 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeSameRecoHRealLambdaCorrelations(s
             dphi_point[4] = lambda->M();
             dphi_point[5] = zVtx;
 
-            bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0.5) 
-                               && (lambda->Pt() < 10 && lambda->Pt() > 0.5));
+            bool in_pt_range = (trigger->Pt() < 10 && trigger->Pt() > 0.5);
 
             if(eff && in_pt_range) {
-
+                // In this function we only want to use the efficiency for the trigger
                 int trigBin = fTriggerEff->FindBin(trigger->Pt());
                 double trigEff = fTriggerEff->GetBinContent(trigBin);
                 double triggerScale = 1.0/trigEff;
-                int lambdaBin = fLambdaEff->FindBin(lambda->Pt());
-                double lambdaEff = fLambdaEff->GetBinContent(lambdaBin);
-                double lambdaScale = 1.0/lambdaEff;
-                double totalScale = triggerScale*lambdaScale;
-                fDphi->Fill(dphi_point, totalScale);
-
+                fDphi->Fill(dphi_point, triggerScale);
             }
             else{
                 fDphi->Fill(dphi_point);
