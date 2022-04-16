@@ -244,9 +244,21 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserCreateOutputObjects()
     fDphiHLambdaEff_MCKin->Sumw2();
     fOutputList->Add(fDphiHLambdaEff_MCKin);
 
+    fDphiHLambdaEff_MCKin_physicalPrimary = new THnSparseF("fDphiHLambdaEff_MCKin_physicalPrimary", "Efficiency-corrected Hadron-Lambda Correlation Histogram (using MC kinematics on V0, trigger and lambda are physical primary)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambdaEff_MCKin_physicalPrimary->Sumw2();
+    fOutputList->Add(fDphiHLambdaEff_MCKin_physicalPrimary);
+
+    fDphiRecoHRealLambdaEff_MCKin_physicalPrimary = new THnSparseF("fDphiRecoHRealLambdaEff_MCKin_physicalPrimary", "Efficiency-corrected recoHadron-realLambda Correlation Histogram (using MC kinematics on V0, trigger and lambda are physical primary)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiRecoHRealLambdaEff_MCKin_physicalPrimary->Sumw2();
+    fOutputList->Add(fDphiRecoHRealLambdaEff_MCKin_physicalPrimary);
+
     fDphiHLambda_MC = new THnSparseF("fDphiHLambda_MC", "Hadron-Lambda Correlation Histogram (MC truth)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambda_MC->Sumw2();
     fOutputList->Add(fDphiHLambda_MC);
+
+    fDphiHPrimaryLambda_MC = new THnSparseF("fDphiHPrimaryLambda_MC", "Hadron-Lambda Correlation Histogram (MC truth, primary lambdas)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHPrimaryLambda_MC->Sumw2();
+    fOutputList->Add(fDphiHPrimaryLambda_MC);
 
     fDphiHLambdaMixed = new THnSparseF("fDphiHLambdaMixed", "Mixed Hadron-Lambda Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambdaMixed->Sumw2();
@@ -255,6 +267,14 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserCreateOutputObjects()
     fDphiHLambdaMixed_MC = new THnSparseF("fDphiHLambdaMixed_MC", "Mixed Hadron-Lambda Correlation Histogram (MC truth)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambdaMixed_MC->Sumw2();
     fOutputList->Add(fDphiHLambdaMixed_MC);
+
+    fDphiHPrimaryLambdaMixed_MC = new THnSparseF("fDphiHLambdaMixed_MC", "Mixed Hadron-Lambda Correlation Histogram (MC truth, primary lambdas)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHPrimaryLambdaMixed_MC->Sumw2();
+    fOutputList->Add(fDphiHPrimaryLambdaMixed_MC);
+
+    fDphiHLambdaMixed_MCKin_physicalPrimary = new THnSparseF("fDphiHLambdaEff_MCKin_physicalPrimary", "Mixed Hadron-Lambda Correlation Histogram (using MC kinematics on V0, trigger and lambda are physical primary)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambdaMixed_MCKin_physicalPrimary->Sumw2();
+    fOutputList->Add(fDphiHLambdaMixed_MCKin_physicalPrimary);
 
     //Correlation axes are: Trigger Pt, Associated Pt, dPhi, dEta, Zvtx
     int hh_cor_bins[5] = {18, 18, 16, 20, 10};
@@ -1153,12 +1173,12 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
         }
     }
 
-    //Making list of possible lambdas (have to do +/- for proton or pi):
-
     std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> antilambda_list;
     std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> lambda_list;
     std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> antilambda_list_checkMotherPDG;
     std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> lambda_list_checkMotherPDG;
+    std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> antilambda_list_checkMotherPDG_isPrimary;
+    std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> lambda_list_checkMotherPDG_isPrimary;
 
 
     // V0 SECTION
@@ -1201,6 +1221,22 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
             antilambda_list_checkMotherPDG.push_back(antilambda);
         }
 
+        if(PassV0LambdaCuts(v0, true, true) == 1) {
+            AliMotherContainer lambda;
+            lambda.vzero = v0;
+            lambda.daughter1ID = posTrack->GetID();
+            lambda.daughter2ID = negTrack->GetID();
+            lambda_list_checkMotherPDG_isPrimary.push_back(lambda);
+        }
+
+        if(PassV0LambdaCuts(v0, true, true) == 2) {
+            AliMotherContainer antilambda;
+            antilambda.vzero = v0;
+            antilambda.daughter1ID = posTrack->GetID();
+            antilambda.daughter2ID = negTrack->GetID();
+            antilambda_list_checkMotherPDG_isPrimary.push_back(antilambda);
+        }
+
     }
 
 
@@ -1225,6 +1261,8 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
     MakeSameHLambdaCorrelations(trigger_list, lambda_list_checkMotherPDG, fDphiHGuaranteedLambdaEff, primZ, true, false);
     MakeSameHLambdaCorrelations_withMCKin(trigger_list, antilambda_list_checkMotherPDG, fDphiHLambdaEff_MCKin, primZ, true);
     MakeSameHLambdaCorrelations_withMCKin(trigger_list, lambda_list_checkMotherPDG, fDphiHLambdaEff_MCKin, primZ, true);
+    MakeSameHLambdaCorrelations_withMCKin(trigger_list, antilambda_list_checkMotherPDG_isPrimary, fDphiHLambdaEff_MCKin_physicalPrimary, primZ, true);
+    MakeSameHLambdaCorrelations_withMCKin(trigger_list, lambda_list_checkMotherPDG_isPrimary, fDphiHLambdaEff_MCKin_physicalPrimary, primZ, true);
     MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHHEff, primZ, true);
     MakeSameHHCorrelations(trigger_list_checkMC, associated_h_list_checkMC, fDphiHHEff_checkMC, primZ, true);
 
