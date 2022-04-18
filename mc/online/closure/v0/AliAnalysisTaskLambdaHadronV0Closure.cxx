@@ -268,7 +268,7 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserCreateOutputObjects()
     fDphiHLambda_MC->Sumw2();
     fOutputList->Add(fDphiHLambda_MC);
 
-    fDphiHLambda_MC_physicalPrimary = new THnSparseF("fDphiHPrimaryLambda_MC", "Hadron-Lambda Correlation Histogram (MC truth, primary lambdas)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambda_MC_physicalPrimary = new THnSparseF("fDphiHLambda_MC_physicalPrimary", "Hadron-Lambda Correlation Histogram (MC truth, primary lambdas)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambda_MC_physicalPrimary->Sumw2();
     fOutputList->Add(fDphiHLambda_MC_physicalPrimary);
 
@@ -280,11 +280,11 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserCreateOutputObjects()
     fDphiHLambdaMixed_MCKin->Sumw2();
     fOutputList->Add(fDphiHLambdaMixed_MCKin);
 
-    fDphiHLambdaMixed_MCKin_physicalPrimary = new THnSparseF("fDphiHLambdaEff_MCKin_physicalPrimary", "Mixed Hadron-Lambda Correlation Histogram (using MC kinematics on V0, trigger and lambda are physical primary)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambdaMixed_MCKin_physicalPrimary = new THnSparseF("fDphiHLambdaMixed_MCKin_physicalPrimary", "Mixed Hadron-Lambda Correlation Histogram (using MC kinematics on V0, trigger and lambda are physical primary)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambdaMixed_MCKin_physicalPrimary->Sumw2();
     fOutputList->Add(fDphiHLambdaMixed_MCKin_physicalPrimary);
 
-    fDphiRecoHRealLambdaMixed_MCKin_physicalPrimary = new THnSparseF("fDphiRecoHRealLambdaEff_MCKin_physicalPrimary", "Mixed Hadron-Lambda Correlation Histogram (using MC kinematics on V0, reco trigger and real lambda are physical primary)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiRecoHRealLambdaMixed_MCKin_physicalPrimary = new THnSparseF("fDphiRecoHRealLambdaMixed_MCKin_physicalPrimary", "Mixed Hadron-Lambda Correlation Histogram (using MC kinematics on V0, reco trigger and real lambda are physical primary)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiRecoHRealLambdaMixed_MCKin_physicalPrimary->Sumw2();
     fOutputList->Add(fDphiRecoHRealLambdaMixed_MCKin_physicalPrimary);
 
