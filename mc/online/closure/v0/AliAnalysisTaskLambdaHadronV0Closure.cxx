@@ -70,9 +70,14 @@ AliAnalysisTaskLambdaHadronV0Closure::AliAnalysisTaskLambdaHadronV0Closure() :
     fDphiHLambdaEff(0x0),
     fDphiHGuaranteedLambdaEff(0x0),
     fDphiHLambdaEff_MCKin(0x0),
+    fDphiHLambdaEff_MCKin_physicalPrimary(0x0),
+    fDphiRecoHRealLambdaEff_MCKin_physicalPrimary(0x0),
     fDphiHHEff(0x0),
     fDphiHHEff_checkMC(0x0),
     fDphiHLambdaMixed(0x0),
+    fDphiHLambdaMixed_MCKin(0x0),
+    fDphiHLambdaMixed_MCKin_physicalPrimary(0x0),
+    fDphiRecoHRealLambdaMixed_MCKin_physicalPrimary(0x0),
     fDphiHHMixed(0x0),
     fpidResponse(0x0),
     fMultSelection(0x0),
@@ -87,14 +92,16 @@ AliAnalysisTaskLambdaHadronV0Closure::AliAnalysisTaskLambdaHadronV0Closure() :
     fTriggerDist_MC(0x0),
     fAssociatedDist_MC(0x0),
     fDphiHLambda_MC(0x0),
+    fDphiHLambda_MC_physicalPrimary(0x0),
     fDphiHH_MC(0x0),
     fDphiHLambdaMixed_MC(0x0),
+    fDphiHLambdaMixed_MC_physicalPrimary(0x0),
     fDphiHHMixed_MC(0x0)
 {
 }
 
 AliAnalysisTaskLambdaHadronV0Closure::AliAnalysisTaskLambdaHadronV0Closure(const char *name) :
-    AliAnalysisTaskSE(name),
+    AliAnalysisTaskSE(),
     fAOD(0x0),
     fMCArray(0x0),
     fOutputList(0x0),
@@ -114,9 +121,14 @@ AliAnalysisTaskLambdaHadronV0Closure::AliAnalysisTaskLambdaHadronV0Closure(const
     fDphiHLambdaEff(0x0),
     fDphiHGuaranteedLambdaEff(0x0),
     fDphiHLambdaEff_MCKin(0x0),
+    fDphiHLambdaEff_MCKin_physicalPrimary(0x0),
+    fDphiRecoHRealLambdaEff_MCKin_physicalPrimary(0x0),
     fDphiHHEff(0x0),
     fDphiHHEff_checkMC(0x0),
     fDphiHLambdaMixed(0x0),
+    fDphiHLambdaMixed_MCKin(0x0),
+    fDphiHLambdaMixed_MCKin_physicalPrimary(0x0),
+    fDphiRecoHRealLambdaMixed_MCKin_physicalPrimary(0x0),
     fDphiHHMixed(0x0),
     fpidResponse(0x0),
     fMultSelection(0x0),
@@ -131,10 +143,11 @@ AliAnalysisTaskLambdaHadronV0Closure::AliAnalysisTaskLambdaHadronV0Closure(const
     fTriggerDist_MC(0x0),
     fAssociatedDist_MC(0x0),
     fDphiHLambda_MC(0x0),
+    fDphiHLambda_MC_physicalPrimary(0x0),
     fDphiHH_MC(0x0),
     fDphiHLambdaMixed_MC(0x0),
+    fDphiHLambdaMixed_MC_physicalPrimary(0x0),
     fDphiHHMixed_MC(0x0)
-
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -256,25 +269,34 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserCreateOutputObjects()
     fDphiHLambda_MC->Sumw2();
     fOutputList->Add(fDphiHLambda_MC);
 
-    fDphiHPrimaryLambda_MC = new THnSparseF("fDphiHPrimaryLambda_MC", "Hadron-Lambda Correlation Histogram (MC truth, primary lambdas)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
-    fDphiHPrimaryLambda_MC->Sumw2();
-    fOutputList->Add(fDphiHPrimaryLambda_MC);
+    fDphiHLambda_MC_physicalPrimary = new THnSparseF("fDphiHPrimaryLambda_MC", "Hadron-Lambda Correlation Histogram (MC truth, primary lambdas)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambda_MC_physicalPrimary->Sumw2();
+    fOutputList->Add(fDphiHLambda_MC_physicalPrimary);
 
     fDphiHLambdaMixed = new THnSparseF("fDphiHLambdaMixed", "Mixed Hadron-Lambda Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambdaMixed->Sumw2();
     fOutputList->Add(fDphiHLambdaMixed);
 
-    fDphiHLambdaMixed_MC = new THnSparseF("fDphiHLambdaMixed_MC", "Mixed Hadron-Lambda Correlation Histogram (MC truth)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
-    fDphiHLambdaMixed_MC->Sumw2();
-    fOutputList->Add(fDphiHLambdaMixed_MC);
-
-    fDphiHPrimaryLambdaMixed_MC = new THnSparseF("fDphiHLambdaMixed_MC", "Mixed Hadron-Lambda Correlation Histogram (MC truth, primary lambdas)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
-    fDphiHPrimaryLambdaMixed_MC->Sumw2();
-    fOutputList->Add(fDphiHPrimaryLambdaMixed_MC);
+    fDphiHLambdaMixed_MCKin = new THnSparseF("fDphiHLambdaMixed_MCKin", "Mixed Hadron-Lambda Correlation Histogram (using Mc kinematics on V0)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambdaMixed_MCKin->Sumw2();
+    fOutputList->Add(fDphiHLambdaMixed_MCKin);
 
     fDphiHLambdaMixed_MCKin_physicalPrimary = new THnSparseF("fDphiHLambdaEff_MCKin_physicalPrimary", "Mixed Hadron-Lambda Correlation Histogram (using MC kinematics on V0, trigger and lambda are physical primary)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambdaMixed_MCKin_physicalPrimary->Sumw2();
     fOutputList->Add(fDphiHLambdaMixed_MCKin_physicalPrimary);
+
+    fDphiRecoHRealLambdaMixed_MCKin_physicalPrimary = new THnSparseF("fDphiRecoHRealLambdaEff_MCKin_physicalPrimary", "Mixed Hadron-Lambda Correlation Histogram (using MC kinematics on V0, reco trigger and real lambda are physical primary)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiRecoHRealLambdaMixed_MCKin_physicalPrimary->Sumw2();
+    fOutputList->Add(fDphiRecoHRealLambdaMixed_MCKin_physicalPrimary);
+
+    fDphiHLambdaMixed_MC = new THnSparseF("fDphiHLambdaMixed_MC", "Mixed Hadron-Lambda Correlation Histogram (MC truth)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambdaMixed_MC->Sumw2();
+    fOutputList->Add(fDphiHLambdaMixed_MC);
+
+    fDphiHLambdaMixed_MC_physicalPrimary = new THnSparseF("fDphiHLambdaMixed_MC_physicalPrimary", "Mixed Hadron-Lambda Correlation Histogram (MC truth, primary lambdas)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambdaMixed_MC_physicalPrimary->Sumw2();
+    fOutputList->Add(fDphiHLambdaMixed_MC_physicalPrimary);
+
 
     //Correlation axes are: Trigger Pt, Associated Pt, dPhi, dEta, Zvtx
     int hh_cor_bins[5] = {18, 18, 16, 20, 10};
@@ -941,7 +963,7 @@ bool AliAnalysisTaskLambdaHadronV0Closure::PassDaughterCuts(AliAODTrack *track){
     return pass;
 }
 
-uint8_t AliAnalysisTaskLambdaHadronV0Closure::PassV0LambdaCuts(AliAODv0 *v0, bool checkMotherPDG) {
+uint8_t AliAnalysisTaskLambdaHadronV0Closure::PassV0LambdaCuts(AliAODv0 *v0, bool checkMotherPDG, bool checkPhysicalPrimary) {
 
     if(v0->GetOnFlyStatus()) return 0;
     if(!(TMath::Abs(v0->Eta()) < 0.8)) return 0;
@@ -971,6 +993,10 @@ uint8_t AliAnalysisTaskLambdaHadronV0Closure::PassV0LambdaCuts(AliAODv0 *v0, boo
 
         int momPDG = mcmother->GetPdgCode();
         if(TMath::Abs(momPDG) != 3122) return 0;
+
+        if(checkPhysicalPrimary) {
+            if(!mcmother->IsPhysicalPrimary()) return 0;
+        }
     }
 
     int posPDG = mcpospart->GetPdgCode();
@@ -1057,10 +1083,12 @@ bool AliAnalysisTaskLambdaHadronV0Closure::PassMCAssociatedCuts(AliAODMCParticle
     return true;
 }
 
-bool AliAnalysisTaskLambdaHadronV0Closure::PassMCLambdaCuts(AliAODMCParticle *mc_particle){
+bool AliAnalysisTaskLambdaHadronV0Closure::PassMCLambdaCuts(AliAODMCParticle *mc_particle, bool checkPhysicalPrimary){
 
     if(!(TMath::Abs(mc_particle->GetPdgCode()) == 3122)) return false;
-    // if(!(mc_particle->IsPhysicalPrimary())) return false; // testing, testing, 1 2 3
+    if(checkPhysicalPrimary) {
+        if(!mc_particle->IsPhysicalPrimary()) return false;
+    }
     if(!(TMath::Abs(mc_particle->Eta()) < 0.8)) return false;
 
     int first_daughter_index = 0;
@@ -1139,6 +1167,9 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
     AliAODTrack* maxTrigger = 0x0;
 
     int NCharged = 0;
+
+
+    // RECO SAME EVENT SECTION
 
     for(int trackNum = 0; trackNum < numTracks; trackNum++) {
     
@@ -1266,28 +1297,13 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
     MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHHEff, primZ, true);
     MakeSameHHCorrelations(trigger_list_checkMC, associated_h_list_checkMC, fDphiHHEff_checkMC, primZ, true);
 
-    if(/*lambda_list.size() > 0 && */ associated_h_list.size() > 0) {
-        AliEventPool *fCorPool = fCorPoolMgr->GetEventPool(multPercentile, primZ);
-        if(!fCorPool) {
-            AliFatal(Form("No pool found for multiplicity = %f, zVtx = %f", multPercentile, primZ));
-        }
-        else {
-            if(fCorPool->IsReady()) {
-                MakeMixedHLambdaCorrelations(fCorPool, antilambda_list, fDphiHLambdaMixed, primZ, true, true);
-                MakeMixedHLambdaCorrelations(fCorPool, lambda_list, fDphiHLambdaMixed, primZ, true, false);
-                MakeMixedHHCorrelations(fCorPool, associated_h_list, fDphiHHMixed, primZ);
-            }
-            if(fMixedTrackObjArray->GetEntries() > 0) {
-                fCorPool->UpdatePool(fMixedTrackObjArray);
-            }
-        }
-    }
-    
 
+    // MC SAME EVENT SECTION
 
     std::vector<AliAODMCParticle*> real_trigger_list;
     std::vector<AliAODMCParticle*> real_associated_list;
     std::vector<AliAODMCParticle*> real_lambda_list;
+    std::vector<AliAODMCParticle*> real_lambda_list_physicalPrimary;
 
     bool is_triggered_event_MC = false;
 
@@ -1303,6 +1319,7 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
         }
         if(PassMCAssociatedCuts(mc_particle)) real_associated_list.push_back(mc_particle);
         if(PassMCLambdaCuts(mc_particle)) real_lambda_list.push_back(mc_particle);
+        if(PassMCLambdaCuts(mc_particle, true)) real_lambda_list_physicalPrimary.push_back(mc_particle);
 
     }
 
@@ -1312,11 +1329,32 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
     if(is_triggered_event_MC) FillMCMotherDist(real_lambda_list, multPercentile, fTriggeredLambdaDist_MC);
 
     MakeSameMCHLambdaCorrelations(real_trigger_list, real_lambda_list, fDphiHLambda_MC, primZ);
+    MakeSameMCHLambdaCorrelations(real_trigger_list, real_lambda_list_physicalPrimary, fDphiHLambda_MC_physicalPrimary, primZ);
     MakeSameMCHHCorrelations(real_trigger_list, real_associated_list, fDphiHH_MC, primZ);
-    
 
 
-    if(real_associated_list.size() > 0 /*&& real_lambda_list.size() > 0*/) {
+    // MIXED EVENT SECTION (added to very end to correctly do a mixture of reco/real correlations)
+
+    if(lambda_list.size() > 0  || associated_h_list.size() > 0) {
+        AliEventPool *fCorPool = fCorPoolMgr->GetEventPool(multPercentile, primZ);
+        if(!fCorPool) {
+            AliFatal(Form("No pool found for multiplicity = %f, zVtx = %f", multPercentile, primZ));
+        }
+        else {
+            if(fCorPool->IsReady()) {
+                MakeMixedHLambdaCorrelations(fCorPool, antilambda_list, fDphiHLambdaMixed, primZ, true, true);
+                MakeMixedHLambdaCorrelations(fCorPool, lambda_list, fDphiHLambdaMixed, primZ, true, false);
+                MakeMixedMCHLambdaCorrelations(fCorPool, real_lambda_list_physicalPrimary, fDphiRecoHRealLambdaMixed_MCKin_physicalPrimary, primZ);
+                MakeMixedHHCorrelations(fCorPool, associated_h_list, fDphiHHMixed, primZ);
+            }
+            if(fMixedTrackObjArray->GetEntries() > 0) {
+                fCorPool->UpdatePool(fMixedTrackObjArray);
+            }
+        }
+    }
+
+
+    if(real_associated_list.size() > 0 || real_lambda_list.size() > 0) {
         AliEventPool *fMCCorPool = fMCCorPoolMgr->GetEventPool(multPercentile, primZ);
         if(!fMCCorPool) {
             AliFatal(Form("No pool found for multiplicity = %f, zVtx = %f", multPercentile, primZ));
@@ -1324,6 +1362,7 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
         else {
             if(fMCCorPool->IsReady()) {
                 MakeMixedMCHLambdaCorrelations(fMCCorPool, real_lambda_list, fDphiHLambdaMixed_MC, primZ);
+                MakeMixedMCHLambdaCorrelations(fMCCorPool, real_lambda_list_physicalPrimary, fDphiHLambdaMixed_MC_physicalPrimary, primZ);
                 MakeMixedMCHHCorrelations(fMCCorPool, real_associated_list, fDphiHHMixed_MC, primZ);
             }
             if(fMixedMCTrackObjArray->GetEntries() > 0) {

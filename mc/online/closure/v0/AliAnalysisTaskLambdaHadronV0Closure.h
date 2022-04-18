@@ -92,14 +92,21 @@ private:
   THnSparse* fDphiHLambdaEff;  //!>! hadron-lambda correlation hist (efficiency corrected)
   THnSparse* fDphiHGuaranteedLambdaEff;  //!>! hadron-lambda correlation hist (efficiency corrected, guaranteed lambda from MC pdg)
   THnSparse* fDphiHLambdaEff_MCKin;  //!>! hadron-lambda correlation hist (efficiency corrected, using MC kinematics)
+  THnSparse* fDphiHLambdaEff_MCKin_physicalPrimary;  //!>! hadron-lambda correlation hist (efficiency corrected, using MC kinematics, trigger and lambda are physical primary)
+  THnSparse* fDphiRecoHRealLambdaEff_MCKin_physicalPrimary; //!>! hadron-lambda correlation hist (efficiency corrected, using MC kinematics, trigger and lambda are physical primary)
   THnSparse* fDphiHHEff;   //!>! hadron-hadron correlation hist (efficiency corrected)
   THnSparse* fDphiHHEff_checkMC;   //!>! hadron-hadron correlation hist (efficiency corrected, trig and assoc are MC primary)
   THnSparse* fDphiHLambdaMixed; //!>! hadron-lambda mixed correlation hist
   THnSparse* fDphiHHMixed; //!>! hadron-hadron mixed correlation hist
+  THnSparse* fDphiHLambdaMixed_MCKin; //!>! hadron-lambda mixed correlation hist (MC kinematics)
+  THnSparse* fDphiHLambdaMixed_MCKin_physicalPrimary; //!>! hadron-lambda mixed correlation hist (MC kinematics, trigger and lambda are physical primary)
+  THnSparse* fDphiRecoHRealLambdaMixed_MCKin_physicalPrimary; //!>! hadron-lambda mixed correlation hist (MC kinematics, trigger and lambda are physical primary) 
 
   THnSparse* fDphiHLambda_MC;  //!>! hadron-lambda correlation hist (MC truth)
+  THnSparse* fDphiHLambda_MC_physicalPrimary;  //!>! hadron-lambda correlation hist (MC truth, lambda is physical primary)
   THnSparse* fDphiHH_MC;   //!>! hadron-hadron correlation hist (MC truth)
   THnSparse* fDphiHLambdaMixed_MC; //!>! hadron-lambda mixed correlation hist (MC truth)
+  THnSparse* fDphiHLambdaMixed_MC_physicalPrimary; //!>! hadron-lambda mixed correlation hist (MC truth, lambda is physical primary)
   THnSparse* fDphiHHMixed_MC; //!>! hadron-hadron mixed correlation hist (MC truth)
 
   AliPIDResponse *fpidResponse; //!>!pid response
@@ -127,10 +134,10 @@ private:
   bool PassDaughterCuts(AliAODTrack *track); // check if the AOD track passes the daughter cuts
   bool PassTriggerCuts(AliAODTrack *track, bool checkMC = false); // check if the AOD track passes the trigger cuts 
   bool PassAssociatedCuts(AliAODTrack *track, bool checkMC = false); // check if the AOD track passes the associated cuts
-  uint8_t PassV0LambdaCuts(AliAODv0 *v0, bool checkMotherPDG = false); // check if the AOD v0 passes the lambda cuts (0 = no, 1 = yes and lambda, 2 = yes and anti-lambda, checkMotherPDG verifies if the mother is a lambda or anti-lambda)
+  uint8_t PassV0LambdaCuts(AliAODv0 *v0, bool checkMotherPDG = false, bool checkPhysicalPrimary = false); // check if the AOD v0 passes the lambda cuts (0 = no, 1 = yes and lambda, 2 = yes and anti-lambda, checkMotherPDG verifies if the mother is a lambda or anti-lambda)
   bool PassMCTriggerCuts(AliAODMCParticle *mc_track); // check if the MC particle passes the trigger cuts
   bool PassMCAssociatedCuts(AliAODMCParticle *mc_track); // check if the MC particle passes the associated cuts
-  bool PassMCLambdaCuts(AliAODMCParticle *mc_track); // check if the MC particle passes the lambda cuts 
+  bool PassMCLambdaCuts(AliAODMCParticle *mc_track, bool checkPhysicalPrimary = false); // check if the MC particle passes the lambda cuts 
   bool IsMCChargedHadron(int pdg_code); // check if the MC particle is a charged hadron
 
   ClassDef(AliAnalysisTaskLambdaHadronV0Closure, 3);
