@@ -49,7 +49,6 @@
 ClassImp(AliAnalysisTaskLambdaHadronV0Closure);
 
 AliAnalysisTaskLambdaHadronV0Closure::AliAnalysisTaskLambdaHadronV0Closure() :
-
     AliAnalysisTaskSE(),
     fAOD(0x0),
     fMCArray(0x0),
@@ -101,7 +100,7 @@ AliAnalysisTaskLambdaHadronV0Closure::AliAnalysisTaskLambdaHadronV0Closure() :
 }
 
 AliAnalysisTaskLambdaHadronV0Closure::AliAnalysisTaskLambdaHadronV0Closure(const char *name) :
-    AliAnalysisTaskSE(),
+    AliAnalysisTaskSE(name),
     fAOD(0x0),
     fMCArray(0x0),
     fOutputList(0x0),
@@ -1225,6 +1224,8 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
             lambda.vzero = v0;
             lambda.daughter1ID = posTrack->GetID();
             lambda.daughter2ID = negTrack->GetID();
+            // set mother label to 1 when not requiring MC check
+            lambda.motherLabel = -1;
             lambda_list.push_back(lambda);
         }
 
@@ -1233,38 +1234,52 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
             antilambda.vzero = v0;
             antilambda.daughter1ID = posTrack->GetID();
             antilambda.daughter2ID = negTrack->GetID();
+            // set mother label to 1 when not requiring MC check
+            antilambda.motherLabel = -1;
             antilambda_list.push_back(antilambda);
         }
 
         if(PassV0LambdaCuts(v0, true) == 1) {
             AliMotherContainer lambda;
+            auto mc_pos = (AliAODMCParticle*)fMCArray->At(posTrack->GetLabel());
+            int mother_label = mc_pos->GetMother();
             lambda.vzero = v0;
             lambda.daughter1ID = posTrack->GetID();
             lambda.daughter2ID = negTrack->GetID();
+            lambda.motherLabel = mother_label;
             lambda_list_checkMotherPDG.push_back(lambda);
         }
 
         if(PassV0LambdaCuts(v0, true) == 2) {
             AliMotherContainer antilambda;
+            auto mc_pos = (AliAODMCParticle*)fMCArray->At(posTrack->GetLabel());
+            int mother_label = mc_pos->GetMother();
             antilambda.vzero = v0;
             antilambda.daughter1ID = posTrack->GetID();
             antilambda.daughter2ID = negTrack->GetID();
+            antilambda.motherLabel = mother_label;
             antilambda_list_checkMotherPDG.push_back(antilambda);
         }
 
         if(PassV0LambdaCuts(v0, true, true) == 1) {
             AliMotherContainer lambda;
+            auto mc_pos = (AliAODMCParticle*)fMCArray->At(posTrack->GetLabel());
+            int mother_label = mc_pos->GetMother();
             lambda.vzero = v0;
             lambda.daughter1ID = posTrack->GetID();
             lambda.daughter2ID = negTrack->GetID();
+            lambda.motherLabel = mother_label;
             lambda_list_checkMotherPDG_isPrimary.push_back(lambda);
         }
 
         if(PassV0LambdaCuts(v0, true, true) == 2) {
             AliMotherContainer antilambda;
+            auto mc_pos = (AliAODMCParticle*)fMCArray->At(posTrack->GetLabel());
+            int mother_label = mc_pos->GetMother();
             antilambda.vzero = v0;
             antilambda.daughter1ID = posTrack->GetID();
             antilambda.daughter2ID = negTrack->GetID();
+            antilambda.motherLabel = mother_label;
             antilambda_list_checkMotherPDG_isPrimary.push_back(antilambda);
         }
 
@@ -1292,8 +1307,8 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
     MakeSameHLambdaCorrelations(trigger_list, lambda_list_checkMotherPDG, fDphiHGuaranteedLambdaEff, primZ, true, false);
     MakeSameHLambdaCorrelations_withMCKin(trigger_list, antilambda_list_checkMotherPDG, fDphiHLambdaEff_MCKin, primZ, true);
     MakeSameHLambdaCorrelations_withMCKin(trigger_list, lambda_list_checkMotherPDG, fDphiHLambdaEff_MCKin, primZ, true);
-    MakeSameHLambdaCorrelations_withMCKin(trigger_list, antilambda_list_checkMotherPDG_isPrimary, fDphiHLambdaEff_MCKin_physicalPrimary, primZ, true);
-    MakeSameHLambdaCorrelations_withMCKin(trigger_list, lambda_list_checkMotherPDG_isPrimary, fDphiHLambdaEff_MCKin_physicalPrimary, primZ, true);
+    MakeSameHLambdaCorrelations_withMCKin(trigger_list_checkMC, antilambda_list_checkMotherPDG_isPrimary, fDphiHLambdaEff_MCKin_physicalPrimary, primZ, true);
+    MakeSameHLambdaCorrelations_withMCKin(trigger_list_checkMC, lambda_list_checkMotherPDG_isPrimary, fDphiHLambdaEff_MCKin_physicalPrimary, primZ, true);
     MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHHEff, primZ, true);
     MakeSameHHCorrelations(trigger_list_checkMC, associated_h_list_checkMC, fDphiHHEff_checkMC, primZ, true);
 
@@ -1332,6 +1347,7 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
     MakeSameMCHLambdaCorrelations(real_trigger_list, real_lambda_list_physicalPrimary, fDphiHLambda_MC_physicalPrimary, primZ);
     MakeSameMCHHCorrelations(real_trigger_list, real_associated_list, fDphiHH_MC, primZ);
 
+    MakeSameRecoHRealLambdaCorrelations(trigger_list, real_lambda_list, fDphiRecoHRealLambdaEff_MCKin_physicalPrimary, primZ, true);
 
     // MIXED EVENT SECTION (added to very end to correctly do a mixture of reco/real correlations)
 
@@ -1344,6 +1360,10 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
             if(fCorPool->IsReady()) {
                 MakeMixedHLambdaCorrelations(fCorPool, antilambda_list, fDphiHLambdaMixed, primZ, true, true);
                 MakeMixedHLambdaCorrelations(fCorPool, lambda_list, fDphiHLambdaMixed, primZ, true, false);
+                MakeMixedHLambdaCorrelations_withMCKin(fCorPool, antilambda_list_checkMotherPDG, fDphiHLambdaMixed_MCKin, primZ, true);
+                MakeMixedHLambdaCorrelations_withMCKin(fCorPool, lambda_list_checkMotherPDG, fDphiHLambdaMixed_MCKin, primZ, true);
+                MakeMixedHLambdaCorrelations_withMCKin(fCorPool, antilambda_list_checkMotherPDG_isPrimary, fDphiHLambdaMixed_MCKin_physicalPrimary, primZ, true);
+                MakeMixedHLambdaCorrelations_withMCKin(fCorPool, lambda_list_checkMotherPDG_isPrimary, fDphiHLambdaMixed_MCKin_physicalPrimary, primZ, true);
                 MakeMixedMCHLambdaCorrelations(fCorPool, real_lambda_list_physicalPrimary, fDphiRecoHRealLambdaMixed_MCKin_physicalPrimary, primZ);
                 MakeMixedHHCorrelations(fCorPool, associated_h_list, fDphiHHMixed, primZ);
             }
