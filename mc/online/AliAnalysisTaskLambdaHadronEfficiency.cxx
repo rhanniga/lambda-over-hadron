@@ -76,6 +76,8 @@ AliAnalysisTaskLambdaHadronEfficiency::AliAnalysisTaskLambdaHadronEfficiency(con
     fRecoEtaPtRefitRowsRatioLambdaDCADist(0x0),
     fRecoTotalLambdaFilterDist(0x0),
     fRecoLambdaDist(0x0),
+    fRecoLambdaWithAODPionDist(0x0),
+    fRecoLambdaWithAODProtonDist(0x0),
     fRecoAntiLambdaDist(0x0),
     fRealChargedDist(0x0),
     fRealTriggerDist(0x0),
@@ -168,6 +170,8 @@ AliAnalysisTaskLambdaHadronEfficiency::AliAnalysisTaskLambdaHadronEfficiency()
     fRecoEtaPtRefitRowsRatioLambdaDCADist(0x0),
     fRecoTotalLambdaFilterDist(0x0),
     fRecoLambdaDist(0x0),
+    fRecoLambdaWithAODPionDist(0x0),
+    fRecoLambdaWithAODProtonDist(0x0),
     fRecoAntiLambdaDist(0x0),
     fRealChargedDist(0x0),
     fRealTriggerDist(0x0),
@@ -440,6 +444,18 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     fRecoEtaPtRefitRowsRatioLambdaDist = new THnSparseF("fRecoEtaPtRefitRowsRatioLambdaDist", "Reco (#Lambda + #bar{#Lambda}) distribution (eta + pt + refit + rows + ratio cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
     fRecoEtaPtRefitRowsRatioLambdaDist->Sumw2();
     fOutputList->Add(fRecoEtaPtRefitRowsRatioLambdaDist);
+
+    fRecoTotalLambdaDist = new THnSparseF("fRecoTotalLambdaDist", "Reco (#Lambda + #bar{#Lambda}) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRecoTotalLambdaDist->Sumw2();
+    fOutputList->Add(fRecoTotalLambdaDist);
+
+    fRecoLambdaWithAODPionDist = new THnSparseF("fRecoLambdaWithAODPionDist", "Reco (#Lambda + #bar{#Lambda}) distribution (AOD pion, real proton);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRecoLambdaWithAODPionDist->Sumw2();
+    fOutputList->Add(fRecoLambdaWithAODPionDist);
+
+    fRecoLambdaWithAODProtonDist = new THnSparseF("fRecoLambdaWithAODProtonDist", "Reco (#Lambda + #bar{#Lambda}) distribution (AOD proton, real pion);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRecoLambdaWithAODProtonDist->Sumw2();
+    fOutputList->Add(fRecoLambdaWithAODProtonDist);
 
     fRecoTotalLambdaDist = new THnSparseF("fRecoTotalLambdaDist", "Reco (#Lambda + #bar{#Lambda}) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
     fRecoTotalLambdaDist->Sumw2();
@@ -891,6 +907,9 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
     }
     
+    std::vector<AliAODMCParticle*> lambdas_with_aod_pion;
+    std::vector<AliAODMCParticle*> lambdas_with_aod_proton;
+
     //first loop over tracks to get pi minuses, find lambda daughters and fill Reco Dist
     for(int itrack = 0; itrack < ntracks; itrack++){
         AliVParticle *vnegpart = dynamic_cast<AliVParticle*>(fVevent->GetTrack(itrack));
@@ -963,6 +982,29 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         }
 
         negPassCuts = PassDaughterCuts(aodnegtrack);
+        // check to see if daughter passes all of our AOD cuts
+        if((negPassCuts & maskEtaPtRefitRowsRatio) == maskEtaPtRefitRowsRatio) {
+            if(TMath::Abs(pdgcode) == 211){
+                int motherlabel = mcpart->GetMother();
+                if(motherlabel >= 0) {
+                    auto mother = (AliAODMCParticle*)fMCArray->At(motherlabel);
+                    int motherPDG = mother->GetPdgCode();
+                    if(TMath::Abs(motherPDG) == 3122) {
+                        lambdas_with_aod_pion.push_back(mcpart);
+                    }
+                }
+            }
+            if(TMath::Abs(pdgcode) == 2212){
+                int motherlabel = mcpart->GetMother();
+                if(motherlabel >= 0) {
+                    auto mother = (AliAODMCParticle*)fMCArray->At(motherlabel);
+                    int motherPDG = mother->GetPdgCode();
+                    if(TMath::Abs(motherPDG) == 3122) {
+                        lambdas_with_aod_proton.push_back(mcpart);
+                    }
+                }
+            }
+        }
 
         if((negPassCuts & maskEtaPtRefitRowsRatio) == maskEtaPtRefitRowsRatio) {
             float px_dif = mcpart->Px() - aodnegtrack->Px();
@@ -992,6 +1034,11 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(motherIndex);
         motherPDG = mcmother->GetPdgCode();
         if(motherPDG != 3122) continue;
+
+        if((negPassCuts & maskEtaPtRefitRowsRatio) == maskEtaPtRefitRowsRatio) {
+            lambdas_with_aod_pion.push_back(mcmother);
+        }
+
 
         for(int jtrack = 0; jtrack < ntracks; jtrack++){
             AliVParticle *vpospart = dynamic_cast<AliVParticle*>(fVevent->GetTrack(jtrack));
@@ -1221,6 +1268,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
     //loop over MC particles to get original lambda and fill Real dist (and real single particle dist)
     int numCharged = 0;
+
     for(Int_t imcpart=0; imcpart< fMCArray->GetEntries(); imcpart++){
 
         AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)fMCArray->At(imcpart);
@@ -1327,6 +1375,68 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 else {
                     fRealAntiLambdaDist->Fill(distPoint);
                 }
+            }
+        } 
+    }
+
+    for(auto lambda : lambdas_with_aod_pion) {
+        Int_t indexFirstDaughter = 0, indexSecondDaughter = 0;
+        indexFirstDaughter = lambda->GetDaughterFirst();
+        indexSecondDaughter = lambda->GetDaughterLast();
+
+        if(indexFirstDaughter < 0 || indexSecondDaughter < 0) continue;
+        AliAODMCParticle* firstDaughter = (AliAODMCParticle*)fMCArray->At(indexFirstDaughter);
+        AliAODMCParticle* secondDaughter = (AliAODMCParticle*)fMCArray->At(indexSecondDaughter);
+
+        if(((TMath::Abs(firstDaughter->GetPdgCode()) == 211 && TMath::Abs(secondDaughter->GetPdgCode()) == 2212) ||
+            (TMath::Abs(firstDaughter->GetPdgCode()) == 2212 && TMath::Abs(secondDaughter->GetPdgCode()) == 211)) && (firstDaughter->GetPdgCode())*(secondDaughter->GetPdgCode()) < 0){
+            
+            distPoint[0] = lambda->Pt();
+            distPoint[1] = lambda->Phi();
+            if(distPoint[1] > TMath::Pi()){
+                distPoint[1] -= 2.0*TMath::Pi();
+            }else if(distPoint[1] < -1.0*TMath::Pi()){
+                distPoint[1] += 2.0*TMath::Pi();
+            }
+            float mcLambdaEta = lambda->Eta();
+            distPoint[2] = mcLambdaEta;
+            distPoint[3] = Zvertex;
+            distPoint[4] = lambda->GetCalcMass();
+            distPoint[5] = multPercentile;
+
+            if(TMath::Abs(mcLambdaEta) < 0.8){
+                fRecoLambdaWithAODPionDist->Fill(distPoint);
+            }
+        } 
+    }
+
+    for(auto lambda : lambdas_with_aod_proton) {
+        Int_t indexFirstDaughter = 0, indexSecondDaughter = 0;
+        indexFirstDaughter = lambda->GetDaughterFirst();
+        indexSecondDaughter = lambda->GetDaughterLast();
+
+        if(indexFirstDaughter < 0 || indexSecondDaughter < 0) continue;
+        AliAODMCParticle* firstDaughter = (AliAODMCParticle*)fMCArray->At(indexFirstDaughter);
+        AliAODMCParticle* secondDaughter = (AliAODMCParticle*)fMCArray->At(indexSecondDaughter);
+
+        if(((TMath::Abs(firstDaughter->GetPdgCode()) == 211 && TMath::Abs(secondDaughter->GetPdgCode()) == 2212) ||
+            (TMath::Abs(firstDaughter->GetPdgCode()) == 2212 && TMath::Abs(secondDaughter->GetPdgCode()) == 211)) && (firstDaughter->GetPdgCode())*(secondDaughter->GetPdgCode()) < 0){
+            
+            distPoint[0] = lambda->Pt();
+            distPoint[1] = lambda->Phi();
+            if(distPoint[1] > TMath::Pi()){
+                distPoint[1] -= 2.0*TMath::Pi();
+            }else if(distPoint[1] < -1.0*TMath::Pi()){
+                distPoint[1] += 2.0*TMath::Pi();
+            }
+            float mcLambdaEta = lambda->Eta();
+            distPoint[2] = mcLambdaEta;
+            distPoint[3] = Zvertex;
+            distPoint[4] = lambda->GetCalcMass();
+            distPoint[5] = multPercentile;
+
+            if(TMath::Abs(mcLambdaEta) < 0.8){
+                fRecoLambdaWithAODProtonDist->Fill(distPoint);
             }
         } 
     }
