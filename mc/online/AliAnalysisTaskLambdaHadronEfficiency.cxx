@@ -990,7 +990,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                     auto mother = (AliAODMCParticle*)fMCArray->At(motherlabel);
                     int motherPDG = mother->GetPdgCode();
                     if(TMath::Abs(motherPDG) == 3122) {
-                        lambdas_with_aod_pion.push_back(mcpart);
+                        lambdas_with_aod_pion.push_back(mother);
                     }
                 }
             }
@@ -1000,7 +1000,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                     auto mother = (AliAODMCParticle*)fMCArray->At(motherlabel);
                     int motherPDG = mother->GetPdgCode();
                     if(TMath::Abs(motherPDG) == 3122) {
-                        lambdas_with_aod_proton.push_back(mcpart);
+                        lambdas_with_aod_proton.push_back(mother);
                     }
                 }
             }
