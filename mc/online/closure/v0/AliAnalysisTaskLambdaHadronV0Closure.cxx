@@ -945,19 +945,19 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeMixedMCHHCorrelations(AliEventPoo
 
 bool AliAnalysisTaskLambdaHadronV0Closure::PassDaughterCuts(AliAODTrack *track){
 
-    if(track->GetID() < 0) return false;
+    // if(track->GetID() < 0) return false;
 
     bool pass = true;
 
-    pass = pass && (TMath::Abs(track->Eta()) < 0.8);
-    pass = pass && (track->Pt() > 0.15);
+    // pass = pass && (TMath::Abs(track->Eta()) < 0.8);
+    // pass = pass && (track->Pt() > 0.15);
 
-    pass = pass && (track->IsOn(AliAODTrack::kTPCrefit));
+    // pass = pass && (track->IsOn(AliAODTrack::kTPCrefit));
 
-    pass = pass && (track->GetTPCCrossedRows() > 70);
+    // pass = pass && (track->GetTPCCrossedRows() > 70);
 
-    float ratio = (track->GetTPCNclsF() > 0)  ? track->GetTPCCrossedRows()/track->GetTPCNclsF() : 0;
-    pass = pass && (ratio > 0.8);
+    // float ratio = (track->GetTPCNclsF() > 0)  ? track->GetTPCCrossedRows()/track->GetTPCNclsF() : 0;
+    // pass = pass && (ratio > 0.8);
 
     return pass;
 }
@@ -1390,6 +1390,30 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
             }
         }
     }
+
+    // for(auto lambda : lambda_list_checkMotherPDG) {
+    //     auto lambda_mc = (AliAODMCParticle*)fMCArray->At(lambda.motherLabel);
+    //     auto lambda_mother = (AliAODMCParticle*)fMCArray->At(lambda_mc->GetMother());
+    //     if(lambda_mother) {
+    //         std::cout << "reco_lambda_mom_pdg: " << lambda_mother->GetPdgCode() << std::endl;
+    //     }
+    // }
+
+    // for(auto lambda : antilambda_list_checkMotherPDG) {
+    //     auto lambda_mc = (AliAODMCParticle*)fMCArray->At(lambda.motherLabel);
+    //     auto lambda_mother = (AliAODMCParticle*)fMCArray->At(lambda_mc->GetMother());
+    //     if(lambda_mother) {
+    //         std::cout << "reco_lambda_mom_pdg: " << lambda_mother->GetPdgCode() << std::endl;
+    //     }
+    // }
+
+
+    // for(auto lambda : real_lambda_list) {
+    //     auto lambda_mother = (AliAODMCParticle*)fMCArray->At(lambda->GetMother());
+    //     if(lambda_mother) {
+    //         std::cout << "mc_lambda_mom_pdg: " << lambda_mother->GetPdgCode() << std::endl;
+    //     }
+    // }
 
     PostData(1, fOutputList);
 }
