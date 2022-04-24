@@ -92,6 +92,8 @@ private:
   THnSparse* fDphiHLambdaEff;  //!>! hadron-lambda correlation hist (efficiency corrected)
   THnSparse* fDphiHGuaranteedLambdaEff;  //!>! hadron-lambda correlation hist (efficiency corrected, guaranteed lambda from MC pdg)
   THnSparse* fDphiHLambdaEff_MCKin;  //!>! hadron-lambda correlation hist (efficiency corrected, using MC kinematics)
+  THnSparse* fDphiHDaughterProton_MCKin;  //!>! hadron-daughter proton correlation hist
+  THnSparse* fDphiHDaughterPion_MCKin;  //!>! hadron-daughter pion correlation hist 
   THnSparse* fDphiHLambdaEff_MCKin_physicalPrimary;  //!>! hadron-lambda correlation hist (efficiency corrected, using MC kinematics, trigger and lambda are physical primary)
   THnSparse* fDphiRecoHRealLambdaEff_MCKin_physicalPrimary; //!>! hadron-lambda correlation hist (efficiency corrected, using MC kinematics, trigger and lambda are physical primary)
   THnSparse* fDphiHHEff;   //!>! hadron-hadron correlation hist (efficiency corrected)

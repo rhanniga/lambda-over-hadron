@@ -69,6 +69,8 @@ AliAnalysisTaskLambdaHadronV0Closure::AliAnalysisTaskLambdaHadronV0Closure() :
     fDphiHLambdaEff(0x0),
     fDphiHGuaranteedLambdaEff(0x0),
     fDphiHLambdaEff_MCKin(0x0),
+    fDphiHDaughterProton_MCKin(0x0),
+    fDphiHDaughterPion_MCKin(0x0),
     fDphiHLambdaEff_MCKin_physicalPrimary(0x0),
     fDphiRecoHRealLambdaEff_MCKin_physicalPrimary(0x0),
     fDphiHHEff(0x0),
@@ -120,6 +122,8 @@ AliAnalysisTaskLambdaHadronV0Closure::AliAnalysisTaskLambdaHadronV0Closure(const
     fDphiHLambdaEff(0x0),
     fDphiHGuaranteedLambdaEff(0x0),
     fDphiHLambdaEff_MCKin(0x0),
+    fDphiHDaughterProton_MCKin(0x0),
+    fDphiHDaughterPion_MCKin(0x0),
     fDphiHLambdaEff_MCKin_physicalPrimary(0x0),
     fDphiRecoHRealLambdaEff_MCKin_physicalPrimary(0x0),
     fDphiHHEff(0x0),
@@ -255,6 +259,14 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserCreateOutputObjects()
     fDphiHLambdaEff_MCKin = new THnSparseF("fDphiHLambdaEff_MCKin", "Efficiency-corrected Hadron-Lambda Correlation Histogram (using MC kinematics on V0)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambdaEff_MCKin->Sumw2();
     fOutputList->Add(fDphiHLambdaEff_MCKin);
+
+    fDphiHDaughterProton_MCKin = new THnSparseF("fDphiHDaughterProton_MCKin", "Efficiency-corrected Hadron-daughter proton Correlation Histogram (using MC kinematics on V0)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHDaughterProton_MCKin->Sumw2();
+    fOutputList->Add(fDphiHDaughterProton_MCKin);
+
+    fDphiHDaughterProton_MCKin = new THnSparseF("fDphiHDaughterProton_MCKin", "Efficiency-corrected Hadron-daughter pion Correlation Histogram (using MC kinematics on V0)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHDaughterProton_MCKin->Sumw2();
+    fOutputList->Add(fDphiHDaughterProton_MCKin);
 
     fDphiHLambdaEff_MCKin_physicalPrimary = new THnSparseF("fDphiHLambdaEff_MCKin_physicalPrimary", "Efficiency-corrected Hadron-Lambda Correlation Histogram (using MC kinematics on V0, trigger and lambda are physical primary)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambdaEff_MCKin_physicalPrimary->Sumw2();
