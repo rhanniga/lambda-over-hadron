@@ -826,6 +826,7 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeSameMCHDaughterCorrelations(std::
 
             //Make sure trigger isn't one of the daughters of lambda
             if((trigger->GetLabel() == dproton->GetLabel()) || (trigger->GetLabel() == dpion->GetLabel())) continue;
+
             // fill proton dist first
             dphi_point[1] = dproton->Pt();
             dphi_point[2] = trigger->Phi() - dproton->Phi();
@@ -837,10 +838,10 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeSameMCHDaughterCorrelations(std::
                 dphi_point[2] -= 2.0*TMath::Pi();
             }
 
-            dphi_point[3] = trigger->Eta() - dpion->Eta();
-            dphi_point[4] = dpion->M();
+            dphi_point[3] = trigger->Eta() - dproton->Eta();
+            dphi_point[4] = dproton->M();
             dphi_point[5] = zVtx;
-            fDphi_pion->Fill(dphi_point);
+            fDphi_proton->Fill(dphi_point);
 
             // now fill pion dist
             dphi_point[1] = dpion->Pt();
@@ -1077,10 +1078,10 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeMixedHDaughterCorrelations_withMC
                     dphi_point[2] -= 2.0*TMath::Pi();
                 }
 
-                dphi_point[3] = trigger->Eta() - dpion->Eta();
-                dphi_point[4] = dpion->M();
+                dphi_point[3] = trigger->Eta() - dproton->Eta();
+                dphi_point[4] = dproton->M();
                 dphi_point[5] = zVtx;
-                fDphi_pion->Fill(dphi_point);
+                fDphi_proton->Fill(dphi_point);
 
                 // now fill pion dist
                 dphi_point[1] = dpion->Pt();
