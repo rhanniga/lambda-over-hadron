@@ -94,6 +94,8 @@ private:
   THnSparse* fDphiHLambdaEff_MCKin;  //!>! hadron-lambda correlation hist (efficiency corrected, using MC kinematics)
   THnSparse* fDphiHDaughterProton_MCKin;  //!>! hadron-daughter proton correlation hist
   THnSparse* fDphiHDaughterPion_MCKin;  //!>! hadron-daughter pion correlation hist 
+  THnSparse* fDphiHProton;  //!>! hadron-proton correlation hist
+  THnSparse* fDphiHPion;  //!>! hadron-pion correlation hist 
   THnSparse* fDphiHLambdaEff_MCKin_physicalPrimary;  //!>! hadron-lambda correlation hist (efficiency corrected, using MC kinematics, trigger and lambda are physical primary)
   THnSparse* fDphiRecoHRealLambdaEff_MCKin_physicalPrimary; //!>! hadron-lambda correlation hist (efficiency corrected, using MC kinematics, trigger and lambda are physical primary)
   THnSparse* fDphiHHEff;   //!>! hadron-hadron correlation hist (efficiency corrected)
@@ -101,13 +103,25 @@ private:
   THnSparse* fDphiHLambdaMixed; //!>! hadron-lambda mixed correlation hist
   THnSparse* fDphiHHMixed; //!>! hadron-hadron mixed correlation hist
   THnSparse* fDphiHLambdaMixed_MCKin; //!>! hadron-lambda mixed correlation hist (MC kinematics)
+  THnSparse* fDphiHDaughterProtonMixed_MCKin;  //!>! hadron-daughter proton mixed correlation hist
+  THnSparse* fDphiHDaughterPionMixed_MCKin;  //!>! hadron-daughter pion mixed correlation hist 
+  THnSparse* fDphiHProtonMixed;  //!>! hadron-proton correlation hist (mixed)
+  THnSparse* fDphiHPionMixed;  //!>! hadron-pion correlation hist (mixed)
   THnSparse* fDphiHLambdaMixed_MCKin_physicalPrimary; //!>! hadron-lambda mixed correlation hist (MC kinematics, trigger and lambda are physical primary)
   THnSparse* fDphiRecoHRealLambdaMixed_MCKin_physicalPrimary; //!>! hadron-lambda mixed correlation hist (MC kinematics, trigger and lambda are physical primary) 
 
   THnSparse* fDphiHLambda_MC;  //!>! hadron-lambda correlation hist (MC truth)
+  THnSparse* fDphiHDaughterProton_MC;  //!>! hadron-daughter proton correlation hist (MC truth)
+  THnSparse* fDphiHDaughterPion_MC;  //!>! hadron-daughter pion correlation hist (MC truth)
+  THnSparse* fDphiHProton_MC;  //!>! hadron-proton correlation hist (MC truth)
+  THnSparse* fDphiHPion_MC;  //!>! hadron-pion correlation hist (MC truth)
   THnSparse* fDphiHLambda_MC_physicalPrimary;  //!>! hadron-lambda correlation hist (MC truth, lambda is physical primary)
   THnSparse* fDphiHH_MC;   //!>! hadron-hadron correlation hist (MC truth)
   THnSparse* fDphiHLambdaMixed_MC; //!>! hadron-lambda mixed correlation hist (MC truth)
+  THnSparse* fDphiHDaughterProtonMixed_MC; //!>! hadron-daughter proton mixed correlation hist (MC truth)
+  THnSparse* fDphiHDaughterPionMixed_MC; //!>! hadron-daughter pion mixed correlation hist (MC truth)
+  THnSparse* fDphiHProtonMixed_MC;  //!>! hadron-proton mixed correlation hist (MC truth)
+  THnSparse* fDphiHPionMixed_MC;  //!>! hadron-pion mixed correlation hist (MC truth)
   THnSparse* fDphiHLambdaMixed_MC_physicalPrimary; //!>! hadron-lambda mixed correlation hist (MC truth, lambda is physical primary)
   THnSparse* fDphiHHMixed_MC; //!>! hadron-hadron mixed correlation hist (MC truth)
 
@@ -123,14 +137,18 @@ private:
   void MakeSameHLambdaCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx, bool eff, bool isAntiLambda);
   void MakeSameRecoHRealLambdaCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAODMCParticle*> lambda_list, THnSparse* fDphi, double zVtx, bool eff);
   void MakeSameHLambdaCorrelations_withMCKin(std::vector<AliAODTrack*> trigger_list, std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx, bool eff);
+  void MakeSameHDaughterCorrelations_withMCKin(std::vector<AliAODTrack*> trigger_list, std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> lambda_list, THnSparse* fDphi_proton, THnSparse* fDphi_pion, double zVtx);
   void MakeSameHHCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAODTrack*> associated_h_list, THnSparse* fDphi, double zVtx, bool eff=true);
   void MakeMixedHLambdaCorrelations(AliEventPool *fPool, std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx, bool eff, bool isAntiLambda);
   void MakeMixedHLambdaCorrelations_withMCKin(AliEventPool *fPool, std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx, bool eff);
+  void MakeMixedHDaughterCorrelations_withMCKin(AliEventPool *fPool, std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> lambda_list, THnSparse* fDphi_proton, THnSparse* fDphi_pion, double zVtx);
   void MakeMixedHHCorrelations(AliEventPool *fPool, std::vector<AliAODTrack*> associated_h_list , THnSparse* fDphi, double zVtx, bool eff=true);
 
   void MakeSameMCHLambdaCorrelations(std::vector<AliAODMCParticle*> trigger_list, std::vector<AliAODMCParticle*> lambda_list, THnSparse* fDphi, double zVtx);
+  void MakeSameMCHDaughterCorrelations(std::vector<AliAODMCParticle*> trigger_list, std::vector<AliAODMCParticle*> lambda_list, THnSparse* fDphi_proton, THnSparse* fDphi_pion, double zVtx);
   void MakeSameMCHHCorrelations(std::vector<AliAODMCParticle*> trigger_list, std::vector<AliAODMCParticle*> associated_h_list, THnSparse* fDphi, double zVtx);
   void MakeMixedMCHLambdaCorrelations(AliEventPool *fPool, std::vector<AliAODMCParticle*> lambda_list, THnSparse* fDphi, double zVtx);
+  void MakeMixedMCHDaughterCorrelations(AliEventPool *fPool, std::vector<AliAODMCParticle*> lambda_list, THnSparse* fDphi_proton, THnSparse* fDphi_pion, double zVtx);
   void MakeMixedMCHHCorrelations(AliEventPool *fPool, std::vector<AliAODMCParticle*> associated_h_list , THnSparse* fDphi, double zVtx);
 
   bool PassDaughterCuts(AliAODTrack *track); // check if the AOD track passes the daughter cuts

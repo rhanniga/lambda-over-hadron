@@ -77,6 +77,8 @@ AliAnalysisTaskLambdaHadronV0Closure::AliAnalysisTaskLambdaHadronV0Closure() :
     fDphiHHEff_checkMC(0x0),
     fDphiHLambdaMixed(0x0),
     fDphiHLambdaMixed_MCKin(0x0),
+    fDphiHDaughterProtonMixed_MCKin(0x0),
+    fDphiHDaughterPionMixed_MCKin(0x0),
     fDphiHLambdaMixed_MCKin_physicalPrimary(0x0),
     fDphiRecoHRealLambdaMixed_MCKin_physicalPrimary(0x0),
     fDphiHHMixed(0x0),
@@ -130,6 +132,8 @@ AliAnalysisTaskLambdaHadronV0Closure::AliAnalysisTaskLambdaHadronV0Closure(const
     fDphiHHEff_checkMC(0x0),
     fDphiHLambdaMixed(0x0),
     fDphiHLambdaMixed_MCKin(0x0),
+    fDphiHDaughterProtonMixed_MCKin(0x0),
+    fDphiHDaughterPionMixed_MCKin(0x0),
     fDphiHLambdaMixed_MCKin_physicalPrimary(0x0),
     fDphiRecoHRealLambdaMixed_MCKin_physicalPrimary(0x0),
     fDphiHHMixed(0x0),
@@ -260,13 +264,13 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserCreateOutputObjects()
     fDphiHLambdaEff_MCKin->Sumw2();
     fOutputList->Add(fDphiHLambdaEff_MCKin);
 
-    fDphiHDaughterProton_MCKin = new THnSparseF("fDphiHDaughterProton_MCKin", "Efficiency-corrected Hadron-daughter proton Correlation Histogram (using MC kinematics on V0)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHDaughterProton_MCKin = new THnSparseF("fDphiHDaughterProton_MCKin", "Hadron-daughter proton Correlation Histogram (using MC kinematics on V0)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHDaughterProton_MCKin->Sumw2();
     fOutputList->Add(fDphiHDaughterProton_MCKin);
 
-    fDphiHDaughterProton_MCKin = new THnSparseF("fDphiHDaughterProton_MCKin", "Efficiency-corrected Hadron-daughter pion Correlation Histogram (using MC kinematics on V0)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
-    fDphiHDaughterProton_MCKin->Sumw2();
-    fOutputList->Add(fDphiHDaughterProton_MCKin);
+    fDphiHDaughterPion_MCKin = new THnSparseF("fDphiHDaughterPion_MCKin", "Hadron-daughter pion Correlation Histogram (using MC kinematics on V0)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHDaughterPion_MCKin->Sumw2();
+    fOutputList->Add(fDphiHDaughterPion_MCKin);
 
     fDphiHLambdaEff_MCKin_physicalPrimary = new THnSparseF("fDphiHLambdaEff_MCKin_physicalPrimary", "Efficiency-corrected Hadron-Lambda Correlation Histogram (using MC kinematics on V0, trigger and lambda are physical primary)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambdaEff_MCKin_physicalPrimary->Sumw2();
@@ -280,6 +284,14 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserCreateOutputObjects()
     fDphiHLambda_MC->Sumw2();
     fOutputList->Add(fDphiHLambda_MC);
 
+    fDphiHDaughterProton_MC = new THnSparseF("fDphiHDaughterProton_MC", "Hadron-DaughterProton Correlation Histogram (MC truth)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHDaughterProton_MC->Sumw2();
+    fOutputList->Add(fDphiHDaughterProton_MC);
+
+    fDphiHDaughterPion_MC = new THnSparseF("fDphiHDaughterPion_MC", "Hadron-DaughterPion Correlation Histogram (MC truth)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHDaughterPion_MC->Sumw2();
+    fOutputList->Add(fDphiHDaughterPion_MC);
+
     fDphiHLambda_MC_physicalPrimary = new THnSparseF("fDphiHLambda_MC_physicalPrimary", "Hadron-Lambda Correlation Histogram (MC truth, primary lambdas)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambda_MC_physicalPrimary->Sumw2();
     fOutputList->Add(fDphiHLambda_MC_physicalPrimary);
@@ -287,6 +299,14 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserCreateOutputObjects()
     fDphiHLambdaMixed = new THnSparseF("fDphiHLambdaMixed", "Mixed Hadron-Lambda Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambdaMixed->Sumw2();
     fOutputList->Add(fDphiHLambdaMixed);
+
+    fDphiHDaughterProtonMixed_MCKin = new THnSparseF("fDphiHDaughterProtonMixed_MCKin", "Mixed Hadron-daughter proton Correlation Histogram (using MC kinematics on V0)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHDaughterProtonMixed_MCKin->Sumw2();
+    fOutputList->Add(fDphiHDaughterProtonMixed_MCKin);
+
+    fDphiHDaughterPionMixed_MCKin = new THnSparseF("fDphiHDaughterPionMixed_MCKin", "Mixed Hadron-daughter proton Correlation Histogram (using MC kinematics on V0)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHDaughterPionMixed_MCKin->Sumw2();
+    fOutputList->Add(fDphiHDaughterPionMixed_MCKin);
 
     fDphiHLambdaMixed_MCKin = new THnSparseF("fDphiHLambdaMixed_MCKin", "Mixed Hadron-Lambda Correlation Histogram (using Mc kinematics on V0)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambdaMixed_MCKin->Sumw2();
@@ -303,6 +323,14 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserCreateOutputObjects()
     fDphiHLambdaMixed_MC = new THnSparseF("fDphiHLambdaMixed_MC", "Mixed Hadron-Lambda Correlation Histogram (MC truth)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambdaMixed_MC->Sumw2();
     fOutputList->Add(fDphiHLambdaMixed_MC);
+
+    fDphiHDaughterProtonMixed_MC = new THnSparseF("fDphiHDaughterProtonMixed_MC", "Hadron-DaughterProtonMixed Correlation Histogram (MC truth)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHDaughterProtonMixed_MC->Sumw2();
+    fOutputList->Add(fDphiHDaughterProtonMixed_MC);
+
+    fDphiHDaughterPionMixed_MC = new THnSparseF("fDphiHDaughterPionMixed_MC", "Hadron-DaughterPionMixed Correlation Histogram (MC truth)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHDaughterPionMixed_MC->Sumw2();
+    fOutputList->Add(fDphiHDaughterPionMixed_MC);
 
     fDphiHLambdaMixed_MC_physicalPrimary = new THnSparseF("fDphiHLambdaMixed_MC_physicalPrimary", "Mixed Hadron-Lambda Correlation Histogram (MC truth, primary lambdas)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambdaMixed_MC_physicalPrimary->Sumw2();
@@ -322,17 +350,49 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserCreateOutputObjects()
     fDphiHHEff_checkMC->Sumw2();
     fOutputList->Add(fDphiHHEff_checkMC);
 
+    fDphiHProton = new THnSparseF("fDphiHProton", "Efficiency corrected Hadron-Proton Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHProton->Sumw2();
+    fOutputList->Add(fDphiHProton);
+
+    fDphiHPion = new THnSparseF("fDphiHPion", "Efficiency corrected Hadron-Pion Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHPion->Sumw2();
+    fOutputList->Add(fDphiHPion);
+
     fDphiHH_MC = new THnSparseF("fDphiHH_MC", "Hadron-Hadron Correlation Histogram (MC truth)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fDphiHH_MC->Sumw2();
     fOutputList->Add(fDphiHH_MC);
+
+    fDphiHProton_MC = new THnSparseF("fDphiHProton_MC", "Efficiency corrected Hadron-Proton_MC Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHProton_MC->Sumw2();
+    fOutputList->Add(fDphiHProton_MC);
+
+    fDphiHPion_MC = new THnSparseF("fDphiHPion_MC", "Efficiency corrected Hadron-Pion_MC Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHPion_MC->Sumw2();
+    fOutputList->Add(fDphiHPion_MC);
 
     fDphiHHMixed = new THnSparseF("fDphiHHMixed", "Mixed Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fDphiHHMixed->Sumw2();
     fOutputList->Add(fDphiHHMixed);
 
+    fDphiHProtonMixed = new THnSparseF("fDphiHProtonMixed", "Efficiency corrected Hadron-ProtonMixed Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHProtonMixed->Sumw2();
+    fOutputList->Add(fDphiHProtonMixed);
+
+    fDphiHPionMixed = new THnSparseF("fDphiHPionMixed", "Efficiency corrected Hadron-PionMixed Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHPionMixed->Sumw2();
+    fOutputList->Add(fDphiHPionMixed);
+
     fDphiHHMixed_MC = new THnSparseF("fDphiHHMixed_MC", "Mixed Hadron-Hadron Correlation Histogram (MC truth)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fDphiHHMixed_MC->Sumw2();
     fOutputList->Add(fDphiHHMixed_MC);
+
+    fDphiHProtonMixed_MC = new THnSparseF("fDphiHProtonMixed_MC", "Efficiency corrected Hadron-ProtonMixed_MC Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHProtonMixed_MC->Sumw2();
+    fOutputList->Add(fDphiHProtonMixed_MC);
+
+    fDphiHPionMixed_MC = new THnSparseF("fDphiHPionMixed_MC", "Efficiency corrected Hadron-PionMixed_MC Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHPionMixed_MC->Sumw2();
+    fOutputList->Add(fDphiHPionMixed_MC);
 
     PostData(1, fOutputList);
 
@@ -607,6 +667,105 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeSameHLambdaCorrelations_withMCKin
     }
 }
 
+void AliAnalysisTaskLambdaHadronV0Closure::MakeSameHDaughterCorrelations_withMCKin(std::vector<AliAODTrack*> trigger_list, std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> lambda_list, THnSparse* fDphi_proton, THnSparse* fDphi_pion, double zVtx)
+{
+    double dphi_point[6];
+
+    for(int j = 0; j < (int)trigger_list.size(); j++) {
+        auto trigger = trigger_list[j];
+        dphi_point[0] = trigger->Pt();
+
+        for(int i = 0; i < (int)lambda_list.size(); i++) {
+
+            auto lambda = lambda_list[i];
+
+            AliAODTrack *posTrack=(AliAODTrack *)lambda.vzero->GetDaughter(0);
+            int plabel = posTrack->GetLabel();
+            AliAODMCParticle* mcpospart = (AliAODMCParticle*)fMCArray->At(plabel);
+            int mlabel_pos = mcpospart->GetMother();
+
+            AliAODTrack *negTrack=(AliAODTrack *)lambda.vzero->GetDaughter(1);
+            int nlabel = negTrack->GetLabel();
+            AliAODMCParticle* mcnegpart = (AliAODMCParticle*)fMCArray->At(nlabel);
+            int mlabel_neg = mcnegpart->GetMother();
+
+            AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(mlabel_pos);
+
+            //Make sure trigger isn't one of the daughters of lambda
+            if((trigger->GetID() == lambda.daughter1ID) || (trigger->GetID() == lambda.daughter2ID)) continue;
+
+            if(mcpospart->GetPdgCode() == 211) {
+                dphi_point[1] = mcpospart->Pt();
+                dphi_point[2] = trigger->Phi() - mcpospart->Phi();
+
+                if(dphi_point[2] < -TMath::Pi()/2.0) {
+                    dphi_point[2] += 2.0*TMath::Pi();
+                }
+                else if(dphi_point[2] > 3.0*TMath::Pi()/2.0) {
+                    dphi_point[2] -= 2.0*TMath::Pi();
+                }
+
+                dphi_point[3] = trigger->Eta() - mcpospart->Eta();
+                dphi_point[4] = mcpospart->M();
+                dphi_point[5] = zVtx;
+                fDphi_pion->Fill(dphi_point);
+            }
+
+            if(mcnegpart->GetPdgCode() == -211) {
+                dphi_point[1] = mcnegpart->Pt();
+                dphi_point[2] = trigger->Phi() - mcnegpart->Phi();
+
+                if(dphi_point[2] < -TMath::Pi()/2.0) {
+                    dphi_point[2] += 2.0*TMath::Pi();
+                }
+                else if(dphi_point[2] > 3.0*TMath::Pi()/2.0) {
+                    dphi_point[2] -= 2.0*TMath::Pi();
+                }
+
+                dphi_point[3] = trigger->Eta() - mcnegpart->Eta();
+                dphi_point[4] = mcnegpart->M();
+                dphi_point[5] = zVtx;
+                fDphi_pion->Fill(dphi_point);
+            }
+
+            if(mcpospart->GetPdgCode() == 2212) {
+                dphi_point[1] = mcpospart->Pt();
+                dphi_point[2] = trigger->Phi() - mcpospart->Phi();
+
+                if(dphi_point[2] < -TMath::Pi()/2.0) {
+                    dphi_point[2] += 2.0*TMath::Pi();
+                }
+                else if(dphi_point[2] > 3.0*TMath::Pi()/2.0) {
+                    dphi_point[2] -= 2.0*TMath::Pi();
+                }
+
+                dphi_point[3] = trigger->Eta() - mcpospart->Eta();
+                dphi_point[4] = mcpospart->M();
+                dphi_point[5] = zVtx;
+                fDphi_proton->Fill(dphi_point);
+            }
+
+            if(mcnegpart->GetPdgCode() == -2212) {
+                dphi_point[1] = mcnegpart->Pt();
+                dphi_point[2] = trigger->Phi() - mcnegpart->Phi();
+
+                if(dphi_point[2] < -TMath::Pi()/2.0) {
+                    dphi_point[2] += 2.0*TMath::Pi();
+                }
+                else if(dphi_point[2] > 3.0*TMath::Pi()/2.0) {
+                    dphi_point[2] -= 2.0*TMath::Pi();
+                }
+
+                dphi_point[3] = trigger->Eta() - mcnegpart->Eta();
+                dphi_point[4] = mcnegpart->M();
+                dphi_point[5] = zVtx;
+                fDphi_proton->Fill(dphi_point);
+            }
+
+        }
+    }
+}
+
 void AliAnalysisTaskLambdaHadronV0Closure::MakeSameMCHLambdaCorrelations(std::vector<AliAODMCParticle*> trigger_list, std::vector<AliAODMCParticle*> lambda_list, THnSparse* fDphi, double zVtx)
 {
     double dphi_point[6];
@@ -642,6 +801,61 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeSameMCHLambdaCorrelations(std::ve
             dphi_point[4] = lambda->M();
             dphi_point[5] = zVtx;
             fDphi->Fill(dphi_point);
+        }
+    }
+}
+
+void AliAnalysisTaskLambdaHadronV0Closure::MakeSameMCHDaughterCorrelations(std::vector<AliAODMCParticle*> trigger_list, std::vector<AliAODMCParticle*> lambda_list, THnSparse* fDphi_proton, THnSparse* fDphi_pion, double zVtx)
+{
+    double dphi_point[6];
+
+    for(int j = 0; j < (int)trigger_list.size(); j++) {
+        auto trigger = trigger_list[j];
+        dphi_point[0] = trigger->Pt();
+
+        for(int i = 0; i < (int)lambda_list.size(); i++) {
+            auto lambda = lambda_list[i];
+
+            int first_daughter_index = lambda->GetDaughterFirst();
+            int second_daughter_index = lambda->GetDaughterLast();
+
+            // GetDaughterFirst always returns proton
+            // GetDaughterLast always returns pion
+            AliAODMCParticle* dproton = (AliAODMCParticle*)fMCArray->At(first_daughter_index);
+            AliAODMCParticle* dpion = (AliAODMCParticle*)fMCArray->At(second_daughter_index);
+
+            //Make sure trigger isn't one of the daughters of lambda
+            if((trigger->GetLabel() == dproton->GetLabel()) || (trigger->GetLabel() == dpion->GetLabel())) continue;
+            // fill proton dist first
+            dphi_point[1] = dproton->Pt();
+            dphi_point[2] = trigger->Phi() - dproton->Phi();
+
+            if(dphi_point[2] < -TMath::Pi()/2.0) {
+                dphi_point[2] += 2.0*TMath::Pi();
+            }
+            else if(dphi_point[2] > 3.0*TMath::Pi()/2.0) {
+                dphi_point[2] -= 2.0*TMath::Pi();
+            }
+
+            dphi_point[3] = trigger->Eta() - dpion->Eta();
+            dphi_point[4] = dpion->M();
+            dphi_point[5] = zVtx;
+            fDphi_pion->Fill(dphi_point);
+
+            // now fill pion dist
+            dphi_point[1] = dpion->Pt();
+            dphi_point[2] = trigger->Phi() - dpion->Phi();
+
+            if(dphi_point[2] < -TMath::Pi()/2.0) {
+                dphi_point[2] += 2.0*TMath::Pi();
+            }
+            else if(dphi_point[2] > 3.0*TMath::Pi()/2.0) {
+                dphi_point[2] -= 2.0*TMath::Pi();
+            }
+            dphi_point[3] = trigger->Eta() - dpion->Eta();
+            dphi_point[4] = dpion->M();
+            dphi_point[5] = zVtx;
+            fDphi_pion->Fill(dphi_point);
         }
     }
 }
@@ -832,6 +1046,62 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeMixedHLambdaCorrelations_withMCKi
     }
 }
 
+void AliAnalysisTaskLambdaHadronV0Closure::MakeMixedHDaughterCorrelations_withMCKin(AliEventPool* fPool, std::vector<AliAnalysisTaskLambdaHadronV0Closure::AliMotherContainer> lambda_list , THnSparse* fDphi_proton, THnSparse* fDphi_pion, double zVtx)
+{
+    double dphi_point[6];
+    int numEvents = fPool->GetCurrentNEvents();
+    for(int iEvent = 0; iEvent < numEvents; iEvent++) {
+        TObjArray *tracks = fPool->GetEvent(iEvent);
+        tracks->SetName(Form("%d_Zvtx", (int)zVtx));
+        int numTracks = tracks->GetEntriesFast();
+
+        for(int i = 0; i < numTracks; i++) {
+            AliCFParticle *trigger = (AliCFParticle*) tracks->At(i);
+            if(!trigger) continue;
+            dphi_point[0] = trigger->Pt();
+
+            for(int j = 0; j < (int)lambda_list.size(); j++) {
+                auto lambda = (AliAODMCParticle*)fMCArray->At(lambda_list[j].motherLabel);
+                // it just so happens GetDaughterFirst always returns proton and GetDaughterLast always returns pion
+                auto dproton = (AliAODMCParticle*)fMCArray->At(lambda->GetDaughterFirst());
+                auto dpion = (AliAODMCParticle*)fMCArray->At(lambda->GetDaughterLast());
+
+                // fill proton dist first
+                dphi_point[1] = dproton->Pt();
+                dphi_point[2] = trigger->Phi() - dproton->Phi();
+
+                if(dphi_point[2] < -TMath::Pi()/2.0) {
+                    dphi_point[2] += 2.0*TMath::Pi();
+                }
+                else if(dphi_point[2] > 3.0*TMath::Pi()/2.0) {
+                    dphi_point[2] -= 2.0*TMath::Pi();
+                }
+
+                dphi_point[3] = trigger->Eta() - dpion->Eta();
+                dphi_point[4] = dpion->M();
+                dphi_point[5] = zVtx;
+                fDphi_pion->Fill(dphi_point);
+
+                // now fill pion dist
+                dphi_point[1] = dpion->Pt();
+                dphi_point[2] = trigger->Phi() - dpion->Phi();
+
+                if(dphi_point[2] < -TMath::Pi()/2.0) {
+                    dphi_point[2] += 2.0*TMath::Pi();
+                }
+                else if(dphi_point[2] > 3.0*TMath::Pi()/2.0) {
+                    dphi_point[2] -= 2.0*TMath::Pi();
+                }
+
+                dphi_point[3] = trigger->Eta() - dpion->Eta();
+                dphi_point[4] = dpion->M();
+                dphi_point[5] = zVtx;
+                fDphi_pion->Fill(dphi_point);
+            }
+        }
+    }
+}
+
 void AliAnalysisTaskLambdaHadronV0Closure::MakeMixedMCHLambdaCorrelations(AliEventPool* fPool, std::vector<AliAODMCParticle*> lambda_list , THnSparse* fDphi, double zVtx)
 {
     double dphi_point[6];
@@ -863,6 +1133,61 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeMixedMCHLambdaCorrelations(AliEve
                 dphi_point[4] = lambda->M();
                 dphi_point[5] = zVtx;
                 fDphi->Fill(dphi_point);
+            }
+        }
+    }
+}
+void AliAnalysisTaskLambdaHadronV0Closure::MakeMixedMCHDaughterCorrelations(AliEventPool* fPool, std::vector<AliAODMCParticle*> lambda_list , THnSparse* fDphi_proton, THnSparse* fDphi_pion, double zVtx)
+{
+    double dphi_point[6];
+    int numEvents = fPool->GetCurrentNEvents();
+    for(int iEvent = 0; iEvent < numEvents; iEvent++) {
+        TObjArray *tracks = fPool->GetEvent(iEvent);
+        tracks->SetName(Form("%d_Zvtx", (int)zVtx));
+        int numTracks = tracks->GetEntriesFast();
+
+        for(int i = 0; i < numTracks; i++) {
+            AliCFParticle *trigger = (AliCFParticle*) tracks->At(i);
+            if(!trigger) continue;
+            dphi_point[0] = trigger->Pt();
+
+            for(int j = 0; j < (int)lambda_list.size(); j++) {
+                auto lambda = lambda_list[j];
+                // it just so happens GetDaughterFirst always returns proton and GetDaughterLast always returns pion
+                auto dproton = (AliAODMCParticle*)fMCArray->At(lambda->GetDaughterFirst());
+                auto dpion = (AliAODMCParticle*)fMCArray->At(lambda->GetDaughterLast());
+
+                // fill proton dist first
+                dphi_point[1] = dproton->Pt();
+                dphi_point[2] = trigger->Phi() - dproton->Phi();
+
+                if(dphi_point[2] < -TMath::Pi()/2.0) {
+                    dphi_point[2] += 2.0*TMath::Pi();
+                }
+                else if(dphi_point[2] > 3.0*TMath::Pi()/2.0) {
+                    dphi_point[2] -= 2.0*TMath::Pi();
+                }
+
+                dphi_point[3] = trigger->Eta() - dpion->Eta();
+                dphi_point[4] = dpion->M();
+                dphi_point[5] = zVtx;
+                fDphi_pion->Fill(dphi_point);
+
+                // now fill pion dist
+                dphi_point[1] = dpion->Pt();
+                dphi_point[2] = trigger->Phi() - dpion->Phi();
+
+                if(dphi_point[2] < -TMath::Pi()/2.0) {
+                    dphi_point[2] += 2.0*TMath::Pi();
+                }
+                else if(dphi_point[2] > 3.0*TMath::Pi()/2.0) {
+                    dphi_point[2] -= 2.0*TMath::Pi();
+                }
+
+                dphi_point[3] = trigger->Eta() - dpion->Eta();
+                dphi_point[4] = dpion->M();
+                dphi_point[5] = zVtx;
+                fDphi_pion->Fill(dphi_point);
             }
         }
     }
@@ -957,19 +1282,19 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeMixedMCHHCorrelations(AliEventPoo
 
 bool AliAnalysisTaskLambdaHadronV0Closure::PassDaughterCuts(AliAODTrack *track){
 
-    // if(track->GetID() < 0) return false;
+    if(track->GetID() < 0) return false;
 
     bool pass = true;
 
-    // pass = pass && (TMath::Abs(track->Eta()) < 0.8);
-    // pass = pass && (track->Pt() > 0.15);
+    pass = pass && (TMath::Abs(track->Eta()) < 0.8);
+    pass = pass && (track->Pt() > 0.15);
 
-    // pass = pass && (track->IsOn(AliAODTrack::kTPCrefit));
+    pass = pass && (track->IsOn(AliAODTrack::kTPCrefit));
 
-    // pass = pass && (track->GetTPCCrossedRows() > 70);
+    pass = pass && (track->GetTPCCrossedRows() > 70);
 
-    // float ratio = (track->GetTPCNclsF() > 0)  ? track->GetTPCCrossedRows()/track->GetTPCNclsF() : 0;
-    // pass = pass && (ratio > 0.8);
+    float ratio = (track->GetTPCNclsF() > 0)  ? track->GetTPCCrossedRows()/track->GetTPCNclsF() : 0;
+    pass = pass && (ratio > 0.8);
 
     return pass;
 }
@@ -1163,6 +1488,9 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
     std::vector<AliAODTrack*> trigger_list_checkMC;
     std::vector<AliAODTrack*> associated_h_list_checkMC;
 
+    std::vector<AliAODTrack*> associated_proton_list;
+    std::vector<AliAODTrack*> associated_pion_list;
+
     //Trigger list used for event mixing
     TObjArray* fMixedTrackObjArray = new TObjArray;
     fMixedTrackObjArray->SetOwner(kTRUE);
@@ -1212,6 +1540,19 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
 
         if(PassAssociatedCuts(track, true)) {
             associated_h_list_checkMC.push_back(track);
+        }
+
+        if(PassDaughterCuts(track)) {
+            int mc_label = track->GetLabel();
+            if(mc_label >= 0) {
+                auto mc_part = (AliAODMCParticle*)fMCArray->At(mc_label);
+                if(TMath::Abs(mc_part->GetPdgCode()) == 2212) {
+                    associated_proton_list.push_back(track);
+                }
+                if(TMath::Abs(mc_part->GetPdgCode()) == 211) {
+                    associated_pion_list.push_back(track);
+                }
+            }
         }
     }
 
@@ -1324,11 +1665,19 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
     MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHHEff, primZ, true);
     MakeSameHHCorrelations(trigger_list_checkMC, associated_h_list_checkMC, fDphiHHEff_checkMC, primZ, true);
 
+    MakeSameHHCorrelations(trigger_list_checkMC, associated_proton_list, fDphiHProton, primZ, true);
+    MakeSameHHCorrelations(trigger_list_checkMC, associated_pion_list, fDphiHPion, primZ, true);
+
+    MakeSameHDaughterCorrelations_withMCKin(trigger_list, antilambda_list_checkMotherPDG, fDphiHDaughterProton_MCKin, fDphiHDaughterPion_MCKin, primZ);
+    MakeSameHDaughterCorrelations_withMCKin(trigger_list, lambda_list_checkMotherPDG, fDphiHDaughterProton_MCKin, fDphiHDaughterPion_MCKin, primZ);
+
 
     // MC SAME EVENT SECTION
 
     std::vector<AliAODMCParticle*> real_trigger_list;
     std::vector<AliAODMCParticle*> real_associated_list;
+    std::vector<AliAODMCParticle*> real_proton_list;
+    std::vector<AliAODMCParticle*> real_pion_list;
     std::vector<AliAODMCParticle*> real_lambda_list;
     std::vector<AliAODMCParticle*> real_lambda_list_physicalPrimary;
 
@@ -1347,7 +1696,10 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
         if(PassMCAssociatedCuts(mc_particle)) real_associated_list.push_back(mc_particle);
         if(PassMCLambdaCuts(mc_particle)) real_lambda_list.push_back(mc_particle);
         if(PassMCLambdaCuts(mc_particle, true)) real_lambda_list_physicalPrimary.push_back(mc_particle);
-
+        if(TMath::Abs(mc_particle->Eta()) < 0.8 && mc_particle->Pt() > 0.15) {
+            if(TMath::Abs(mc_particle->GetPdgCode()) == 2212) real_proton_list.push_back(mc_particle);
+            if(TMath::Abs(mc_particle->GetPdgCode()) == 211) real_pion_list.push_back(mc_particle);
+        }
     }
 
     FillSingleMCParticleDist(real_trigger_list, primZ, fTriggerDist_MC);
@@ -1358,6 +1710,11 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
     MakeSameMCHLambdaCorrelations(real_trigger_list, real_lambda_list, fDphiHLambda_MC, primZ);
     MakeSameMCHLambdaCorrelations(real_trigger_list, real_lambda_list_physicalPrimary, fDphiHLambda_MC_physicalPrimary, primZ);
     MakeSameMCHHCorrelations(real_trigger_list, real_associated_list, fDphiHH_MC, primZ);
+
+    MakeSameMCHHCorrelations(real_trigger_list, real_proton_list, fDphiHProton_MC, primZ);
+    MakeSameMCHHCorrelations(real_trigger_list, real_pion_list, fDphiHPion_MC, primZ);
+
+    MakeSameMCHDaughterCorrelations(real_trigger_list, real_lambda_list, fDphiHDaughterProton_MC, fDphiHDaughterPion_MC, primZ);
 
     MakeSameRecoHRealLambdaCorrelations(trigger_list, real_lambda_list, fDphiRecoHRealLambdaEff_MCKin_physicalPrimary, primZ, true);
 
@@ -1378,6 +1735,10 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
                 MakeMixedHLambdaCorrelations_withMCKin(fCorPool, lambda_list_checkMotherPDG_isPrimary, fDphiHLambdaMixed_MCKin_physicalPrimary, primZ, true);
                 MakeMixedMCHLambdaCorrelations(fCorPool, real_lambda_list_physicalPrimary, fDphiRecoHRealLambdaMixed_MCKin_physicalPrimary, primZ);
                 MakeMixedHHCorrelations(fCorPool, associated_h_list, fDphiHHMixed, primZ);
+                MakeMixedHHCorrelations(fCorPool, associated_proton_list, fDphiHProtonMixed, primZ);
+                MakeMixedHHCorrelations(fCorPool, associated_pion_list, fDphiHPionMixed, primZ);
+                MakeMixedHDaughterCorrelations_withMCKin(fCorPool, antilambda_list_checkMotherPDG, fDphiHDaughterProtonMixed_MCKin, fDphiHDaughterPionMixed_MCKin, primZ);
+                MakeMixedHDaughterCorrelations_withMCKin(fCorPool, lambda_list_checkMotherPDG, fDphiHDaughterProtonMixed_MCKin, fDphiHDaughterPionMixed_MCKin, primZ);
             }
             if(fMixedTrackObjArray->GetEntries() > 0) {
                 fCorPool->UpdatePool(fMixedTrackObjArray);
@@ -1396,36 +1757,15 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
                 MakeMixedMCHLambdaCorrelations(fMCCorPool, real_lambda_list, fDphiHLambdaMixed_MC, primZ);
                 MakeMixedMCHLambdaCorrelations(fMCCorPool, real_lambda_list_physicalPrimary, fDphiHLambdaMixed_MC_physicalPrimary, primZ);
                 MakeMixedMCHHCorrelations(fMCCorPool, real_associated_list, fDphiHHMixed_MC, primZ);
+                MakeMixedMCHHCorrelations(fMCCorPool, real_proton_list, fDphiHProtonMixed_MC, primZ);
+                MakeMixedMCHHCorrelations(fMCCorPool, real_pion_list, fDphiHPionMixed_MC, primZ);
+                MakeMixedMCHDaughterCorrelations(fMCCorPool, real_lambda_list, fDphiHDaughterProtonMixed_MC, fDphiHDaughterPionMixed_MC, primZ);
             }
             if(fMixedMCTrackObjArray->GetEntries() > 0) {
                 fMCCorPool->UpdatePool(fMixedMCTrackObjArray);
             }
         }
     }
-
-    // for(auto lambda : lambda_list_checkMotherPDG) {
-    //     auto lambda_mc = (AliAODMCParticle*)fMCArray->At(lambda.motherLabel);
-    //     auto lambda_mother = (AliAODMCParticle*)fMCArray->At(lambda_mc->GetMother());
-    //     if(lambda_mother) {
-    //         std::cout << "reco_lambda_mom_pdg: " << lambda_mother->GetPdgCode() << std::endl;
-    //     }
-    // }
-
-    // for(auto lambda : antilambda_list_checkMotherPDG) {
-    //     auto lambda_mc = (AliAODMCParticle*)fMCArray->At(lambda.motherLabel);
-    //     auto lambda_mother = (AliAODMCParticle*)fMCArray->At(lambda_mc->GetMother());
-    //     if(lambda_mother) {
-    //         std::cout << "reco_lambda_mom_pdg: " << lambda_mother->GetPdgCode() << std::endl;
-    //     }
-    // }
-
-
-    // for(auto lambda : real_lambda_list) {
-    //     auto lambda_mother = (AliAODMCParticle*)fMCArray->At(lambda->GetMother());
-    //     if(lambda_mother) {
-    //         std::cout << "mc_lambda_mom_pdg: " << lambda_mother->GetPdgCode() << std::endl;
-    //     }
-    // }
 
     PostData(1, fOutputList);
 }
