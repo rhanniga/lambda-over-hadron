@@ -248,9 +248,9 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserCreateOutputObjects()
     fOutputList->Add(fTriggeredLambdaDist_MC);
 
     //Correlation axes are: Trigger Pt, Associated Pt, dPhi, dEta, Inv Mass, Zvtx
-    int hl_cor_bins[6] = {18, 18, 16, 20, 100, 10};
-    double hl_cor_mins[6] = {1, 1, -1.0*TMath::Pi()/2.0, -2.0, 1.06, -10};
-    double hl_cor_maxes[6] = {10, 10, 3.0*TMath::Pi()/2.0, 2.0, 1.16, 10};
+    int hl_cor_bins[6] = {18, 16, 16, 20, 100, 10};
+    double hl_cor_mins[6] = {1, 0, -1.0*TMath::Pi()/2.0, -2.0, 1.06, -10};
+    double hl_cor_maxes[6] = {10, 4, 3.0*TMath::Pi()/2.0, 2.0, 1.16, 10};
 
     fDphiHLambdaEff = new THnSparseF("fDphiHLambdaEff", "Efficiency-corrected Hadron-Lambda Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambdaEff->Sumw2();
@@ -690,6 +690,7 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeSameHDaughterCorrelations_withMCK
             int mlabel_neg = mcnegpart->GetMother();
 
             AliAODMCParticle* mcmother = (AliAODMCParticle*)fMCArray->At(mlabel_pos);
+            if(mcmother->Pt() > 4.0 || mcmother->Pt() < 2.0) continue;
 
             //Make sure trigger isn't one of the daughters of lambda
             if((trigger->GetID() == lambda.daughter1ID) || (trigger->GetID() == lambda.daughter2ID)) continue;
@@ -815,6 +816,7 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeSameMCHDaughterCorrelations(std::
 
         for(int i = 0; i < (int)lambda_list.size(); i++) {
             auto lambda = lambda_list[i];
+            if(lambda->Pt() > 4.0 || lambda->Pt() < 2.0) continue;
 
             int first_daughter_index = lambda->GetDaughterFirst();
             int second_daughter_index = lambda->GetDaughterLast();
@@ -1064,6 +1066,7 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeMixedHDaughterCorrelations_withMC
             for(int j = 0; j < (int)lambda_list.size(); j++) {
                 auto lambda = (AliAODMCParticle*)fMCArray->At(lambda_list[j].motherLabel);
                 // it just so happens GetDaughterFirst always returns proton and GetDaughterLast always returns pion
+                if(lambda->Pt() > 4.0 || lambda->Pt() < 2.0) continue;
                 auto dproton = (AliAODMCParticle*)fMCArray->At(lambda->GetDaughterFirst());
                 auto dpion = (AliAODMCParticle*)fMCArray->At(lambda->GetDaughterLast());
 
@@ -1154,6 +1157,7 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeMixedMCHDaughterCorrelations(AliE
 
             for(int j = 0; j < (int)lambda_list.size(); j++) {
                 auto lambda = lambda_list[j];
+                if(lambda->Pt() > 4.0 || lambda->Pt() < 2.0) continue;
                 // it just so happens GetDaughterFirst always returns proton and GetDaughterLast always returns pion
                 auto dproton = (AliAODMCParticle*)fMCArray->At(lambda->GetDaughterFirst());
                 auto dpion = (AliAODMCParticle*)fMCArray->At(lambda->GetDaughterLast());
@@ -1340,9 +1344,9 @@ uint8_t AliAnalysisTaskLambdaHadronV0Closure::PassV0LambdaCuts(AliAODv0 *v0, boo
     int negPDG = mcnegpart->GetPdgCode();
 
     if(posPDG == 2212 && negPDG == -211) {
-        return 1;
+        if(ptrack->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA)) return 1;
     } else if(posPDG == 211 && negPDG == -2212) {
-        return 2;
+        if(ntrack->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA)) return 2;
     }
     else {
         return 0;
