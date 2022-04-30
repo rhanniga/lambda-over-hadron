@@ -1344,9 +1344,9 @@ uint8_t AliAnalysisTaskLambdaHadronV0Closure::PassV0LambdaCuts(AliAODv0 *v0, boo
     int negPDG = mcnegpart->GetPdgCode();
 
     if(posPDG == 2212 && negPDG == -211) {
-        if(ptrack->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA)) return 1;
+        return 1;
     } else if(posPDG == 211 && negPDG == -2212) {
-        if(ntrack->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA)) return 2;
+        return 2;
     }
     else {
         return 0;
