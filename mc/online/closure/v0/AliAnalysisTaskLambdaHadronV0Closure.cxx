@@ -889,12 +889,6 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeSameHHCorrelations(std::vector<Al
             dphi_point[3] = trigger->Eta() - associate->Eta();
             dphi_point[4] = zVtx;
 
-            double pos[3];
-
-            std::cout << associate->GetPosition(pos) << std::endl;
-            
-            double r = TMath::Sqrt(pos[0]*pos[0] + pos[1]*pos[1]);
-
 
             bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0.5) 
                                && (associate->Pt() < 10 && associate->Pt() > 0.5));
