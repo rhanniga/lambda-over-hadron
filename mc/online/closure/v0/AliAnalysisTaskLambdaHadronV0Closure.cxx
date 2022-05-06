@@ -1302,6 +1302,14 @@ bool AliAnalysisTaskLambdaHadronV0Closure::PassDaughterCuts(AliAODTrack *track){
     float ratio = (track->GetTPCNclsF() > 0)  ? track->GetTPCCrossedRows()/track->GetTPCNclsF() : 0;
     pass = pass && (ratio > 0.8);
 
+    int label = track->GetLabel();
+
+    if(label < 0) return false;
+
+    AliAODMCParticle* mcpart = (AliAODMCParticle*)fMCArray->At(label);
+
+    if(mcpart->IsPhysicalPrimary()) return false;
+
     return pass;
 }
 
