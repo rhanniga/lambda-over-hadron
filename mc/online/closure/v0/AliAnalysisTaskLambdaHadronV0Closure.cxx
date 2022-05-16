@@ -1308,7 +1308,7 @@ bool AliAnalysisTaskLambdaHadronV0Closure::PassDaughterCuts(AliAODTrack *track){
 
     AliAODMCParticle* mcpart = (AliAODMCParticle*)fMCArray->At(label);
 
-    if(mcpart->IsPhysicalPrimary()) return false;
+    // if(mcpart->IsPhysicalPrimary()) return false;
 
     return pass;
 }
