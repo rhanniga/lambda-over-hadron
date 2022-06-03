@@ -855,6 +855,8 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         if(((negPassCuts & maskEtaPtRefitRowsRatio) == maskEtaPtRefitRowsRatio) && ((posPassCuts & maskEtaPtRefitRowsRatio)== maskEtaPtRefitRowsRatio)){
             fRecoEtaPtRefitRowsRatioV0LambdaDist->Fill(distPoint);
 
+            std::cout << vZero->RadiusV0() << std::endl;
+
             float newPhiV0;
             if(vZero->Phi() < -TMath::Pi()){
                 newPhiV0 = vZero->Phi() + 2.0*TMath::Pi();
