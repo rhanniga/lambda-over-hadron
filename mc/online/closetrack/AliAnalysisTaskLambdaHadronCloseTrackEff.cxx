@@ -109,40 +109,44 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::UserCreateOutputObjects()
 
 
     //Correlation axes are: q (relative momenta), p (avg momenta), dphi, zvtx
-    int hp_cor_bins[4] = {100, 100, 32, 10};
-    double hp_cor_mins[4] = {0, 0, -1.0*TMath::Pi()/2.0, -10};
-    double hp_cor_maxes[4] = {10, 10, 3.0*TMath::Pi()/2.0, 10};
+    int hp_cor_bins[5] = {100, 100, 100, 32, 10};
+    double hp_cor_mins[5] = {0, 0, 0, -1.0*TMath::Pi()/2.0, -10};
+    double hp_cor_maxes[5] = {10, 10, 10, 3.0*TMath::Pi()/2.0, 10};
 
     fRecoHProton = new THnSparseF("fRecoHProton", "fRecoHProton", 4, hp_cor_bins, hp_cor_mins, hp_cor_maxes);
     fRecoHProton->Sumw2();
-    fRecoHProton->GetAxis(0)->SetTitle("q");
-    fRecoHProton->GetAxis(1)->SetTitle("p");
-    fRecoHProton->GetAxis(2)->SetTitle("dphi");
-    fRecoHProton->GetAxis(3)->SetTitle("zvtx");
+    fRecoHProton->GetAxis(0)->SetTitle("close (r=85cm)");
+    fRecoHProton->GetAxis(1)->SetTitle("mid (r=167.5cm)");
+    fRecoHProton->GetAxis(2)->SetTitle("far (r=250cm)");
+    fRecoHProton->GetAxis(3)->SetTitle("dphi");
+    fRecoHProton->GetAxis(4)->SetTitle("zvtx");
     fOutputList->Add(fRecoHProton);
 
     fRecoHProtonMixed = new THnSparseF("fRecoHProtonMixed", "fRecoHProtonMixed", 4, hp_cor_bins, hp_cor_mins, hp_cor_maxes);
     fRecoHProtonMixed->Sumw2();
-    fRecoHProtonMixed->GetAxis(0)->SetTitle("q");
-    fRecoHProtonMixed->GetAxis(1)->SetTitle("p");
-    fRecoHProtonMixed->GetAxis(2)->SetTitle("dphi");
-    fRecoHProtonMixed->GetAxis(3)->SetTitle("zvtx");
+    fRecoHProtonMixed->GetAxis(0)->SetTitle("close (r=85cm)");
+    fRecoHProtonMixed->GetAxis(1)->SetTitle("mid (r=167.5cm)");
+    fRecoHProtonMixed->GetAxis(2)->SetTitle("far (r=250cm)");
+    fRecoHProtonMixed->GetAxis(3)->SetTitle("dphi");
+    fRecoHProtonMixed->GetAxis(4)->SetTitle("zvtx");
     fOutputList->Add(fRecoHProtonMixed);
 
     fRealHProton = new THnSparseF("fRealHProton", "fRealHProton", 4, hp_cor_bins, hp_cor_mins, hp_cor_maxes);
     fRealHProton->Sumw2();
-    fRealHProton->GetAxis(0)->SetTitle("q");
-    fRealHProton->GetAxis(1)->SetTitle("p");
-    fRealHProton->GetAxis(2)->SetTitle("dphi");
-    fRealHProton->GetAxis(3)->SetTitle("zvtx");
+    fRealHProton->GetAxis(0)->SetTitle("close (r=85cm)");
+    fRealHProton->GetAxis(1)->SetTitle("mid (r=167.5cm)");
+    fRealHProton->GetAxis(2)->SetTitle("far (r=250cm)");
+    fRealHProton->GetAxis(3)->SetTitle("dphi");
+    fRealHProton->GetAxis(4)->SetTitle("zvtx");
     fOutputList->Add(fRealHProton);
 
     fRealHProtonMixed = new THnSparseF("fRealHProtonMixed", "fRealHProtonMixed", 4, hp_cor_bins, hp_cor_mins, hp_cor_maxes);
     fRealHProtonMixed->Sumw2();
-    fRealHProtonMixed->GetAxis(0)->SetTitle("q");
-    fRealHProtonMixed->GetAxis(1)->SetTitle("p");
-    fRealHProtonMixed->GetAxis(2)->SetTitle("dphi");
-    fRealHProtonMixed->GetAxis(3)->SetTitle("zvtx");
+    fRealHProtonMixed->GetAxis(0)->SetTitle("close (r=85cm)");
+    fRealHProtonMixed->GetAxis(1)->SetTitle("mid (r=167.5cm)");
+    fRealHProtonMixed->GetAxis(2)->SetTitle("far (r=250cm)");
+    fRealHProtonMixed->GetAxis(3)->SetTitle("dphi");
+    fRealHProtonMixed->GetAxis(4)->SetTitle("zvtx");
     fOutputList->Add(fRealHProtonMixed);
 
     PostData(1, fOutputList);
@@ -163,7 +167,7 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::SetCentEstimator(TString centEsti
 }
 
 
-void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeSameHProtonCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAODTrack*> proton_list, THnSparse* corr_dist, double zVtx)
+void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeSameHProtonCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAODTrack*> proton_list, THnSparse* corr_dist, double bz, double zVtx)
 {
     double corr_point[4];
 
@@ -181,28 +185,44 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeSameHProtonCorrelations(std::
             if(trigger->GetLabel() == proton->GetLabel()) continue;
 
             // getting q and p
-            corr_point[0] = TMath::Sq(trigger->Px() - proton->Px()) + 
-                            TMath::Sq(trigger->Py() - proton->Py()) +
-                            TMath::Sq(trigger->Pz() - proton->Pz());
 
-            corr_point[0] = TMath::Sqrt(corr_point[0]);
+            double close_point_trigger[3];
+            trigger->GetXYZatR(85, bz, close_point_trigger);
 
-            corr_point[1] = TMath::Sq((trigger->Px() + proton->Px()) / 2.0) +
-                            TMath::Sq((trigger->Py() + proton->Py()) / 2.0) +
-                            TMath::Sq((trigger->Pz() + proton->Pz()) / 2.0);
+            double mid_point_trigger[3];
+            trigger->GetXYZatR(167.5, bz, mid_point_trigger);
 
-            corr_point[1] = TMath::Sqrt(corr_point[1]);
+            double far_point_trigger[3];
+            trigger->GetXYZatR(250, bz, far_point_trigger);
 
-            corr_point[2] = trigger->Phi() - proton->Phi();
+            double close_point_proton[3];
+            proton->GetXYZatR(85, bz, close_point_proton);
 
-            if(corr_point[2] < -TMath::Pi()/2.0) {
-                corr_point[2] += 2.0*TMath::Pi();
+            double mid_point_proton[3];
+            proton->GetXYZatR(167.5, bz, mid_point_proton);
+
+            double far_point_proton[3];
+            proton->GetXYZatR(250, bz, far_point_proton);
+
+            double close_distance = sqrt(pow(close_point_trigger[0] - close_point_proton[0], 2) + pow(close_point_trigger[1] - close_point_proton[1], 2) + pow(close_point_trigger[2] - close_point_proton[2], 2));
+            double mid_distance = sqrt(pow(mid_point_trigger[0] - mid_point_proton[0], 2) + pow(mid_point_trigger[1] - mid_point_proton[1], 2) + pow(mid_point_trigger[2] - mid_point_proton[2], 2));
+            double far_distance = sqrt(pow(far_point_trigger[0] - far_point_proton[0], 2) + pow(far_point_trigger[1] - far_point_proton[1], 2) + pow(far_point_trigger[2] - far_point_proton[2], 2));
+
+            corr_point[0] = close_distance;
+            corr_point[1] = mid_distance;
+            corr_point[2] = far_distance;
+
+
+            corr_point[3] = trigger->Phi() - proton->Phi();
+
+            if(corr_point[3] < -TMath::Pi()/2.0) {
+                corr_point[3] += 2.0*TMath::Pi();
             }
-            else if(corr_point[2] > 3.0*TMath::Pi()/2.0) {
-                corr_point[2] -= 2.0*TMath::Pi();
+            else if(corr_point[3] > 3.0*TMath::Pi()/2.0) {
+                corr_point[3] -= 2.0*TMath::Pi();
             }
 
-            corr_point[3] = zVtx;
+            corr_point[4] = zVtx;
 
             corr_dist->Fill(corr_point);
 
@@ -508,7 +528,7 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::UserExec(Option_t*)
         }
     }
 
-    MakeSameHProtonCorrelations(trigger_list, proton_list, fRecoHProton, primZ);
+    MakeSameHProtonCorrelations(trigger_list, proton_list, fRecoHProton, fAOD->GetMagneticField(), primZ);
 
     // MC SAME EVENT SECTION
 

@@ -71,7 +71,7 @@ private:
   THnSparse *fRealHProton; //!>! real h-proton correlation histogram
   THnSparse *fRealHProtonMixed; //!>! real h-proton correlation histogram for mixed event
 
-  void MakeSameHProtonCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAODTrack*> proton_list, THnSparse* corr_dist, double zVtx);
+  void MakeSameHProtonCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAODTrack*> proton_list, THnSparse* corr_dist, double bz, double zVtx);
   void MakeMixedHProtonCorrelations(AliEventPool *fPool, std::vector<AliAODTrack*> proton_list, THnSparse* corr_dist, double zVtx);
 
   void MakeSameMCHProtonCorrelations(std::vector<AliAODMCParticle*> trigger_list, std::vector<AliAODMCParticle*> proton_list, THnSparse* corr_dist, double zVtx);
