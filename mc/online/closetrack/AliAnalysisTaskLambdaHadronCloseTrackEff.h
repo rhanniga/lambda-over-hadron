@@ -12,6 +12,7 @@
 
 // Includes order: standard, ROOT, AliRoot (for objects in this file only)
 #include "TString.h"
+#include "TArrayF.h"
 #include "TLorentzVector.h"
 
 #include "AliAnalysisTaskSE.h"
@@ -32,6 +33,33 @@ class AliAODTrack;
 class AliAODMCParticle;
 class AliAODv0;
 
+
+class AliMixingParticle : public AliVParticle {
+  public: 
+    AliMixingParticle() : AliVParticle(), fPt(0), fEta(0), fPhi(0), fPosition(0) { }
+    AliMixingParticle(Float_t pt, Float_t eta, Float_t phi, Double_t *position)
+    : AliVParticle(), fPt(pt), fEta(eta), fPhi(phi), fPosition(position) { }
+    virtual ~AliMixingParticle() { }
+    
+    virtual Double_t Pt()    const { return fPt;      }
+    virtual Double_t Phi()   const { return fPhi;     }
+    virtual Double_t Eta()   const { return fEta;     }
+    virtual Double_t Px()    const { return fPt*TMath::Cos(fPhi); }
+    virtual Double_t Py()    const { return fPt*TMath::Sin(fPhi); }
+    virtual Double_t Pz()    const { return fPt*TMath::SinH(fEta); }
+    virtual Double_t Xv() const { return fPosition[0]; }
+    virtual Double_t Yv() const { return fPosition[1]; }
+    virtual Double_t Zv() const { return fPosition[2]; }
+    
+  private:
+    Float_t fPt;
+    Float_t fEta;
+    Float_t fPhi;
+
+    Double_t *fPosition;
+
+    ClassDef(AliMixingParticle, 1);
+};
 
 class AliAnalysisTaskLambdaHadronCloseTrackEff : public AliAnalysisTaskSE {
 public:
@@ -71,7 +99,11 @@ private:
   THnSparse *fRealHProton; //!>! real h-proton correlation histogram
   THnSparse *fRealHProtonMixed; //!>! real h-proton correlation histogram for mixed event
 
-  void MakeSameHProtonCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAODTrack*> proton_list, THnSparse* corr_dist, double bz, double zVtx);
+  bool GetXYZatR(AliAODTrack *track, float radius, double *xyz);
+  bool GetXYZatR(AliAODMCParticle *track, float radius, double *xyz);
+  bool GetXYZatR(AliMixingParticle *track, float radius, double *xyz);
+
+  void MakeSameHProtonCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAODTrack*> proton_list, THnSparse* corr_dist, double zVtx);
   void MakeMixedHProtonCorrelations(AliEventPool *fPool, std::vector<AliAODTrack*> proton_list, THnSparse* corr_dist, double zVtx);
 
   void MakeSameMCHProtonCorrelations(std::vector<AliAODMCParticle*> trigger_list, std::vector<AliAODMCParticle*> proton_list, THnSparse* corr_dist, double zVtx);

@@ -17,7 +17,7 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
   TString work_dir = "lambda_hadron_closetrackeff";
   // TString output_dir = "closure_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_h_daughter_corr_motherptcheck";
-  TString output_dir = "closure_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_secondary_protons_only_more_pt_bins_v2";
+  TString output_dir = "closure_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_twotrackv2";
   // TString output_dir = "closure_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_comp_with_eff";
   
   //If we want to download test files from grid then run in one swoop (usually just run completely locally):

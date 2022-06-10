@@ -107,13 +107,12 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::UserCreateOutputObjects()
     fMCCorPoolMgr = new AliEventPoolManager(poolSize, trackDepth, numMultBins, multBins, numzVtxBins, zVtxBins);
     fMCCorPoolMgr->SetTargetValues(trackDepth, 0.1, 5);
 
-
     //Correlation axes are: q (relative momenta), p (avg momenta), dphi, zvtx
     int hp_cor_bins[5] = {100, 100, 100, 32, 10};
     double hp_cor_mins[5] = {0, 0, 0, -1.0*TMath::Pi()/2.0, -10};
-    double hp_cor_maxes[5] = {10, 10, 10, 3.0*TMath::Pi()/2.0, 10};
+    double hp_cor_maxes[5] = {2, 2, 2, 3.0*TMath::Pi()/2.0, 10};
 
-    fRecoHProton = new THnSparseF("fRecoHProton", "fRecoHProton", 4, hp_cor_bins, hp_cor_mins, hp_cor_maxes);
+    fRecoHProton = new THnSparseF("fRecoHProton", "fRecoHProton", 5, hp_cor_bins, hp_cor_mins, hp_cor_maxes);
     fRecoHProton->Sumw2();
     fRecoHProton->GetAxis(0)->SetTitle("close (r=85cm)");
     fRecoHProton->GetAxis(1)->SetTitle("mid (r=167.5cm)");
@@ -122,7 +121,7 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::UserCreateOutputObjects()
     fRecoHProton->GetAxis(4)->SetTitle("zvtx");
     fOutputList->Add(fRecoHProton);
 
-    fRecoHProtonMixed = new THnSparseF("fRecoHProtonMixed", "fRecoHProtonMixed", 4, hp_cor_bins, hp_cor_mins, hp_cor_maxes);
+    fRecoHProtonMixed = new THnSparseF("fRecoHProtonMixed", "fRecoHProtonMixed", 5, hp_cor_bins, hp_cor_mins, hp_cor_maxes);
     fRecoHProtonMixed->Sumw2();
     fRecoHProtonMixed->GetAxis(0)->SetTitle("close (r=85cm)");
     fRecoHProtonMixed->GetAxis(1)->SetTitle("mid (r=167.5cm)");
@@ -131,7 +130,7 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::UserCreateOutputObjects()
     fRecoHProtonMixed->GetAxis(4)->SetTitle("zvtx");
     fOutputList->Add(fRecoHProtonMixed);
 
-    fRealHProton = new THnSparseF("fRealHProton", "fRealHProton", 4, hp_cor_bins, hp_cor_mins, hp_cor_maxes);
+    fRealHProton = new THnSparseF("fRealHProton", "fRealHProton", 5, hp_cor_bins, hp_cor_mins, hp_cor_maxes);
     fRealHProton->Sumw2();
     fRealHProton->GetAxis(0)->SetTitle("close (r=85cm)");
     fRealHProton->GetAxis(1)->SetTitle("mid (r=167.5cm)");
@@ -140,7 +139,7 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::UserCreateOutputObjects()
     fRealHProton->GetAxis(4)->SetTitle("zvtx");
     fOutputList->Add(fRealHProton);
 
-    fRealHProtonMixed = new THnSparseF("fRealHProtonMixed", "fRealHProtonMixed", 4, hp_cor_bins, hp_cor_mins, hp_cor_maxes);
+    fRealHProtonMixed = new THnSparseF("fRealHProtonMixed", "fRealHProtonMixed", 5, hp_cor_bins, hp_cor_mins, hp_cor_maxes);
     fRealHProtonMixed->Sumw2();
     fRealHProtonMixed->GetAxis(0)->SetTitle("close (r=85cm)");
     fRealHProtonMixed->GetAxis(1)->SetTitle("mid (r=167.5cm)");
@@ -166,8 +165,245 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::SetCentEstimator(TString centEsti
     fCentEstimator = centEstimator;
 }
 
+bool AliAnalysisTaskLambdaHadronCloseTrackEff::GetXYZatR(AliMixingParticle *track, float radius, double *xyz) {
 
-void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeSameHProtonCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAODTrack*> proton_list, THnSparse* corr_dist, double bz, double zVtx)
+    Double_t alpha=0.0;
+
+    double bz = (double)fAOD->GetMagneticField();
+
+    double position[3];
+
+    position[0] = track->Xv();
+    position[1] = track->Yv();
+    position[2] = track->Zv();
+
+    Double_t radPos2 = position[0]*position[0]+position[1]*position[1];  
+    Double_t radMax  = 45.;
+
+    if (radPos2 < radMax*radMax) { 
+        alpha = track->Phi(); 
+    } else { 
+        Float_t phiPos = TMath::Pi()+TMath::ATan2(-position[1], -position[0]);
+        alpha = TMath::DegToRad()*(20*((((Int_t)(phiPos*TMath::RadToDeg()))/20))+10);
+    }
+
+    TVector3 ver(position[0],position[1],position[2]);
+    TVector3 mom(track->Px(),track->Py(),track->Pz());
+
+    ver.RotateZ(-alpha);
+    mom.RotateZ(-alpha);
+
+    Double_t fx = ver.X();
+    Double_t fy = ver.Y();
+    Double_t fz = ver.Z();
+    Double_t sn = TMath::Sin(mom.Phi());
+    Double_t tgl = mom.Pz()/mom.Pt();
+    Double_t crv = TMath::Sign(1/mom.Pt(),(Double_t)track->Charge())*bz*kB2C;
+
+    if ( (TMath::Abs(bz))<kAlmost0Field ) crv=0.;
+    double tR = 1./crv;
+    double cs = TMath::Sqrt((1-sn)*(1+sn));
+    double x0 = fx - sn*tR;
+    double y0 = fy + cs*tR;
+    double phi0 = TMath::ATan2(y0,x0);
+    if (tR<0) phi0 += TMath::Pi();
+    if      (phi0 > TMath::Pi()) phi0 -= 2.*TMath::Pi();
+    else if (phi0 <-TMath::Pi()) phi0 += 2.*TMath::Pi();
+    double cs0 = TMath::Cos(phi0);
+    double sn0 = TMath::Sin(phi0);
+    double r0 = x0*cs0 + y0*sn0 - tR;
+    double r2R = 1.+r0/tR;
+
+    if (r2R<kAlmost0) return kFALSE;
+    double xr2R = radius/tR;
+    double r2Ri = 1./r2R;
+    double cosT = 0.5*(r2R + (1-xr2R*xr2R)*r2Ri);
+    if ( TMath::Abs(cosT)>kAlmost1 ) {
+        return kFALSE;
+    }
+    double t = TMath::ACos(cosT);
+    if (tR<0) t = -t;
+    double xyzi[3];
+    xyzi[0] = x0 - tR*TMath::Cos(t+phi0);
+    xyzi[1] = y0 - tR*TMath::Sin(t+phi0);
+    if (xyz) {
+    double t0 = TMath::ATan2(cs,-sn) - phi0;
+    double z0 = fz - t0*tR*tgl;    
+    xyzi[2] = z0 + tR*t*tgl;
+    }
+    else xyzi[2] = 0;
+
+    Double_t cs_a=TMath::Cos(alpha), sn_a=TMath::Sin(alpha), x_a=xyzi[0];
+    xyzi[0]=x_a*cs_a - xyzi[1]*sn_a; xyzi[1]=x_a*sn_a + xyzi[1]*cs_a;
+
+    if (xyz) {
+    xyz[0] = xyzi[0];
+    xyz[1] = xyzi[1];
+    xyz[2] = xyzi[2];
+    }
+
+    return true;
+}
+
+bool AliAnalysisTaskLambdaHadronCloseTrackEff::GetXYZatR(AliAODMCParticle *track, float radius, double *xyz) {
+
+    Double_t alpha=0.0;
+
+    double bz = (double)fAOD->GetMagneticField();
+
+    double position[3];
+
+    position[0] = track->Xv();
+    position[1] = track->Yv();
+    position[2] = track->Zv();
+
+    Double_t radPos2 = position[0]*position[0]+position[1]*position[1];  
+    Double_t radMax  = 45.;
+
+    if (radPos2 < radMax*radMax) { 
+        alpha = track->Phi(); 
+    } else { 
+        Float_t phiPos = TMath::Pi()+TMath::ATan2(-position[1], -position[0]);
+        alpha = TMath::DegToRad()*(20*((((Int_t)(phiPos*TMath::RadToDeg()))/20))+10);
+    }
+
+    TVector3 ver(position[0],position[1],position[2]);
+    TVector3 mom(track->Px(),track->Py(),track->Pz());
+
+    ver.RotateZ(-alpha);
+    mom.RotateZ(-alpha);
+
+    Double_t fx = ver.X();
+    Double_t fy = ver.Y();
+    Double_t fz = ver.Z();
+    Double_t sn = TMath::Sin(mom.Phi());
+    Double_t tgl = mom.Pz()/mom.Pt();
+    Double_t crv = TMath::Sign(1/mom.Pt(),(Double_t)track->Charge())*bz*kB2C;
+
+    if ( (TMath::Abs(bz))<kAlmost0Field ) crv=0.;
+    double tR = 1./crv;
+    double cs = TMath::Sqrt((1-sn)*(1+sn));
+    double x0 = fx - sn*tR;
+    double y0 = fy + cs*tR;
+    double phi0 = TMath::ATan2(y0,x0);
+    if (tR<0) phi0 += TMath::Pi();
+    if      (phi0 > TMath::Pi()) phi0 -= 2.*TMath::Pi();
+    else if (phi0 <-TMath::Pi()) phi0 += 2.*TMath::Pi();
+    double cs0 = TMath::Cos(phi0);
+    double sn0 = TMath::Sin(phi0);
+    double r0 = x0*cs0 + y0*sn0 - tR;
+    double r2R = 1.+r0/tR;
+
+    if (r2R<kAlmost0) return kFALSE;
+    double xr2R = radius/tR;
+    double r2Ri = 1./r2R;
+    double cosT = 0.5*(r2R + (1-xr2R*xr2R)*r2Ri);
+    if ( TMath::Abs(cosT)>kAlmost1 ) {
+        return kFALSE;
+    }
+    double t = TMath::ACos(cosT);
+    if (tR<0) t = -t;
+    double xyzi[3];
+    xyzi[0] = x0 - tR*TMath::Cos(t+phi0);
+    xyzi[1] = y0 - tR*TMath::Sin(t+phi0);
+    if (xyz) {
+    double t0 = TMath::ATan2(cs,-sn) - phi0;
+    double z0 = fz - t0*tR*tgl;    
+    xyzi[2] = z0 + tR*t*tgl;
+    }
+    else xyzi[2] = 0;
+
+    Double_t cs_a=TMath::Cos(alpha), sn_a=TMath::Sin(alpha), x_a=xyzi[0];
+    xyzi[0]=x_a*cs_a - xyzi[1]*sn_a; xyzi[1]=x_a*sn_a + xyzi[1]*cs_a;
+
+    std::cout << "x: " << xyzi[0] << " y: " << xyzi[1] << " z: " << xyzi[2] << std::endl;
+    if (xyz) {
+        xyz[0] = xyzi[0];
+        xyz[1] = xyzi[1];
+        xyz[2] = xyzi[2];
+    }
+
+    return true;
+}
+
+bool AliAnalysisTaskLambdaHadronCloseTrackEff::GetXYZatR(AliAODTrack *track, float radius, double *xyz) {
+
+    Double_t alpha=0.0;
+
+    double bz = (double)fAOD->GetMagneticField();
+
+    double position[3];
+    track->GetPosition(position);
+
+    Double_t radPos2 = position[0]*position[0]+position[1]*position[1];  
+    Double_t radMax  = 45.;
+
+    if (radPos2 < radMax*radMax) { 
+        alpha = track->Phi(); 
+    } else { 
+        Float_t phiPos = TMath::Pi()+TMath::ATan2(-position[1], -position[0]);
+        alpha = TMath::DegToRad()*(20*((((Int_t)(phiPos*TMath::RadToDeg()))/20))+10);
+    }
+
+    TVector3 ver(position[0],position[1],position[2]);
+    TVector3 mom(track->Px(),track->Py(),track->Pz());
+
+    ver.RotateZ(-alpha);
+    mom.RotateZ(-alpha);
+
+    Double_t fx = ver.X();
+    Double_t fy = ver.Y();
+    Double_t fz = ver.Z();
+    Double_t sn = TMath::Sin(mom.Phi());
+    Double_t tgl = mom.Pz()/mom.Pt();
+    Double_t crv = TMath::Sign(1/mom.Pt(),(Double_t)track->Charge())*bz*kB2C;
+
+    if ( (TMath::Abs(bz))<kAlmost0Field ) crv=0.;
+    double tR = 1./crv;
+    double cs = TMath::Sqrt((1-sn)*(1+sn));
+    double x0 = fx - sn*tR;
+    double y0 = fy + cs*tR;
+    double phi0 = TMath::ATan2(y0,x0);
+    if (tR<0) phi0 += TMath::Pi();
+    if      (phi0 > TMath::Pi()) phi0 -= 2.*TMath::Pi();
+    else if (phi0 <-TMath::Pi()) phi0 += 2.*TMath::Pi();
+    double cs0 = TMath::Cos(phi0);
+    double sn0 = TMath::Sin(phi0);
+    double r0 = x0*cs0 + y0*sn0 - tR;
+    double r2R = 1.+r0/tR;
+
+    if (r2R<kAlmost0) return kFALSE;
+    double xr2R = radius/tR;
+    double r2Ri = 1./r2R;
+    double cosT = 0.5*(r2R + (1-xr2R*xr2R)*r2Ri);
+    if ( TMath::Abs(cosT)>kAlmost1 ) {
+        return kFALSE;
+    }
+    double t = TMath::ACos(cosT);
+    if (tR<0) t = -t;
+    double xyzi[3];
+    xyzi[0] = x0 - tR*TMath::Cos(t+phi0);
+    xyzi[1] = y0 - tR*TMath::Sin(t+phi0);
+    if (xyz) {
+    double t0 = TMath::ATan2(cs,-sn) - phi0;
+    double z0 = fz - t0*tR*tgl;    
+    xyzi[2] = z0 + tR*t*tgl;
+    }
+    else xyzi[2] = 0;
+
+    Double_t cs_a=TMath::Cos(alpha), sn_a=TMath::Sin(alpha), x_a=xyzi[0];
+    xyzi[0]=x_a*cs_a - xyzi[1]*sn_a; xyzi[1]=x_a*sn_a + xyzi[1]*cs_a;
+
+    if (xyz) {
+    xyz[0] = xyzi[0];
+    xyz[1] = xyzi[1];
+    xyz[2] = xyzi[2];
+    }
+    
+    return true;
+}
+
+void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeSameHProtonCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAODTrack*> proton_list, THnSparse* corr_dist, double zVtx)
 {
     double corr_point[4];
 
@@ -184,45 +420,46 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeSameHProtonCorrelations(std::
             // make sure current trigger isn't current proton
             if(trigger->GetLabel() == proton->GetLabel()) continue;
 
-            // getting q and p
+            double dphi = trigger->Phi() - proton->Phi();
+            if(dphi > 3*TMath::Pi()/2) dphi -= 2*TMath::Pi();
+            else if(dphi < -TMath::Pi()/2) dphi += 2*TMath::Pi();
+            double dphistar_min = 99999;
 
-            double close_point_trigger[3];
-            trigger->GetXYZatR(85, bz, close_point_trigger);
+            double C1 = TMath::Sign(1/trigger->Pt(),(Double_t)trigger->Charge())*fAOD->GetMagneticField()*kB2C;
+            double C2 = TMath::Sign(1/proton->Pt(),(Double_t)proton->Charge())*fAOD->GetMagneticField()*kB2C;
+            double R1 = 1./C1;
+            double R2 = 1./C2;
 
-            double mid_point_trigger[3];
-            trigger->GetXYZatR(167.5, bz, mid_point_trigger);
+            for(int r = 80; r < 250; r++) {
+                double phistar1 = trigger->Phi() + 2*TMath::ASin(r/(2*R1));
+                if(phistar1 > 2*TMath::Pi()) phistar1 -= 2*TMath::Pi();
+                if(phistar1 < 0) phistar1 += 2*TMath::Pi();
 
-            double far_point_trigger[3];
-            trigger->GetXYZatR(250, bz, far_point_trigger);
+                double phistar2 = proton->Phi() + 2*TMath::ASin(r/(2*R2));
+                if(phistar2 > 2*TMath::Pi()) phistar2 -= 2*TMath::Pi();
+                if(phistar2 < 0) phistar2 += 2*TMath::Pi();
 
-            double close_point_proton[3];
-            proton->GetXYZatR(85, bz, close_point_proton);
+                double dphistar = phistar1 - phistar2;
+                if(dphistar < -TMath::Pi()/2) dphistar += 2*TMath::Pi();
+                else if(dphistar > 3*TMath::Pi()/2) dphistar -= 2*TMath::Pi();
 
-            double mid_point_proton[3];
-            proton->GetXYZatR(167.5, bz, mid_point_proton);
-
-            double far_point_proton[3];
-            proton->GetXYZatR(250, bz, far_point_proton);
-
-            double close_distance = sqrt(pow(close_point_trigger[0] - close_point_proton[0], 2) + pow(close_point_trigger[1] - close_point_proton[1], 2) + pow(close_point_trigger[2] - close_point_proton[2], 2));
-            double mid_distance = sqrt(pow(mid_point_trigger[0] - mid_point_proton[0], 2) + pow(mid_point_trigger[1] - mid_point_proton[1], 2) + pow(mid_point_trigger[2] - mid_point_proton[2], 2));
-            double far_distance = sqrt(pow(far_point_trigger[0] - far_point_proton[0], 2) + pow(far_point_trigger[1] - far_point_proton[1], 2) + pow(far_point_trigger[2] - far_point_proton[2], 2));
-
-            corr_point[0] = close_distance;
-            corr_point[1] = mid_distance;
-            corr_point[2] = far_distance;
-
-
-            corr_point[3] = trigger->Phi() - proton->Phi();
-
-            if(corr_point[3] < -TMath::Pi()/2.0) {
-                corr_point[3] += 2.0*TMath::Pi();
-            }
-            else if(corr_point[3] > 3.0*TMath::Pi()/2.0) {
-                corr_point[3] -= 2.0*TMath::Pi();
+                if(TMath::Abs(dphistar) < TMath::Abs(dphistar_min)) dphistar_min = dphistar;
             }
 
-            corr_point[4] = zVtx;
+            corr_point[0] = dphistar_min;
+
+            corr_point[1] = trigger->Phi() - proton->Phi();
+
+            if(corr_point[1] < -TMath::Pi()/2.0) {
+                corr_point[1] += 2.0*TMath::Pi();
+            }
+            else if(corr_point[1] > 3.0*TMath::Pi()/2.0) {
+                corr_point[1] -= 2.0*TMath::Pi();
+            }
+
+            corr_point[2] = trigger->Eta() - proton->Eta();
+
+            corr_point[3] = zVtx;
 
             corr_dist->Fill(corr_point);
 
@@ -247,27 +484,44 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeSameMCHProtonCorrelations(std
             // make sure current trigger isn't current proton
             if(trigger->GetLabel() == proton->GetLabel()) continue;
 
-            // getting q and p
-            corr_point[0] = TMath::Sq(trigger->Px() - proton->Px()) + 
-                            TMath::Sq(trigger->Py() - proton->Py()) +
-                            TMath::Sq(trigger->Pz() - proton->Pz());
+            double dphi = trigger->Phi() - proton->Phi();
+            if (dphi < -TMath::Pi()/2) dphi += 2.0*TMath::Pi();
+            else if (dphi > 3*TMath::Pi()/2) dphi -= 2.0*TMath::Pi();
+            double dphistar_min = 99999;
 
-            corr_point[0] = TMath::Sqrt(corr_point[0]);
+            double C1 = TMath::Sign(1/trigger->Pt(),(Double_t)trigger->Charge())*fAOD->GetMagneticField()*kB2C;
+            double C2 = TMath::Sign(1/proton->Pt(),(Double_t)proton->Charge())*fAOD->GetMagneticField()*kB2C;
+            double R1 = 1./C1;
+            double R2 = 1./C2;
 
-            corr_point[1] = TMath::Sq((trigger->Px() + proton->Px()) / 2.0) +
-                            TMath::Sq((trigger->Py() + proton->Py()) / 2.0) +
-                            TMath::Sq((trigger->Pz() + proton->Pz()) / 2.0);
+            for(int r = 80; r < 250; r++) {
+                double phistar1 = trigger->Phi() + 2*TMath::ASin(r/(2*R1));
+                if(phistar1 > 2*TMath::Pi()) phistar1 -= 2*TMath::Pi();
+                if(phistar1 < 0) phistar1 += 2*TMath::Pi();
 
-            corr_point[1] = TMath::Sqrt(corr_point[1]);
+                double phistar2 = proton->Phi() + 2*TMath::ASin(r/(2*R2));
+                if(phistar2 > 2*TMath::Pi()) phistar2 -= 2*TMath::Pi();
+                if(phistar2 < 0) phistar2 += 2*TMath::Pi();
 
-            corr_point[2] = trigger->Phi() - proton->Phi();
+                double dphistar = phistar1 - phistar2;
+                if(dphistar < -TMath::Pi()/2) dphistar += 2*TMath::Pi();
+                else if(dphistar > 3*TMath::Pi()/2) dphistar -= 2*TMath::Pi();
 
-            if(corr_point[2] < -TMath::Pi()/2.0) {
-                corr_point[2] += 2.0*TMath::Pi();
+                if(TMath::Abs(dphistar) < TMath::Abs(dphistar_min)) dphistar_min = dphistar;
             }
-            else if(corr_point[2] > 3.0*TMath::Pi()/2.0) {
-                corr_point[2] -= 2.0*TMath::Pi();
+
+            corr_point[0] = dphistar_min;
+
+            corr_point[1] = trigger->Phi() - proton->Phi();
+
+            if(corr_point[1] < -TMath::Pi()/2.0) {
+                corr_point[1] += 2.0*TMath::Pi();
             }
+            else if(corr_point[1] > 3.0*TMath::Pi()/2.0) {
+                corr_point[1] -= 2.0*TMath::Pi();
+            }
+
+            corr_point[2] = trigger->Eta() - proton->Eta();
 
             corr_point[3] = zVtx;
 
@@ -292,6 +546,7 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeMixedHProtonCorrelations(AliE
         int numTracks = tracks->GetEntriesFast();
 
         for(int i = 0; i < numTracks; i++) {
+
             AliCFParticle *trigger = (AliCFParticle*) tracks->At(i);
             if(!trigger) continue;
             // for now we put the pt cuts here, maybe at axes later
@@ -300,33 +555,47 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeMixedHProtonCorrelations(AliE
                 auto proton = proton_list[j];
                 // for now we put the pt cuts here, maybe at axes later
                 if(proton->Pt() < 2 || proton->Pt() > 4) continue;
+                
+                double dphi = trigger->Phi() - proton->Phi();
+                if (dphi < -TMath::Pi()/2) dphi += 2.0*TMath::Pi();
+                else if (dphi > 3*TMath::Pi()/2) dphi -= 2.0*TMath::Pi();
+                double dphistar_min = 99999;
 
-                float tpx = trigger->Pt() * TMath::Cos(trigger->Phi());
-                float tpy = trigger->Pt() * TMath::Sin(trigger->Phi());
-                float tpz = trigger->Pt() * TMath::SinH(trigger->Eta());
+                double C1 = TMath::Sign(1/trigger->Pt(),(Double_t)trigger->Charge())*fAOD->GetMagneticField()*kB2C;
+                double C2 = TMath::Sign(1/proton->Pt(),(Double_t)proton->Charge())*fAOD->GetMagneticField()*kB2C;
+                double R1 = 1./C1;
+                double R2 = 1./C2;
 
-                corr_point[0] = TMath::Sq(tpx - proton->Px()) + 
-                                TMath::Sq(tpy - proton->Py()) +
-                                TMath::Sq(tpz - proton->Pz());
+                for(int r = 80; r < 250; r++) {
+                    double phistar1 = trigger->Phi() + 2*TMath::ASin(r/(2*R1));
+                    if(phistar1 > 2*TMath::Pi()) phistar1 -= 2*TMath::Pi();
+                    if(phistar1 < 0) phistar1 += 2*TMath::Pi();
 
-                corr_point[0] = TMath::Sqrt(corr_point[0]);
+                    double phistar2 = proton->Phi() + 2*TMath::ASin(r/(2*R2));
+                    if(phistar2 > 2*TMath::Pi()) phistar2 -= 2*TMath::Pi();
+                    if(phistar2 < 0) phistar2 += 2*TMath::Pi();
 
-                corr_point[1] = TMath::Sq((tpx + proton->Px()) / 2.0) +
-                                TMath::Sq((tpy + proton->Py()) / 2.0) +
-                                TMath::Sq((tpz + proton->Pz()) / 2.0);
+                    double dphistar = phistar1 - phistar2;
+                    if(dphistar < -TMath::Pi()/2) dphistar += 2*TMath::Pi();
+                    else if(dphistar > 3*TMath::Pi()/2) dphistar -= 2*TMath::Pi();
 
-                corr_point[1] = TMath::Sqrt(corr_point[1]);
-
-                corr_point[2] = trigger->Phi() - proton->Phi();
-
-                if(corr_point[2] < -TMath::Pi()/2.0) {
-                    corr_point[2] += 2.0*TMath::Pi();
+                    if(TMath::Abs(dphistar) < TMath::Abs(dphistar_min)) dphistar_min = dphistar;
                 }
-                else if(corr_point[2] > 3.0*TMath::Pi()/2.0) {
-                    corr_point[2] -= 2.0*TMath::Pi();
+
+                corr_point[0] = dphistar_min;
+
+                corr_point[1] = trigger->Phi() - proton->Phi();
+
+                if(corr_point[1] < -TMath::Pi()/2.0) {
+                    corr_point[1] += 2.0*TMath::Pi();
+                }
+                else if(corr_point[1] > 3.0*TMath::Pi()/2.0) {
+                    corr_point[1] -= 2.0*TMath::Pi();
                 }
 
+                corr_point[2] = trigger->Eta() - proton->Eta();
                 corr_point[3] = zVtx;
+
                 corr_dist->Fill(corr_point);
 
             }
@@ -353,33 +622,44 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeMixedMCHProtonCorrelations(Al
                 auto proton = proton_list[j];
                 // for now we put the pt cuts here, maybe at axes later
                 if(proton->Pt() < 2 || proton->Pt() > 4) continue;
+                double dphi = trigger->Phi() - proton->Phi();
+                double dphistar_min = 99999;
 
-                float tpx = trigger->Pt() * TMath::Cos(trigger->Phi());
-                float tpy = trigger->Pt() * TMath::Sin(trigger->Phi());
-                float tpz = trigger->Pt() * TMath::SinH(trigger->Eta());
+                double C1 = TMath::Sign(1/trigger->Pt(),(Double_t)trigger->Charge())*fAOD->GetMagneticField()*kB2C;
+                double C2 = TMath::Sign(1/proton->Pt(),(Double_t)proton->Charge())*fAOD->GetMagneticField()*kB2C;
+                double R1 = 1./C1;
+                double R2 = 1./C2;
 
-                corr_point[0] = TMath::Sq(tpx - proton->Px()) + 
-                                TMath::Sq(tpy - proton->Py()) +
-                                TMath::Sq(tpz - proton->Pz());
+                for(int r = 80; r < 250; r++) {
+                    double phistar1 = trigger->Phi() + 2*TMath::ASin(r/(2*R1));
+                    if(phistar1 > 2*TMath::Pi()) phistar1 -= 2*TMath::Pi();
+                    if(phistar1 < 0) phistar1 += 2*TMath::Pi();
 
-                corr_point[0] = TMath::Sqrt(corr_point[0]);
+                    double phistar2 = proton->Phi() + 2*TMath::ASin(r/(2*R2));
+                    if(phistar2 > 2*TMath::Pi()) phistar2 -= 2*TMath::Pi();
+                    if(phistar2 < 0) phistar2 += 2*TMath::Pi();
 
-                corr_point[1] = TMath::Sq((tpx + proton->Px()) / 2.0) +
-                                TMath::Sq((tpy + proton->Py()) / 2.0) +
-                                TMath::Sq((tpz + proton->Pz()) / 2.0);
+                    double dphistar = phistar1 - phistar2;
+                    if(dphistar < -TMath::Pi()/2) dphistar += 2*TMath::Pi();
+                    else if(dphistar > 3*TMath::Pi()/2) dphistar -= 2*TMath::Pi();
 
-                corr_point[1] = TMath::Sqrt(corr_point[1]);
-
-                corr_point[2] = trigger->Phi() - proton->Phi();
-
-                if(corr_point[2] < -TMath::Pi()/2.0) {
-                    corr_point[2] += 2.0*TMath::Pi();
-                }
-                else if(corr_point[2] > 3.0*TMath::Pi()/2.0) {
-                    corr_point[2] -= 2.0*TMath::Pi();
+                    if(TMath::Abs(dphistar) < TMath::Abs(dphistar_min)) dphistar_min = dphistar;
                 }
 
+                corr_point[0] = dphistar_min;
+
+                corr_point[1] = trigger->Phi() - proton->Phi();
+
+                if(corr_point[1] < -TMath::Pi()/2.0) {
+                    corr_point[1] += 2.0*TMath::Pi();
+                }
+                else if(corr_point[1] > 3.0*TMath::Pi()/2.0) {
+                    corr_point[1] -= 2.0*TMath::Pi();
+                }
+
+                corr_point[2] = trigger->Eta() - proton->Eta();
                 corr_point[3] = zVtx;
+
                 corr_dist->Fill(corr_point);
 
             }
@@ -512,8 +792,8 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::UserExec(Option_t*)
         //Filter for trigger particles
         if(PassTriggerCuts(track)) {
             trigger_list.push_back(track);
-            AliCFParticle *triggerPart = new AliCFParticle(track->Pt(), track->Eta(), track->Phi(), track->Charge(), 0);
-            fMixedTrackObjArray->Add(triggerPart);
+            AliCFParticle *cf_track = new AliCFParticle(track->Pt(), track->Eta(), track->Phi(), track->Charge(), 0);
+            fMixedTrackObjArray->Add(cf_track);
             }
 
         if(PassDaughterCuts(track)) {
@@ -528,7 +808,7 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::UserExec(Option_t*)
         }
     }
 
-    MakeSameHProtonCorrelations(trigger_list, proton_list, fRecoHProton, fAOD->GetMagneticField(), primZ);
+    MakeSameHProtonCorrelations(trigger_list, proton_list, fRecoHProton, primZ);
 
     // MC SAME EVENT SECTION
 
@@ -541,18 +821,109 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::UserExec(Option_t*)
 
         if(PassMCTriggerCuts(mc_particle)) {
             real_trigger_list.push_back(mc_particle);
-            AliCFParticle *trigger_particle = new AliCFParticle(mc_particle->Pt(), mc_particle->Eta(), mc_particle->Phi(), mc_particle->Charge(), 0);
-            fMixedMCTrackObjArray->Add(trigger_particle);
+            auto cf_mc_particle = new AliCFParticle(mc_particle->Pt(), mc_particle->Eta(), mc_particle->Phi(), mc_particle->Charge(), 0);
+            fMixedMCTrackObjArray->Add(cf_mc_particle);
         }
         if(TMath::Abs(mc_particle->Eta()) < 0.8 && mc_particle->Pt() > 0.15) {
             // again selecting real protons, but not physical primaries
-            if(TMath::Abs(mc_particle->GetPdgCode()) == 2212 && !mc_particle->IsPhysicalPrimary()) real_proton_list.push_back(mc_particle);
+            if(TMath::Abs(mc_particle->GetPdgCode()) == 2212 && !mc_particle->IsPhysicalPrimary())  {
+                real_proton_list.push_back(mc_particle);
+                if(mc_particle->GetMother() > 0) {
+                    auto mother = (AliAODMCParticle*)fMCArray->At(mc_particle->GetMother());
+                    if(mother->GetPdgCode() == 3122) {
+                        std::cout << mc_particle->Xv() << " " << mc_particle->Yv() << " " << mc_particle->Zv() << std::endl;
+                    }
+                }
+
+                auto cf_mc_particle = new AliCFParticle(mc_particle->Pt(), mc_particle->Eta(), mc_particle->Phi(), mc_particle->Charge(), 0);
+                fMixedMCTrackObjArray->Add(cf_mc_particle);
+            }
         }
     }
 
     MakeSameMCHProtonCorrelations(real_trigger_list, real_proton_list, fRealHProton, primZ);
 
     // MIXED EVENT SECTION (added to very end to correctly do a mixture of reco/real correlations)
+
+
+    std::vector<std::vector<int>> pair_labels;
+
+    for(int itrigger = 0; itrigger < trigger_list.size(); itrigger++) {
+
+        AliAODTrack *trigger = trigger_list[itrigger];
+        if(trigger->Pt() < 4 || trigger->Pt() > 8) continue;
+        int trigger_label = trigger->GetLabel();
+        if(trigger_label < 0) continue;
+
+        for(int iproton = 0; iproton < proton_list.size(); iproton++) {
+
+            AliAODTrack *proton = proton_list[iproton];
+            if(proton->Pt() < 2 || proton->Pt() > 4) continue;
+            int proton_label = proton->GetLabel();
+            if(proton_label < 0) continue;
+            if(trigger_label == proton_label) continue;
+
+            float dphi = trigger->Phi() - proton->Phi();
+            if(dphi < -TMath::Pi()/2) dphi += 2*TMath::Pi();
+            if(dphi > 3*TMath::Pi()/2) dphi -= 2*TMath::Pi();
+            if(TMath::Abs(dphi) > 1) continue;
+
+            float deta = trigger->Eta() - proton->Eta();
+            if(TMath::Abs(deta) > 0.5) continue;
+
+            pair_labels.push_back({trigger_label, proton_label});
+        }
+    }
+
+
+    for(int itrigger = 0; itrigger < real_trigger_list.size(); itrigger++) {
+
+        AliAODMCParticle *trigger = real_trigger_list[itrigger];
+        if(trigger->Pt() < 4 || trigger->Pt() > 8) continue;
+        int trigger_label = trigger->GetLabel();
+        if(trigger_label < 0) continue;
+        
+
+        for(int iproton = 0; iproton < real_proton_list.size(); iproton++) {
+
+            AliAODMCParticle *proton = real_proton_list[iproton];
+            if(proton->Pt() < 2 || proton->Pt() > 4) continue;
+            int proton_label = proton->GetLabel();
+            if(proton_label < 0) continue;
+            if(trigger_label == proton_label) continue;
+
+            float dphi = trigger->Phi() - proton->Phi();
+            if(dphi < -TMath::Pi()/2) dphi += 2*TMath::Pi();
+            if(dphi > 3*TMath::Pi()/2) dphi -= 2*TMath::Pi();
+            if(TMath::Abs(dphi) > 1) continue;
+
+            float deta = trigger->Eta() - proton->Eta();
+            if(TMath::Abs(deta) > 0.5) continue;
+
+            bool found_pair = false;
+            for(int ipair = 0; ipair < pair_labels.size(); ipair++) {
+                if(pair_labels[ipair][0] == trigger_label && pair_labels[ipair][1] == proton_label) found_pair = true;
+            }
+            if(found_pair) continue;
+
+
+            double min_distance = 1e10;
+            for(int r = 0; r < 250; r++) {
+                double trig_pos[3];
+                double proton_pos[3];
+
+                GetXYZatR(trigger, r, trig_pos);
+                GetXYZatR(proton, r, proton_pos);
+
+                double distance = TMath::Sqrt(TMath::Power(trig_pos[0] - proton_pos[0], 2) + TMath::Power(trig_pos[1] - proton_pos[1], 2) + TMath::Power(trig_pos[2] - proton_pos[2], 2));
+                if(distance < min_distance) min_distance = distance;
+            }
+
+            std::cout << "PAIR IN MC TRUTH NOT FOUND IN RECO!!!\n";
+            std::cout << "MIN DISTANCE: " <<  min_distance << "\n";
+        }
+    }
+
 
     if(proton_list.size() > 0 ) {
         AliEventPool *fCorPool = fCorPoolMgr->GetEventPool(multPercentile, primZ);
