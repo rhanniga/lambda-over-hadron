@@ -108,7 +108,7 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::UserCreateOutputObjects()
     fMCCorPoolMgr->SetTargetValues(trackDepth, 0.1, 5);
 
     //Correlation axes are: q (relative momenta), p (avg momenta), dphi, zvtx
-    int hp_cor_bins[4] = {500, 32, 32, 10};
+    int hp_cor_bins[4] = {100, 32, 32, 10};
     double hp_cor_mins[4] = {0, -1.0*TMath::Pi()/2.0, -2, -10};
     double hp_cor_maxes[4] = {50, 3.0*TMath::Pi()/2.0, 2, 10};
 
@@ -430,11 +430,11 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeSameHProtonCorrelations(std::
                 double trig_pos[3];
                 double proton_pos[3];
 
-                GetXYZatR(trigger, r, trig_pos);
-                GetXYZatR(proton, r, proton_pos);
+                bool goodTrigDist = GetXYZatR(trigger, r, trig_pos);
+                bool goodProtonDist = GetXYZatR(proton, r, proton_pos);
 
                 double distance = TMath::Sqrt(TMath::Power(trig_pos[0] - proton_pos[0], 2) + TMath::Power(trig_pos[1] - proton_pos[1], 2) + TMath::Power(trig_pos[2] - proton_pos[2], 2));
-                if(distance < min_distance) min_distance = distance;
+                if((distance < min_distance) && goodTrigDist && goodProtonDist) min_distance = distance;
             }
 
             corr_point[0] = min_distance;
@@ -480,11 +480,11 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeSameMCHProtonCorrelations(std
                 double trig_pos[3];
                 double proton_pos[3];
 
-                GetXYZatR(trigger, r, trig_pos);
-                GetXYZatR(proton, r, proton_pos);
+                bool goodTrigDist = GetXYZatR(trigger, r, trig_pos);
+                bool goodProtonDist = GetXYZatR(proton, r, proton_pos);
 
                 double distance = TMath::Sqrt(TMath::Power(trig_pos[0] - proton_pos[0], 2) + TMath::Power(trig_pos[1] - proton_pos[1], 2) + TMath::Power(trig_pos[2] - proton_pos[2], 2));
-                if(distance < min_distance) min_distance = distance;
+                if((distance < min_distance) && goodTrigDist && goodProtonDist) min_distance = distance;
             }
 
             corr_point[0] = min_distance;
@@ -537,11 +537,11 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeMixedHProtonCorrelations(AliE
                     double trig_pos[3];
                     double proton_pos[3];
 
-                    GetXYZatR(trigger, r, trig_pos);
-                    GetXYZatR(proton, r, proton_pos);
+                    bool goodTrigDist = GetXYZatR(trigger, r, trig_pos);
+                    bool goodProtonDist = GetXYZatR(proton, r, proton_pos);
 
                     double distance = TMath::Sqrt(TMath::Power(trig_pos[0] - proton_pos[0], 2) + TMath::Power(trig_pos[1] - proton_pos[1], 2) + TMath::Power(trig_pos[2] - proton_pos[2], 2));
-                    if(distance < min_distance) min_distance = distance;
+                    if((distance < min_distance) && goodTrigDist && goodProtonDist) min_distance = distance;
                 }
 
                 corr_point[0] = min_distance;
@@ -589,11 +589,11 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeMixedMCHProtonCorrelations(Al
                     double trig_pos[3];
                     double proton_pos[3];
 
-                    GetXYZatR(trigger, r, trig_pos);
-                    GetXYZatR(proton, r, proton_pos);
+                    bool goodTrigDist = GetXYZatR(trigger, r, trig_pos);
+                    bool goodProtonDist = GetXYZatR(proton, r, proton_pos);
 
                     double distance = TMath::Sqrt(TMath::Power(trig_pos[0] - proton_pos[0], 2) + TMath::Power(trig_pos[1] - proton_pos[1], 2) + TMath::Power(trig_pos[2] - proton_pos[2], 2));
-                    if(distance < min_distance) min_distance = distance;
+                    if((distance < min_distance) && goodTrigDist && goodProtonDist) min_distance = distance;
                 }
 
                 corr_point[0] = min_distance;
