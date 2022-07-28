@@ -108,41 +108,47 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::UserCreateOutputObjects()
     fMCCorPoolMgr->SetTargetValues(trackDepth, 0.1, 5);
 
     //Correlation axes are: q (relative momenta), p (avg momenta), dphi, zvtx
-    int hp_cor_bins[4] = {100, 32, 32, 10};
-    double hp_cor_mins[4] = {0, -1.0*TMath::Pi()/2.0, -2, -10};
-    double hp_cor_maxes[4] = {50, 3.0*TMath::Pi()/2.0, 2, 10};
+    int hp_cor_bins[5] = {100, 100, 32, 32, 10};
+    double hp_cor_mins[5] = {0, 0, -1.0*TMath::Pi()/2.0, -2, -10};
+    double hp_cor_maxes[5] = {50, 50, 3.0*TMath::Pi()/2.0, 2, 10};
 
-    fRecoHProton = new THnSparseF("fRecoHProton", "fRecoHProton", 4, hp_cor_bins, hp_cor_mins, hp_cor_maxes);
+    fRecoHProton = new THnSparseF("fRecoHProton", "fRecoHProton", 5, hp_cor_bins, hp_cor_mins, hp_cor_maxes);
     fRecoHProton->Sumw2();
-    fRecoHProton->GetAxis(0)->SetTitle("min_distance");
-    fRecoHProton->GetAxis(1)->SetTitle("dphi");
-    fRecoHProton->GetAxis(2)->SetTitle("deta");
-    fRecoHProton->GetAxis(3)->SetTitle("zvtx");
+    fRecoHProton->GetAxis(0)->SetTitle("avg_xy_dist");
+    fRecoHProton->GetAxis(1)->SetTitle("avg_z_dist");
+    fRecoHProton->GetAxis(2)->SetTitle("dphi");
+    fRecoHProton->GetAxis(3)->SetTitle("deta");
+    fRecoHProton->GetAxis(4)->SetTitle("zvtx");
     fOutputList->Add(fRecoHProton);
 
-    fRecoHProtonMixed = new THnSparseF("fRecoHProtonMixed", "fRecoHProtonMixed", 4, hp_cor_bins, hp_cor_mins, hp_cor_maxes);
+    fRecoHProtonMixed = new THnSparseF("fRecoHProtonMixed", "fRecoHProtonMixed", 5, hp_cor_bins, hp_cor_mins, hp_cor_maxes);
     fRecoHProtonMixed->Sumw2();
-    fRecoHProtonMixed->GetAxis(0)->SetTitle("min_distance");
-    fRecoHProtonMixed->GetAxis(1)->SetTitle("dphi");
-    fRecoHProtonMixed->GetAxis(2)->SetTitle("deta");
-    fRecoHProtonMixed->GetAxis(3)->SetTitle("zvtx");
+    fRecoHProtonMixed->GetAxis(0)->SetTitle("avg_xy_dist");
+    fRecoHProtonMixed->GetAxis(1)->SetTitle("avg_z_dist");
+    fRecoHProtonMixed->GetAxis(2)->SetTitle("dphi");
+    fRecoHProtonMixed->GetAxis(3)->SetTitle("deta");
+    fRecoHProtonMixed->GetAxis(4)->SetTitle("zvtx");
     fOutputList->Add(fRecoHProtonMixed);
 
-    fRealHProton = new THnSparseF("fRealHProton", "fRealHProton", 4, hp_cor_bins, hp_cor_mins, hp_cor_maxes);
+    fRealHProton = new THnSparseF("fRealHProton", "fRealHProton", 5, hp_cor_bins, hp_cor_mins, hp_cor_maxes);
     fRealHProton->Sumw2();
-    fRealHProton->GetAxis(0)->SetTitle("min_distance");
-    fRealHProton->GetAxis(1)->SetTitle("dphi");
-    fRealHProton->GetAxis(2)->SetTitle("deta");
-    fRealHProton->GetAxis(3)->SetTitle("zvtx");
+    fRealHProton->GetAxis(0)->SetTitle("avg_xy_dist");
+    fRealHProton->GetAxis(1)->SetTitle("avg_z_dist");
+    fRealHProton->GetAxis(2)->SetTitle("dphi");
+    fRealHProton->GetAxis(3)->SetTitle("deta");
+    fRealHProton->GetAxis(4)->SetTitle("zvtx");
     fOutputList->Add(fRealHProton);
 
-    fRealHProtonMixed = new THnSparseF("fRealHProtonMixed", "fRealHProtonMixed", 4, hp_cor_bins, hp_cor_mins, hp_cor_maxes);
+    fRealHProtonMixed = new THnSparseF("fRealHProtonMixed", "fRealHProtonMixed", 5, hp_cor_bins, hp_cor_mins, hp_cor_maxes);
     fRealHProtonMixed->Sumw2();
-    fRealHProtonMixed->GetAxis(0)->SetTitle("min_distance");
-    fRealHProtonMixed->GetAxis(1)->SetTitle("dphi");
-    fRealHProtonMixed->GetAxis(2)->SetTitle("deta");
-    fRealHProtonMixed->GetAxis(3)->SetTitle("zvtx");
+    fRealHProtonMixed->GetAxis(0)->SetTitle("avg_xy_dist");
+    fRealHProtonMixed->GetAxis(1)->SetTitle("avg_z_dist");
+    fRealHProtonMixed->GetAxis(2)->SetTitle("dphi");
+    fRealHProtonMixed->GetAxis(3)->SetTitle("deta");
+    fRealHProtonMixed->GetAxis(4)->SetTitle("zvtx");
     fOutputList->Add(fRealHProtonMixed);
+
+
 
     fMinDistanceAll = new TH1D("fMinDistanceAll", "fMinDistanceAll", 500, 0, 50);
     fOutputList->Add(fMinDistanceAll);
@@ -410,7 +416,12 @@ bool AliAnalysisTaskLambdaHadronCloseTrackEff::GetXYZatR(AliAODTrack *track, flo
 
 void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeSameHProtonCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAODTrack*> proton_list, THnSparse* corr_dist, double zVtx)
 {
-    double corr_point[4];
+    double corr_point[5];
+
+    double TPC_INNER = 85;
+    double TPC_MID = 167.5;
+    double TPC_OUTER = 250;
+
 
     for(int j = 0; j < (int)trigger_list.size(); j++) {
         auto trigger = trigger_list[j];
@@ -425,32 +436,49 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeSameHProtonCorrelations(std::
             // make sure current trigger isn't current proton
             if(trigger->GetLabel() == proton->GetLabel()) continue;
 
-            double min_distance = 1e10;
-            for(int r = 45; r < 250; r++) {
-                double trig_pos[3];
-                double proton_pos[3];
+            double trig_pos[3];
+            double proton_pos[3];
 
-                bool goodTrigDist = GetXYZatR(trigger, r, trig_pos);
-                bool goodProtonDist = GetXYZatR(proton, r, proton_pos);
+            bool goodTrigDist = GetXYZatR(trigger, TPC_INNER, trig_pos);
+            bool goodProtonDist = GetXYZatR(proton, TPC_INNER, proton_pos);
 
-                double distance = TMath::Sqrt(TMath::Power(trig_pos[0] - proton_pos[0], 2) + TMath::Power(trig_pos[1] - proton_pos[1], 2) + TMath::Power(trig_pos[2] - proton_pos[2], 2));
-                if((distance < min_distance) && goodTrigDist && goodProtonDist) min_distance = distance;
+            if(!goodTrigDist || !goodProtonDist) continue;
+
+            double dR_inner = TMath::Sqrt(TMath::Power(trig_pos[0] - proton_pos[0], 2) + TMath::Power(trig_pos[1] - proton_pos[1], 2));
+            double dZ_inner = TMath::Abs(trig_pos[2] - proton_pos[2]);
+
+            goodTrigDist = GetXYZatR(trigger, TPC_MID, trig_pos);
+            goodProtonDist = GetXYZatR(proton, TPC_MID, proton_pos);
+
+            if(!goodTrigDist || !goodProtonDist) continue;
+
+            double dR_mid = TMath::Sqrt(TMath::Power(trig_pos[0] - proton_pos[0], 2) + TMath::Power(trig_pos[1] - proton_pos[1], 2));
+            double dZ_mid = TMath::Abs(trig_pos[2] - proton_pos[2]);
+
+            goodTrigDist = GetXYZatR(trigger, TPC_OUTER, trig_pos);
+            goodProtonDist = GetXYZatR(proton, TPC_OUTER, proton_pos);
+
+            if(!goodTrigDist || !goodProtonDist) continue;
+
+            double dR_outer = TMath::Sqrt(TMath::Power(trig_pos[0] - proton_pos[0], 2) + TMath::Power(trig_pos[1] - proton_pos[1], 2));
+            double dZ_outer = TMath::Abs(trig_pos[2] - proton_pos[2]);
+
+
+            corr_point[0] = (dR_inner + dR_mid + dR_outer) / 3.;; 
+            corr_point[1] = (dZ_inner + dZ_mid + dZ_outer) / 3.;; 
+
+            corr_point[2] = trigger->Phi() - proton->Phi();
+
+            if(corr_point[2] < -TMath::Pi()/2.0) {
+                corr_point[2] += 2.0*TMath::Pi();
+            }
+            else if(corr_point[2] > 3.0*TMath::Pi()/2.0) {
+                corr_point[2] -= 2.0*TMath::Pi();
             }
 
-            corr_point[0] = min_distance;
+            corr_point[3] = trigger->Eta() - proton->Eta();
 
-            corr_point[1] = trigger->Phi() - proton->Phi();
-
-            if(corr_point[1] < -TMath::Pi()/2.0) {
-                corr_point[1] += 2.0*TMath::Pi();
-            }
-            else if(corr_point[1] > 3.0*TMath::Pi()/2.0) {
-                corr_point[1] -= 2.0*TMath::Pi();
-            }
-
-            corr_point[2] = trigger->Eta() - proton->Eta();
-
-            corr_point[3] = zVtx;
+            corr_point[4] = zVtx;
 
             corr_dist->Fill(corr_point);
 
@@ -460,7 +488,11 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeSameHProtonCorrelations(std::
 
 void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeSameMCHProtonCorrelations(std::vector<AliAODMCParticle*> trigger_list, std::vector<AliAODMCParticle*> proton_list, THnSparse* corr_dist, double zVtx)
 {
-    double corr_point[4];
+    double corr_point[5];
+
+    double TPC_INNER = 85;
+    double TPC_MID = 167.5;
+    double TPC_OUTER = 250;
 
     for(int j = 0; j < (int)trigger_list.size(); j++) {
         auto trigger = trigger_list[j];
@@ -475,32 +507,49 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeSameMCHProtonCorrelations(std
             // make sure current trigger isn't current proton
             if(trigger->GetLabel() == proton->GetLabel()) continue;
 
-            double min_distance = 1e10;
-            for(int r = 45; r < 250; r++) {
-                double trig_pos[3];
-                double proton_pos[3];
+            double trig_pos[3];
+            double proton_pos[3];
 
-                bool goodTrigDist = GetXYZatR(trigger, r, trig_pos);
-                bool goodProtonDist = GetXYZatR(proton, r, proton_pos);
+            bool goodTrigDist = GetXYZatR(trigger, TPC_INNER, trig_pos);
+            bool goodProtonDist = GetXYZatR(proton, TPC_INNER, proton_pos);
 
-                double distance = TMath::Sqrt(TMath::Power(trig_pos[0] - proton_pos[0], 2) + TMath::Power(trig_pos[1] - proton_pos[1], 2) + TMath::Power(trig_pos[2] - proton_pos[2], 2));
-                if((distance < min_distance) && goodTrigDist && goodProtonDist) min_distance = distance;
+            if(!goodTrigDist || !goodProtonDist) continue;
+
+            double dR_inner = TMath::Sqrt(TMath::Power(trig_pos[0] - proton_pos[0], 2) + TMath::Power(trig_pos[1] - proton_pos[1], 2));
+            double dZ_inner = TMath::Abs(trig_pos[2] - proton_pos[2]);
+
+            goodTrigDist = GetXYZatR(trigger, TPC_MID, trig_pos);
+            goodProtonDist = GetXYZatR(proton, TPC_MID, proton_pos);
+
+            if(!goodTrigDist || !goodProtonDist) continue;
+
+            double dR_mid = TMath::Sqrt(TMath::Power(trig_pos[0] - proton_pos[0], 2) + TMath::Power(trig_pos[1] - proton_pos[1], 2));
+            double dZ_mid = TMath::Abs(trig_pos[2] - proton_pos[2]);
+
+            goodTrigDist = GetXYZatR(trigger, TPC_OUTER, trig_pos);
+            goodProtonDist = GetXYZatR(proton, TPC_OUTER, proton_pos);
+
+            if(!goodTrigDist || !goodProtonDist) continue;
+
+            double dR_outer = TMath::Sqrt(TMath::Power(trig_pos[0] - proton_pos[0], 2) + TMath::Power(trig_pos[1] - proton_pos[1], 2));
+            double dZ_outer = TMath::Abs(trig_pos[2] - proton_pos[2]);
+
+
+            corr_point[0] = (dR_inner + dR_mid + dR_outer) / 3.;; 
+            corr_point[1] = (dZ_inner + dZ_mid + dZ_outer) / 3.;; 
+
+            corr_point[2] = trigger->Phi() - proton->Phi();
+
+            if(corr_point[2] < -TMath::Pi()/2.0) {
+                corr_point[2] += 2.0*TMath::Pi();
+            }
+            else if(corr_point[2] > 3.0*TMath::Pi()/2.0) {
+                corr_point[2] -= 2.0*TMath::Pi();
             }
 
-            corr_point[0] = min_distance;
+            corr_point[3] = trigger->Eta() - proton->Eta();
 
-            corr_point[1] = trigger->Phi() - proton->Phi();
-
-            if(corr_point[1] < -TMath::Pi()/2.0) {
-                corr_point[1] += 2.0*TMath::Pi();
-            }
-            else if(corr_point[1] > 3.0*TMath::Pi()/2.0) {
-                corr_point[1] -= 2.0*TMath::Pi();
-            }
-
-            corr_point[2] = trigger->Eta() - proton->Eta();
-
-            corr_point[3] = zVtx;
+            corr_point[4] = zVtx;
 
             corr_dist->Fill(corr_point);
 
@@ -513,7 +562,11 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeSameMCHProtonCorrelations(std
 void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeMixedHProtonCorrelations(AliEventPool* fPool, std::vector<AliAODTrack*> proton_list , THnSparse* corr_dist, double zVtx)
 {
     
-    double corr_point[4];
+    double corr_point[5];
+
+    double TPC_INNER = 85;
+    double TPC_MID = 167.5;
+    double TPC_OUTER = 250;
 
     int numEvents = fPool->GetCurrentNEvents();
 
@@ -532,33 +585,53 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeMixedHProtonCorrelations(AliE
                 auto proton = proton_list[j];
                 // for now we put the pt cuts here, maybe at axes later
                 if(proton->Pt() < 2 || proton->Pt() > 4) continue;
-                double min_distance = 1e10;
-                for(int r = 45; r < 250; r++) {
-                    double trig_pos[3];
-                    double proton_pos[3];
 
-                    bool goodTrigDist = GetXYZatR(trigger, r, trig_pos);
-                    bool goodProtonDist = GetXYZatR(proton, r, proton_pos);
+                double trig_pos[3];
+                double proton_pos[3];
 
-                    double distance = TMath::Sqrt(TMath::Power(trig_pos[0] - proton_pos[0], 2) + TMath::Power(trig_pos[1] - proton_pos[1], 2) + TMath::Power(trig_pos[2] - proton_pos[2], 2));
-                    if((distance < min_distance) && goodTrigDist && goodProtonDist) min_distance = distance;
+                bool goodTrigDist = GetXYZatR(trigger, TPC_INNER, trig_pos);
+                bool goodProtonDist = GetXYZatR(proton, TPC_INNER, proton_pos);
+
+                if(!goodTrigDist || !goodProtonDist) continue;
+
+                double dR_inner = TMath::Sqrt(TMath::Power(trig_pos[0] - proton_pos[0], 2) + TMath::Power(trig_pos[1] - proton_pos[1], 2));
+                double dZ_inner = TMath::Abs(trig_pos[2] - proton_pos[2]);
+
+                goodTrigDist = GetXYZatR(trigger, TPC_MID, trig_pos);
+                goodProtonDist = GetXYZatR(proton, TPC_MID, proton_pos);
+
+                if(!goodTrigDist || !goodProtonDist) continue;
+
+                double dR_mid = TMath::Sqrt(TMath::Power(trig_pos[0] - proton_pos[0], 2) + TMath::Power(trig_pos[1] - proton_pos[1], 2));
+                double dZ_mid = TMath::Abs(trig_pos[2] - proton_pos[2]);
+
+                goodTrigDist = GetXYZatR(trigger, TPC_OUTER, trig_pos);
+                goodProtonDist = GetXYZatR(proton, TPC_OUTER, proton_pos);
+
+                if(!goodTrigDist || !goodProtonDist) continue;
+
+                double dR_outer = TMath::Sqrt(TMath::Power(trig_pos[0] - proton_pos[0], 2) + TMath::Power(trig_pos[1] - proton_pos[1], 2));
+                double dZ_outer = TMath::Abs(trig_pos[2] - proton_pos[2]);
+
+
+                corr_point[0] = (dR_inner + dR_mid + dR_outer) / 3.;; 
+                corr_point[1] = (dZ_inner + dZ_mid + dZ_outer) / 3.;; 
+
+                corr_point[2] = trigger->Phi() - proton->Phi();
+
+                if(corr_point[2] < -TMath::Pi()/2.0) {
+                    corr_point[2] += 2.0*TMath::Pi();
+                }
+                else if(corr_point[2] > 3.0*TMath::Pi()/2.0) {
+                    corr_point[2] -= 2.0*TMath::Pi();
                 }
 
-                corr_point[0] = min_distance;
+                corr_point[3] = trigger->Eta() - proton->Eta();
 
-                corr_point[1] = trigger->Phi() - proton->Phi();
-
-                if(corr_point[1] < -TMath::Pi()/2.0) {
-                    corr_point[1] += 2.0*TMath::Pi();
-                }
-                else if(corr_point[1] > 3.0*TMath::Pi()/2.0) {
-                    corr_point[1] -= 2.0*TMath::Pi();
-                }
-
-                corr_point[2] = trigger->Eta() - proton->Eta();
-                corr_point[3] = zVtx;
+                corr_point[4] = zVtx;
 
                 corr_dist->Fill(corr_point);
+
 
             }
         }
@@ -567,7 +640,12 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeMixedHProtonCorrelations(AliE
 void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeMixedMCHProtonCorrelations(AliEventPool* fPool, std::vector<AliAODMCParticle*> proton_list , THnSparse* corr_dist, double zVtx)
 {
     
-    double corr_point[4];
+    double corr_point[5];
+
+    double TPC_INNER = 85;
+    double TPC_MID = 167.5;
+    double TPC_OUTER = 250;
+
     int numEvents = fPool->GetCurrentNEvents();
 
     for(int iEvent = 0; iEvent < numEvents; iEvent++) {
@@ -584,31 +662,49 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeMixedMCHProtonCorrelations(Al
                 auto proton = proton_list[j];
                 // for now we put the pt cuts here, maybe at axes later
                 if(proton->Pt() < 2 || proton->Pt() > 4) continue;
-                double min_distance = 1e10;
-                for(int r = 45; r < 250; r++) {
-                    double trig_pos[3];
-                    double proton_pos[3];
+                double trig_pos[3];
+                double proton_pos[3];
 
-                    bool goodTrigDist = GetXYZatR(trigger, r, trig_pos);
-                    bool goodProtonDist = GetXYZatR(proton, r, proton_pos);
+                bool goodTrigDist = GetXYZatR(trigger, TPC_INNER, trig_pos);
+                bool goodProtonDist = GetXYZatR(proton, TPC_INNER, proton_pos);
 
-                    double distance = TMath::Sqrt(TMath::Power(trig_pos[0] - proton_pos[0], 2) + TMath::Power(trig_pos[1] - proton_pos[1], 2) + TMath::Power(trig_pos[2] - proton_pos[2], 2));
-                    if((distance < min_distance) && goodTrigDist && goodProtonDist) min_distance = distance;
+                if(!goodTrigDist || !goodProtonDist) continue;
+
+                double dR_inner = TMath::Sqrt(TMath::Power(trig_pos[0] - proton_pos[0], 2) + TMath::Power(trig_pos[1] - proton_pos[1], 2));
+                double dZ_inner = TMath::Abs(trig_pos[2] - proton_pos[2]);
+
+                goodTrigDist = GetXYZatR(trigger, TPC_MID, trig_pos);
+                goodProtonDist = GetXYZatR(proton, TPC_MID, proton_pos);
+
+                if(!goodTrigDist || !goodProtonDist) continue;
+
+                double dR_mid = TMath::Sqrt(TMath::Power(trig_pos[0] - proton_pos[0], 2) + TMath::Power(trig_pos[1] - proton_pos[1], 2));
+                double dZ_mid = TMath::Abs(trig_pos[2] - proton_pos[2]);
+
+                goodTrigDist = GetXYZatR(trigger, TPC_OUTER, trig_pos);
+                goodProtonDist = GetXYZatR(proton, TPC_OUTER, proton_pos);
+
+                if(!goodTrigDist || !goodProtonDist) continue;
+
+                double dR_outer = TMath::Sqrt(TMath::Power(trig_pos[0] - proton_pos[0], 2) + TMath::Power(trig_pos[1] - proton_pos[1], 2));
+                double dZ_outer = TMath::Abs(trig_pos[2] - proton_pos[2]);
+
+
+                corr_point[0] = (dR_inner + dR_mid + dR_outer) / 3.;; 
+                corr_point[1] = (dZ_inner + dZ_mid + dZ_outer) / 3.;; 
+
+                corr_point[2] = trigger->Phi() - proton->Phi();
+
+                if(corr_point[2] < -TMath::Pi()/2.0) {
+                    corr_point[2] += 2.0*TMath::Pi();
+                }
+                else if(corr_point[2] > 3.0*TMath::Pi()/2.0) {
+                    corr_point[2] -= 2.0*TMath::Pi();
                 }
 
-                corr_point[0] = min_distance;
+                corr_point[3] = trigger->Eta() - proton->Eta();
 
-                corr_point[1] = trigger->Phi() - proton->Phi();
-
-                if(corr_point[1] < -TMath::Pi()/2.0) {
-                    corr_point[1] += 2.0*TMath::Pi();
-                }
-                else if(corr_point[1] > 3.0*TMath::Pi()/2.0) {
-                    corr_point[1] -= 2.0*TMath::Pi();
-                }
-
-                corr_point[2] = trigger->Eta() - proton->Eta();
-                corr_point[3] = zVtx;
+                corr_point[4] = zVtx;
 
                 corr_dist->Fill(corr_point);
 
