@@ -678,6 +678,7 @@ bool AliAnalysisTaskLambdaHadronCloseTrackEff::IsMCChargedHadron(int pdg_code) {
 
 bool AliAnalysisTaskLambdaHadronCloseTrackEff::PassMCTriggerCuts(AliAODMCParticle *mc_particle){
 
+
     if(!IsMCChargedHadron(mc_particle->PdgCode())) return false;
     if(!mc_particle->IsPhysicalPrimary()) return false; // for now trigger is physical primary, could change
     if(!(TMath::Abs(mc_particle->Eta()) < 0.8)) return false;
@@ -735,8 +736,6 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::UserExec(Option_t*)
     fMixedMCTrackObjArray->SetOwner(kTRUE);
 
     // RECO SAME EVENT SECTION
-    std::vector<int> reco_proton_label_list;
-    std::vector<int> reco_trigger_label_list;
 
     for(int trackNum = 0; trackNum < numTracks; trackNum++) {
 
@@ -745,14 +744,11 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::UserExec(Option_t*)
         if(!track) continue;
         
         //Filter for trigger particles
-        if(PassTriggerCuts(track)) {
+        if(PassTriggerCuts(track, true)) {
             trigger_list.push_back(track);
             double position[3];
             track->GetPosition(position);
             int mc_label = track->GetLabel();
-            if(mc_label >= 0) {
-                reco_trigger_label_list.push_back(mc_label);
-            }
 
             auto *mixing_track = new AliMixingParticle(track->Pt(), track->Eta(), track->Phi(), track->Charge(), position);
             fMixedTrackObjArray->Add(mixing_track);
@@ -766,9 +762,6 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::UserExec(Option_t*)
                     // guaranteed secondary protons that pass loose daughter cuts
                     proton_list.push_back(track);
                     proton_list_mc.push_back(mc_part);
-                    reco_proton_label_list.push_back(mc_label);
-
-                    // std::cout << track->GetLabel() << " " << mc_part->GetLabel() << std::endl;
                 }
             }
         }
@@ -781,34 +774,13 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::UserExec(Option_t*)
     std::vector<AliAODMCParticle*> real_trigger_list;
     std::vector<AliAODMCParticle*> real_proton_list;
 
-    // std::cout << "---------- BEGINNING MC SAME EVENT SECTION ----------" << std::endl;
 
-    int index = 0;
-    auto particle = (AliAODMCParticle*)fMCArray->At(index);
-    while(index == particle->GetLabel()) {
-        if(!particle->IsPrimary()) {
-            // std::cout << "hello" << std::endl;
-        }
-        index++;
-        particle = (AliAODMCParticle*)fMCArray->At(index);
-    }
-
-    // std::cout << "index: " << index << " particle: " << particle->GetLabel() << std::endl;
-
-
-    // AliAODMCParticle *mc_particle = (AliAODMCParticle*)fMCArray->At(fMCArray->GetEntries() + 4);
-    // std::cout << mc_particle->Pt() << std::endl;
-
-    std::vector<int>  real_trigger_label_list;
-    std::vector<int>  real_proton_label_list;
-
-    for(int mc_index = index; mc_index < fMCArray->GetEntries(); mc_index++) {
+    for(int mc_index = 0; mc_index < fMCArray->GetEntriesFast(); mc_index++) {
 
         AliAODMCParticle* mc_particle = (AliAODMCParticle*)fMCArray->At(mc_index);
 
         if(PassMCTriggerCuts(mc_particle)) {
             real_trigger_list.push_back(mc_particle);
-            real_trigger_label_list.push_back(mc_index);
             double position[3] = {mc_particle->Xv(), mc_particle->Yv(), mc_particle->Zv()};
             auto mixing_mc_particle = new AliMixingParticle(mc_particle->Pt(), mc_particle->Eta(), mc_particle->Phi(), mc_particle->Charge(), position);
             fMixedMCTrackObjArray->Add(mixing_mc_particle);
@@ -817,145 +789,11 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::UserExec(Option_t*)
             // again selecting real protons, but not physical primaries
             if(TMath::Abs(mc_particle->GetPdgCode()) == 2212 && !mc_particle->IsPhysicalPrimary())  {
                 real_proton_list.push_back(mc_particle);
-                real_proton_label_list.push_back(mc_index);
             }
         }
     }
-
-    std::vector<std::vector<int>> reco_trigger_proton_label_list;
-    std::vector<std::vector<int>> real_trigger_proton_label_list;
-
-    for(int i = 0; i < reco_trigger_label_list.size(); i++) {
-        for(int j = 0; j < real_proton_label_list.size(); j++) {
-            auto temp = {reco_trigger_label_list[i], real_proton_label_list[j]};
-            reco_trigger_proton_label_list.push_back(temp);
-        }
-    }
-
-    for(int i = 0; i < real_trigger_label_list.size(); i++) {
-        for(int j = 0; j < reco_proton_label_list.size(); j++) {
-            bool pair_found = false;
-            for(int k = 0; k < reco_trigger_proton_label_list.size(); k++) {
-                if(reco_trigger_proton_label_list[k][0] == real_trigger_label_list[i] && reco_trigger_proton_label_list[k][1] == reco_proton_label_list[j]) {
-                    pair_found = true;
-                }
-
-            }
-            if(!pair_found) {
-                std::cout << "pair not found" << std::endl;
-            }
-        }
-    }
-
-
-
-
-    // std::cout << "The real: " << std::endl;
-    // for(auto part : real_proton_list) {
-    //     std::cout << "\t" <<  part->GetLabel() << std::endl;
-    //     std::cout << "\t" <<  part->Pt() << std::endl;
-    //     std::cout << "\t" <<  part->IsPhysicalPrimary() << std::endl;
-    // }
-    // std::cout << "The reco: " << std::endl;
-    // for(auto part : proton_list_mc) {
-    //     std::cout << "\t" <<  part->GetLabel() << std::endl;
-    //     std::cout << "\t" <<  part->Pt() << std::endl;
-    //     std::cout << "\t" <<  part->IsPhysicalPrimary() << std::endl;
-    // }
 
     MakeSameMCHProtonCorrelations(real_trigger_list, real_proton_list, fRealHProton, primZ);
-
-    // MIXED EVENT SECTION (added to very end to correctly do a mixture of reco/real correlations)
-
-
-    std::vector<std::vector<int>> pair_labels;
-
-    for(int itrigger = 0; itrigger < trigger_list.size(); itrigger++) {
-
-        AliAODTrack *trigger = trigger_list[itrigger];
-        if(trigger->Pt() < 4 || trigger->Pt() > 8) continue;
-        int trigger_label = trigger->GetLabel();
-        if(trigger_label < 0) continue;
-
-        for(int iproton = 0; iproton < proton_list.size(); iproton++) {
-
-            AliAODTrack *proton = proton_list[iproton];
-            if(proton->Pt() < 2 || proton->Pt() > 4) continue;
-            int proton_label = proton->GetLabel();
-            if(proton_label < 0) continue;
-            // std::cout << "proton label reco: " << proton_label << std::endl;
-            auto test_mc = (AliAODMCParticle*)fMCArray->At(proton_label);
-            // std::cout << "proton label mc: " << test_mc->GetLabel() << std::endl;
-            if(trigger_label == proton_label) continue;
-
-            float dphi = trigger->Phi() - proton->Phi();
-            if(dphi < -TMath::Pi()/2) dphi += 2*TMath::Pi();
-            if(dphi > 3*TMath::Pi()/2) dphi -= 2*TMath::Pi();
-            if(TMath::Abs(dphi) > 1) continue;
-
-            float deta = trigger->Eta() - proton->Eta();
-            if(TMath::Abs(deta) > 0.5) continue;
-
-            pair_labels.push_back({trigger_label, proton_label});
-        }
-    }
-
-    for(int itrigger = 0; itrigger < real_trigger_list.size(); itrigger++) {
-
-        AliAODMCParticle *trigger = real_trigger_list[itrigger];
-        if(trigger->Pt() < 4 || trigger->Pt() > 8) continue;
-        int trigger_label = trigger->GetLabel();
-        if(trigger_label < 0) continue;
-        
-
-        for(int iproton = 0; iproton < real_proton_list.size(); iproton++) {
-
-            AliAODMCParticle *proton = real_proton_list[iproton];
-            if(proton->Pt() < 2 || proton->Pt() > 4) continue;
-            int proton_label = proton->GetLabel();
-            // std::cout << "proton label mc: " << proton_label << std::endl;
-            if(proton_label < 0) continue;
-            if(trigger_label == proton_label) continue;
-
-            float dphi = trigger->Phi() - proton->Phi();
-            if(dphi < -TMath::Pi()/2) dphi += 2*TMath::Pi();
-            if(dphi > 3*TMath::Pi()/2) dphi -= 2*TMath::Pi();
-            if(TMath::Abs(dphi) > 1) continue;
-
-            float deta = trigger->Eta() - proton->Eta();
-            if(TMath::Abs(deta) > 0.5) continue;
-
-
-
-            double min_distance = 1e10;
-            for(int r = 20; r < 250; r++) {
-                double trig_pos[3];
-                double proton_pos[3];
-
-                GetXYZatR(trigger, r, trig_pos);
-                GetXYZatR(proton, r, proton_pos);
-
-                double distance = TMath::Sqrt(TMath::Power(trig_pos[0] - proton_pos[0], 2) + TMath::Power(trig_pos[1] - proton_pos[1], 2) + TMath::Power(trig_pos[2] - proton_pos[2], 2));
-                if(distance < min_distance) {
-                    min_distance = distance;
-                }
-
-            }
-
-            bool found_pair = false;
-            for(int ipair = 0; ipair < pair_labels.size(); ipair++) {
-                // std::cout << "trigger label: " << trigger_label << " proton label: " << proton_label << std::endl;
-                // std::cout << pair_labels[ipair][0] << " " << pair_labels[ipair][1] << std::endl;
-                if(pair_labels[ipair][0] == trigger_label && pair_labels[ipair][1] == proton_label) found_pair = true;
-            }
-
-            fMinDistanceAll->Fill(min_distance);
-            if(found_pair) continue;
-            fMinDistanceNotFound->Fill(min_distance);
-
-        }
-    }
-
 
 
     if(proton_list.size() > 0 ) {
