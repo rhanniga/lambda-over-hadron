@@ -296,13 +296,17 @@ bool AliAnalysisTaskLambdaHadronCloseTrackEff::GetXYZatR(AliAODMCParticle *track
     double r0 = x0*cs0 + y0*sn0 - tR;
     double r2R = 1.+r0/tR;
 
-    if (r2R<kAlmost0) return kFALSE;
+    if (r2R<kAlmost0) {
+        std::cout << "r2R is too small" << std::endl;
+        return kFALSE;
+    }
 
     double xr2R = radius/tR;
     double r2Ri = 1./r2R;
 
     double cosT = 0.5*(r2R + (1-xr2R*xr2R)*r2Ri);
     if ( TMath::Abs(cosT)>kAlmost1 ) {
+        std::cout << "cosT is too big" << std::endl;
         return kFALSE;
     }
 
@@ -425,6 +429,7 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeSameHProtonCorrelations(std::
             // make sure current trigger isn't current proton
             if(trigger->GetLabel() == proton->GetLabel()) continue;
 
+            std::cout << "what the fuck is this" << std::endl;
             double min_distance = 1e10;
             for(int r = 45; r < 250; r++) {
                 double trig_pos[3];
@@ -471,7 +476,6 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeSameMCHProtonCorrelations(std
             auto proton = proton_list[i];
             // for now we put the pt cuts here, maybe at axes later
             if(proton->Pt() < 2 || proton->Pt() > 4) continue;
-
             // make sure current trigger isn't current proton
             if(trigger->GetLabel() == proton->GetLabel()) continue;
 
@@ -482,6 +486,7 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeSameMCHProtonCorrelations(std
 
                 bool goodTrigDist = GetXYZatR(trigger, r, trig_pos);
                 bool goodProtonDist = GetXYZatR(proton, r, proton_pos);
+                // std::cout << goodTrigDist << " " << goodProtonDist << std::endl;
 
                 double distance = TMath::Sqrt(TMath::Power(trig_pos[0] - proton_pos[0], 2) + TMath::Power(trig_pos[1] - proton_pos[1], 2) + TMath::Power(trig_pos[2] - proton_pos[2], 2));
                 if((distance < min_distance) && goodTrigDist && goodProtonDist) min_distance = distance;
@@ -842,7 +847,7 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::UserExec(Option_t*)
 
             }
             if(!pair_found) {
-                std::cout << "pair not found" << std::endl;
+                // std::cout << "pair not found" << std::endl;
             }
         }
     }
@@ -862,6 +867,9 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::UserExec(Option_t*)
     //     std::cout << "\t" <<  part->Pt() << std::endl;
     //     std::cout << "\t" <<  part->IsPhysicalPrimary() << std::endl;
     // }
+
+    std::cout << "Real sizes: " << real_trigger_list.size() << " " << real_proton_list.size() << std::endl;
+    std::cout << "Reco sizes: " << trigger_list.size() << " " << proton_list.size() << std::endl;
 
     MakeSameMCHProtonCorrelations(real_trigger_list, real_proton_list, fRealHProton, primZ);
 
