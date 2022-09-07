@@ -14,6 +14,7 @@
  **************************************************************************/
 
 #include <iostream>
+#include <set>
 
 #include "TChain.h"
 #include "TTree.h"
@@ -43,6 +44,7 @@
 #include "AliStack.h"
 #include "AliMCEventHandler.h"
 #include "AliAODv0.h"
+
 
 #include "AliAnalysisTaskLambdaHadronCloseTrackEff.h"
 
@@ -147,6 +149,17 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::UserCreateOutputObjects()
     fRealHProtonMixed->GetAxis(3)->SetTitle("deta");
     fRealHProtonMixed->GetAxis(4)->SetTitle("zvtx");
     fOutputList->Add(fRealHProtonMixed);
+
+    fHProtonNotFound = new THnSparseF("fHProtonNotFound", "fHProtonNotFound", 5, hp_cor_bins, hp_cor_mins, hp_cor_maxes);
+    fHProtonNotFound->Sumw2();
+    fHProtonNotFound->GetAxis(0)->SetTitle("avg_xy_dist");
+    fHProtonNotFound->GetAxis(1)->SetTitle("avg_z_dist");
+    fHProtonNotFound->GetAxis(2)->SetTitle("dphi");
+    fHProtonNotFound->GetAxis(3)->SetTitle("deta");
+    fHProtonNotFound->GetAxis(4)->SetTitle("zvtx");
+    fOutputList->Add(fHProtonNotFound);
+
+
 
 
 
@@ -722,17 +735,19 @@ bool AliAnalysisTaskLambdaHadronCloseTrackEff::PassDaughterCuts(AliAODTrack *tra
 
     bool pass = true;
 
-    pass = pass && (TMath::Abs(track->Eta()) < 0.8);
-    pass = pass && (track->Pt() > 0.15);
+    // pass = pass && (TMath::Abs(track->Eta()) < 0.8);
+    // pass = pass && (track->Pt() > 0.15);
 
-    pass = pass && (track->IsOn(AliAODTrack::kTPCrefit));
+    // pass = pass && (track->IsOn(AliAODTrack::kTPCrefit));
 
-    pass = pass && (track->GetTPCCrossedRows() > 70);
+    // pass = pass && (track->GetTPCCrossedRows() > 100);
 
-    float ratio = (track->GetTPCNclsF() > 0)  ? track->GetTPCCrossedRows()/track->GetTPCNclsF() : 0;
-    pass = pass && (ratio > 0.8);
+    // float ratio = (track->GetTPCNclsF() > 0)  ? track->GetTPCCrossedRows()/track->GetTPCNclsF() : 0;
+    // pass = pass && (ratio > 0.9);
+    pass = pass && track->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA);
 
     int label = track->GetLabel();
+
 
     if(label < 0) return false;
 
@@ -823,6 +838,9 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::UserExec(Option_t*)
 
     std::vector<AliAODTrack*> trigger_list;
     std::vector<AliAODTrack*> proton_list;
+    
+    std::set<int> trigger_index_set;
+    std::set<int> proton_index_set;
 
     std::vector<AliAODMCParticle*> proton_list_mc;
 
@@ -845,6 +863,7 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::UserExec(Option_t*)
         //Filter for trigger particles
         if(PassTriggerCuts(track, true)) {
             trigger_list.push_back(track);
+            trigger_index_set.insert(track->GetLabel());
             double position[3];
             track->GetPosition(position);
             int mc_label = track->GetLabel();
@@ -861,6 +880,7 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::UserExec(Option_t*)
                     // guaranteed secondary protons that pass loose daughter cuts
                     proton_list.push_back(track);
                     proton_list_mc.push_back(mc_part);
+                    proton_index_set.insert(track->GetLabel());
                 }
             }
         }
@@ -869,10 +889,11 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::UserExec(Option_t*)
     MakeSameHProtonCorrelations(trigger_list, proton_list, fRecoHProton, primZ);
 
     // MC SAME EVENT SECTION
-
     std::vector<AliAODMCParticle*> real_trigger_list;
     std::vector<AliAODMCParticle*> real_proton_list;
 
+    std::set<int> real_proton_index_set;
+    std::set<int> real_trigger_index_set;
 
     for(int mc_index = 0; mc_index < fMCArray->GetEntriesFast(); mc_index++) {
 
@@ -880,6 +901,7 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::UserExec(Option_t*)
 
         if(PassMCTriggerCuts(mc_particle)) {
             real_trigger_list.push_back(mc_particle);
+            real_trigger_index_set.insert(mc_index);
             double position[3] = {mc_particle->Xv(), mc_particle->Yv(), mc_particle->Zv()};
             auto mixing_mc_particle = new AliMixingParticle(mc_particle->Pt(), mc_particle->Eta(), mc_particle->Phi(), mc_particle->Charge(), position);
             fMixedMCTrackObjArray->Add(mixing_mc_particle);
@@ -887,6 +909,7 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::UserExec(Option_t*)
         if(TMath::Abs(mc_particle->Eta()) < 0.8 && mc_particle->Pt() > 0.15) {
             // again selecting real protons, but not physical primaries
             if(TMath::Abs(mc_particle->GetPdgCode()) == 2212 && !mc_particle->IsPhysicalPrimary())  {
+                real_proton_index_set.insert(mc_index);
                 real_proton_list.push_back(mc_particle);
             }
         }
@@ -925,6 +948,38 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::UserExec(Option_t*)
             }
         }
     }
+
+
+
+    // find intersection of trigger_index_set and real_trigger_index_set
+    std::set<int> trigger_intersection;
+    std::set_intersection(trigger_index_set.begin(), trigger_index_set.end(), real_trigger_index_set.begin(), real_trigger_index_set.end(), std::inserter(trigger_intersection, trigger_intersection.begin()));
+
+    // subract intersection from real_trigger_index_set
+    std::set<int> triggers_not_found;
+    std::set_difference(real_trigger_index_set.begin(), real_trigger_index_set.end(), trigger_intersection.begin(), trigger_intersection.end(), std::inserter(triggers_not_found, triggers_not_found.begin()));
+
+    // find intersection of proton_index_set and real_proton_index_set
+    std::set<int> proton_intersection;
+    std::set_intersection(proton_index_set.begin(), proton_index_set.end(), real_proton_index_set.begin(), real_proton_index_set.end(), std::inserter(proton_intersection, proton_intersection.begin()));
+
+    // subract intersection from real_proton_index_set
+    std::set<int> protons_not_found;
+    std::set_difference(real_proton_index_set.begin(), real_proton_index_set.end(), proton_intersection.begin(), proton_intersection.end(), std::inserter(protons_not_found, protons_not_found.begin()));
+
+    // correlate the not_found triggers with not_found protons
+    std::vector<AliAODMCParticle*> not_found_trigger_list;
+    std::vector<AliAODMCParticle*> not_found_proton_list;
+
+    for(auto trigger_index : triggers_not_found) {
+        not_found_trigger_list.push_back((AliAODMCParticle*)fMCArray->At(trigger_index));
+    }
+    for(auto proton_index : protons_not_found) {
+        not_found_proton_list.push_back((AliAODMCParticle*)fMCArray->At(proton_index));
+    }
+
+    MakeSameMCHProtonCorrelations(not_found_trigger_list, not_found_proton_list, fHProtonNotFound, primZ);
+
 
     PostData(1, fOutputList);
 }

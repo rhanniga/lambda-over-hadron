@@ -14,6 +14,7 @@
 #include "TString.h"
 #include "TArrayF.h"
 #include "TLorentzVector.h"
+#include "AliLog.h"
 
 #include "AliAnalysisTaskSE.h"
 
@@ -116,6 +117,8 @@ private:
 
   THnSparse *fRealHProton; //!>! real h-proton correlation histogram
   THnSparse *fRealHProtonMixed; //!>! real h-proton correlation histogram for mixed event
+
+  THnSparse *fHProtonNotFound; //!>! h-proton correlation histogram for pairs not found in reco
 
   TH1D *fMinDistanceNotFound; //!>! minimum distance of MC tracks not found in reco
   TH1D *fMinDistanceAll; //!>! minimum distance all MC tracks
