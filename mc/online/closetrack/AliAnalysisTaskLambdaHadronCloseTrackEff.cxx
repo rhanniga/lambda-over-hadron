@@ -453,6 +453,9 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeSameHProtonCorrelations(std::
             // make sure current trigger isn't current proton
             if(trigger->GetLabel() == proton->GetLabel()) continue;
 
+            // make sure that the charge is opposite
+            if(trigger->Charge() == proton->Charge()) continue;
+
             double trig_pos[3];
             double proton_pos[3];
 
@@ -522,6 +525,8 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeSameMCHProtonCorrelations(std
             if(proton->Pt() < 2 || proton->Pt() > 4) continue;
             // make sure current trigger isn't current proton
             if(trigger->GetLabel() == proton->GetLabel()) continue;
+            // make sure that the charge is opposite
+            if(trigger->Charge() == proton->Charge()) continue;
 
             double trig_pos[3];
             double proton_pos[3];
@@ -601,6 +606,8 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeMixedHProtonCorrelations(AliE
                 auto proton = proton_list[j];
                 // for now we put the pt cuts here, maybe at axes later
                 if(proton->Pt() < 2 || proton->Pt() > 4) continue;
+                // make sure that the charge is opposite
+                if(trigger->Charge() == proton->Charge()) continue;
 
                 double trig_pos[3];
                 double proton_pos[3];
@@ -678,6 +685,9 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::MakeMixedMCHProtonCorrelations(Al
                 auto proton = proton_list[j];
                 // for now we put the pt cuts here, maybe at axes later
                 if(proton->Pt() < 2 || proton->Pt() > 4) continue;
+                // make sure that the charge is opposite
+                if(trigger->Charge() == proton->Charge()) continue;
+
                 double trig_pos[3];
                 double proton_pos[3];
 
@@ -735,16 +745,16 @@ bool AliAnalysisTaskLambdaHadronCloseTrackEff::PassDaughterCuts(AliAODTrack *tra
 
     bool pass = true;
 
-    // pass = pass && (TMath::Abs(track->Eta()) < 0.8);
-    // pass = pass && (track->Pt() > 0.15);
+    pass = pass && (TMath::Abs(track->Eta()) < 0.8);
+    pass = pass && (track->Pt() > 0.15);
 
-    // pass = pass && (track->IsOn(AliAODTrack::kTPCrefit));
+    pass = pass && (track->IsOn(AliAODTrack::kTPCrefit));
 
-    // pass = pass && (track->GetTPCCrossedRows() > 100);
+    pass = pass && (track->GetTPCCrossedRows() > 80);
 
-    // float ratio = (track->GetTPCNclsF() > 0)  ? track->GetTPCCrossedRows()/track->GetTPCNclsF() : 0;
-    // pass = pass && (ratio > 0.9);
-    pass = pass && track->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA);
+    float ratio = (track->GetTPCNclsF() > 0)  ? track->GetTPCCrossedRows()/track->GetTPCNclsF() : 0;
+    pass = pass && (ratio > 0.8);
+    // pass = pass && track->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA);
 
     int label = track->GetLabel();
 
