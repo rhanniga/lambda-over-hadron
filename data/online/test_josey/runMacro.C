@@ -1,36 +1,22 @@
-#include <iostream>
-
-#include "AliAODTrack.h"
-
 #include "AliAnalysisTaskLambdaHadronRatio.h"
-
+#include <iostream>
 
 void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
-  float MULT_LOW = 0;
-  float MULT_HIGH = 20;
-
-  float TRIG_BIT = AliAODTrack::kIsHybridGCG;
-  float ASSOC_BIT =  1024; 
-  char *EFF_FILE_PATH = "eff_out.root";
-  char *CENT_ESTIMATOR = "V0A";
-
   //Starting and ending index of the array containing the run numbers, specifies which range to run over
   int startIndex = 0;
-  int endIndex = 28;
+   int endIndex = 14;
+ // int endIndex = 5;
 
-  // int startIndex = 15;
-  // int endIndex = 28;
+  char* work_dir = "lambda_hadron_ratio";
+  char* output_dir = "011322_01";
 
-  TString work_dir = "lambda_hadron_ratio_v0";
-  TString output_dir = "cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_full_stat_run";
-  
   //If we want to download test files from grid then run in one swoop (usually just run completely locally):
   bool gridTest = false;
   int numTestFiles = 2;
 
   // So we can access files from the grid (for eff cor and the like)
-  // TGrid::Connect("alien//");
+  TGrid::Connect("alien//");
 
   gInterpreter->ProcessLine(".include $ROOTSYS/include");
   gInterpreter->ProcessLine(".include $ALICE_ROOT/include");
@@ -49,16 +35,8 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   //PID response:
   gInterpreter->ProcessLine(Form(".x %s(kFALSE)", gSystem->ExpandPathName("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C")));
 
-  // Generating task object
   gInterpreter->LoadMacro("AliAnalysisTaskLambdaHadronRatio.cxx++g");
-  AliAnalysisTaskLambdaHadronRatio *task = reinterpret_cast<AliAnalysisTaskLambdaHadronRatio*>(gInterpreter->ProcessLine(Form(".x AddLambdaHadronRatioTask.C(\"%s\", %f, %f, %f, %f, \"%s\", \"%s\")",
-  "lambdaHadronRatio",
-  MULT_LOW,
-  MULT_HIGH,
-  TRIG_BIT,
-  ASSOC_BIT,
-  EFF_FILE_PATH,
-  CENT_ESTIMATOR)));
+  AliAnalysisTaskLambdaHadronRatio *task = reinterpret_cast<AliAnalysisTaskLambdaHadronRatio*>(gInterpreter->ExecuteMacro("AddLambdaHadronRatioTask.C"));
 
   if(!manage->InitAnalysis()) return;
   manage->SetDebugLevel(2);
@@ -67,9 +45,9 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
   if(local) {
     TChain *chain = new TChain("aodTree");
-    chain->Add("~/Wonderland/native/data/pPb_5_tev_1.root");
-    chain->Add("~/Wonderland/native/data/pPb_5_tev_69.root");
-    chain->Add("~/Wonderland/native/data/pPb_5_tev_420.root");
+    chain->Add("~/data/pPb_5_tev_1.root");
+    chain->Add("~/data/pPb_5_tev_69.root");
+    chain->Add("~/data/pPb_5_tev_420.root");
     manage->StartAnalysis("local", chain);
   }
 
@@ -113,7 +91,7 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
     alienHandler->SetSplitMaxInputFileNumber(40);
     alienHandler->SetExecutable("LambdaHadronRatio.sh");
     alienHandler->SetJDLName("LambdaHadronRatio.jdl");
-    alienHandler->SetTTL(30000);
+    alienHandler->SetTTL(10000);
     alienHandler->SetOutputToRunNo(kTRUE);
     alienHandler->SetKeepLogs(kTRUE);
     // merging: run with kTRUE to merge on grid

@@ -988,6 +988,30 @@ void AliAnalysisTaskLambdaHadronCloseTrackEff::UserExec(Option_t*)
         not_found_proton_list.push_back((AliAODMCParticle*)fMCArray->At(proton_index));
     }
 
+    // also want to correlate not found protons with found triggers
+    std::vector<AliAODMCParticle*> found_trigger_list;
+    std::vector<AliAODMCParticle*> found_proton_list;
+
+    for(auto trigger_index : trigger_intersection) {
+        found_trigger_list.push_back((AliAODMCParticle*)fMCArray->At(trigger_index));
+    }
+    for(auto proton_index : proton_intersection) {
+        found_proton_list.push_back((AliAODMCParticle*)fMCArray->At(proton_index));
+    }
+
+    // printing out the kinematics of the not found triggers and protons
+    for(auto trigger : found_trigger_list) {
+        if(trigger->Pt() < 4.0 || trigger->Pt() > 8.0) continue;
+        for(auto proton : not_found_proton_list) {
+            if(proton->Pt() < 2.0 || proton->Pt() > 4.0) continue;
+            double delta_phi = TVector2::Phi_mpi_pi(trigger->Phi() - proton->Phi());
+            double delta_eta = trigger->Eta() - proton->Eta();
+            double delta_r = TMath::Sqrt(delta_phi*delta_phi + delta_eta*delta_eta);
+            std::cout << "trigger pt: " << trigger->Pt() << " eta: " << trigger->Eta() << " phi: " << trigger->Phi() << " mass: " << trigger->M() << std::endl;
+            std::cout << "proton pt: " << proton->Pt() << " eta: " << proton->Eta() << " phi: " << proton->Phi() << " mass: " << proton->M() << std::endl;
+        }
+    }  
+
     MakeSameMCHProtonCorrelations(not_found_trigger_list, not_found_proton_list, fHProtonNotFound, primZ);
 
 
