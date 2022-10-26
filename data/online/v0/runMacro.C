@@ -7,8 +7,8 @@
 
 void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
-  float MULT_LOW = 0;
-  float MULT_HIGH = 20;
+  float MULT_LOW = 50;
+  float MULT_HIGH = 80;
 
   float TRIG_BIT = AliAODTrack::kIsHybridGCG;
   float ASSOC_BIT =  1024; 
@@ -16,7 +16,10 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   char *CENT_ESTIMATOR = "V0A";
 
   //Starting and ending index of the array containing the run numbers, specifies which range to run over
-  int startIndex = 0;
+  int startIndex = 0; 
+  /* int endIndex = 17; */
+
+  /* int startIndex = 18; */
   int endIndex = 28;
 
   // int startIndex = 15;

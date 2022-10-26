@@ -62,6 +62,8 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     fTriggerDistEff_highestPt(0x0),
     fAssociatedHDist(0x0),
     fLambdaDist(0x0),
+    fNormalLambdaDist(0x0),
+    fAntiLambdaDist(0x0),
     fTriggeredLambdaDist(0x0),
     fTriggeredLambdaDistFilterbit(0x0),
     fDphiHLambda(0x0),
@@ -115,6 +117,8 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     fTriggerDistEff_highestPt(0x0),
     fAssociatedHDist(0x0),
     fLambdaDist(0x0),
+    fNormalLambdaDist(0x0),
+    fAntiLambdaDist(0x0),
     fTriggeredLambdaDist(0x0),
     fTriggeredLambdaDistFilterbit(0x0),
     fDphiHLambda(0x0),
@@ -221,6 +225,14 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     fLambdaDist = new THnSparseF("fLambdaDist", "Lambda Distribution", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
     fLambdaDist->Sumw2();
     fOutputList->Add(fLambdaDist);
+
+    fNormalLambdaDist = new THnSparseF("fNormalLambdaDist", "Lambda Distribution", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fNormalLambdaDist->Sumw2();
+    fOutputList->Add(fNormalLambdaDist);
+
+    fAntiLambdaDist = new THnSparseF("fAntiLambdaDist", "Anti-Lambda Distribution", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fAntiLambdaDist->Sumw2();
+    fOutputList->Add(fAntiLambdaDist);
 
     fTriggeredLambdaDist = new THnSparseF("fTriggeredLambdaDist", "Lambda Distribution (with triggered event)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
     fTriggeredLambdaDist->Sumw2();
@@ -952,6 +964,9 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     //Making list of possible lambdas (have to do +/- for proton or pi):
 
     std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list;
+    std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> normal_lambda_list;
+    std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> anti_lambda_list;
+
     std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_filterbit_daughters;
     std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_v0;
     std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list_signal_region;
@@ -986,6 +1001,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
             AliMotherContainer lambda_RotatedPi = RotatedDaughtersToMother(piMinus_list[i], proton_list[j], 0.1396, 0.9383, TMath::Pi());
             AliMotherContainer lambda_Flipped = FlippedDaughtersToMother(piMinus_list[i], proton_list[j], 0.1396, 0.9383);
             lambda_list.push_back(lambda);
+            normal_lambda_list.push_back(lambda);
             lambda_list_RotatedPi.push_back(lambda_RotatedPi);
             lambda_list_Flipped.push_back(lambda_Flipped);
 
@@ -1021,6 +1037,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
             AliMotherContainer lambda_RotatedPi = RotatedDaughtersToMother(piPlus_list[i], antiProton_list[j], 0.1396, 0.9383, TMath::Pi());
             AliMotherContainer lambda_Flipped = FlippedDaughtersToMother(piPlus_list[i], antiProton_list[j], 0.1396, 0.9383);
             lambda_list.push_back(lambda);
+            anti_lambda_list.push_back(lambda);
             lambda_list_RotatedPi.push_back(lambda_RotatedPi);
             lambda_list_Flipped.push_back(lambda_Flipped);
 
@@ -1110,6 +1127,9 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     if(is_triggered_event) FillMotherDist(lambda_list, multPercentile, fTriggeredLambdaDist);
     if(is_triggered_event) FillMotherDist(lambda_list_filterbit_daughters, multPercentile, fTriggeredLambdaDistFilterbit);
     FillMotherDist(lambda_list, multPercentile, fLambdaDist);
+
+    FillMotherDist(normal_lambda_list, multPercentile, fNormalLambdaDist);
+    FillMotherDist(anti_lambda_list, multPercentile, fAntiLambdaDist);
 
     fMultDistMinBias->Fill(NCharged);
 

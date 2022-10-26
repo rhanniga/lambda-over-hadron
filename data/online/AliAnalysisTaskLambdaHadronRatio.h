@@ -91,6 +91,8 @@ private:
   THnSparse* fAssociatedHDist;  //!>! single particle associated hadron dist
 
   THnSparse* fLambdaDist;  //!>! single particle lambda dist
+  THnSparse* fNormalLambdaDist;  //!>! single particle lambda dist (normal lambdas, not anti)
+  THnSparse* fAntiLambdaDist;  //!>! single particle lambda dist (anti lambdas)
   THnSparse* fTriggeredLambdaDist;  //!>! single particle lambda dist within a triggered event
   THnSparse* fTriggeredLambdaDistFilterbit;  //!>! single particle lambda dist where daughters have filter bit 16 within a triggered event
 
