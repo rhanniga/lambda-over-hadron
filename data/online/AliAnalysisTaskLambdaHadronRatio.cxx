@@ -916,7 +916,10 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
 
             double time = track->GetTOFsignal() - fpidResponse->GetTOFResponse().GetStartTime(track->P());
             double length = track->GetIntegratedLength();
-            double v = length/time;
+            double v;
+            if(time > 0) v = length / time;
+            else v = 0;
+
             double c = 0.0288782;
             double beta = v/c;
 
