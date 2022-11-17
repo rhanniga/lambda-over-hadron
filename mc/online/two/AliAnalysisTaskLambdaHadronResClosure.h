@@ -79,12 +79,20 @@ private:
   THnSparse* fTriggerDist;  //!>! single particle trigger dist (not corrected for efficiency, is MC hadron, is MC primary)
   THnSparse* fAssociatedHDist;  //!>! single particle associated hadron dist
   THnSparse* fTriggeredLambdaDist;  //!>! single particle lambda dist within a triggered event
+  THnSparse* fTriggeredNormalLambdaDist;  //!>! single particle normal lambda dist within a triggered event
+  THnSparse* fTriggeredAntiLambdaDist;  //!>! single particle anti-lambda dist within a triggered event
   THnSparse* fLambdaDist;  //!>! single particle lambda dist
+  THnSparse* fNormalLambdaDist;  //!>! single particle normal lambda dist
+  THnSparse* fAntiLambdaDist;  //!>! single particle anti-lambda dist
 
   THnSparse* fTriggerDist_MC;  //!>! single particle trigger dist (MC truth)
   THnSparse* fAssociatedDist_MC;  //!>! single particle associated hadron dist (MC truth)
   THnSparse* fTriggeredLambdaDist_MC;  //!>! single particle lambda dist within a triggered event (MC truth)
+  THnSparse* fTriggeredNormalLambdaDist_MC;  //!>! single particle normal lambda dist within a triggered event (MC truth)
+  THnSparse* fTriggeredAntiLambdaDist_MC;  //!>! single particle anti-lambda dist within a triggered event (MC truth)
   THnSparse* fLambdaDist_MC;  //!>! single particle lambda dist (MC truth)
+  THnSparse* fNormalLambdaDist_MC;  //!>! single particle normal lambda dist (MC truth)
+  THnSparse* fAntiLambdaDist_MC;  //!>! single particle anti-lambda dist (MC truth)
 
   THnSparse* fDphiHLambdaEff;  //!>! hadron-lambda correlation hist (efficiency corrected)
   THnSparse* fDphiHLambdaEff_MCKin;  //!>! hadron-lambda correlation hist (efficiency corrected, using MC kinematics)

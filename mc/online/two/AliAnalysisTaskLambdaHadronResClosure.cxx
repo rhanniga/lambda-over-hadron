@@ -62,7 +62,11 @@ AliAnalysisTaskLambdaHadronResClosure::AliAnalysisTaskLambdaHadronResClosure() :
     fTriggerDist(0x0),
     fAssociatedHDist(0x0),
     fTriggeredLambdaDist(0x0),
+    fTriggeredNormalLambdaDist(0x0),
+    fTriggeredAntiLambdaDist(0x0),
     fLambdaDist(0x0),
+    fNormalLambdaDist(0x0),
+    fAntiLambdaDist(0x0),
     fDphiHLambdaEff(0x0),
     fDphiHHEff(0x0),
     fDphiHLambdaMixed(0x0),
@@ -99,7 +103,11 @@ AliAnalysisTaskLambdaHadronResClosure::AliAnalysisTaskLambdaHadronResClosure(con
     fTriggerDist(0x0),
     fAssociatedHDist(0x0),
     fTriggeredLambdaDist(0x0),
+    fTriggeredNormalLambdaDist(0x0),
+    fTriggeredAntiLambdaDist(0x0),
     fLambdaDist(0x0),
+    fNormalLambdaDist(0x0),
+    fAntiLambdaDist(0x0),
     fDphiHLambdaEff(0x0),
     fDphiHLambdaEff_MCKin(0x0),
     fDphiHHEff(0x0),
@@ -193,17 +201,49 @@ void AliAnalysisTaskLambdaHadronResClosure::UserCreateOutputObjects()
     fTriggeredLambdaDist->Sumw2();
     fOutputList->Add(fTriggeredLambdaDist);
 
+    fTriggeredNormalLambdaDist = new THnSparseF("fTriggeredNormalLambdaDist", "NormalLambda Distribution (with triggered event)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fTriggeredNormalLambdaDist->Sumw2();
+    fOutputList->Add(fTriggeredNormalLambdaDist);
+
+    fTriggeredAntiLambdaDist = new THnSparseF("fTriggeredAntiLambdaDist", "AntiLambda Distribution (with triggered event)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fTriggeredAntiLambdaDist->Sumw2();
+    fOutputList->Add(fTriggeredAntiLambdaDist);
+
     fLambdaDist = new THnSparseF("fLambdaDist", "Lambda Distribution (reco with v0 finder)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
     fLambdaDist->Sumw2();
     fOutputList->Add(fLambdaDist);
+
+    fNormalLambdaDist = new THnSparseF("fNormalLambdaDist", "NormalLambda Distribution (reco with v0 finder)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fNormalLambdaDist->Sumw2();
+    fOutputList->Add(fNormalLambdaDist);
+
+    fAntiLambdaDist = new THnSparseF("fAntiLambdaDist", "AntiLambda Distribution (reco with v0 finder)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fAntiLambdaDist->Sumw2();
+    fOutputList->Add(fAntiLambdaDist);
 
     fTriggeredLambdaDist_MC = new THnSparseF("fTriggeredLambdaDist_MC", "TriggeredLambda Distribution (MC truth)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
     fTriggeredLambdaDist_MC->Sumw2();
     fOutputList->Add(fTriggeredLambdaDist_MC);
 
+    fTriggeredNormalLambdaDist_MC = new THnSparseF("fTriggeredNormalLambdaDist_MC", "TriggeredNormalLambda Distribution (MC truth)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fTriggeredNormalLambdaDist_MC->Sumw2();
+    fOutputList->Add(fTriggeredNormalLambdaDist_MC);
+
+    fTriggeredAntiLambdaDist_MC = new THnSparseF("fTriggeredAntiLambdaDist_MC", "TriggeredAntiLambda Distribution (MC truth)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fTriggeredAntiLambdaDist_MC->Sumw2();
+    fOutputList->Add(fTriggeredAntiLambdaDist_MC);
+
     fLambdaDist_MC = new THnSparseF("fLambdaDist_MC", "Lambda Distribution (MC truth)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
     fLambdaDist_MC->Sumw2();
     fOutputList->Add(fLambdaDist_MC);
+
+    fNormalLambdaDist_MC = new THnSparseF("fNormalLambdaDist_MC", "normal Lambda Distribution (MC truth)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fNormalLambdaDist_MC->Sumw2();
+    fOutputList->Add(fNormalLambdaDist_MC);
+
+    fAntiLambdaDist_MC = new THnSparseF("fAntiLambdaDist_MC", "anti-Lambda Distribution (MC truth)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fAntiLambdaDist_MC->Sumw2();
+    fOutputList->Add(fAntiLambdaDist_MC);
 
     //Correlation axes are: Trigger Pt, Associated Pt, dPhi, dEta, Inv Mass, Zvtx
     int hl_cor_bins[6] = {9, 10, 16, 20, 140, 10};
@@ -809,7 +849,6 @@ bool AliAnalysisTaskLambdaHadronResClosure::PassMCAssociatedCuts(AliAODMCParticl
 bool AliAnalysisTaskLambdaHadronResClosure::PassMCLambdaCuts(AliAODMCParticle *mc_particle){
 
     if(!(TMath::Abs(mc_particle->GetPdgCode()) == 3122)) return false;
-    // if(!(mc_particle->IsPhysicalPrimary())) return false; // testing, testing, 1 2 3
     if(!(TMath::Abs(mc_particle->Eta()) < 0.8)) return false;
 
     int first_daughter_index = 0;
@@ -943,7 +982,7 @@ void AliAnalysisTaskLambdaHadronResClosure::UserExec(Option_t*)
 
     // For now we guarantee the p-pi pair came from an actual lambda, and that the mothers of each daughter are the same
     for(int i = 0; i < (int)proton_list.size(); i++) {
-        for(int j = 0; j < (int) piminus_list.size(); j++) {
+        for(int j = 0; j < (int)piminus_list.size(); j++) {
             auto proton = proton_list[i];
             auto piminus = piminus_list[j];
             AliMotherContainer lambda = DaughtersToMother(proton, piminus, 0.9383, 0.1396);
@@ -952,7 +991,7 @@ void AliAnalysisTaskLambdaHadronResClosure::UserExec(Option_t*)
     }
 
     for(int i = 0; i < (int)antiproton_list.size(); i++) {
-        for(int j = 0; j < (int) piplus_list.size(); j++) {
+        for(int j = 0; j < (int)piplus_list.size(); j++) {
             auto antiproton = antiproton_list[i];
             auto piplus = piplus_list[j];
             AliMotherContainer antilambda = DaughtersToMother(antiproton, piplus, 0.9383, 0.1396);
@@ -966,40 +1005,26 @@ void AliAnalysisTaskLambdaHadronResClosure::UserExec(Option_t*)
     FillSingleParticleDist(trigger_list, primZ, fTriggerDist, false);
     FillSingleParticleDist(associated_h_list, primZ, fAssociatedHDist);
 
-    FillMotherDist(lambda_list, primZ, fLambdaDist, false);
+
+    // Filling our single particle lambda distribution histograms:
+    FillMotherDist(lambda_list, primZ, fLambdaDist, true);
     FillMotherDist(antilambda_list, primZ, fLambdaDist, true);
 
-    // Filling our single particle lambda distribution histogram:
-    if(is_triggered_event) FillMotherDist(lambda_list, multPercentile, fTriggeredLambdaDist, false);
+    FillMotherDist(lambda_list, primZ, fNormalLambdaDist, true);
+    FillMotherDist(antilambda_list, primZ, fAntiLambdaDist, true);
+
+    if(is_triggered_event) FillMotherDist(lambda_list, multPercentile, fTriggeredLambdaDist, true);
     if(is_triggered_event) FillMotherDist(antilambda_list, multPercentile, fTriggeredLambdaDist, true);
 
-    // MakeSameHLambdaCorrelations(trigger_list, antilambda_list, fDphiHLambdaEff, primZ, true, true);
-    // MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambdaEff, primZ, true, false);
-
-    // MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHHEff, primZ, true);
-
-    // if(/*lambda_list.size() > 0 && */ associated_h_list.size() > 0) {
-    //     AliEventPool *fCorPool = fCorPoolMgr->GetEventPool(multPercentile, primZ);
-    //     if(!fCorPool) {
-    //         AliFatal(Form("No pool found for multiplicity = %f, zVtx = %f", multPercentile, primZ));
-    //     }
-    //     else {
-    //         if(fCorPool->IsReady()) {
-    //             MakeMixedHLambdaCorrelations(fCorPool, antilambda_list, fDphiHLambdaMixed, primZ, true, true);
-    //             MakeMixedHLambdaCorrelations(fCorPool, lambda_list, fDphiHLambdaMixed, primZ, true, false);
-    //             MakeMixedHHCorrelations(fCorPool, associated_h_list, fDphiHHMixed, primZ);
-    //         }
-    //         if(fMixedTrackObjArray->GetEntries() > 0) {
-    //             fCorPool->UpdatePool(fMixedTrackObjArray);
-    //         }
-    //     }
-    // }
-    
+    if(is_triggered_event) FillMotherDist(lambda_list, multPercentile, fTriggeredNormalLambdaDist, true);
+    if(is_triggered_event) FillMotherDist(antilambda_list, multPercentile, fTriggeredAntiLambdaDist, true);
 
 
     std::vector<AliAODMCParticle*> real_trigger_list;
     std::vector<AliAODMCParticle*> real_associated_list;
+    std::vector<AliAODMCParticle*> real_total_lambda_list;
     std::vector<AliAODMCParticle*> real_lambda_list;
+    std::vector<AliAODMCParticle*> real_antilambda_list;
 
     for(int mc_index = 0; mc_index < fMCArray->GetEntries(); mc_index++){
 
@@ -1011,35 +1036,23 @@ void AliAnalysisTaskLambdaHadronResClosure::UserExec(Option_t*)
             fMixedMCTrackObjArray->Add(trigger_particle);
         }
         if(PassMCAssociatedCuts(mc_particle)) real_associated_list.push_back(mc_particle);
-        if(PassMCLambdaCuts(mc_particle)) real_lambda_list.push_back(mc_particle);
+        if(PassMCLambdaCuts(mc_particle)) {
+            real_total_lambda_list.push_back(mc_particle);
+            if(mc_particle->GetPdgCode() == 3122) real_lambda_list.push_back(mc_particle);
+            if(mc_particle->GetPdgCode() == -3122) real_antilambda_list.push_back(mc_particle);
+        }
 
     }
 
     FillSingleMCParticleDist(real_trigger_list, primZ, fTriggerDist_MC);
     FillSingleMCParticleDist(real_associated_list, primZ, fAssociatedDist_MC);
-    FillMCMotherDist(real_lambda_list, primZ, fLambdaDist_MC);
-    if(is_triggered_event) FillMCMotherDist(real_lambda_list, multPercentile, fTriggeredLambdaDist_MC);
+    FillMCMotherDist(real_total_lambda_list, primZ, fLambdaDist_MC);
+    FillMCMotherDist(real_lambda_list, primZ, fNormalLambdaDist_MC);
+    FillMCMotherDist(real_antilambda_list, primZ, fAntiLambdaDist_MC);
+    if(is_triggered_event) FillMCMotherDist(real_total_lambda_list, multPercentile, fTriggeredLambdaDist_MC);
+    if(is_triggered_event) FillMCMotherDist(real_lambda_list, multPercentile, fTriggeredNormalLambdaDist_MC);
+    if(is_triggered_event) FillMCMotherDist(real_antilambda_list, multPercentile, fTriggeredAntiLambdaDist_MC);
 
-    // MakeSameMCHLambdaCorrelations(real_trigger_list, real_lambda_list, fDphiHLambda_MC, primZ);
-    // MakeSameMCHHCorrelations(real_trigger_list, real_associated_list, fDphiHH_MC, primZ);
-    
-
-
-    // if(real_associated_list.size() > 0 /*&& real_lambda_list.size() > 0*/) {
-    //     AliEventPool *fMCCorPool = fMCCorPoolMgr->GetEventPool(multPercentile, primZ);
-    //     if(!fMCCorPool) {
-    //         AliFatal(Form("No pool found for multiplicity = %f, zVtx = %f", multPercentile, primZ));
-    //     }
-    //     else {
-    //         if(fMCCorPool->IsReady()) {
-    //             MakeMixedMCHLambdaCorrelations(fMCCorPool, real_lambda_list, fDphiHLambdaMixed_MC, primZ);
-    //             MakeMixedMCHHCorrelations(fMCCorPool, real_associated_list, fDphiHHMixed_MC, primZ);
-    //         }
-    //         if(fMixedMCTrackObjArray->GetEntries() > 0) {
-    //             fMCCorPool->UpdatePool(fMixedMCTrackObjArray);
-    //         }
-    //     }
-    // }
 
     PostData(1, fOutputList);
 }
