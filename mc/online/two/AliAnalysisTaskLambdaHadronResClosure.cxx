@@ -67,6 +67,8 @@ AliAnalysisTaskLambdaHadronResClosure::AliAnalysisTaskLambdaHadronResClosure() :
     fLambdaDist(0x0),
     fNormalLambdaDist(0x0),
     fAntiLambdaDist(0x0),
+    fNormalLambdaDist_checkMC(0x0),
+    fAntiLambdaDist_checkMC(0x0),
     fDphiHLambdaEff(0x0),
     fDphiHHEff(0x0),
     fDphiHLambdaMixed(0x0),
@@ -108,6 +110,8 @@ AliAnalysisTaskLambdaHadronResClosure::AliAnalysisTaskLambdaHadronResClosure(con
     fLambdaDist(0x0),
     fNormalLambdaDist(0x0),
     fAntiLambdaDist(0x0),
+    fNormalLambdaDist_checkMC(0x0),
+    fAntiLambdaDist_checkMC(0x0),
     fDphiHLambdaEff(0x0),
     fDphiHLambdaEff_MCKin(0x0),
     fDphiHHEff(0x0),
@@ -217,9 +221,17 @@ void AliAnalysisTaskLambdaHadronResClosure::UserCreateOutputObjects()
     fNormalLambdaDist->Sumw2();
     fOutputList->Add(fNormalLambdaDist);
 
+    fNormalLambdaDist_checkMC = new THnSparseF("fNormalLambdaDist_checkMC", "NormalLambda Dist_checkMCribution (reco with v0 finder)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fNormalLambdaDist_checkMC->Sumw2();
+    fOutputList->Add(fNormalLambdaDist_checkMC);
+
     fAntiLambdaDist = new THnSparseF("fAntiLambdaDist", "AntiLambda Distribution (reco with v0 finder)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
     fAntiLambdaDist->Sumw2();
     fOutputList->Add(fAntiLambdaDist);
+
+    fAntiLambdaDist_checkMC = new THnSparseF("fAntiLambdaDist_checkMC", "AntiLambda Dist_checkMCribution (reco with v0 finder)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fAntiLambdaDist_checkMC->Sumw2();
+    fOutputList->Add(fAntiLambdaDist_checkMC);
 
     fTriggeredLambdaDist_MC = new THnSparseF("fTriggeredLambdaDist_MC", "TriggeredLambda Distribution (MC truth)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
     fTriggeredLambdaDist_MC->Sumw2();
@@ -979,6 +991,8 @@ void AliAnalysisTaskLambdaHadronResClosure::UserExec(Option_t*)
 
     std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> antilambda_list;
     std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> lambda_list;
+    std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> antilambda_list_checkMC;
+    std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> lambda_list_checkMC;
 
     // For now we guarantee the p-pi pair came from an actual lambda, and that the mothers of each daughter are the same
     for(int i = 0; i < (int)proton_list.size(); i++) {
@@ -987,6 +1001,22 @@ void AliAnalysisTaskLambdaHadronResClosure::UserExec(Option_t*)
             auto piminus = piminus_list[j];
             AliMotherContainer lambda = DaughtersToMother(proton, piminus, 0.9383, 0.1396);
             lambda_list.push_back(lambda);
+
+            // check to see if they are from the same mother and came from a lambda
+            AliAODMCParticle* proton_mc = (AliAODMCParticle*)fMCArray->At(proton->GetLabel());
+            AliAODMCParticle* piminus_mc = (AliAODMCParticle*)fMCArray->At(piminus->GetLabel());
+
+            int proton_mother_label = proton_mc->GetMother();
+            int piminus_mother_label = piminus_mc->GetMother();
+
+            if(proton_mother_label < 0 || piminus_mother_label < 0) continue;
+
+            if(proton_mother_label == piminus_mother_label) {
+                AliAODMCParticle* mother = (AliAODMCParticle*)fMCArray->At(proton_mother_label);
+                if(mother->GetPdgCode() == 3122) {
+                    lambda_list_checkMC.push_back(lambda);
+                }
+            }
         }
     }
 
@@ -996,6 +1026,22 @@ void AliAnalysisTaskLambdaHadronResClosure::UserExec(Option_t*)
             auto piplus = piplus_list[j];
             AliMotherContainer antilambda = DaughtersToMother(antiproton, piplus, 0.9383, 0.1396);
             antilambda_list.push_back(antilambda);
+
+            // check to see if they are from the same mother and came from an anti-lambda
+            AliAODMCParticle* antiproton_mc = (AliAODMCParticle*)fMCArray->At(antiproton->GetLabel());
+            AliAODMCParticle* piplus_mc = (AliAODMCParticle*)fMCArray->At(piplus->GetLabel());
+
+            int antiproton_mother_label = antiproton_mc->GetMother();
+            int piplus_mother_label = piplus_mc->GetMother();
+
+            if(antiproton_mother_label < 0 || piplus_mother_label < 0) continue;
+
+            if(antiproton_mother_label == piplus_mother_label) {
+                AliAODMCParticle* mother = (AliAODMCParticle*)fMCArray->At(antiproton_mother_label);
+                if(mother->GetPdgCode() == -3122) {
+                    antilambda_list_checkMC.push_back(antilambda);
+                }
+            }
         }
     }
 
@@ -1013,6 +1059,9 @@ void AliAnalysisTaskLambdaHadronResClosure::UserExec(Option_t*)
     FillMotherDist(lambda_list, primZ, fNormalLambdaDist, true);
     FillMotherDist(antilambda_list, primZ, fAntiLambdaDist, true);
 
+    FillMotherDist(lambda_list_checkMC, primZ, fNormalLambdaDist_checkMC, true);
+    FillMotherDist(antilambda_list_checkMC, primZ, fAntiLambdaDist_checkMC, true);
+
     if(is_triggered_event) FillMotherDist(lambda_list, multPercentile, fTriggeredLambdaDist, true);
     if(is_triggered_event) FillMotherDist(antilambda_list, multPercentile, fTriggeredLambdaDist, true);
 
@@ -1022,6 +1071,7 @@ void AliAnalysisTaskLambdaHadronResClosure::UserExec(Option_t*)
 
     std::vector<AliAODMCParticle*> real_trigger_list;
     std::vector<AliAODMCParticle*> real_associated_list;
+
     std::vector<AliAODMCParticle*> real_total_lambda_list;
     std::vector<AliAODMCParticle*> real_lambda_list;
     std::vector<AliAODMCParticle*> real_antilambda_list;
@@ -1046,9 +1096,11 @@ void AliAnalysisTaskLambdaHadronResClosure::UserExec(Option_t*)
 
     FillSingleMCParticleDist(real_trigger_list, primZ, fTriggerDist_MC);
     FillSingleMCParticleDist(real_associated_list, primZ, fAssociatedDist_MC);
+
     FillMCMotherDist(real_total_lambda_list, primZ, fLambdaDist_MC);
     FillMCMotherDist(real_lambda_list, primZ, fNormalLambdaDist_MC);
     FillMCMotherDist(real_antilambda_list, primZ, fAntiLambdaDist_MC);
+
     if(is_triggered_event) FillMCMotherDist(real_total_lambda_list, multPercentile, fTriggeredLambdaDist_MC);
     if(is_triggered_event) FillMCMotherDist(real_lambda_list, multPercentile, fTriggeredNormalLambdaDist_MC);
     if(is_triggered_event) FillMCMotherDist(real_antilambda_list, multPercentile, fTriggeredAntiLambdaDist_MC);

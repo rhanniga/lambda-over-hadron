@@ -84,6 +84,8 @@ private:
   THnSparse* fLambdaDist;  //!>! single particle lambda dist
   THnSparse* fNormalLambdaDist;  //!>! single particle normal lambda dist
   THnSparse* fAntiLambdaDist;  //!>! single particle anti-lambda dist
+  THnSparse* fNormalLambdaDist_checkMC;  //!>! single particle normal lambda dist where we check to see if daughters came from same lambda
+  THnSparse* fAntiLambdaDist_checkMC;  //!>! single particle anti-lambda dist where we check to see if daughters came from same anti-lambda
 
   THnSparse* fTriggerDist_MC;  //!>! single particle trigger dist (MC truth)
   THnSparse* fAssociatedDist_MC;  //!>! single particle associated hadron dist (MC truth)

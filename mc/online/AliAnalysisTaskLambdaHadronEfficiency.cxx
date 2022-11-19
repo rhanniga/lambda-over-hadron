@@ -1083,7 +1083,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                     recoPhi -= 2.0*TMath::Pi();
                 }
 
-                distPoint[0] = recoP;
+                distPoint[0] = recoPt;
                 distPoint[1] = recoPhi;
                 distPoint[2] = recoEta;
                 distPoint[3] = Zvertex;
@@ -1204,7 +1204,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 }else if(recoPhi > TMath::Pi()){
                     recoPhi -= 2.0*TMath::Pi();
                 }
-                distPoint[0] = recoP;
+                distPoint[0] = recoPt;
                 distPoint[1] = recoPhi;
                 distPoint[2] = recoEta;
                 distPoint[3] = Zvertex;
@@ -1334,7 +1334,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
             } 
         }
 
-        //select phis
+        //select lambdas
         if(TMath::Abs(pdgcode) != 3122) continue;
         Int_t indexFirstDaughter = 0, indexSecondDaughter = 0;
         indexFirstDaughter = AODMCtrack->GetDaughterFirst();
