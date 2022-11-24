@@ -82,8 +82,12 @@ private:
   THnSparse* fTriggeredNormalLambdaDist;  //!>! single particle normal lambda dist within a triggered event
   THnSparse* fTriggeredAntiLambdaDist;  //!>! single particle anti-lambda dist within a triggered event
   THnSparse* fLambdaDist;  //!>! single particle lambda dist
+  THnSparse* fLambdaRotatedDaughtersDist;  //!>! single particle lambda dist with rotated daughters
+  THnSparse* fLambdaLSDaughtersDist;  //!>! single particle lambda dist with LS daughters
   THnSparse* fNormalLambdaDist;  //!>! single particle normal lambda dist
   THnSparse* fAntiLambdaDist;  //!>! single particle anti-lambda dist
+  THnSparse* fLambdaBGDist; //!>! single particle p-pi dist where we the protons and pions did NOT come from the same lambda
+  THnSparse* fLambdaDist_checkMC;  //!>! single particle lambda dist where we check to see if the daughters came from same lambda
   THnSparse* fNormalLambdaDist_checkMC;  //!>! single particle normal lambda dist where we check to see if daughters came from same lambda
   THnSparse* fAntiLambdaDist_checkMC;  //!>! single particle anti-lambda dist where we check to see if daughters came from same anti-lambda
 
@@ -113,6 +117,7 @@ private:
 
 
   AliMotherContainer DaughtersToMother(AliAODTrack* track1, AliAODTrack* track2, double mass1, double mass2);
+  AliMotherContainer RotatedDaughtersToMother(AliAODTrack* track1, AliAODTrack* track2, double mass1, double mass2, double angle);
   void FillSingleParticleDist(std::vector<AliAODTrack*> particle_list, double zVtx, THnSparse* fDist, bool trig_eff=false);
   void FillSingleMCParticleDist(std::vector<AliAODMCParticle*> particle_list, double zVtx, THnSparse* fDist);
   void FillMotherDist(std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> particle_list, float multPercentile, THnSparse* fDist, bool lambdaEff=true);

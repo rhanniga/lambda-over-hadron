@@ -63,8 +63,10 @@ AliAnalysisTaskLambdaHadronResClosure::AliAnalysisTaskLambdaHadronResClosure() :
     fTriggerDist(0x0),
     fAssociatedHDist(0x0),
     fAssociatedHDist_checkMC(0x0),
-    fTriggeredLambdaDist(0x0),
     fLambdaDist(0x0),
+    fLambdaLSDist(0x0),
+    fTriggeredLambdaDist(0x0),
+    fTriggeredLambdaLSDist(0x0),
     fDphiHLambdaEff(0x0),
     fDphiHLambdaEff_MCKin(0x0),
     fDphiHHEff(0x0),
@@ -105,8 +107,10 @@ AliAnalysisTaskLambdaHadronResClosure::AliAnalysisTaskLambdaHadronResClosure(con
     fTriggerDist(0x0),
     fAssociatedHDist(0x0),
     fAssociatedHDist_checkMC(0x0),
-    fTriggeredLambdaDist(0x0),
     fLambdaDist(0x0),
+    fLambdaLSDist(0x0),
+    fTriggeredLambdaDist(0x0),
+    fTriggeredLambdaLSDist(0x0),
     fDphiHLambdaEff(0x0),
     fDphiHLambdaEff_MCKin(0x0),
     fDphiHHEff(0x0),
@@ -199,26 +203,39 @@ void AliAnalysisTaskLambdaHadronResClosure::UserCreateOutputObjects()
     fOutputList->Add(fAssociatedDist_MC);
 
     //Mother distribution axes are: Pt, Phi, Eta, Mass, Event multiplicity
-    int mother_dist_bins[5] = {100, 16, 20, 140, 10};
+    int mother_dist_bins[5] = {100, 16, 20, 100, 10};
     double mother_dist_mins[5] = {0, -3.14, -1, 1.06, 0};
-    double mother_dist_maxes[5] = {15, 3.14, 1, 1.2, 100};
+    double mother_dist_maxes[5] = {15, 3.14, 1, 1.26, 100};
+
+    fLambdaDist = new THnSparseF("fLambdaDist", "Lambda Distribution", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fLambdaDist->Sumw2();
+    fOutputList->Add(fLambdaDist);
+
+    fLambdaLSDist = new THnSparseF("fLambdaLSDist", "Lambda Distribution (LS daughters)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fLambdaLSDist->Sumw2();
+    fOutputList->Add(fLambdaLSDist);
 
     fTriggeredLambdaDist = new THnSparseF("fTriggeredLambdaDist", "Lambda Distribution (with triggered event)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
     fTriggeredLambdaDist->Sumw2();
     fOutputList->Add(fTriggeredLambdaDist);
 
-    fLambdaDist = new THnSparseF("fLambdaDist", "Lambda Distribution (reco with v0 finder)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
-    fLambdaDist->Sumw2();
-    fOutputList->Add(fLambdaDist);
+    fTriggeredLambdaLSDist = new THnSparseF("fTriggeredLambdaLSDist", "Lambda Distribution (with triggered event, LS daughters)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fTriggeredLambdaLSDist->Sumw2();
+    fOutputList->Add(fTriggeredLambdaLSDist);
+
 
     fLambdaDist_MC = new THnSparseF("fLambdaDist_MC", "Lambda Distribution (MC truth)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
     fLambdaDist_MC->Sumw2();
     fOutputList->Add(fLambdaDist_MC);
 
+    fTriggeredLambdaDist_MC = new THnSparseF("fTriggeredLambdaDist_MC", "TriggeredLambda Distribution (MC truth)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fTriggeredLambdaDist_MC->Sumw2();
+    fOutputList->Add(fTriggeredLambdaDist_MC);
+
     //Correlation axes are: Trigger Pt, Associated Pt, dPhi, dEta, Inv Mass, Zvtx
-    int hl_cor_bins[6] = {9, 10, 16, 20, 140, 10};
+    int hl_cor_bins[6] = {9, 10, 16, 20, 100, 10};
     double hl_cor_mins[6] = {1.0, 1, -1.0*TMath::Pi()/2.0, -2.0, 1.06, -10};
-    double hl_cor_maxes[6] = {10.0, 6, 3.0*TMath::Pi()/2.0, 2.0, 1.2, 10};
+    double hl_cor_maxes[6] = {10.0, 6, 3.0*TMath::Pi()/2.0, 2.0, 1.26, 10};
 
     fDphiHLambdaEff = new THnSparseF("fDphiHLambdaEff", "Efficiency-corrected Hadron-Lambda Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambdaEff->Sumw2();
@@ -323,7 +340,7 @@ void AliAnalysisTaskLambdaHadronResClosure::FillSingleMCParticleDist(std::vector
     }
 }
 
-void AliAnalysisTaskLambdaHadronResClosure::FillMotherDist(std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> particle_list, float multPercentile, THnSparse* fDist, bool isAntiLambda, bool lambdaEff)
+void AliAnalysisTaskLambdaHadronResClosure::FillMotherDist(std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> particle_list, float multPercentile, THnSparse* fDist,  bool lambdaEff)
 {
     double dist_points[5]; //Pt, Phi, Eta, M, event multiplicity
     for(int i = 0; i < (int)particle_list.size(); i++) {
@@ -400,7 +417,7 @@ void AliAnalysisTaskLambdaHadronResClosure::LoadEfficiencies(TString filePath) {
     }
 }
 
-void AliAnalysisTaskLambdaHadronResClosure::MakeSameHLambdaCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx, bool eff, bool isAntiLambda)
+void AliAnalysisTaskLambdaHadronResClosure::MakeSameHLambdaCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx, bool eff)
 {
     double dphi_point[6];
 
@@ -1087,14 +1104,22 @@ void AliAnalysisTaskLambdaHadronResClosure::UserExec(Option_t*)
 
     //Making list of possible lambdas (have to do +/- for proton or pi):
 
+    std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> lambda_ls_daughters_list;
+
     std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> antilambda_list;
     std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> lambda_list;
+
+    std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> guaranteed_antilambda_list;
+    std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> guaranteed_lambda_list;
 
     // For now we guarantee the p-pi pair came from an actual lambda, and that the mothers of each daughter are the same
     for(int i = 0; i < (int)proton_list.size(); i++) {
         for(int j = 0; j < (int) piminus_list.size(); j++) {
             auto proton = proton_list[i];
             auto piminus = piminus_list[j];
+            AliMotherContainer lambda = DaughtersToMother(proton, piminus, 0.9383, 0.1396);
+            lambda_list.push_back(lambda);
+
             if(proton->GetID() == piminus->GetID()) continue;
             auto proton_mc = (AliAODMCParticle*)fMCArray->At(proton->GetLabel());
             auto piminus_mc = (AliAODMCParticle*)fMCArray->At(piminus->GetLabel());
@@ -1104,9 +1129,8 @@ void AliAnalysisTaskLambdaHadronResClosure::UserExec(Option_t*)
             if(mlabel_pos != mlabel_neg) continue;
             auto mother = (AliAODMCParticle*)fMCArray->At(mlabel_pos);
             if(mother->GetPdgCode() != 3122) continue;
-            AliMotherContainer lambda = DaughtersToMother(proton, piminus, 0.9383, 0.1396);
             lambda.motherLabel = mlabel_pos;
-            lambda_list.push_back(lambda);
+            guaranteed_lambda_list.push_back(lambda);
         }
     }
 
@@ -1114,6 +1138,9 @@ void AliAnalysisTaskLambdaHadronResClosure::UserExec(Option_t*)
         for(int j = 0; j < (int) piplus_list.size(); j++) {
             auto antiproton = antiproton_list[i];
             auto piplus = piplus_list[j];
+            AliMotherContainer antilambda = DaughtersToMother(antiproton, piplus, 0.9383, 0.1396);
+            antilambda_list.push_back(antilambda);
+
             if(antiproton->GetID() == piplus->GetID()) continue;
             auto antiproton_mc = (AliAODMCParticle*)fMCArray->At(antiproton->GetLabel());
             auto piplus_mc = (AliAODMCParticle*)fMCArray->At(piplus->GetLabel());
@@ -1123,9 +1150,27 @@ void AliAnalysisTaskLambdaHadronResClosure::UserExec(Option_t*)
             if(mlabel_pos != mlabel_neg) continue;
             auto mother = (AliAODMCParticle*)fMCArray->At(mlabel_pos);
             if(mother->GetPdgCode() != -3122) continue;
-            AliMotherContainer antilambda = DaughtersToMother(antiproton, piplus, 0.9383, 0.1396);
             antilambda.motherLabel = mlabel_pos;
-            antilambda_list.push_back(antilambda);
+            guaranteed_antilambda_list.push_back(antilambda);
+        }
+    }
+
+    // making the like-sign daughter lambdas
+    for(int i = 0; i < (int) proton_list.size(); i++) {
+        for(int j = 0; j < (int) piplus_list.size(); j++) {
+            auto proton = proton_list[i];
+            auto piplus = piplus_list[j];
+            AliMotherContainer lambda = DaughtersToMother(proton, piplus, 0.9383, 0.1396);
+            lambda_ls_daughters_list.push_back(lambda);
+        }
+    }
+
+    for(int i = 0; i < (int) antiproton_list.size(); i++) {
+        for(int j = 0; j < (int) piminus_list.size(); j++) {
+            auto antiproton = antiproton_list[i];
+            auto piminus = piminus_list[j];
+            AliMotherContainer antilambda = DaughtersToMother(antiproton, piminus, 0.9383, 0.1396);
+            lambda_ls_daughters_list.push_back(antilambda);
         }
     }
 
@@ -1136,17 +1181,20 @@ void AliAnalysisTaskLambdaHadronResClosure::UserExec(Option_t*)
     FillSingleParticleDist(trigger_list_checkMC, primZ, fTriggerDistEff_checkMC, true);
     FillSingleParticleDist(associated_h_list, primZ, fAssociatedHDist);
     FillSingleParticleDist(associated_h_list_checkMC, primZ, fAssociatedHDist);
-    FillMotherDist(lambda_list, primZ, fLambdaDist, false);
+
+    FillMotherDist(lambda_list, primZ, fLambdaDist, true);
     FillMotherDist(antilambda_list, primZ, fLambdaDist, true);
+    FillMotherDist(lambda_ls_daughters_list, primZ, fLambdaLSDist, true);
 
     // Filling our single particle lambda distribution histogram:
-    if(is_triggered_event) FillMotherDist(lambda_list, multPercentile, fTriggeredLambdaDist, false);
+    if(is_triggered_event) FillMotherDist(lambda_list, multPercentile, fTriggeredLambdaDist, true);
     if(is_triggered_event) FillMotherDist(antilambda_list, multPercentile, fTriggeredLambdaDist, true);
+    if(is_triggered_event) FillMotherDist(lambda_ls_daughters_list, multPercentile, fTriggeredLambdaLSDist, true);
 
-    MakeSameHLambdaCorrelations(trigger_list, antilambda_list, fDphiHLambdaEff, primZ, true, true);
-    MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambdaEff, primZ, true, false);
-    MakeSameHLambdaCorrelations_withMCKin(trigger_list, antilambda_list, fDphiHLambdaEff_MCKin, primZ, true);
-    MakeSameHLambdaCorrelations_withMCKin(trigger_list, lambda_list, fDphiHLambdaEff_MCKin, primZ, true);
+    MakeSameHLambdaCorrelations(trigger_list, antilambda_list, fDphiHLambdaEff, primZ, true);
+    MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambdaEff, primZ, true);
+    MakeSameHLambdaCorrelations_withMCKin(trigger_list, guaranteed_antilambda_list, fDphiHLambdaEff_MCKin, primZ, true);
+    MakeSameHLambdaCorrelations_withMCKin(trigger_list, guaranteed_lambda_list, fDphiHLambdaEff_MCKin, primZ, true);
 
     MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHHEff, primZ, true);
     MakeSameHHCorrelations(trigger_list_checkMC, associated_h_list_checkMC, fDphiHHEff_checkMC, primZ, true);
@@ -1192,7 +1240,9 @@ void AliAnalysisTaskLambdaHadronResClosure::UserExec(Option_t*)
 
     FillSingleMCParticleDist(real_trigger_list, primZ, fTriggerDist_MC);
     FillSingleMCParticleDist(real_associated_list, primZ, fAssociatedDist_MC);
+
     FillMCMotherDist(real_lambda_list, primZ, fLambdaDist_MC);
+    if(is_triggered_event) FillMCMotherDist(real_lambda_list, multPercentile, fTriggeredLambdaDist_MC);
 
     MakeSameMCHLambdaCorrelations(real_trigger_list, real_lambda_list, fDphiHLambda_MC, primZ);
     MakeSameMCHHCorrelations(real_trigger_list, real_associated_list, fDphiHH_MC, primZ);

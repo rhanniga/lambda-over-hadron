@@ -65,8 +65,12 @@ AliAnalysisTaskLambdaHadronResClosure::AliAnalysisTaskLambdaHadronResClosure() :
     fTriggeredNormalLambdaDist(0x0),
     fTriggeredAntiLambdaDist(0x0),
     fLambdaDist(0x0),
+    fLambdaRotatedDaughtersDist(0x0),
+    fLambdaLSDaughtersDist(0x0),
+    fLambdaBGDist(0x0),
     fNormalLambdaDist(0x0),
     fAntiLambdaDist(0x0),
+    fLambdaDist_checkMC(0x0),
     fNormalLambdaDist_checkMC(0x0),
     fAntiLambdaDist_checkMC(0x0),
     fDphiHLambdaEff(0x0),
@@ -108,8 +112,12 @@ AliAnalysisTaskLambdaHadronResClosure::AliAnalysisTaskLambdaHadronResClosure(con
     fTriggeredNormalLambdaDist(0x0),
     fTriggeredAntiLambdaDist(0x0),
     fLambdaDist(0x0),
+    fLambdaRotatedDaughtersDist(0x0),
+    fLambdaLSDaughtersDist(0x0),
+    fLambdaBGDist(0x0),
     fNormalLambdaDist(0x0),
     fAntiLambdaDist(0x0),
+    fLambdaDist_checkMC(0x0),
     fNormalLambdaDist_checkMC(0x0),
     fAntiLambdaDist_checkMC(0x0),
     fDphiHLambdaEff(0x0),
@@ -217,6 +225,22 @@ void AliAnalysisTaskLambdaHadronResClosure::UserCreateOutputObjects()
     fLambdaDist->Sumw2();
     fOutputList->Add(fLambdaDist);
 
+    fLambdaRotatedDaughtersDist = new THnSparseF("fLambdaRotatedDaughtersDist", "Lambda Rotated Daughters Distribution", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fLambdaRotatedDaughtersDist->Sumw2();
+    fOutputList->Add(fLambdaRotatedDaughtersDist);
+
+    fLambdaLSDaughtersDist = new THnSparseF("fLambdaLSDaughtersDist", "Lambda LS Daughters Distribution", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fLambdaLSDaughtersDist->Sumw2();
+    fOutputList->Add(fLambdaLSDaughtersDist);
+
+    fLambdaBGDist = new THnSparseF("fLambdaBGDist", "Lambda Distribution (reco with v0 finder)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fLambdaBGDist->Sumw2();
+    fOutputList->Add(fLambdaBGDist);
+
+    fLambdaDist_checkMC = new THnSparseF("fLambdaDist_checkMC", "Lambda Dist_checkMCribution (reco with v0 finder)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fLambdaDist_checkMC->Sumw2();
+    fOutputList->Add(fLambdaDist_checkMC);
+
     fNormalLambdaDist = new THnSparseF("fNormalLambdaDist", "NormalLambda Distribution (reco with v0 finder)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
     fNormalLambdaDist->Sumw2();
     fOutputList->Add(fNormalLambdaDist);
@@ -310,6 +334,21 @@ void AliAnalysisTaskLambdaHadronResClosure::UserCreateOutputObjects()
 
     PostData(1, fOutputList);
 
+}
+
+AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer AliAnalysisTaskLambdaHadronResClosure::RotatedDaughtersToMother(AliAODTrack* track1, AliAODTrack* track2, double mass1, double mass2, double angle)
+{
+    AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer mom;
+    // Rotating track1
+    TVector3 track1Vector(track1->Px(), track1->Py(), track1->Pz());
+    track1Vector.RotateZ(angle);
+    mom.particle.SetPx(track1Vector(0) + track2->Px());
+    mom.particle.SetPy(track1Vector(1) + track2->Py());
+    mom.particle.SetPz(track1Vector(2) + track2->Pz());
+    mom.particle.SetE(track1->E(mass1) + track2->E(mass2));
+    mom.daughter1ID = track1->GetID();
+    mom.daughter2ID = track2->GetID();
+    return mom;
 }
 
 AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer AliAnalysisTaskLambdaHadronResClosure::DaughtersToMother(AliAODTrack* track1, AliAODTrack* track2, double mass1, double mass2)
@@ -991,6 +1030,10 @@ void AliAnalysisTaskLambdaHadronResClosure::UserExec(Option_t*)
 
     std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> antilambda_list;
     std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> lambda_list;
+    std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> antilambda_bg_list;
+    std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> lambda_bg_list;
+    std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> lambda_ls_daughters_list;
+    std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> lambda_rotated_daughters_list;
     std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> antilambda_list_checkMC;
     std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> lambda_list_checkMC;
 
@@ -1002,6 +1045,11 @@ void AliAnalysisTaskLambdaHadronResClosure::UserExec(Option_t*)
             AliMotherContainer lambda = DaughtersToMother(proton, piminus, 0.9383, 0.1396);
             lambda_list.push_back(lambda);
 
+            AliMotherContainer rotated_lambda = RotatedDaughtersToMother(proton, piminus, 0.9383, 0.1396, TMath::Pi());
+            lambda_rotated_daughters_list.push_back(rotated_lambda);
+
+            bool from_same_lambda = false;
+
             // check to see if they are from the same mother and came from a lambda
             AliAODMCParticle* proton_mc = (AliAODMCParticle*)fMCArray->At(proton->GetLabel());
             AliAODMCParticle* piminus_mc = (AliAODMCParticle*)fMCArray->At(piminus->GetLabel());
@@ -1009,13 +1057,19 @@ void AliAnalysisTaskLambdaHadronResClosure::UserExec(Option_t*)
             int proton_mother_label = proton_mc->GetMother();
             int piminus_mother_label = piminus_mc->GetMother();
 
-            if(proton_mother_label < 0 || piminus_mother_label < 0) continue;
-
-            if(proton_mother_label == piminus_mother_label) {
-                AliAODMCParticle* mother = (AliAODMCParticle*)fMCArray->At(proton_mother_label);
-                if(mother->GetPdgCode() == 3122) {
-                    lambda_list_checkMC.push_back(lambda);
+            if(proton_mother_label >= 0 && piminus_mother_label >= 0) {
+                if(proton_mother_label == piminus_mother_label) {
+                    AliAODMCParticle* mother = (AliAODMCParticle*)fMCArray->At(proton_mother_label);
+                    if(mother->GetPdgCode() == 3122) {
+                        from_same_lambda = true;
+                    }
                 }
+            }
+            if(from_same_lambda) {
+                lambda_list_checkMC.push_back(lambda);
+            }
+            else {
+                lambda_bg_list.push_back(lambda);
             }
         }
     }
@@ -1027,6 +1081,11 @@ void AliAnalysisTaskLambdaHadronResClosure::UserExec(Option_t*)
             AliMotherContainer antilambda = DaughtersToMother(antiproton, piplus, 0.9383, 0.1396);
             antilambda_list.push_back(antilambda);
 
+            AliMotherContainer rotated_lambda = RotatedDaughtersToMother(antiproton, piplus, 0.9383, 0.1396, TMath::Pi());
+            lambda_rotated_daughters_list.push_back(rotated_lambda);
+
+            bool from_same_antilambda = false;
+
             // check to see if they are from the same mother and came from an anti-lambda
             AliAODMCParticle* antiproton_mc = (AliAODMCParticle*)fMCArray->At(antiproton->GetLabel());
             AliAODMCParticle* piplus_mc = (AliAODMCParticle*)fMCArray->At(piplus->GetLabel());
@@ -1034,14 +1093,40 @@ void AliAnalysisTaskLambdaHadronResClosure::UserExec(Option_t*)
             int antiproton_mother_label = antiproton_mc->GetMother();
             int piplus_mother_label = piplus_mc->GetMother();
 
-            if(antiproton_mother_label < 0 || piplus_mother_label < 0) continue;
-
-            if(antiproton_mother_label == piplus_mother_label) {
-                AliAODMCParticle* mother = (AliAODMCParticle*)fMCArray->At(antiproton_mother_label);
-                if(mother->GetPdgCode() == -3122) {
-                    antilambda_list_checkMC.push_back(antilambda);
+            if(antiproton_mother_label >= 0 && piplus_mother_label >= 0) {
+                if(antiproton_mother_label == piplus_mother_label) {
+                    AliAODMCParticle* mother = (AliAODMCParticle*)fMCArray->At(antiproton_mother_label);
+                    if(mother->GetPdgCode() == -3122) {
+                        from_same_antilambda = true;
+                    }
                 }
             }
+
+            if(from_same_antilambda) {
+                antilambda_list_checkMC.push_back(antilambda);
+            }
+            else {
+                antilambda_bg_list.push_back(antilambda);
+            }
+        }
+    }
+
+    // making the like-sign daughter lambdas
+    for(int i = 0; i < (int) proton_list.size(); i++) {
+        for(int j = 0; j < (int) piplus_list.size(); j++) {
+            auto proton = proton_list[i];
+            auto piplus = piplus_list[j];
+            AliMotherContainer lambda = DaughtersToMother(proton, piplus, 0.9383, 0.1396);
+            lambda_ls_daughters_list.push_back(lambda);
+        }
+    }
+
+    for(int i = 0; i < (int) antiproton_list.size(); i++) {
+        for(int j = 0; j < (int) piminus_list.size(); j++) {
+            auto antiproton = antiproton_list[i];
+            auto piminus = piminus_list[j];
+            AliMotherContainer antilambda = DaughtersToMother(antiproton, piminus, 0.9383, 0.1396);
+            lambda_ls_daughters_list.push_back(antilambda);
         }
     }
 
@@ -1055,6 +1140,15 @@ void AliAnalysisTaskLambdaHadronResClosure::UserExec(Option_t*)
     // Filling our single particle lambda distribution histograms:
     FillMotherDist(lambda_list, primZ, fLambdaDist, true);
     FillMotherDist(antilambda_list, primZ, fLambdaDist, true);
+
+    FillMotherDist(lambda_list_checkMC, primZ, fLambdaDist_checkMC, true);
+    FillMotherDist(antilambda_list_checkMC, primZ, fLambdaDist_checkMC, true);
+
+    FillMotherDist(lambda_bg_list, primZ, fLambdaBGDist, true);
+    FillMotherDist(antilambda_bg_list, primZ, fLambdaBGDist, true);
+
+    FillMotherDist(lambda_ls_daughters_list, primZ, fLambdaLSDaughtersDist, true);
+    FillMotherDist(lambda_rotated_daughters_list, primZ, fLambdaRotatedDaughtersDist, true);
 
     FillMotherDist(lambda_list, primZ, fNormalLambdaDist, true);
     FillMotherDist(antilambda_list, primZ, fAntiLambdaDist, true);

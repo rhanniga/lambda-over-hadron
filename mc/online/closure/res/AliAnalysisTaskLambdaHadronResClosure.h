@@ -80,12 +80,15 @@ private:
   THnSparse* fTriggerDist;  //!>! single particle trigger dist (not corrected for efficiency, is MC hadron, is MC primary)
   THnSparse* fAssociatedHDist;  //!>! single particle associated hadron dist
   THnSparse* fAssociatedHDist_checkMC;  //!>! single particle associated hadron dist (is MC hadron, is MC primary)
-  THnSparse* fTriggeredLambdaDist;  //!>! single particle lambda dist within a triggered event
   THnSparse* fLambdaDist;  //!>! single particle lambda dist
+  THnSparse* fLambdaLSDist;  //!>! single particle lambda dist (LS daughters)
+  THnSparse* fTriggeredLambdaDist;  //!>! single particle lambda dist within a triggered event
+  THnSparse* fTriggeredLambdaLSDist;  //!>! single particle lambda dist within a triggered event (LS daughters)
 
   THnSparse* fTriggerDist_MC;  //!>! single particle trigger dist (MC truth)
   THnSparse* fAssociatedDist_MC;  //!>! single particle associated hadron dist (MC truth)
-  THnSparse* fLambdaDist_MC;  //!>! single particle lambda dist within a triggered event (MC truth)
+  THnSparse* fLambdaDist_MC;  //!>! single particle lambda dist (MC truth)
+  THnSparse* fTriggeredLambdaDist_MC;  //!>! single particle lambda dist within a triggered event (MC truth)
 
   THnSparse* fDphiHLambdaEff;  //!>! hadron-lambda correlation hist (efficiency corrected)
   THnSparse* fDphiHLambdaEff_MCKin;  //!>! hadron-lambda correlation hist (efficiency corrected, using MC kinematics)
@@ -107,10 +110,10 @@ private:
   AliMotherContainer DaughtersToMother(AliAODTrack* track1, AliAODTrack* track2, double mass1, double mass2);
   void FillSingleParticleDist(std::vector<AliAODTrack*> particle_list, double zVtx, THnSparse* fDist, bool trig_eff=false);
   void FillSingleMCParticleDist(std::vector<AliAODMCParticle*> particle_list, double zVtx, THnSparse* fDist);
-  void FillMotherDist(std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> particle_list, float multPercentile, THnSparse* fDist, bool isAntiLambda, bool lambdaEff=true);
+  void FillMotherDist(std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> particle_list, float multPercentile, THnSparse* fDist, bool lambdaEff=true);
   void FillMCMotherDist(std::vector<AliAODMCParticle*> particle_list, float multPercentile, THnSparse* fDist);
 
-  void MakeSameHLambdaCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx, bool eff, bool isAntiLambda);
+  void MakeSameHLambdaCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx, bool eff);
   void MakeSameHLambdaCorrelations_withMCKin(std::vector<AliAODTrack*> trigger_list, std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx, bool eff);
   void MakeSameHHCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAODTrack*> associated_h_list, THnSparse* fDphi, double zVtx, bool eff=true);
   void MakeMixedHLambdaCorrelations(AliEventPool *fPool, std::vector<AliAnalysisTaskLambdaHadronResClosure::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx, bool eff, bool isAntiLambda);

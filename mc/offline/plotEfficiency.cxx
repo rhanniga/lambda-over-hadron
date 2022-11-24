@@ -110,11 +110,13 @@ void plotEfficiency(){
 
     Float_t mult[4] = {0.0, 20.0, 50.0, 80.0};
     
-    TFile* infile = new TFile("~/OneDrive/Research/Output/lambda-over-hadron/mc/efficiency_run_etacutonline.root");
+    /* TFile* infile = new TFile("~/OneDrive/Research/Output/lambda-over-hadron/mc/efficiency_run_etacutonline.root"); */
+    TFile* infile = new TFile("../online/efficiency_run_fixed_axis.root");
     TList* list = (TList*)infile->Get("h-lambda_eff");
     
-    float SIG_MIN = 1.08;
-    float SIG_MAX = 1.16 - 0.00000001;
+    // This actually isnt entire range and misses 10% of signal
+    // float SIG_MIN = 1.08;
+    // float SIG_MAX = 1.16 - 0.00000001;
     
     //single track histos
     THnSparseF* realTrigger = (THnSparseF*)list->FindObject("fRealChargedDist");
@@ -228,57 +230,59 @@ void plotEfficiency(){
     etaPtRefitRowsLambdaV0->GetAxis(0)->SetRangeUser(0.5, 10.0);
     etaPtRefitRowsRatioLambdaV0->GetAxis(0)->SetRangeUser(0.5, 10.0);
        
-    // ETA AXIS  
-    realLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8);
+    // ETA AXIS (WE DONT DO THIS ANYMORE) 
+    realLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
 
-    recoLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8);
-    etaLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8);
-    etaPtLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8);
-    etaPtRefitLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8);
-    etaPtRefitRowsLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8);
-    etaPtRefitRowsRatioLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8);
+    recoLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
+    etaLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
+    etaPtLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
+    etaPtRefitLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
+    etaPtRefitRowsLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
+    etaPtRefitRowsRatioLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
 
-    recoLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8);
-    etaLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8);
-    etaPtLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8);
-    etaPtRefitLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8);
-    etaPtRefitRowsLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8);
-    etaPtRefitRowsRatioLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8);
+    recoLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
+    etaLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
+    etaPtLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
+    etaPtRefitLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
+    etaPtRefitRowsLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
+    etaPtRefitRowsRatioLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
 
     // Z VTX AXIS  
-    realLambda->GetAxis(3)->SetRangeUser(-10.0, 10.0);
+    realLambda->GetAxis(3)->SetRangeUser(-10.0, 10.0-0.0001);
 
-    recoLambda->GetAxis(3)->SetRangeUser(-10.0, 10.0);
-    etaLambda->GetAxis(3)->SetRangeUser(-10.0, 10.0);
-    etaPtLambda->GetAxis(3)->SetRangeUser(-10.0, 10.0);
-    etaPtRefitLambda->GetAxis(3)->SetRangeUser(-10.0, 10.0);
-    etaPtRefitRowsLambda->GetAxis(3)->SetRangeUser(-10.0, 10.0);
-    etaPtRefitRowsRatioLambda->GetAxis(3)->SetRangeUser(-10.0, 10.0);
+    recoLambda->GetAxis(3)->SetRangeUser(-10.0, 10.0-0.0001);
+    etaLambda->GetAxis(3)->SetRangeUser(-10.0, 10.0-0.0001);
+    etaPtLambda->GetAxis(3)->SetRangeUser(-10.0, 10.0-0.0001);
+    etaPtRefitLambda->GetAxis(3)->SetRangeUser(-10.0, 10.0-0.0001);
+    etaPtRefitRowsLambda->GetAxis(3)->SetRangeUser(-10.0, 10.0-0.0001);
+    etaPtRefitRowsRatioLambda->GetAxis(3)->SetRangeUser(-10.0, 10.0-0.0001);
 
-    recoLambdaV0->GetAxis(3)->SetRangeUser(-10.0, 10.0);
-    etaLambdaV0->GetAxis(3)->SetRangeUser(-10.0, 10.0);
-    etaPtLambdaV0->GetAxis(3)->SetRangeUser(-10.0, 10.0);
-    etaPtRefitLambdaV0->GetAxis(3)->SetRangeUser(-10.0, 10.0);
-    etaPtRefitRowsLambdaV0->GetAxis(3)->SetRangeUser(-10.0, 10.0);
-    etaPtRefitRowsRatioLambdaV0->GetAxis(3)->SetRangeUser(-10.0, 10.0);
+    recoLambdaV0->GetAxis(3)->SetRangeUser(-10.0, 10.0-0.0001);
+    etaLambdaV0->GetAxis(3)->SetRangeUser(-10.0, 10.0-0.0001);
+    etaPtLambdaV0->GetAxis(3)->SetRangeUser(-10.0, 10.0-0.0001);
+    etaPtRefitLambdaV0->GetAxis(3)->SetRangeUser(-10.0, 10.0-0.0001);
+    etaPtRefitRowsLambdaV0->GetAxis(3)->SetRangeUser(-10.0, 10.0-0.0001);
+    etaPtRefitRowsRatioLambdaV0->GetAxis(3)->SetRangeUser(-10.0, 10.0-0.0001);
 
 
+    // JUST DONT DO THIS ANYMORE!!!
     // MASS AXIS  
-    realLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
 
-    recoLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
-    etaLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
-    etaPtLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
-    etaPtRefitLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
-    etaPtRefitRowsLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
-    etaPtRefitRowsRatioLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
+    // realLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
 
-    recoLambdaV0->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
-    etaLambdaV0->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
-    etaPtLambdaV0->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
-    etaPtRefitLambdaV0->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
-    etaPtRefitRowsLambdaV0->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
-    etaPtRefitRowsRatioLambdaV0->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
+    // recoLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
+    // etaLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
+    // etaPtLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
+    // etaPtRefitLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
+    // etaPtRefitRowsLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
+    // etaPtRefitRowsRatioLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
+
+    // recoLambdaV0->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
+    // etaLambdaV0->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
+    // etaPtLambdaV0->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
+    // etaPtRefitLambdaV0->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
+    // etaPtRefitRowsLambdaV0->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
+    // etaPtRefitRowsRatioLambdaV0->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
 
 
     realLambda->Sumw2();
