@@ -965,7 +965,6 @@ bool AliAnalysisTaskLambdaHadronResClosure::PassMCAssociatedCuts(AliAODMCParticl
 bool AliAnalysisTaskLambdaHadronResClosure::PassMCLambdaCuts(AliAODMCParticle *mc_particle){
 
     if(!(TMath::Abs(mc_particle->GetPdgCode()) == 3122)) return false;
-    // if(!(mc_particle->IsPhysicalPrimary())) return false; // testing, testing, 1 2 3
     if(!(TMath::Abs(mc_particle->Eta()) < 0.8)) return false;
 
     int first_daughter_index = 0;
@@ -1208,8 +1207,8 @@ void AliAnalysisTaskLambdaHadronResClosure::UserExec(Option_t*)
             if(fCorPool->IsReady()) {
                 MakeMixedHLambdaCorrelations(fCorPool, antilambda_list, fDphiHLambdaMixed, primZ, true, true);
                 MakeMixedHLambdaCorrelations(fCorPool, lambda_list, fDphiHLambdaMixed, primZ, true, false);
-                MakeMixedHLambdaCorrelations_withMCKin(fCorPool, antilambda_list, fDphiHLambdaMixed_MCKin, primZ, true);
-                MakeMixedHLambdaCorrelations_withMCKin(fCorPool, lambda_list, fDphiHLambdaMixed_MCKin, primZ, true);
+                MakeMixedHLambdaCorrelations_withMCKin(fCorPool, guaranteed_antilambda_list, fDphiHLambdaMixed_MCKin, primZ, true);
+                MakeMixedHLambdaCorrelations_withMCKin(fCorPool, guaranteed_lambda_list, fDphiHLambdaMixed_MCKin, primZ, true);
                 MakeMixedHHCorrelations(fCorPool, associated_h_list, fDphiHHMixed, primZ);
             }
             if(fMixedTrackObjArray->GetEntries() > 0) {
