@@ -72,34 +72,30 @@ private:
   TH1D* fAssociatedEff; ///> associated efficiency
   TH1D* fLambdaEff; ///> lambda efficiency
 
+  AliPIDResponse *fpidResponse; //!>!pid response
+  AliMultSelection *fMultSelection; //!>!mult selection
 
 
-
-
-  THnSparse* fTriggerDistEff;  //!>! single particle trigger dist (corrected for efficiency)
-  THnSparse* fTriggerDistEff_highestPt;  //!>! single particle trigger dist (corrected for efficiency, highest pt between 4 and 8)
+  THnSparse* fTriggerDist;  //!>! single particle trigger dist (corrected for efficiency)
+  THnSparse* fTriggerDist_highestPt;  //!>! single particle trigger dist (corrected for efficiency, highest pt between 4 and 8)
   THnSparse* fAssociatedHDist;  //!>! single particle associated hadron dist
 
-  THnSparse* fTriggeredLambdaDist;  //!>! single particle lambda dist within a triggered event
+  THnSparse* fLambdaDist;  //!>! single particle lambda dist (eff corrected)
+  THnSparse* fTriggeredLambdaDist;  //!>! single particle lambda dist within a triggered event (eff corrected)
 
-  THnSparse* fDphiHLambdaEff;  //!>! hadron-lambda correlation hist (efficiency corrected)
-  THnSparse* fDphiHLambdaEff_highestPt;  //!>! hadron-lambda correlation hist (efficiency corrected, highest pt trigger between 4 and 8)
-  THnSparse* fDphiHHEff;   //!>! hadron-hadron correlation hist (efficiency corrected)
-  THnSparse* fDphiHHEff_highestPt;   //!>! hadron-hadron correlation hist (efficiency corrected, highest pt trigger between 4 and 8)
+  THnSparse* fDphiHLambda;  //!>! hadron-lambda correlation hist (efficiency corrected)
+  THnSparse* fDphiHLambda_highestPt;  //!>! hadron-lambda correlation hist (efficiency corrected, highest pt trigger between 4 and 8)
+  THnSparse* fDphiHH;   //!>! hadron-hadron correlation hist (efficiency corrected)
+  THnSparse* fDphiHH_highestPt;   //!>! hadron-hadron correlation hist (efficiency corrected, highest pt trigger between 4 and 8)
   THnSparse* fDphiHLambdaMixed_highestPt; //!>! hadron-lambda mixed correlation hist (highest pt trigger between 4 and 8)
   THnSparse* fDphiHLambdaMixed; //!>! hadron-lambda mixed correlation hist (highest pt trigger between 4 and 8)
   THnSparse* fDphiHHMixed; //!>! hadron-hadron mixed correlation hist
   THnSparse* fDphiHHMixed_highestPt; //!>! hadron-hadron mixed correlation hist (highest pt trigger between 4 and 8)
 
-  AliPIDResponse *fpidResponse; //!>!pid response
-  AliMultSelection *fMultSelection; //!>!mult selection
-
 
   AliMotherContainer DaughtersToMother(AliAODTrack* track1, AliAODTrack* track2, double mass1, double mass2);
-  AliMotherContainer RotatedDaughtersToMother(AliAODTrack* track1, AliAODTrack* track2, double mass1, double mass2, double angle);
-  AliMotherContainer FlippedDaughtersToMother(AliAODTrack* track1, AliAODTrack* track2, double mass1, double mass2);
   void FillSingleParticleDist(std::vector<AliAODTrack*> particle_list, double zVtx, THnSparse* fDist, bool trig_eff=false);
-  void FillMotherDist(std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> particle_list, float multPercentile, THnSparse* fDist, bool isAntiLambda);
+  void FillMotherDist(std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> particle_list, float multPercentile, THnSparse* fDist, bool isAntiLambda, bool lambda_eff=true);
   void MakeSameHLambdaCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx, bool eff, bool isAntiLambda);
   void MakeSameHHCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAODTrack*> associated_h_list, THnSparse* fDphi, double zVtx, bool eff=true);
   void MakeMixedHLambdaCorrelations(AliEventPool *fPool, std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx, bool eff, bool isAntiLambda);

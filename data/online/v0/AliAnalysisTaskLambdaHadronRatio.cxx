@@ -55,14 +55,15 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     fTriggerEff(0x0),
     fAssociatedEff(0x0),
     fLambdaEff(0x0),
-    fTriggerDistEff(0x0),
-    fTriggerDistEff_highestPt(0x0),
+    fTriggerDist(0x0),
+    fTriggerDist_highestPt(0x0),
     fAssociatedHDist(0x0),
+    fLambdaDist(0x0),
     fTriggeredLambdaDist(0x0),
-    fDphiHLambdaEff(0x0),
-    fDphiHLambdaEff_highestPt(0x0),
-    fDphiHHEff(0x0),
-    fDphiHHEff_highestPt(0x0),
+    fDphiHLambda(0x0),
+    fDphiHLambda_highestPt(0x0),
+    fDphiHH(0x0),
+    fDphiHH_highestPt(0x0),
     fDphiHLambdaMixed(0x0),
     fDphiHLambdaMixed_highestPt(0x0),
     fDphiHHMixed(0x0),
@@ -87,14 +88,15 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     fTriggerEff(0x0),
     fAssociatedEff(0x0),
     fLambdaEff(0x0),
-    fTriggerDistEff(0x0),
-    fTriggerDistEff_highestPt(0x0),
+    fTriggerDist(0x0),
+    fTriggerDist_highestPt(0x0),
     fAssociatedHDist(0x0),
+    fLambdaDist(0x0),
     fTriggeredLambdaDist(0x0),
-    fDphiHLambdaEff(0x0),
-    fDphiHLambdaEff_highestPt(0x0),
-    fDphiHHEff(0x0),
-    fDphiHHEff_highestPt(0x0),
+    fDphiHLambda(0x0),
+    fDphiHLambda_highestPt(0x0),
+    fDphiHH(0x0),
+    fDphiHH_highestPt(0x0),
     fDphiHLambdaMixed(0x0),
     fDphiHLambdaMixed_highestPt(0x0),
     fDphiHHMixed(0x0),
@@ -147,13 +149,13 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     double dist_mins[4] = {0.0, 0, -1, -10};
     double dist_maxes[4] = {20.0, 6.28, 1, 10};
 
-    fTriggerDistEff = new THnSparseF("fTriggerDistEff", "Efficiency Corrected Trigger Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
-    fTriggerDistEff->Sumw2();
-    fOutputList->Add(fTriggerDistEff);
+    fTriggerDist = new THnSparseF("fTriggerDist", "iciency Corrected Trigger Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
+    fTriggerDist->Sumw2();
+    fOutputList->Add(fTriggerDist);
 
-    fTriggerDistEff_highestPt = new THnSparseF("fTriggerDistEff_highestPt", "Efficiency Corrected Highest p_{t} Trigger Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
-    fTriggerDistEff_highestPt->Sumw2();
-    fOutputList->Add(fTriggerDistEff_highestPt);
+    fTriggerDist_highestPt = new THnSparseF("fTriggerDist_highestPt", "iciency Corrected Highest p_{t} Trigger Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
+    fTriggerDist_highestPt->Sumw2();
+    fOutputList->Add(fTriggerDist_highestPt);
 
     fAssociatedHDist = new THnSparseF("fAssociatedHDist", "Associated Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
     fAssociatedHDist->Sumw2();
@@ -164,6 +166,10 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     double mother_dist_mins[5] = {0, -3.14, -1, 1.06, 0};
     double mother_dist_maxes[5] = {15, 3.14, 1, 1.16, 100};
 
+    fLambdaDist = new THnSparseF("fLambdaDist", "Lambda Distribution (with triggered event)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fLambdaDist->Sumw2();
+    fOutputList->Add(fLambdaDist);
+
     fTriggeredLambdaDist = new THnSparseF("fTriggeredLambdaDist", "Lambda Distribution (with triggered event)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
     fTriggeredLambdaDist->Sumw2();
     fOutputList->Add(fTriggeredLambdaDist);
@@ -173,13 +179,13 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     double hl_cor_mins[6] = {4.0, 1, -1.0*TMath::Pi()/2.0, -2.0, 1.06, -10};
     double hl_cor_maxes[6] = {12.0, 6, 3.0*TMath::Pi()/2.0, 2.0, 1.16, 10};
 
-    fDphiHLambdaEff = new THnSparseF("fDphiHLambdaEff", "Efficiency-corrected Hadron-Lambda Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
-    fDphiHLambdaEff->Sumw2();
-    fOutputList->Add(fDphiHLambdaEff);
+    fDphiHLambda = new THnSparseF("fDphiHLambda", "iciency-corrected Hadron-Lambda Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambda->Sumw2();
+    fOutputList->Add(fDphiHLambda);
 
-    fDphiHLambdaEff_highestPt = new THnSparseF("fDphiHLambdaEff_highestPt", "Efficiency-corrected Hadron-Lambda Correlation Histogram (highest pt trigger)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
-    fDphiHLambdaEff_highestPt->Sumw2();
-    fOutputList->Add(fDphiHLambdaEff_highestPt);
+    fDphiHLambda_highestPt = new THnSparseF("fDphiHLambda_highestPt", "iciency-corrected Hadron-Lambda Correlation Histogram (highest pt trigger)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambda_highestPt->Sumw2();
+    fOutputList->Add(fDphiHLambda_highestPt);
 
     fDphiHLambdaMixed = new THnSparseF("fDphiHLambdaMixed", "Mixed Hadron-Lambda Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambdaMixed->Sumw2();
@@ -189,19 +195,18 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     fDphiHLambdaMixed_highestPt->Sumw2();
     fOutputList->Add(fDphiHLambdaMixed_highestPt);
 
-
     //Correlation axes are: Trigger Pt, Associated Pt, dPhi, dEta, Zvtx
     int hh_cor_bins[5] = {16, 10, 16, 20, 10};
     double hh_cor_mins[5] = {4, 1, -1.0*TMath::Pi()/2.0, -2.0, -10};
     double hh_cor_maxes[5] = {12, 6, 3.0*TMath::Pi()/2.0, 2.0, 10};
 
-    fDphiHHEff = new THnSparseF("fDphiHHEff", "Efficiency corrected Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
-    fDphiHHEff->Sumw2();
-    fOutputList->Add(fDphiHHEff);
+    fDphiHH = new THnSparseF("fDphiHH", "iciency corrected Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHH->Sumw2();
+    fOutputList->Add(fDphiHH);
 
-    fDphiHHEff_highestPt = new THnSparseF("fDphiHHEff_highestPt", "Efficiency corrected Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
-    fDphiHHEff_highestPt->Sumw2();
-    fOutputList->Add(fDphiHHEff_highestPt);
+    fDphiHH_highestPt = new THnSparseF("fDphiHH_highestPt", "iciency corrected Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHH_highestPt->Sumw2();
+    fOutputList->Add(fDphiHH_highestPt);
 
     fDphiHHMixed = new THnSparseF("fDphiHHMixed", "Mixed Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fDphiHHMixed->Sumw2();
@@ -238,7 +243,7 @@ void AliAnalysisTaskLambdaHadronRatio::FillSingleParticleDist(std::vector<AliAOD
     }
 }
 
-void AliAnalysisTaskLambdaHadronRatio::FillMotherDist(std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> particle_list, float multPercentile, THnSparse* fDist, bool isAntiLambda)
+void AliAnalysisTaskLambdaHadronRatio::FillMotherDist(std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> particle_list, float multPercentile, THnSparse* fDist, bool isAntiLambda, bool lambda_eff)
 {
     double dist_points[5]; //Pt, Phi, Eta, M, event multiplicity
     for(int i = 0; i < (int)particle_list.size(); i++) {
@@ -253,7 +258,16 @@ void AliAnalysisTaskLambdaHadronRatio::FillMotherDist(std::vector<AliAnalysisTas
             dist_points[3] = particle->MassLambda();
         }
         dist_points[4] = multPercentile;
-        fDist->Fill(dist_points);
+        bool in_pt_range = (particle->Pt() < 10 && particle->Pt() > 0.5);
+        if(lambda_eff && in_pt_range) {
+            int lambdaBin = fLambdaEff->FindBin(particle->Pt());
+            double lambdaEff = fLambdaEff->GetBinContent(lambdaBin);
+            double lambdaScale = 1.0/lambdaEff;
+            fDist->Fill(dist_points, lambdaScale);
+        }
+        else {
+            fDist->Fill(dist_points);
+        }
     }
 }
 
@@ -689,23 +703,26 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
 
 
     // Filling all of our single particle distribution histograms:
-    FillSingleParticleDist(trigger_list, primZ, fTriggerDistEff, true);
-    FillSingleParticleDist(trigger_list_highestPt, primZ, fTriggerDistEff_highestPt, true);
+    FillSingleParticleDist(trigger_list, primZ, fTriggerDist, true);
+    FillSingleParticleDist(trigger_list_highestPt, primZ, fTriggerDist_highestPt, true);
     FillSingleParticleDist(associated_h_list, primZ, fAssociatedHDist);
+
+    FillMotherDist(lambda_list, multPercentile, fLambdaDist, false);
+    FillMotherDist(antilambda_list, multPercentile, fLambdaDist, true);
 
     // Filling our single particle lambda distribution histogram:
     if(is_triggered_event) FillMotherDist(lambda_list, multPercentile, fTriggeredLambdaDist, false);
     if(is_triggered_event) FillMotherDist(antilambda_list, multPercentile, fTriggeredLambdaDist, true);
 
-    MakeSameHLambdaCorrelations(trigger_list, antilambda_list, fDphiHLambdaEff, primZ, true, true);
-    MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambdaEff, primZ, true, false);
+    MakeSameHLambdaCorrelations(trigger_list, antilambda_list, fDphiHLambda, primZ, true, true);
+    MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambda, primZ, true, false);
 
-    MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHHEff, primZ, true);
+    MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHH, primZ, true);
 
     // Highest pt trigger correlations
-    MakeSameHLambdaCorrelations(trigger_list_highestPt, antilambda_list, fDphiHLambdaEff_highestPt, primZ, true, true);
-    MakeSameHLambdaCorrelations(trigger_list_highestPt, lambda_list, fDphiHLambdaEff_highestPt, primZ, true, false);
-    MakeSameHHCorrelations(trigger_list_highestPt, associated_h_list, fDphiHHEff_highestPt, primZ, true);
+    MakeSameHLambdaCorrelations(trigger_list_highestPt, antilambda_list, fDphiHLambda_highestPt, primZ, true, true);
+    MakeSameHLambdaCorrelations(trigger_list_highestPt, lambda_list, fDphiHLambda_highestPt, primZ, true, false);
+    MakeSameHHCorrelations(trigger_list_highestPt, associated_h_list, fDphiHH_highestPt, primZ, true);
 
     if(lambda_list.size() > 0 && associated_h_list.size() > 0) {
         AliEventPool *fCorPool = fCorPoolMgr->GetEventPool(multPercentile, primZ);

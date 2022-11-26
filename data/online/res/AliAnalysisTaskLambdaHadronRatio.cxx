@@ -290,7 +290,7 @@ void AliAnalysisTaskLambdaHadronRatio::FillSingleParticleDist(std::vector<AliAOD
     }
 }
 
-void AliAnalysisTaskLambdaHadronRatio::FillMotherDist(std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> particle_list, float multPercentile, THnSparse* fDist)
+void AliAnalysisTaskLambdaHadronRatio::FillMotherDist(std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> particle_list, float multPercentile, THnSparse* fDist, bool lambda_eff)
 {
     double dist_points[5]; //Pt, Phi, Eta, M, event multiplicity
     for(int i = 0; i < (int)particle_list.size(); i++) {
@@ -300,7 +300,16 @@ void AliAnalysisTaskLambdaHadronRatio::FillMotherDist(std::vector<AliAnalysisTas
         dist_points[2] = particle.Eta();
         dist_points[3] = particle.M();
         dist_points[4] = multPercentile;
-        fDist->Fill(dist_points);
+        bool in_pt_range = (particle.Pt() < 10 && particle.Pt() > 0.5);
+        if(lambda_eff && in_pt_range) {
+            int lambdaBin = fLambdaEff->FindBin(particle.Pt());
+            double lambdaEff = fLambdaEff->GetBinContent(lambdaBin);
+            double lambdaScale = 1.0/lambdaEff;
+            fDist->Fill(dist_points, lambdaScale);
+        }
+        else{
+            fDist->Fill(dist_points);
+        }
     }
 }
 
