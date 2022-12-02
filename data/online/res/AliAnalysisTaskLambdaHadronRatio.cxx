@@ -61,6 +61,8 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     fDaughterBit(0.0),
     fAssociatedBit(0.0),
     fTriggerBit(0.0),
+    fTotalTrackDist(0x0),
+    fCutTrackDist(0x0),
     fTriggerDist(0x0),
     fTriggerDist_highestPt(0x0),
     fAssociatedHDist(0x0),
@@ -87,7 +89,6 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     fTriggerEff(0x0),
     fAssociatedEff(0x0),
     fLambdaEff(0x0),
-    fTriggerDist(0x0),
     fpidResponse(0x0),
     fMultSelection(0x0),
     fMultLow(0.0),
@@ -95,6 +96,9 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     fDaughterBit(0.0),
     fAssociatedBit(0.0),
     fTriggerBit(0.0),
+    fTotalTrackDist(0x0),
+    fCutTrackDist(0x0),
+    fTriggerDist(0x0),
     fTriggerDist_highestPt(0x0),
     fAssociatedHDist(0x0),
     fLambdaDist(0x0),
@@ -159,6 +163,14 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     fAssociatedHDist = new THnSparseF("fAssociatedHDist", "Associated Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
     fAssociatedHDist->Sumw2();
     fOutputList->Add(fAssociatedHDist);
+
+    fTotalTrackDist = new THnSparseF("fTotalTrackDist", "Total Track Distribution", 4, dist_bins, dist_mins, dist_maxes);
+    fTotalTrackDist->Sumw2();
+    fOutputList->Add(fTotalTrackDist);
+
+    fCutTrackDist = new THnSparseF("fCutTrackDist", "Cut Track Distribution", 4, dist_bins, dist_mins, dist_maxes);
+    fCutTrackDist->Sumw2();
+    fOutputList->Add(fCutTrackDist);
 
     //Mother distribution axes are: Pt, Phi, Eta, Mass, Event multiplicity
     int mother_dist_bins[5] = {100, 16, 20, 100, 10};
@@ -651,6 +663,9 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     std::vector<AliAODTrack*> trigger_list;
     std::vector<AliAODTrack*> trigger_list_highestPt; // not actually a list but too lazy to rewrite correlation function
     std::vector<AliAODTrack*> associated_h_list;
+    
+    std::vector<AliAODTrack*> total_track_list;
+    std::vector<AliAODTrack*> cut_track_list;
 
     //Trigger list used for event mixing
     TObjArray* fMixedTrackObjArray = new TObjArray;
@@ -667,11 +682,14 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
 
     int NCharged = 0;
 
+
     for(int trackNum = 0; trackNum < numTracks; trackNum++) {
     
 
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(trackNum));
         if(!track) continue;
+
+        total_track_list.push_back(track);
 
         //Filter for trigger particles
         if(PassTriggerCuts(track)) {
@@ -695,15 +713,19 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
 
         if(PassDaughterCuts(track)) {
 
+            cut_track_list.push_back(track);
+
             // grab the pions
-            double TPCNSigmaPion = 1000;
-            double TOFNSigmaPion = 1000;
+            double TPCNSigmaPion = -999;
+            double TOFNSigmaPion = -999;
 
             TPCNSigmaPion = fpidResponse->NumberOfSigmasTPC(track, AliPID::kPion);
             TOFNSigmaPion = fpidResponse->NumberOfSigmasTOF(track, AliPID::kPion);
 
+            std::cout << "The TOF nSigma is: " << TOFNSigmaPion << std::endl;
 
-            if(TMath::Abs(TPCNSigmaPion) <= 3 && (TMath::Abs(TOFNSigmaPion) <= 3 || TOFNSigmaPion == 1000)) {
+
+            if(TMath::Abs(TPCNSigmaPion) <= 3 && (TMath::Abs(TOFNSigmaPion) <= 3 || TOFNSigmaPion == -999)) {
 
                 if(track->Charge() == 1){
                     piPlus_list.push_back(track);
@@ -714,13 +736,13 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
             }
 
             // grab the protons
-            double TPCNSigmaProton = 1000;
-            double TOFNSigmaProton = 1000;
+            double TPCNSigmaProton = -999;
+            double TOFNSigmaProton = -999;
 
             TPCNSigmaProton = fpidResponse->NumberOfSigmasTPC(track, AliPID::kProton);
             TOFNSigmaProton = fpidResponse->NumberOfSigmasTOF(track, AliPID::kProton);
 
-            if(TMath::Abs(TPCNSigmaProton) <= 2 && (TMath::Abs(TOFNSigmaProton) <= 2 || TOFNSigmaProton == 1000)) {
+            if(TMath::Abs(TPCNSigmaProton) <= 2 && (TMath::Abs(TOFNSigmaProton) <= 2 || TOFNSigmaProton == -999)) {
 
                 if(track->Charge() == 1){
                     proton_list.push_back(track);
@@ -781,6 +803,9 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     FillSingleParticleDist(trigger_list, primZ, fTriggerDist, true);
     FillSingleParticleDist(trigger_list_highestPt, primZ, fTriggerDist_highestPt, true);
     FillSingleParticleDist(associated_h_list, primZ, fAssociatedHDist);
+
+    FillSingleParticleDist(total_track_list, primZ, fTotalTrackDist);
+    FillSingleParticleDist(cut_track_list, primZ, fCutTrackDist);
 
     // Filling our single particle lambda distribution histogram:
     FillMotherDist(lambda_list, multPercentile, fLambdaDist);

@@ -657,15 +657,15 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
         if(!(PassDaughterCuts(posTrack) && PassDaughterCuts(negTrack))) continue;
 
 
-        double pos_TPCNSigmaProton = 1000;
-        double pos_TOFNSigmaProton = 1000;
-        double neg_TPCNSigmaPion = 1000;
-        double neg_TOFNSigmaPion = 1000;
+        double pos_TPCNSigmaProton = -999;
+        double pos_TOFNSigmaProton = -999;
+        double neg_TPCNSigmaPion = -999;
+        double neg_TOFNSigmaPion = -999;
 
-        double neg_TPCNSigmaProton = 1000;
-        double neg_TOFNSigmaProton = 1000;
-        double pos_TPCNSigmaPion = 1000;
-        double pos_TOFNSigmaPion = 1000;
+        double neg_TPCNSigmaProton = -999;
+        double neg_TOFNSigmaProton = -999;
+        double pos_TPCNSigmaPion = -999;
+        double pos_TOFNSigmaPion = -999;
 
         pos_TPCNSigmaProton = fpidResponse->NumberOfSigmasTPC(posTrack, AliPID::kProton);
         pos_TOFNSigmaProton = fpidResponse->NumberOfSigmasTOF(posTrack, AliPID::kProton);
@@ -677,11 +677,11 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
         pos_TPCNSigmaPion = fpidResponse->NumberOfSigmasTPC(posTrack, AliPID::kPion);
         pos_TOFNSigmaPion = fpidResponse->NumberOfSigmasTOF(posTrack, AliPID::kPion);
 
-        bool isNegTrackPion = TMath::Abs(neg_TPCNSigmaPion) <= 3 && (TMath::Abs(neg_TOFNSigmaPion) <= 3 || neg_TOFNSigmaPion == 1000);
-        bool isPosTrackProton = TMath::Abs(pos_TPCNSigmaProton) <= 2 && (TMath::Abs(pos_TOFNSigmaProton) <= 2 || pos_TOFNSigmaProton == 1000);
+        bool isNegTrackPion = TMath::Abs(neg_TPCNSigmaPion) <= 3 && (TMath::Abs(neg_TOFNSigmaPion) <= 3 || neg_TOFNSigmaPion == -999);
+        bool isPosTrackProton = TMath::Abs(pos_TPCNSigmaProton) <= 2 && (TMath::Abs(pos_TOFNSigmaProton) <= 2 || pos_TOFNSigmaProton == -999);
 
-        bool isPosTrackPion = TMath::Abs(pos_TPCNSigmaPion) <= 3 && (TMath::Abs(pos_TOFNSigmaPion) <= 3 || pos_TOFNSigmaPion == 1000);
-        bool isNegTrackProton = TMath::Abs(neg_TPCNSigmaProton) <= 2 && (TMath::Abs(neg_TOFNSigmaProton) <= 2 || neg_TOFNSigmaProton == 1000);
+        bool isPosTrackPion = TMath::Abs(pos_TPCNSigmaPion) <= 3 && (TMath::Abs(pos_TOFNSigmaPion) <= 3 || pos_TOFNSigmaPion == -999);
+        bool isNegTrackProton = TMath::Abs(neg_TPCNSigmaProton) <= 2 && (TMath::Abs(neg_TOFNSigmaProton) <= 2 || neg_TOFNSigmaProton == -999);
 
         if((isNegTrackPion && isPosTrackProton)) {
             AliMotherContainer lambda;

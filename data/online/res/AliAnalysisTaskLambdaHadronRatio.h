@@ -78,6 +78,9 @@ private:
   THnSparse* fTriggerDist_highestPt;  //!>! single particle trigger dist (corrected for efficiency, highest pt between 4 and 8)
   THnSparse* fAssociatedHDist;  //!>! single particle associated hadron dist
 
+  THnSparse* fTotalTrackDist;  //!>! single particle total track dist (all AOD tracks in list)
+  THnSparse* fCutTrackDist;  //!>! single particle total track dist (AOD tracks that pass daughter cuts)
+
   THnSparse* fLambdaDist;  //!>! single particle lambda dist (corrected for efficiency)
   THnSparse* fLambdaLSDist;  //!>! single particle lambda dist with like-sign daughters (corrected for efficiency)
   THnSparse* fTriggeredLambdaDist;  //!>! single particle lambda dist within a triggered event (corrected for efficiency)

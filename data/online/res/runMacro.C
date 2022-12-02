@@ -7,8 +7,8 @@
 
 void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
-  float MULT_LOW = 0;
-  float MULT_HIGH = 20;
+  float MULT_LOW = 50;
+  float MULT_HIGH = 80;
 
   float TRIG_BIT = AliAODTrack::kIsHybridGCG;
   float ASSOC_BIT =  1024; 
@@ -16,14 +16,14 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   char *CENT_ESTIMATOR = "V0A";
 
   //Starting and ending index of the array containing the run numbers, specifies which range to run over
-  /* int startIndex = 0; */
+  int startIndex = 0;
   /* int endIndex = 14; */
 
-  int startIndex = 15;
+  /* int startIndex = 15; */
   int endIndex = 28;
 
   TString work_dir = "lambda_hadron_ratio";
-  TString output_dir = "eff_corr_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_REDO";
+  TString output_dir = "eff_corr_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_single_particle_eff";
   // TString output_dir = "4test";
   
   //If we want to download test files from grid then run in one swoop (usually just run completely locally):
