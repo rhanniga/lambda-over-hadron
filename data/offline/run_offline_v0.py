@@ -74,14 +74,14 @@ input_file_0_20 = rt.TFile("~/OneDrive/Research/Output/lambda-over-hadron/data/v
 input_list_0_20 = input_file_0_20.Get("h-lambda")
 input_file_0_20.Close()
 
-trig_dist_0_20 = input_list_0_20.FindObject("fTriggerDist_highestPt") if DO_HIGHEST_PT else input_list_0_20.FindObject("fTriggerDist")
+trig_dist_0_20 = input_list_0_20.FindObject("fTriggerDistEff_highestPt") if DO_HIGHEST_PT else input_list_0_20.FindObject("fTriggerDistEff")
 lambda_dist_0_20 = input_list_0_20.FindObject("fTriggeredLambdaDist")
 
 
-h_h_0_20 = input_list_0_20.FindObject("fDphiHH_highestPt") if DO_HIGHEST_PT else input_list_0_20.FindObject("fDphiHH")
+h_h_0_20 = input_list_0_20.FindObject("fDphiHHEff_highestPt") if DO_HIGHEST_PT else input_list_0_20.FindObject("fDphiHHEff")
 h_h_mixed_0_20 = input_list_0_20.FindObject("fDphiHHMixed_highestPt") if DO_HIGHEST_PT else input_list_0_20.FindObject("fDphiHHMixed")
 
-h_lambda_0_20 = input_list_0_20.FindObject("fDphiHLambda_highestPt") if DO_HIGHEST_PT else input_list_0_20.FindObject("fDphiHLambda")
+h_lambda_0_20 = input_list_0_20.FindObject("fDphiHLambdaEff_highestPt") if DO_HIGHEST_PT else input_list_0_20.FindObject("fDphiHLambdaEff")
 h_lambda_mixed_0_20 = input_list_0_20.FindObject("fDphiHLambdaMixed_highestPt") if DO_HIGHEST_PT else input_list_0_20.FindObject("fDphiHLambdaMixed")
 
 
@@ -502,14 +502,14 @@ input_list_20_50 = input_file_20_50.Get("h-lambda")
 input_file_20_50.Close()
 
 
-trig_dist_20_50 = input_list_20_50.FindObject("fTriggerDist_highestPt") if DO_HIGHEST_PT else input_list_20_50.FindObject("fTriggerDist")
+trig_dist_20_50 = input_list_20_50.FindObject("fTriggerDistEff_highestPt") if DO_HIGHEST_PT else input_list_20_50.FindObject("fTriggerDistEff")
 lambda_dist_20_50 = input_list_20_50.FindObject("fTriggeredLambdaDist")
 
 
-h_h_20_50 = input_list_20_50.FindObject("fDphiHH_highestPt") if DO_HIGHEST_PT else input_list_20_50.FindObject("fDphiHH")
+h_h_20_50 = input_list_20_50.FindObject("fDphiHHEff_highestPt") if DO_HIGHEST_PT else input_list_20_50.FindObject("fDphiHHEff")
 h_h_mixed_20_50 = input_list_20_50.FindObject("fDphiHHMixed_highestPt") if DO_HIGHEST_PT else input_list_20_50.FindObject("fDphiHHMixed")
 
-h_lambda_20_50 = input_list_20_50.FindObject("fDphiHLambda_highestPt") if DO_HIGHEST_PT else input_list_20_50.FindObject("fDphiHLambda")
+h_lambda_20_50 = input_list_20_50.FindObject("fDphiHLambdaEff_highestPt") if DO_HIGHEST_PT else input_list_20_50.FindObject("fDphiHLambdaEff")
 h_lambda_mixed_20_50 = input_list_20_50.FindObject("fDphiHLambdaMixed_highestPt") if DO_HIGHEST_PT else input_list_20_50.FindObject("fDphiHLambdaMixed")
 
 
@@ -933,14 +933,14 @@ input_list_50_80 = input_file_50_80.Get("h-lambda")
 input_file_50_80.Close()
 
 
-trig_dist_50_80 = input_list_50_80.FindObject("fTriggerDist_highestPt") if DO_HIGHEST_PT else input_list_50_80.FindObject("fTriggerDist")
+trig_dist_50_80 = input_list_50_80.FindObject("fTriggerDistEff_highestPt") if DO_HIGHEST_PT else input_list_50_80.FindObject("fTriggerDistEff")
 lambda_dist_50_80 = input_list_50_80.FindObject("fTriggeredLambdaDist")
 
 
-h_h_50_80 = input_list_50_80.FindObject("fDphiHH_highestPt") if DO_HIGHEST_PT else input_list_50_80.FindObject("fDphiHH")
+h_h_50_80 = input_list_50_80.FindObject("fDphiHHEff_highestPt") if DO_HIGHEST_PT else input_list_50_80.FindObject("fDphiHHEff")
 h_h_mixed_50_80 = input_list_50_80.FindObject("fDphiHHMixed_highestPt") if DO_HIGHEST_PT else input_list_50_80.FindObject("fDphiHHMixed")
 
-h_lambda_50_80 = input_list_50_80.FindObject("fDphiHLambda_highestPt") if DO_HIGHEST_PT else input_list_50_80.FindObject("fDphiHLambda")
+h_lambda_50_80 = input_list_50_80.FindObject("fDphiHLambdaEff_highestPt") if DO_HIGHEST_PT else input_list_50_80.FindObject("fDphiHLambdaEff")
 h_lambda_mixed_50_80 = input_list_50_80.FindObject("fDphiHLambdaMixed_highestPt") if DO_HIGHEST_PT else input_list_50_80.FindObject("fDphiHLambdaMixed")
 
 
