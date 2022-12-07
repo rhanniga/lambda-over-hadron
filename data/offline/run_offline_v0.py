@@ -12,7 +12,7 @@ EPSILON = 0.00001
 
 # read in the parameters from the config file
 config = configparser.ConfigParser()
-config.read("config/offline_res_config.ini")
+config.read("config/offline_v0_config.ini")
 
 
 # decide whether to do sideband subtraction or not
@@ -49,7 +49,7 @@ RSB_MAX = config.getfloat("REGION_CUTS", "RSB_MAX") - EPSILON
 
 
 # Output file containing all of the relevant results (long name )
-output_file_string = "output/res_" 
+output_file_string = "output/v0_" 
 output_file_string += ("highest_pt_" if DO_HIGHEST_PT else "") 
 output_file_string += ("avg4_" if USE_AVG_4 else "") 
 output_file_string += ("avg6_" if USE_AVG_6 else "") 
@@ -70,14 +70,12 @@ output_file = rt.TFile(output_file_string, "RECREATE")
 ############################################################################################################
 
 
-input_file_0_20 = rt.TFile("~/OneDrive/Research/Output/lambda-over-hadron/data/res_cent_0_20.root")
+input_file_0_20 = rt.TFile("~/OneDrive/Research/Output/lambda-over-hadron/data/v0_cent_0_20_fullstat.root")
 input_list_0_20 = input_file_0_20.Get("h-lambda")
 input_file_0_20.Close()
 
-
 trig_dist_0_20 = input_list_0_20.FindObject("fTriggerDist_highestPt") if DO_HIGHEST_PT else input_list_0_20.FindObject("fTriggerDist")
 lambda_dist_0_20 = input_list_0_20.FindObject("fTriggeredLambdaDist")
-lambda_ls_dist_0_20 = input_list_0_20.FindObject("fTriggeredLambdaLSDist")
 
 
 h_h_0_20 = input_list_0_20.FindObject("fDphiHH_highestPt") if DO_HIGHEST_PT else input_list_0_20.FindObject("fDphiHH")
@@ -97,7 +95,6 @@ h_lambda_mixed_0_20.GetAxis(0).SetRangeUser(TRIG_PT_LOW, TRIG_PT_HIGH)
 
 # Setting the associated Pt (this is never changed again)
 lambda_dist_0_20.GetAxis(0).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
-lambda_ls_dist_0_20.GetAxis(0).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 h_h_0_20.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 h_lambda_0_20.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 h_lambda_mixed_0_20.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
@@ -107,7 +104,6 @@ h_lambda_mixed_0_20.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 
 trig_dist_0_20.GetAxis(2).SetRangeUser(ETA_MIN, ETA_MAX)
 lambda_dist_0_20.GetAxis(2).SetRangeUser(ETA_MIN, ETA_MAX)
-lambda_ls_dist_0_20.GetAxis(2).SetRangeUser(ETA_MIN, ETA_MAX)
 
 
 # Getting the single-particle trigger distributions
@@ -128,16 +124,9 @@ trig_2d_dist_0_20.Write()
 ### SIGNAL ANALYSIS SECTION ###
 
 lambda_mass_dist_0_20 = lambda_dist_0_20.Projection(3).Clone("lambda_mass_dist_0_20")
-lambda_mass_ls_dist_0_20 = lambda_ls_dist_0_20.Projection(3).Clone("lambda_mass_ls_dist_0_20")
 
-
-# scale LS to match lambda dist in RSB
-left_rsb_bin_0_20 = lambda_mass_dist_0_20.FindBin(RSB_MIN)
-right_rsb_bin_0_20 = lambda_mass_dist_0_20.FindBin(RSB_MAX)
-lambda_mass_ls_dist_0_20.Scale(lambda_mass_dist_0_20.Integral(left_rsb_bin_0_20, right_rsb_bin_0_20)/lambda_mass_ls_dist_0_20.Integral(left_rsb_bin_0_20, right_rsb_bin_0_20))
 
 residual_0_20 = lambda_mass_dist_0_20.Clone("residual_0_20")
-residual_0_20.Add(lambda_mass_ls_dist_0_20, -1)
 
 RSB_region_0_20 = rt.TBox(RSB_MIN, 0, RSB_MAX, lambda_mass_dist_0_20.GetMaximum()*1.055)
 RSB_region_0_20.SetLineColor(rt.kRed)
@@ -164,12 +153,9 @@ lambda_bg_0_20 = 0
 lambda_total_0_20 = 0
 for bin_num in range(left_signal_bin_0_20, right_signal_bin_0_20 + 1):
     lambda_total_0_20 += lambda_mass_dist_0_20.GetBinContent(bin_num)
-    lambda_bg_0_20 += lambda_mass_ls_dist_0_20.GetBinContent(bin_num)
 
 lambda_signal_0_20 = lambda_total_0_20 - lambda_bg_0_20
 lambda_signal_total_ratio_0_20 = lambda_signal_0_20/lambda_total_0_20
-
-scale_factor_0_20 = residual_0_20.Integral(1, left_rsb_bin_0_20)/residual_0_20.Integral(left_signal_bin_0_20, right_signal_bin_0_20)
 
 output_file.cd()
 RSB_region_0_20.Write("RSB_region_0_20")
@@ -177,7 +163,6 @@ RSB_min_line_0_20.Write("RSB_min_line_0_20")
 RSB_max_line_0_20.Write("RSB_max_line_0_20")
 
 lambda_mass_dist_0_20.Write()
-lambda_mass_ls_dist_0_20.Write()
 residual_0_20.Write()
 RSB_region_0_20.Write()
 RSB_min_line_0_20.Write()
@@ -218,10 +203,6 @@ h_lambda_2d_mixcor_sig_0_20.Scale(1.0/num_trigs_0_20)
 h_lambda_2d_mixcor_rsb_0_20.Scale(1.0/num_trigs_0_20)
 h_h_2d_mixcor_0_20.Scale(1.0/num_trigs_0_20)
 
-# scaling by total signal/signal region done here
-h_lambda_2d_mixcor_sig_0_20.Scale(scale_factor_0_20)
-h_lambda_2d_mixcor_rsb_0_20.Scale(scale_factor_0_20)
-
 output_file.cd()
 h_lambda_2d_nomixcor_0_20.Write()
 h_lambda_mixed_2d_0_20.Write()
@@ -231,7 +212,7 @@ h_lambda_2d_mixcor_sig_0_20.Write()
 h_lambda_2d_mixcor_rsb_0_20.Write()
 h_h_2d_mixcor_0_20.Write()
 
-# SIDEBAND SUBTRACTION SECTION
+# SIDEBAND SUBTRACTION SECTION (NOT DONE IN V0 ANALYSIS YET)
 
 
 # Normalize side band to 1
@@ -240,12 +221,9 @@ h_lambda_2d_mixcor_rsb_0_20.Scale(1/h_lambda_2d_mixcor_rsb_0_20.Integral())
 
 # using RSB for sideband subtraction
 h_lambda_2d_subtracted_0_20 = h_lambda_2d_mixcor_sig_0_20.Clone("h_lambda_2d_subtracted_0_20")
-bg_integral_0_20 = (1 - lambda_signal_total_ratio_0_20)*h_lambda_2d_subtracted_0_20.Integral()
-h_lambda_2d_subtracted_0_20.Add(h_lambda_2d_mixcor_rsb_0_20, -bg_integral_0_20)
 
 
 # INTEGRAL AND RATIO SECTION
-
 h_lambda_dphi_subtracted_0_20 = h_lambda_2d_subtracted_0_20.ProjectionY("h_lambda_dphi_subtracted_0_20")
 
 if USE_AVG_4:
@@ -519,14 +497,13 @@ total_ratio_error_0_20 = total_ratio_0_20*math.sqrt((h_lambda_total_integral_err
 ############################################################################################################
 ############################################################################################################
 
-input_file_20_50 = rt.TFile("~/OneDrive/Research/Output/lambda-over-hadron/data/res_cent_20_50.root")
+input_file_20_50 = rt.TFile("~/OneDrive/Research/Output/lambda-over-hadron/data/v0_cent_20_50_fullstat.root")
 input_list_20_50 = input_file_20_50.Get("h-lambda")
 input_file_20_50.Close()
 
 
 trig_dist_20_50 = input_list_20_50.FindObject("fTriggerDist_highestPt") if DO_HIGHEST_PT else input_list_20_50.FindObject("fTriggerDist")
 lambda_dist_20_50 = input_list_20_50.FindObject("fTriggeredLambdaDist")
-lambda_ls_dist_20_50 = input_list_20_50.FindObject("fTriggeredLambdaLSDist")
 
 
 h_h_20_50 = input_list_20_50.FindObject("fDphiHH_highestPt") if DO_HIGHEST_PT else input_list_20_50.FindObject("fDphiHH")
@@ -546,7 +523,6 @@ h_lambda_mixed_20_50.GetAxis(0).SetRangeUser(TRIG_PT_LOW, TRIG_PT_HIGH)
 
 # Setting the associated Pt (this is never changed again)
 lambda_dist_20_50.GetAxis(0).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
-lambda_ls_dist_20_50.GetAxis(0).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 h_h_20_50.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 h_lambda_20_50.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 h_lambda_mixed_20_50.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
@@ -556,7 +532,6 @@ h_lambda_mixed_20_50.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 
 trig_dist_20_50.GetAxis(2).SetRangeUser(ETA_MIN, ETA_MAX)
 lambda_dist_20_50.GetAxis(2).SetRangeUser(ETA_MIN, ETA_MAX)
-lambda_ls_dist_20_50.GetAxis(2).SetRangeUser(ETA_MIN, ETA_MAX)
 
 
 # Getting the single-particle trigger distributions
@@ -577,16 +552,13 @@ trig_2d_dist_20_50.Write()
 ### SIGNAL ANALYSIS SECTION ###
 
 lambda_mass_dist_20_50 = lambda_dist_20_50.Projection(3).Clone("lambda_mass_dist_20_50")
-lambda_mass_ls_dist_20_50 = lambda_ls_dist_20_50.Projection(3).Clone("lambda_mass_ls_dist_20_50")
 
 
 # scale LS to match lambda dist in RSB
 left_rsb_bin_20_50 = lambda_mass_dist_20_50.FindBin(RSB_MIN)
 right_rsb_bin_20_50 = lambda_mass_dist_20_50.FindBin(RSB_MAX)
-lambda_mass_ls_dist_20_50.Scale(lambda_mass_dist_20_50.Integral(left_rsb_bin_20_50, right_rsb_bin_20_50)/lambda_mass_ls_dist_20_50.Integral(left_rsb_bin_20_50, right_rsb_bin_20_50))
 
 residual_20_50 = lambda_mass_dist_20_50.Clone("residual_20_50")
-residual_20_50.Add(lambda_mass_ls_dist_20_50, -1)
 
 RSB_region_20_50 = rt.TBox(RSB_MIN, 0, RSB_MAX, lambda_mass_dist_20_50.GetMaximum()*1.055)
 RSB_region_20_50.SetLineColor(rt.kRed)
@@ -613,19 +585,16 @@ lambda_bg_20_50 = 0
 lambda_total_20_50 = 0
 for bin_num in range(left_signal_bin_20_50, right_signal_bin_20_50 + 1):
     lambda_total_20_50 += lambda_mass_dist_20_50.GetBinContent(bin_num)
-    lambda_bg_20_50 += lambda_mass_ls_dist_20_50.GetBinContent(bin_num)
 
 lambda_signal_20_50 = lambda_total_20_50 - lambda_bg_20_50
 lambda_signal_total_ratio_20_50 = lambda_signal_20_50/lambda_total_20_50
 
-scale_factor_20_50 = residual_20_50.Integral(1, left_rsb_bin_20_50)/residual_20_50.Integral(left_signal_bin_20_50, right_signal_bin_20_50)
 
 output_file.cd()
 RSB_region_20_50.Write("RSB_region_20_50")
 RSB_min_line_20_50.Write("RSB_min_line_20_50")
 RSB_max_line_20_50.Write("RSB_max_line_20_50")
 lambda_mass_dist_20_50.Write()
-lambda_mass_ls_dist_20_50.Write()
 residual_20_50.Write()
 RSB_region_20_50.Write()
 RSB_min_line_20_50.Write()
@@ -666,9 +635,6 @@ h_lambda_2d_mixcor_sig_20_50.Scale(1.0/num_trigs_20_50)
 h_lambda_2d_mixcor_rsb_20_50.Scale(1.0/num_trigs_20_50)
 h_h_2d_mixcor_20_50.Scale(1.0/num_trigs_20_50)
 
-# scaling by total signal/signal region done here
-h_lambda_2d_mixcor_sig_20_50.Scale(scale_factor_20_50)
-h_lambda_2d_mixcor_rsb_20_50.Scale(scale_factor_20_50)
 
 output_file.cd()
 h_lambda_2d_nomixcor_20_50.Write()
@@ -687,12 +653,9 @@ h_lambda_2d_mixcor_rsb_20_50.Scale(1/h_lambda_2d_mixcor_rsb_20_50.Integral())
 
 # using RSB for sideband subtraction
 h_lambda_2d_subtracted_20_50 = h_lambda_2d_mixcor_sig_20_50.Clone("h_lambda_2d_subtracted_20_50")
-bg_integral_20_50 = (1 - lambda_signal_total_ratio_20_50)*h_lambda_2d_subtracted_20_50.Integral()
-h_lambda_2d_subtracted_20_50.Add(h_lambda_2d_mixcor_rsb_20_50, -bg_integral_20_50)
 
 
 # INTEGRAL AND RATIO SECTION
-
 h_lambda_dphi_subtracted_20_50 = h_lambda_2d_subtracted_20_50.ProjectionY("h_lambda_dphi_subtracted_20_50")
 
 if USE_AVG_4:
@@ -965,14 +928,13 @@ total_ratio_error_20_50 = total_ratio_20_50*math.sqrt((h_lambda_total_integral_e
 ############################################################################################################
 ############################################################################################################
 
-input_file_50_80 = rt.TFile("~/OneDrive/Research/Output/lambda-over-hadron/data/res_cent_50_80.root")
+input_file_50_80 = rt.TFile("~/OneDrive/Research/Output/lambda-over-hadron/data/v0_cent_50_80_fullstat.root")
 input_list_50_80 = input_file_50_80.Get("h-lambda")
 input_file_50_80.Close()
 
 
 trig_dist_50_80 = input_list_50_80.FindObject("fTriggerDist_highestPt") if DO_HIGHEST_PT else input_list_50_80.FindObject("fTriggerDist")
 lambda_dist_50_80 = input_list_50_80.FindObject("fTriggeredLambdaDist")
-lambda_ls_dist_50_80 = input_list_50_80.FindObject("fTriggeredLambdaLSDist")
 
 
 h_h_50_80 = input_list_50_80.FindObject("fDphiHH_highestPt") if DO_HIGHEST_PT else input_list_50_80.FindObject("fDphiHH")
@@ -992,7 +954,6 @@ h_lambda_mixed_50_80.GetAxis(0).SetRangeUser(TRIG_PT_LOW, TRIG_PT_HIGH)
 
 # Setting the associated Pt (this is never changed again)
 lambda_dist_50_80.GetAxis(0).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
-lambda_ls_dist_50_80.GetAxis(0).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 h_h_50_80.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 h_lambda_50_80.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 h_lambda_mixed_50_80.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
@@ -1002,7 +963,6 @@ h_lambda_mixed_50_80.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 
 trig_dist_50_80.GetAxis(2).SetRangeUser(ETA_MIN, ETA_MAX)
 lambda_dist_50_80.GetAxis(2).SetRangeUser(ETA_MIN, ETA_MAX)
-lambda_ls_dist_50_80.GetAxis(2).SetRangeUser(ETA_MIN, ETA_MAX)
 
 
 # Getting the single-particle trigger distributions
@@ -1023,16 +983,13 @@ trig_2d_dist_50_80.Write()
 ### SIGNAL ANALYSIS SECTION ###
 
 lambda_mass_dist_50_80 = lambda_dist_50_80.Projection(3).Clone("lambda_mass_dist_50_80")
-lambda_mass_ls_dist_50_80 = lambda_ls_dist_50_80.Projection(3).Clone("lambda_mass_ls_dist_50_80")
 
 
 # scale LS to match lambda dist in RSB
 left_rsb_bin_50_80 = lambda_mass_dist_50_80.FindBin(RSB_MIN)
 right_rsb_bin_50_80 = lambda_mass_dist_50_80.FindBin(RSB_MAX)
-lambda_mass_ls_dist_50_80.Scale(lambda_mass_dist_50_80.Integral(left_rsb_bin_50_80, right_rsb_bin_50_80)/lambda_mass_ls_dist_50_80.Integral(left_rsb_bin_50_80, right_rsb_bin_50_80))
 
 residual_50_80 = lambda_mass_dist_50_80.Clone("residual_50_80")
-residual_50_80.Add(lambda_mass_ls_dist_50_80, -1)
 
 RSB_region_50_80 = rt.TBox(RSB_MIN, 0, RSB_MAX, lambda_mass_dist_50_80.GetMaximum()*1.055)
 RSB_region_50_80.SetLineColor(rt.kRed)
@@ -1059,19 +1016,16 @@ lambda_bg_50_80 = 0
 lambda_total_50_80 = 0
 for bin_num in range(left_signal_bin_50_80, right_signal_bin_50_80 + 1):
     lambda_total_50_80 += lambda_mass_dist_50_80.GetBinContent(bin_num)
-    lambda_bg_50_80 += lambda_mass_ls_dist_50_80.GetBinContent(bin_num)
 
 lambda_signal_50_80 = lambda_total_50_80 - lambda_bg_50_80
 lambda_signal_total_ratio_50_80 = lambda_signal_50_80/lambda_total_50_80
 
-scale_factor_50_80 = residual_50_80.Integral(1, left_rsb_bin_50_80)/residual_50_80.Integral(left_signal_bin_50_80, right_signal_bin_50_80)
 
 output_file.cd()
 RSB_region_50_80.Write("RSB_region_50_80")
 RSB_min_line_50_80.Write("RSB_min_line_50_80")
 RSB_max_line_50_80.Write("RSB_max_line_50_80")
 lambda_mass_dist_50_80.Write()
-lambda_mass_ls_dist_50_80.Write()
 residual_50_80.Write()
 RSB_region_50_80.Write()
 RSB_min_line_50_80.Write()
@@ -1112,9 +1066,6 @@ h_lambda_2d_mixcor_sig_50_80.Scale(1.0/num_trigs_50_80)
 h_lambda_2d_mixcor_rsb_50_80.Scale(1.0/num_trigs_50_80)
 h_h_2d_mixcor_50_80.Scale(1.0/num_trigs_50_80)
 
-# scaling by total signal/signal region done here
-h_lambda_2d_mixcor_sig_50_80.Scale(scale_factor_50_80)
-h_lambda_2d_mixcor_rsb_50_80.Scale(scale_factor_50_80)
 
 output_file.cd()
 h_lambda_2d_nomixcor_50_80.Write()
@@ -1134,8 +1085,6 @@ h_lambda_2d_mixcor_rsb_50_80.Scale(1/h_lambda_2d_mixcor_rsb_50_80.Integral())
 
 # using RSB for sideband subtraction
 h_lambda_2d_subtracted_50_80 = h_lambda_2d_mixcor_sig_50_80.Clone("h_lambda_2d_subtracted_50_80")
-bg_integral_50_80 = (1 - lambda_signal_total_ratio_50_80)*h_lambda_2d_subtracted_50_80.Integral()
-h_lambda_2d_subtracted_50_80.Add(h_lambda_2d_mixcor_rsb_50_80, -bg_integral_50_80)
 
 
 # INTEGRAL AND RATIO SECTION
