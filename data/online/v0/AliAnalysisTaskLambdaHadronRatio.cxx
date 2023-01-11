@@ -55,6 +55,12 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     fTriggerEff(0x0),
     fAssociatedEff(0x0),
     fLambdaEff(0x0),
+    fTPCnSigmaProton(0x0),
+    fTPCnSigmaPion(0x0),
+    fTOFnSigmaProton(0x0),
+    fTOFnSigmaPion(0x0),
+    fTPCvTOFnSigmaProton(0x0),
+    fTPCvTOFnSigmaPion(0x0),
     fTriggerDist(0x0),
     fTriggerDist_highestPt(0x0),
     fAssociatedHDist(0x0),
@@ -88,6 +94,12 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     fTriggerEff(0x0),
     fAssociatedEff(0x0),
     fLambdaEff(0x0),
+    fTPCnSigmaProton(0x0),
+    fTPCnSigmaPion(0x0),
+    fTOFnSigmaProton(0x0),
+    fTOFnSigmaPion(0x0),
+    fTPCvTOFnSigmaProton(0x0),
+    fTPCvTOFnSigmaPion(0x0),
     fTriggerDist(0x0),
     fTriggerDist_highestPt(0x0),
     fAssociatedHDist(0x0),
@@ -215,6 +227,33 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     fDphiHHMixed_highestPt = new THnSparseF("fDphiHHMixed_highestPt", "Mixed Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fDphiHHMixed_highestPt->Sumw2();
     fOutputList->Add(fDphiHHMixed_highestPt);
+
+    // Performance plot section
+
+    fTPCnSigmaProton = new TH2D("fTPCnSigmaProton", "TPC nSigma Proton", 100, 0, 10, 100, -5, 5);
+    fTPCnSigmaProton->Sumw2();
+    fOutputList->Add(fTPCnSigmaProton);
+
+    fTPCnSigmaPion = new TH2D("fTPCnSigmaPion", "TPC nSigma Pion", 100, 0, 10, 100, -5, 5);
+    fTPCnSigmaPion->Sumw2();
+    fOutputList->Add(fTPCnSigmaPion);
+
+    fTOFnSigmaProton = new TH2D("fTOFnSigmaProton", "TOF nSigma Proton", 100, 0, 10, 100, -5, 5);
+    fTOFnSigmaProton->Sumw2();
+    fOutputList->Add(fTOFnSigmaProton);
+
+    fTOFnSigmaPion = new TH2D("fTOFnSigmaPion", "TOF nSigma Pion", 100, 0, 10, 100, -5, 5);
+    fTOFnSigmaPion->Sumw2();
+    fOutputList->Add(fTOFnSigmaPion);
+
+    fTPCvTOFnSigmaPion = new TH2D("fTPCvTOFnSigmaPion", "TPC vs TOF nSigma Pion", 100, -5, 5, 100, -5, 5);
+    fTPCvTOFnSigmaPion->Sumw2();
+    fOutputList->Add(fTPCvTOFnSigmaPion);
+
+    fTPCvTOFnSigmaProton = new TH2D("fTPCvTOFnSigmaProton", "TPC vs TOF nSigma Proton", 100, -5, 5, 100, -5, 5);
+    fTPCvTOFnSigmaProton->Sumw2();
+    fOutputList->Add(fTPCvTOFnSigmaProton);
+
 
     PostData(1, fOutputList);
 
@@ -677,11 +716,29 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
         pos_TPCNSigmaPion = fpidResponse->NumberOfSigmasTPC(posTrack, AliPID::kPion);
         pos_TOFNSigmaPion = fpidResponse->NumberOfSigmasTOF(posTrack, AliPID::kPion);
 
+        fTPCnSigmaProton->Fill(posTrack->Pt(), pos_TPCNSigmaProton);
+        fTPCnSigmaPion->Fill(negTrack->Pt(), neg_TPCNSigmaPion);
+        fTPCnSigmaProton->Fill(negTrack->Pt(), neg_TPCNSigmaProton);
+        fTPCnSigmaPion->Fill(posTrack->Pt(), pos_TPCNSigmaPion);
+
+        fTOFnSigmaProton->Fill(posTrack->Pt(), pos_TOFNSigmaProton);
+        fTOFnSigmaPion->Fill(negTrack->Pt(), neg_TOFNSigmaPion);
+        fTOFnSigmaProton->Fill(negTrack->Pt(), neg_TOFNSigmaProton);
+        fTOFnSigmaPion->Fill(posTrack->Pt(), pos_TOFNSigmaPion);
+
+        fTPCvTOFnSigmaProton ->Fill(neg_TPCNSigmaProton, neg_TOFNSigmaProton);
+        fTPCvTOFnSigmaProton ->Fill(pos_TPCNSigmaProton, pos_TOFNSigmaProton);
+
+        fTPCvTOFnSigmaPion ->Fill(neg_TPCNSigmaPion, neg_TOFNSigmaPion);
+        fTPCvTOFnSigmaPion ->Fill(pos_TPCNSigmaPion, pos_TOFNSigmaPion);
+
+
         bool isNegTrackPion = TMath::Abs(neg_TPCNSigmaPion) <= 3 && (TMath::Abs(neg_TOFNSigmaPion) <= 3 || neg_TOFNSigmaPion == -999);
         bool isPosTrackProton = TMath::Abs(pos_TPCNSigmaProton) <= 2 && (TMath::Abs(pos_TOFNSigmaProton) <= 2 || pos_TOFNSigmaProton == -999);
 
         bool isPosTrackPion = TMath::Abs(pos_TPCNSigmaPion) <= 3 && (TMath::Abs(pos_TOFNSigmaPion) <= 3 || pos_TOFNSigmaPion == -999);
         bool isNegTrackProton = TMath::Abs(neg_TPCNSigmaProton) <= 2 && (TMath::Abs(neg_TOFNSigmaProton) <= 2 || neg_TOFNSigmaProton == -999);
+
 
         if((isNegTrackPion && isPosTrackProton)) {
             AliMotherContainer lambda;
@@ -702,53 +759,53 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     }
 
 
-    // Filling all of our single particle distribution histograms:
-    FillSingleParticleDist(trigger_list, primZ, fTriggerDist, true);
-    FillSingleParticleDist(trigger_list_highestPt, primZ, fTriggerDist_highestPt, true);
-    FillSingleParticleDist(associated_h_list, primZ, fAssociatedHDist);
+    // // Filling all of our single particle distribution histograms:
+    // FillSingleParticleDist(trigger_list, primZ, fTriggerDist, true);
+    // FillSingleParticleDist(trigger_list_highestPt, primZ, fTriggerDist_highestPt, true);
+    // FillSingleParticleDist(associated_h_list, primZ, fAssociatedHDist);
 
-    FillMotherDist(lambda_list, multPercentile, fLambdaDist, false);
-    FillMotherDist(antilambda_list, multPercentile, fLambdaDist, true);
+    // FillMotherDist(lambda_list, multPercentile, fLambdaDist, false);
+    // FillMotherDist(antilambda_list, multPercentile, fLambdaDist, true);
 
-    // Filling our single particle lambda distribution histogram:
-    if(is_triggered_event) FillMotherDist(lambda_list, multPercentile, fTriggeredLambdaDist, false);
-    if(is_triggered_event) FillMotherDist(antilambda_list, multPercentile, fTriggeredLambdaDist, true);
+    // // Filling our single particle lambda distribution histogram:
+    // if(is_triggered_event) FillMotherDist(lambda_list, multPercentile, fTriggeredLambdaDist, false);
+    // if(is_triggered_event) FillMotherDist(antilambda_list, multPercentile, fTriggeredLambdaDist, true);
 
-    MakeSameHLambdaCorrelations(trigger_list, antilambda_list, fDphiHLambda, primZ, true, true);
-    MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambda, primZ, true, false);
+    // MakeSameHLambdaCorrelations(trigger_list, antilambda_list, fDphiHLambda, primZ, true, true);
+    // MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambda, primZ, true, false);
 
-    MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHH, primZ, true);
+    // MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHH, primZ, true);
 
-    // Highest pt trigger correlations
-    MakeSameHLambdaCorrelations(trigger_list_highestPt, antilambda_list, fDphiHLambda_highestPt, primZ, true, true);
-    MakeSameHLambdaCorrelations(trigger_list_highestPt, lambda_list, fDphiHLambda_highestPt, primZ, true, false);
-    MakeSameHHCorrelations(trigger_list_highestPt, associated_h_list, fDphiHH_highestPt, primZ, true);
+    // // Highest pt trigger correlations
+    // MakeSameHLambdaCorrelations(trigger_list_highestPt, antilambda_list, fDphiHLambda_highestPt, primZ, true, true);
+    // MakeSameHLambdaCorrelations(trigger_list_highestPt, lambda_list, fDphiHLambda_highestPt, primZ, true, false);
+    // MakeSameHHCorrelations(trigger_list_highestPt, associated_h_list, fDphiHH_highestPt, primZ, true);
 
-    if(lambda_list.size() > 0 && associated_h_list.size() > 0) {
-        AliEventPool *fCorPool = fCorPoolMgr->GetEventPool(multPercentile, primZ);
-        AliEventPool *fCorPool_highestPt = fCorPoolMgr_highestPt->GetEventPool(multPercentile, primZ);
-        if(!fCorPool) {
-            AliFatal(Form("No pool found for multiplicity = %f, zVtx = %f", multPercentile, primZ));
-        }
-        else {
-            if(fCorPool->IsReady()) {
-                MakeMixedHLambdaCorrelations(fCorPool, antilambda_list, fDphiHLambdaMixed, primZ, true, true);
-                MakeMixedHLambdaCorrelations(fCorPool, lambda_list, fDphiHLambdaMixed, primZ, true, false);
-                MakeMixedHHCorrelations(fCorPool, associated_h_list, fDphiHHMixed, primZ);
-            }
-            if(fCorPool_highestPt->IsReady()) {
-                MakeMixedHLambdaCorrelations(fCorPool_highestPt, antilambda_list, fDphiHLambdaMixed_highestPt, primZ, true, true);
-                MakeMixedHLambdaCorrelations(fCorPool_highestPt, lambda_list, fDphiHLambdaMixed_highestPt, primZ, true, false);
-                MakeMixedHHCorrelations(fCorPool_highestPt, associated_h_list, fDphiHHMixed_highestPt, primZ);
-            }
-            if(fMixedTrackObjArray->GetEntries() > 0) {
-                fCorPool->UpdatePool(fMixedTrackObjArray);
-            }
-            if(fMixedTrackObjArray_highestPt->GetEntries() > 0) {
-                fCorPool_highestPt->UpdatePool(fMixedTrackObjArray_highestPt);
-            }
-        }
-    }
+    // if(lambda_list.size() > 0 && associated_h_list.size() > 0) {
+    //     AliEventPool *fCorPool = fCorPoolMgr->GetEventPool(multPercentile, primZ);
+    //     AliEventPool *fCorPool_highestPt = fCorPoolMgr_highestPt->GetEventPool(multPercentile, primZ);
+    //     if(!fCorPool) {
+    //         AliFatal(Form("No pool found for multiplicity = %f, zVtx = %f", multPercentile, primZ));
+    //     }
+    //     else {
+    //         if(fCorPool->IsReady()) {
+    //             MakeMixedHLambdaCorrelations(fCorPool, antilambda_list, fDphiHLambdaMixed, primZ, true, true);
+    //             MakeMixedHLambdaCorrelations(fCorPool, lambda_list, fDphiHLambdaMixed, primZ, true, false);
+    //             MakeMixedHHCorrelations(fCorPool, associated_h_list, fDphiHHMixed, primZ);
+    //         }
+    //         if(fCorPool_highestPt->IsReady()) {
+    //             MakeMixedHLambdaCorrelations(fCorPool_highestPt, antilambda_list, fDphiHLambdaMixed_highestPt, primZ, true, true);
+    //             MakeMixedHLambdaCorrelations(fCorPool_highestPt, lambda_list, fDphiHLambdaMixed_highestPt, primZ, true, false);
+    //             MakeMixedHHCorrelations(fCorPool_highestPt, associated_h_list, fDphiHHMixed_highestPt, primZ);
+    //         }
+    //         if(fMixedTrackObjArray->GetEntries() > 0) {
+    //             fCorPool->UpdatePool(fMixedTrackObjArray);
+    //         }
+    //         if(fMixedTrackObjArray_highestPt->GetEntries() > 0) {
+    //             fCorPool_highestPt->UpdatePool(fMixedTrackObjArray_highestPt);
+    //         }
+    //     }
+    // }
 
     PostData(1, fOutputList);
 }

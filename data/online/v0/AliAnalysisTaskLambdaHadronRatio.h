@@ -75,6 +75,13 @@ private:
   AliPIDResponse *fpidResponse; //!>!pid response
   AliMultSelection *fMultSelection; //!>!mult selection
 
+  TH2D* fTPCnSigmaProton; //!>! TPC n sigma for protons (vs pt)
+  TH2D* fTPCnSigmaPion; //!>! TPC n sigma for pions (vs pt)
+  TH2D* fTOFnSigmaProton; //!>! TOF n sigma for protons (vs pt)
+  TH2D* fTOFnSigmaPion; //!>! TOF n sigma for pions (vs pt)
+
+  TH2D* fTPCvTOFnSigmaProton; //!>! TPC vs TOF n sigma for protons
+  TH2D* fTPCvTOFnSigmaPion; //!>! TPC vs TOF n sigma for pions
 
   THnSparse* fTriggerDist;  //!>! single particle trigger dist (corrected for efficiency)
   THnSparse* fTriggerDist_highestPt;  //!>! single particle trigger dist (corrected for efficiency, highest pt between 4 and 8)

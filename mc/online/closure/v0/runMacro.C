@@ -11,16 +11,15 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   char *CENT_ESTIMATOR = "V0A";
 
   //Starting and ending index of the array containing the run numbers, specifies which range to run over
+  // 44 total runs in pp  set
   int startIndex = 0; 
-  int endIndex = 28;
+  int endIndex = 43;
 
   // int startIndex = 15;
   // int endIndex = 28;
 
   TString work_dir = "lambda_hadron_v0closure";
-  // TString output_dir = "closure_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_h_daughter_corr_motherptcheck";
-  TString output_dir = "closure_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_secondary_associated";
-  // TString output_dir = "closure_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_comp_with_eff";
+  TString output_dir = "closure_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_dphi_efficiency_template_using_pp";
   
   //If we want to download test files from grid then run in one swoop (usually just run completely locally):
   bool gridTest = false;
@@ -90,14 +89,64 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
     alienHandler->SetAliPhysicsVersion("vAN-20201026_ROOT6-1");
     alienHandler->SetAPIVersion("V1.1x");
     // select the input data
-    alienHandler->SetGridDataDir("//alice/sim/2017/LHC17f2b_fast/");
-    alienHandler->SetDataPattern("/AOD202/*/*AOD.root");
+    // alienHandler->SetGridDataDir("//alice/sim/2017/LHC17f2b_fast/");
+    // alienHandler->SetDataPattern("/AOD202/*/*AOD.root");
+    alienHandler->SetGridDataDir("//alice/sim/2018/LHC18j2_fast/");
+    alienHandler->SetDataPattern("/AOD209/*/*AOD.root");
     // MC has no prefix, data has prefix 000
     alienHandler->SetRunPrefix("");
 
 
     // addding runs
-    int runArray[] = {265525, 265521, 265501, 265499, 265435, 265427, 265426, 265425, 265424, 265422, 265421, 265420, 265419, 265388, 265387, 265385, 265384, 265383, 265381, 265378, 265377, 265344, 265343, 265342, 265339, 265338, 265336, 265334, 265332, 265309};
+    // int runArray[] = {265525, 265521, 265501, 265499, 265435, 265427, 265426, 265425, 265424, 265422, 265421, 265420, 265419, 265388, 265387, 265385, 265384, 265383, 265381, 265378, 265377, 265344, 265343, 265342, 265339, 265338, 265336, 265334, 265332, 265309};
+
+
+    int runArray[] = {
+      282367,
+      282366,
+      282365,
+      282343,
+      282342,
+      282341,
+      282340,
+      282314,
+      282313,
+      282312,
+      282309,
+      282307,
+      282306,
+      282305,
+      282304,
+      282303,
+      282302,
+      282247,
+      282230,
+      282229,
+      282227,
+      282224,
+      282206,
+      282189,
+      282147,
+      282146,
+      282127,
+      282126,
+      282125,
+      282123,
+      282122,
+      282120,
+      282119,
+      282118,
+      282099,
+      282098,
+      282078,
+      282051,
+      282050,
+      282031,
+      282025,
+      282021,
+      282016,
+      282008
+    };
     int runArrayLength = (int)(sizeof(runArray)/sizeof(runArray[0]));
 
     if(endIndex > (runArrayLength-1) || endIndex < 0) {
