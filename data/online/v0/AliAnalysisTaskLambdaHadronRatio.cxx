@@ -59,8 +59,8 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     fTPCnSigmaPion(0x0),
     fTOFnSigmaProton(0x0),
     fTOFnSigmaPion(0x0),
-    fTPCvTOFnSigmaProton(0x0),
-    fTPCvTOFnSigmaPion(0x0),
+    fTOFvTPCnSigmaProton(0x0),
+    fTOFvTPCnSigmaPion(0x0),
     fTriggerDist(0x0),
     fTriggerDist_highestPt(0x0),
     fAssociatedHDist(0x0),
@@ -98,8 +98,8 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     fTPCnSigmaPion(0x0),
     fTOFnSigmaProton(0x0),
     fTOFnSigmaPion(0x0),
-    fTPCvTOFnSigmaProton(0x0),
-    fTPCvTOFnSigmaPion(0x0),
+    fTOFvTPCnSigmaProton(0x0),
+    fTOFvTPCnSigmaPion(0x0),
     fTriggerDist(0x0),
     fTriggerDist_highestPt(0x0),
     fAssociatedHDist(0x0),
@@ -246,13 +246,13 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     fTOFnSigmaPion->Sumw2();
     fOutputList->Add(fTOFnSigmaPion);
 
-    fTPCvTOFnSigmaPion = new TH2D("fTPCvTOFnSigmaPion", "TPC vs TOF nSigma Pion", 100, -5, 5, 100, -5, 5);
-    fTPCvTOFnSigmaPion->Sumw2();
-    fOutputList->Add(fTPCvTOFnSigmaPion);
+    fTOFvTPCnSigmaPion = new TH2D("fTOFvTPCnSigmaPion", "TPC vs TOF nSigma Pion", 100, -5, 5, 100, -5, 5);
+    fTOFvTPCnSigmaPion->Sumw2();
+    fOutputList->Add(fTOFvTPCnSigmaPion);
 
-    fTPCvTOFnSigmaProton = new TH2D("fTPCvTOFnSigmaProton", "TPC vs TOF nSigma Proton", 100, -5, 5, 100, -5, 5);
-    fTPCvTOFnSigmaProton->Sumw2();
-    fOutputList->Add(fTPCvTOFnSigmaProton);
+    fTOFvTPCnSigmaProton = new TH2D("fTOFvTPCnSigmaProton", "TPC vs TOF nSigma Proton", 100, -5, 5, 100, -5, 5);
+    fTOFvTPCnSigmaProton->Sumw2();
+    fOutputList->Add(fTOFvTPCnSigmaProton);
 
 
     PostData(1, fOutputList);
@@ -726,11 +726,11 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
         fTOFnSigmaProton->Fill(negTrack->Pt(), neg_TOFNSigmaProton);
         fTOFnSigmaPion->Fill(posTrack->Pt(), pos_TOFNSigmaPion);
 
-        fTPCvTOFnSigmaProton ->Fill(neg_TPCNSigmaProton, neg_TOFNSigmaProton);
-        fTPCvTOFnSigmaProton ->Fill(pos_TPCNSigmaProton, pos_TOFNSigmaProton);
+        fTOFvTPCnSigmaProton ->Fill(neg_TPCNSigmaProton, neg_TOFNSigmaProton);
+        fTOFvTPCnSigmaProton ->Fill(pos_TPCNSigmaProton, pos_TOFNSigmaProton);
 
-        fTPCvTOFnSigmaPion ->Fill(neg_TPCNSigmaPion, neg_TOFNSigmaPion);
-        fTPCvTOFnSigmaPion ->Fill(pos_TPCNSigmaPion, pos_TOFNSigmaPion);
+        fTOFvTPCnSigmaPion ->Fill(neg_TPCNSigmaPion, neg_TOFNSigmaPion);
+        fTOFvTPCnSigmaPion ->Fill(pos_TPCNSigmaPion, pos_TOFNSigmaPion);
 
 
         bool isNegTrackPion = TMath::Abs(neg_TPCNSigmaPion) <= 3 && (TMath::Abs(neg_TOFNSigmaPion) <= 3 || neg_TOFNSigmaPion == -999);

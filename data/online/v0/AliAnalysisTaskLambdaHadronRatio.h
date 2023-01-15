@@ -80,8 +80,8 @@ private:
   TH2D* fTOFnSigmaProton; //!>! TOF n sigma for protons (vs pt)
   TH2D* fTOFnSigmaPion; //!>! TOF n sigma for pions (vs pt)
 
-  TH2D* fTPCvTOFnSigmaProton; //!>! TPC vs TOF n sigma for protons
-  TH2D* fTPCvTOFnSigmaPion; //!>! TPC vs TOF n sigma for pions
+  TH2D* fTOFvTPCnSigmaProton; //!>! TPC vs TOF n sigma for protons (TPC is X axis, TOF is Y axis)
+  TH2D* fTOFvTPCnSigmaPion; //!>! TPC vs TOF n sigma for pions (TPC is X axis, TOF is Y axis)
 
   THnSparse* fTriggerDist;  //!>! single particle trigger dist (corrected for efficiency)
   THnSparse* fTriggerDist_highestPt;  //!>! single particle trigger dist (corrected for efficiency, highest pt between 4 and 8)

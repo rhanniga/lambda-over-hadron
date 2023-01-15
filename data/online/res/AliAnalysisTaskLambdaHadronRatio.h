@@ -95,6 +95,13 @@ private:
   THnSparse* fDphiHHMixed; //!>! hadron-hadron mixed correlation hist
   THnSparse* fDphiHHMixed_highestPt; //!>! hadron-hadron mixed correlation hist (highest pt trigger between 4 and 8)
 
+  TH2D*      fTPCnSigmaProton; //!>! TPC n sigma for proton
+  TH2D*      fTPCnSigmaPion; //!>! TPC n sigma for pion
+  TH2D*      fTOFnSigmaProton; //!>! TOF n sigma for proton
+  TH2D*      fTOFnSigmaPion; //!>! TOF n sigma for pion
+  TH2D*      fTOFvTPCnSigmaProton; //!>! TOF v TPC n sigma for proton (TPC is X axis, TOF is Y axis)
+  TH2D*      fTOFvTPCnSigmaPion; //!>! TOF v TPCn sigma for pion (TPC is X axis, TOF is Y axis)
+
 
 
   AliMotherContainer DaughtersToMother(AliAODTrack* track1, AliAODTrack* track2, double mass1, double mass2);

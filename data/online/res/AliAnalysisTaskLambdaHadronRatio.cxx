@@ -54,6 +54,12 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     fTriggerEff(0x0),
     fAssociatedEff(0x0),
     fLambdaEff(0x0),
+    fTPCnSigmaProton(0x0),
+    fTPCnSigmaPion(0x0),
+    fTOFnSigmaProton(0x0),
+    fTOFnSigmaPion(0x0),
+    fTOFvTPCnSigmaProton(0x0),
+    fTOFvTPCnSigmaPion(0x0),
     fpidResponse(0x0),
     fMultSelection(0x0),
     fMultLow(0.0),
@@ -89,7 +95,13 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     fTriggerEff(0x0),
     fAssociatedEff(0x0),
     fLambdaEff(0x0),
+    fTPCnSigmaProton(0x0),
+    fTPCnSigmaPion(0x0),
+    fTOFnSigmaProton(0x0),
+    fTOFnSigmaPion(0x0),
     fpidResponse(0x0),
+    fTOFvTPCnSigmaProton(0x0),
+    fTOFvTPCnSigmaPion(0x0),
     fMultSelection(0x0),
     fMultLow(0.0),
     fMultHigh(0.0),
@@ -234,6 +246,32 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     fDphiHHMixed_highestPt = new THnSparseF("fDphiHHMixed_highestPt", "Mixed Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fDphiHHMixed_highestPt->Sumw2();
     fOutputList->Add(fDphiHHMixed_highestPt);
+
+    // Performance plot section
+
+    fTPCnSigmaProton = new TH2D("fTPCnSigmaProton", "TPC nSigma Proton", 100, 0, 10, 100, -5, 5);
+    fTPCnSigmaProton->Sumw2();
+    fOutputList->Add(fTPCnSigmaProton);
+
+    fTPCnSigmaPion = new TH2D("fTPCnSigmaPion", "TPC nSigma Pion", 100, 0, 10, 100, -5, 5);
+    fTPCnSigmaPion->Sumw2();
+    fOutputList->Add(fTPCnSigmaPion);
+
+    fTOFnSigmaProton = new TH2D("fTOFnSigmaProton", "TOF nSigma Proton", 100, 0, 10, 100, -5, 5);
+    fTOFnSigmaProton->Sumw2();
+    fOutputList->Add(fTOFnSigmaProton);
+
+    fTOFnSigmaPion = new TH2D("fTOFnSigmaPion", "TOF nSigma Pion", 100, 0, 10, 100, -5, 5);
+    fTOFnSigmaPion->Sumw2();
+    fOutputList->Add(fTOFnSigmaPion);
+
+    fTOFvTPCnSigmaPion = new TH2D("fTOFvTPCnSigmaPion", "TPC vs TOF nSigma Pion", 100, -5, 5, 100, -5, 5);
+    fTOFvTPCnSigmaPion->Sumw2();
+    fOutputList->Add(fTOFvTPCnSigmaPion);
+
+    fTOFvTPCnSigmaProton = new TH2D("fTOFvTPCnSigmaProton", "TPC vs TOF nSigma Proton", 100, -5, 5, 100, -5, 5);
+    fTOFvTPCnSigmaProton->Sumw2();
+    fOutputList->Add(fTOFvTPCnSigmaProton);
 
     PostData(1, fOutputList);
 }
@@ -691,6 +729,8 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
 
         total_track_list.push_back(track);
 
+        int crossedRows = track->GetTPCNCrossedRows();
+
         //Filter for trigger particles
         if(PassTriggerCuts(track)) {
             trigger_list.push_back(track);
@@ -719,10 +759,9 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
             double TPCNSigmaPion = -999;
             double TOFNSigmaPion = -999;
 
+
             TPCNSigmaPion = fpidResponse->NumberOfSigmasTPC(track, AliPID::kPion);
             TOFNSigmaPion = fpidResponse->NumberOfSigmasTOF(track, AliPID::kPion);
-
-            std::cout << "The TOF nSigma is: " << TOFNSigmaPion << std::endl;
 
 
             if(TMath::Abs(TPCNSigmaPion) <= 3 && (TMath::Abs(TOFNSigmaPion) <= 3 || TOFNSigmaPion == -999)) {
@@ -751,6 +790,12 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
                     antiProton_list.push_back(track);
                 }
             }
+            fTPCnSigmaPion->Fill(track->Pt(), TPCNSigmaPion);
+            fTPCnSigmaProton->Fill(track->Pt(), TPCNSigmaProton);
+            fTOFnSigmaPion->Fill(track->Pt(), TOFNSigmaPion);
+            fTOFnSigmaProton->Fill(track->Pt(), TOFNSigmaProton);
+            fTOFvTPCnSigmaPion->Fill(TPCNSigmaPion, TOFNSigmaPion);
+            fTOFvTPCnSigmaProton->Fill(TPCNSigmaProton, TOFNSigmaProton);
         }
     }
 
