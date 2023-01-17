@@ -25,8 +25,8 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   // int startIndex = 15;
   // int endIndex = 28;
 
-  TString work_dir = "test";
-  TString output_dir = "cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_PID_plots_v2_test";
+  TString work_dir = "lambda_hadron_ratio_v0";
+  TString output_dir = "cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_PID_plots_v3";
   
   //If we want to download test files from grid then run in one swoop (usually just run completely locally):
   bool gridTest = false;

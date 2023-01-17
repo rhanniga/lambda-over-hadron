@@ -799,6 +799,8 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
         }
     }
 
+
+    /*
     if(maxTrigger){
         trigger_list_highestPt.push_back(maxTrigger); 
         AliCFParticle *triggerPart_highestPt = new AliCFParticle(maxTrigger->Pt(), maxTrigger->Eta(), maxTrigger->Phi(), maxTrigger->Charge(), 0);
@@ -890,7 +892,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
             }
         }
     }
-
+*/
     PostData(1, fOutputList);
 }
 

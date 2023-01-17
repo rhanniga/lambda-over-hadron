@@ -7,7 +7,7 @@
 
 void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
-  float MULT_LOW = 50;
+  float MULT_LOW = 0;
   float MULT_HIGH = 80;
 
   float TRIG_BIT = AliAODTrack::kIsHybridGCG;
@@ -20,10 +20,10 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   /* int endIndex = 14; */
 
   /* int startIndex = 15; */
-  int endIndex = 28;
+  int endIndex = 10;
 
-  TString work_dir = "lambda_hadron_ratio";
-  TString output_dir = "eff_corr_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_PID_plots_v1";
+  TString work_dir = "fuck_this_stupid_system";
+  TString output_dir = "eff_corr_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_PID_plots_v132129034182309138";
   // TString output_dir = "4test";
   
   //If we want to download test files from grid then run in one swoop (usually just run completely locally):
