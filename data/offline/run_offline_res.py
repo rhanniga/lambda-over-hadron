@@ -76,6 +76,7 @@ input_file_0_20.Close()
 
 
 trig_dist_0_20 = input_list_0_20.FindObject("fTriggerDist_highestPt") if DO_HIGHEST_PT else input_list_0_20.FindObject("fTriggerDist")
+assoc_dist_0_20 = input_list_0_20.FindObject("fAssociatedHDist")
 lambda_dist_0_20 = input_list_0_20.FindObject("fTriggeredLambdaDist")
 lambda_ls_dist_0_20 = input_list_0_20.FindObject("fTriggeredLambdaLSDist")
 
@@ -96,6 +97,7 @@ h_lambda_mixed_0_20.GetAxis(0).SetRangeUser(TRIG_PT_LOW, TRIG_PT_HIGH)
 
 
 # Setting the associated Pt (this is never changed again)
+assoc_dist_0_20.GetAxis(0).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 lambda_dist_0_20.GetAxis(0).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 lambda_ls_dist_0_20.GetAxis(0).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 h_h_0_20.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
@@ -124,6 +126,24 @@ trig_pt_dist_0_20.Write()
 trig_phi_dist_0_20.Write()
 trig_eta_dist_0_20.Write()
 trig_2d_dist_0_20.Write()
+
+### ASSOCIATED HADRON SECTION ### 
+
+assoc_dist_0_20.GetAxis(2).SetRangeUser(ETA_MIN, ETA_MAX)
+
+
+# Getting the single-particle trigger distributions
+
+assoc_pt_dist_0_20 = assoc_dist_0_20.Projection(0).Clone("assoc_pt_dist_0_20")
+assoc_phi_dist_0_20 = assoc_dist_0_20.Projection(1).Clone("assoc_phi_dist_0_20")
+assoc_eta_dist_0_20 = assoc_dist_0_20.Projection(2).Clone("assoc_eta_dist_0_20")
+assoc_2d_dist_0_20 = assoc_dist_0_20.Projection(0, 3).Clone("assoc_2d_dist_0_20")
+
+output_file.cd()
+assoc_pt_dist_0_20.Write()
+assoc_phi_dist_0_20.Write()
+assoc_eta_dist_0_20.Write()
+assoc_2d_dist_0_20.Write()
 
 ### SIGNAL ANALYSIS SECTION ###
 

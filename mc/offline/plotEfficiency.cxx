@@ -111,7 +111,7 @@ void plotEfficiency(){
     Float_t mult[4] = {0.0, 20.0, 50.0, 80.0};
     
     /* TFile* infile = new TFile("~/OneDrive/Research/Output/lambda-over-hadron/mc/efficiency_run_etacutonline.root"); */
-    TFile* infile = new TFile("../online/efficiency_run_fixed_axis.root");
+    TFile* infile = new TFile("../online/eff_out_online_pp.root");
     TList* list = (TList*)infile->Get("h-lambda_eff");
     
     // This actually isnt entire range and misses 10% of signal
@@ -388,7 +388,7 @@ void plotEfficiency(){
     plotMultEff(etaPtRefitRowsLambdaV0, realLambda, etaPtRefitRowsLambdaV0_PT_mult, realLambda_PT_mult, etaPtRefitRowseffV0PT_mult, etaPtRefitRowsratioV0PT_mult, mult, 3, 0, cetaPtRefitRowseffV0PT, cetaPtRefitRowsratioV0PT, kFALSE);
     plotMultEff(etaPtRefitRowsRatioLambdaV0, realLambda, etaPtRefitRowsRatioLambdaV0_PT_mult, realLambda_PT_mult, etaPtRefitRowsRatioeffV0PT_mult, etaPtRefitRowsRatioratioV0PT_mult, mult, 3, 0, cetaPtRefitRowsRatioeffV0PT, cetaPtRefitRowsRatioratioV0PT, kFALSE);
 
-    TFile* output = new TFile("eff_out.root", "RECREATE");
+    TFile* output = new TFile("eff_out_pp.root", "RECREATE");
 
     effCharged_PT_mult[3]->SetName("fAssociatedEff");
     effCharged_PT_mult[3]->Write();

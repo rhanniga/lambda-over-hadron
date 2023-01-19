@@ -7,19 +7,22 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
   float TRIG_BIT = AliAODTrack::kIsHybridGCG;
   float ASSOC_BIT =  1024; 
-  char *EFF_FILE_PATH = "eff_out.root";
+  /* char *EFF_FILE_PATH = "eff_out.root"; */
+  char *EFF_FILE_PATH = "eff_out_pp.root";
   char *CENT_ESTIMATOR = "V0A";
 
   //Starting and ending index of the array containing the run numbers, specifies which range to run over
   // 44 total runs in pp  set
-  int startIndex = 0; 
-  int endIndex = 43;
 
-  // int startIndex = 15;
-  // int endIndex = 28;
+  int startIndex = 0; 
+  int endIndex = 21; 
+
+  // int startIndex = 22; 
+  // int endIndex = 43; 
+
 
   TString work_dir = "lambda_hadron_v0closure";
-  TString output_dir = "closure_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_dphi_efficiency_template_using_pp";
+  TString output_dir = "closure_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_dphi_template_correct_eff";
   
   //If we want to download test files from grid then run in one swoop (usually just run completely locally):
   bool gridTest = false;
