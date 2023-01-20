@@ -15,10 +15,10 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   // 44 total runs in pp  set
 
   int startIndex = 0; 
-  int endIndex = 21; 
+  /* int endIndex = 21; */ 
 
-  // int startIndex = 22; 
-  // int endIndex = 43; 
+  /* int startIndex = 22; */ 
+  int endIndex = 43; 
 
 
   TString work_dir = "lambda_hadron_v0closure";

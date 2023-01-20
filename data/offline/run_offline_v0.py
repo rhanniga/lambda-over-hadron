@@ -195,6 +195,10 @@ h_lambda_2d_mixcor_sig_0_20.GetXaxis().SetRangeUser(-DELTA_ETA_MAX, DELTA_ETA_MA
 h_lambda_2d_mixcor_rsb_0_20.GetXaxis().SetRangeUser(-DELTA_ETA_MAX, DELTA_ETA_MAX)
 h_h_2d_mixcor_0_20.GetXaxis().SetRangeUser(-DELTA_ETA_MAX, DELTA_ETA_MAX)
 
+h_lambda_2d_mixcor_sig_0_20.SetName("h_lambda_2d_mixcor_sig_0_20")
+h_lambda_2d_mixcor_rsb_0_20.SetName("h_lambda_2d_mixcor_rsb_0_20")
+h_h_2d_mixcor_0_20.SetName("h_h_2d_mixcor_0_20")
+
 
 
 
@@ -627,13 +631,16 @@ h_lambda_2d_mixcor_sig_20_50.GetXaxis().SetRangeUser(-DELTA_ETA_MAX, DELTA_ETA_M
 h_lambda_2d_mixcor_rsb_20_50.GetXaxis().SetRangeUser(-DELTA_ETA_MAX, DELTA_ETA_MAX)
 h_h_2d_mixcor_20_50.GetXaxis().SetRangeUser(-DELTA_ETA_MAX, DELTA_ETA_MAX)
 
-
+h_lambda_2d_mixcor_sig_20_50.SetName("h_lambda_2d_mixcor_sig_20_50")
+h_lambda_2d_mixcor_rsb_20_50.SetName("h_lambda_2d_mixcor_rsb_20_50")
+h_h_2d_mixcor_20_50.SetName("h_h_2d_mixcor_20_50")
 
 
 # per-trigger normalization done here
 h_lambda_2d_mixcor_sig_20_50.Scale(1.0/num_trigs_20_50)
 h_lambda_2d_mixcor_rsb_20_50.Scale(1.0/num_trigs_20_50)
 h_h_2d_mixcor_20_50.Scale(1.0/num_trigs_20_50)
+
 
 
 output_file.cd()
@@ -1054,12 +1061,14 @@ h_lambda_2d_mixcor_rsb_50_80 = make_mixed_corrections(h_lambda_50_80, h_lambda_m
 h_h_2d_mixcor_50_80 = make_mixed_corrections(h_h_50_80, h_h_mixed_50_80, SIG_MIN, SIG_MAX, is_hh=True)
 
 
+
 h_lambda_2d_mixcor_sig_50_80.GetXaxis().SetRangeUser(-DELTA_ETA_MAX, DELTA_ETA_MAX)
 h_lambda_2d_mixcor_rsb_50_80.GetXaxis().SetRangeUser(-DELTA_ETA_MAX, DELTA_ETA_MAX)
 h_h_2d_mixcor_50_80.GetXaxis().SetRangeUser(-DELTA_ETA_MAX, DELTA_ETA_MAX)
 
-
-
+h_lambda_2d_mixcor_sig_50_80.SetName("h_lambda_2d_mixcor_sig_50_80")
+h_lambda_2d_mixcor_rsb_50_80.SetName("h_lambda_2d_mixcor_rsb_50_80")
+h_h_2d_mixcor_50_80.SetName("h_h_2d_mixcor_50_80")
 
 # per-trigger normalization done here
 h_lambda_2d_mixcor_sig_50_80.Scale(1.0/num_trigs_50_80)
