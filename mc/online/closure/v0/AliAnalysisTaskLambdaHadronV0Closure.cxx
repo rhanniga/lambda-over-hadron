@@ -350,49 +350,81 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserCreateOutputObjects()
     fDphiHHEff_checkMC->Sumw2();
     fOutputList->Add(fDphiHHEff_checkMC);
 
-    fDphiHProton = new THnSparseF("fDphiHProton", "Efficiency corrected Hadron-Proton Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
-    fDphiHProton->Sumw2();
-    fOutputList->Add(fDphiHProton);
+    fDphiHSecondaryProton = new THnSparseF("fDphiHSecondaryProton", "Efficiency corrected Hadron-SecondaryProton Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHSecondaryProton->Sumw2();
+    fOutputList->Add(fDphiHSecondaryProton);
 
-    fDphiHPion = new THnSparseF("fDphiHPion", "Efficiency corrected Hadron-Pion Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
-    fDphiHPion->Sumw2();
-    fOutputList->Add(fDphiHPion);
+    fDphiHSecondaryPion = new THnSparseF("fDphiHSecondaryPion", "Efficiency corrected Hadron-SecondaryPion Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHSecondaryPion->Sumw2();
+    fOutputList->Add(fDphiHSecondaryPion);
+
+    fDphiHPrimaryProton = new THnSparseF("fDphiHPrimaryProton", "Efficiency corrected Hadron-PrimaryProton Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHPrimaryProton->Sumw2();
+    fOutputList->Add(fDphiHPrimaryProton);
+
+    fDphiHPrimaryPion = new THnSparseF("fDphiHPrimaryPion", "Efficiency corrected Hadron-PrimaryPion Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHPrimaryPion->Sumw2();
+    fOutputList->Add(fDphiHPrimaryPion);
 
     fDphiHH_MC = new THnSparseF("fDphiHH_MC", "Hadron-Hadron Correlation Histogram (MC truth)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fDphiHH_MC->Sumw2();
     fOutputList->Add(fDphiHH_MC);
 
-    fDphiHProton_MC = new THnSparseF("fDphiHProton_MC", "Efficiency corrected Hadron-Proton_MC Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
-    fDphiHProton_MC->Sumw2();
-    fOutputList->Add(fDphiHProton_MC);
+    fDphiHSecondaryProton_MC = new THnSparseF("fDphiHSecondaryProton_MC", "Efficiency corrected Hadron-SecondaryProton_MC Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHSecondaryProton_MC->Sumw2();
+    fOutputList->Add(fDphiHSecondaryProton_MC);
 
-    fDphiHPion_MC = new THnSparseF("fDphiHPion_MC", "Efficiency corrected Hadron-Pion_MC Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
-    fDphiHPion_MC->Sumw2();
-    fOutputList->Add(fDphiHPion_MC);
+    fDphiHSecondaryPion_MC = new THnSparseF("fDphiHSecondaryPion_MC", "Efficiency corrected Hadron-SecondaryPion_MC Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHSecondaryPion_MC->Sumw2();
+    fOutputList->Add(fDphiHSecondaryPion_MC);
+
+    fDphiHPrimaryProton_MC = new THnSparseF("fDphiHPrimaryProton_MC", "Efficiency corrected Hadron-PrimaryProton_MC Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHPrimaryProton_MC->Sumw2();
+    fOutputList->Add(fDphiHPrimaryProton_MC);
+
+    fDphiHPrimaryPion_MC = new THnSparseF("fDphiHPrimaryPion_MC", "Efficiency corrected Hadron-PrimaryPion_MC Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHPrimaryPion_MC->Sumw2();
+    fOutputList->Add(fDphiHPrimaryPion_MC);
 
     fDphiHHMixed = new THnSparseF("fDphiHHMixed", "Mixed Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fDphiHHMixed->Sumw2();
     fOutputList->Add(fDphiHHMixed);
 
-    fDphiHProtonMixed = new THnSparseF("fDphiHProtonMixed", "Efficiency corrected Hadron-ProtonMixed Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
-    fDphiHProtonMixed->Sumw2();
-    fOutputList->Add(fDphiHProtonMixed);
+    fDphiHSecondaryProtonMixed = new THnSparseF("fDphiHSecondaryProtonMixed", "Efficiency corrected Hadron-SecondaryProtonMixed Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHSecondaryProtonMixed->Sumw2();
+    fOutputList->Add(fDphiHSecondaryProtonMixed);
 
-    fDphiHPionMixed = new THnSparseF("fDphiHPionMixed", "Efficiency corrected Hadron-PionMixed Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
-    fDphiHPionMixed->Sumw2();
-    fOutputList->Add(fDphiHPionMixed);
+    fDphiHSecondaryPionMixed = new THnSparseF("fDphiHSecondaryPionMixed", "Efficiency corrected Hadron-SecondaryPionMixed Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHSecondaryPionMixed->Sumw2();
+    fOutputList->Add(fDphiHSecondaryPionMixed);
+
+    fDphiHPrimaryProtonMixed = new THnSparseF("fDphiHPrimaryProtonMixed", "Efficiency corrected Hadron-PrimaryProtonMixed Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHPrimaryProtonMixed->Sumw2();
+    fOutputList->Add(fDphiHPrimaryProtonMixed);
+
+    fDphiHPrimaryPionMixed = new THnSparseF("fDphiHPrimaryPionMixed", "Efficiency corrected Hadron-PrimaryPionMixed Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHPrimaryPionMixed->Sumw2();
+    fOutputList->Add(fDphiHPrimaryPionMixed);
 
     fDphiHHMixed_MC = new THnSparseF("fDphiHHMixed_MC", "Mixed Hadron-Hadron Correlation Histogram (MC truth)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fDphiHHMixed_MC->Sumw2();
     fOutputList->Add(fDphiHHMixed_MC);
 
-    fDphiHProtonMixed_MC = new THnSparseF("fDphiHProtonMixed_MC", "Efficiency corrected Hadron-ProtonMixed_MC Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
-    fDphiHProtonMixed_MC->Sumw2();
-    fOutputList->Add(fDphiHProtonMixed_MC);
+    fDphiHSecondaryProtonMixed_MC = new THnSparseF("fDphiHSecondaryProtonMixed_MC", "Efficiency corrected Hadron-SecondaryProtonMixed_MC Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHSecondaryProtonMixed_MC->Sumw2();
+    fOutputList->Add(fDphiHSecondaryProtonMixed_MC);
 
-    fDphiHPionMixed_MC = new THnSparseF("fDphiHPionMixed_MC", "Efficiency corrected Hadron-PionMixed_MC Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
-    fDphiHPionMixed_MC->Sumw2();
-    fOutputList->Add(fDphiHPionMixed_MC);
+    fDphiHSecondaryPionMixed_MC = new THnSparseF("fDphiHSecondaryPionMixed_MC", "Efficiency corrected Hadron-SecondaryPionMixed_MC Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHSecondaryPionMixed_MC->Sumw2();
+    fOutputList->Add(fDphiHSecondaryPionMixed_MC);
+
+    fDphiHPrimaryProtonMixed_MC = new THnSparseF("fDphiHPrimaryProtonMixed_MC", "Efficiency corrected Hadron-PrimaryProtonMixed_MC Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHPrimaryProtonMixed_MC->Sumw2();
+    fOutputList->Add(fDphiHPrimaryProtonMixed_MC);
+
+    fDphiHPrimaryPionMixed_MC = new THnSparseF("fDphiHPrimaryPionMixed_MC", "Efficiency corrected Hadron-PrimaryPionMixed_MC Correlation Histogram (trig, assoc physical MC prim)", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHPrimaryPionMixed_MC->Sumw2();
+    fOutputList->Add(fDphiHPrimaryPionMixed_MC);
 
     PostData(1, fOutputList);
 
@@ -1502,8 +1534,11 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
     std::vector<AliAODTrack*> trigger_list_checkMC;
     std::vector<AliAODTrack*> associated_h_list_checkMC;
 
-    std::vector<AliAODTrack*> associated_proton_list;
-    std::vector<AliAODTrack*> associated_pion_list;
+    std::vector<AliAODTrack*> associated_primary_proton_list;
+    std::vector<AliAODTrack*> associated_primary_pion_list;
+
+    std::vector<AliAODTrack*> associated_secondary_proton_list;
+    std::vector<AliAODTrack*> associated_secondary_pion_list;
 
     //Trigger list used for event mixing
     TObjArray* fMixedTrackObjArray = new TObjArray;
@@ -1561,10 +1596,20 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
             if(mc_label >= 0) {
                 auto mc_part = (AliAODMCParticle*)fMCArray->At(mc_label);
                 if(TMath::Abs(mc_part->GetPdgCode()) == 2212) {
-                    associated_proton_list.push_back(track);
+                    if(mc_part->IsPhysicalPrimary()) {
+                        associated_primary_proton_list.push_back(track);
+                    }
+                    else {
+                        associated_secondary_proton_list.push_back(track);
+                    }
                 }
                 if(TMath::Abs(mc_part->GetPdgCode()) == 211) {
-                    associated_pion_list.push_back(track);
+                    if(mc_part->IsPhysicalPrimary()) {
+                        associated_primary_pion_list.push_back(track);
+                    }
+                    else {
+                        associated_secondary_pion_list.push_back(track);
+                    }
                 }
             }
         }
@@ -1679,8 +1724,11 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
     MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHHEff, primZ, true);
     MakeSameHHCorrelations(trigger_list_checkMC, associated_h_list_checkMC, fDphiHHEff_checkMC, primZ, true);
 
-    MakeSameHHCorrelations(trigger_list_checkMC, associated_proton_list, fDphiHProton, primZ, true);
-    MakeSameHHCorrelations(trigger_list_checkMC, associated_pion_list, fDphiHPion, primZ, true);
+    MakeSameHHCorrelations(trigger_list_checkMC, associated_primary_proton_list, fDphiHPrimaryProton, primZ, true);
+    MakeSameHHCorrelations(trigger_list_checkMC, associated_primary_pion_list, fDphiHPrimaryPion, primZ, true);
+
+    MakeSameHHCorrelations(trigger_list_checkMC, associated_secondary_proton_list, fDphiHSecondaryProton, primZ, true);
+    MakeSameHHCorrelations(trigger_list_checkMC, associated_secondary_pion_list, fDphiHSecondaryPion, primZ, true);
 
     MakeSameHDaughterCorrelations_withMCKin(trigger_list, antilambda_list_checkMotherPDG, fDphiHDaughterProton_MCKin, fDphiHDaughterPion_MCKin, primZ);
     MakeSameHDaughterCorrelations_withMCKin(trigger_list, lambda_list_checkMotherPDG, fDphiHDaughterProton_MCKin, fDphiHDaughterPion_MCKin, primZ);
@@ -1690,8 +1738,10 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
 
     std::vector<AliAODMCParticle*> real_trigger_list;
     std::vector<AliAODMCParticle*> real_associated_list;
-    std::vector<AliAODMCParticle*> real_proton_list;
-    std::vector<AliAODMCParticle*> real_pion_list;
+    std::vector<AliAODMCParticle*> real_primary_proton_list;
+    std::vector<AliAODMCParticle*> real_primary_pion_list;
+    std::vector<AliAODMCParticle*> real_secondary_proton_list;
+    std::vector<AliAODMCParticle*> real_secondary_pion_list;
     std::vector<AliAODMCParticle*> real_lambda_list;
     std::vector<AliAODMCParticle*> real_lambda_list_physicalPrimary;
 
@@ -1711,8 +1761,14 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
         if(PassMCLambdaCuts(mc_particle)) real_lambda_list.push_back(mc_particle);
         if(PassMCLambdaCuts(mc_particle, true)) real_lambda_list_physicalPrimary.push_back(mc_particle);
         if(TMath::Abs(mc_particle->Eta()) < 0.8 && mc_particle->Pt() > 0.15) {
-            if(TMath::Abs(mc_particle->GetPdgCode()) == 2212) real_proton_list.push_back(mc_particle);
-            if(TMath::Abs(mc_particle->GetPdgCode()) == 211) real_pion_list.push_back(mc_particle);
+            if(TMath::Abs(mc_particle->GetPdgCode()) == 2212) {
+                if(mc_particle->IsPhysicalPrimary()) real_primary_proton_list.push_back(mc_particle);
+                else real_secondary_proton_list.push_back(mc_particle);
+            }
+            if(TMath::Abs(mc_particle->GetPdgCode()) == 211) {
+                if(mc_particle->IsPhysicalPrimary()) real_primary_pion_list.push_back(mc_particle);
+                else real_secondary_pion_list.push_back(mc_particle);
+            }
         }
     }
 
@@ -1724,9 +1780,10 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
     MakeSameMCHLambdaCorrelations(real_trigger_list, real_lambda_list, fDphiHLambda_MC, primZ);
     MakeSameMCHLambdaCorrelations(real_trigger_list, real_lambda_list_physicalPrimary, fDphiHLambda_MC_physicalPrimary, primZ);
     MakeSameMCHHCorrelations(real_trigger_list, real_associated_list, fDphiHH_MC, primZ);
-
-    MakeSameMCHHCorrelations(real_trigger_list, real_proton_list, fDphiHProton_MC, primZ);
-    MakeSameMCHHCorrelations(real_trigger_list, real_pion_list, fDphiHPion_MC, primZ);
+    MakeSameMCHHCorrelations(real_trigger_list, real_primary_proton_list, fDphiHPrimaryProton_MC, primZ);
+    MakeSameMCHHCorrelations(real_trigger_list, real_primary_pion_list, fDphiHPrimaryPion_MC, primZ);
+    MakeSameMCHHCorrelations(real_trigger_list, real_secondary_proton_list, fDphiHSecondaryProton_MC, primZ);
+    MakeSameMCHHCorrelations(real_trigger_list, real_secondary_pion_list, fDphiHSecondaryPion_MC, primZ);
 
     MakeSameMCHDaughterCorrelations(real_trigger_list, real_lambda_list, fDphiHDaughterProton_MC, fDphiHDaughterPion_MC, primZ);
 
@@ -1749,8 +1806,10 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
                 MakeMixedHLambdaCorrelations_withMCKin(fCorPool, lambda_list_checkMotherPDG_isPrimary, fDphiHLambdaMixed_MCKin_physicalPrimary, primZ, true);
                 MakeMixedMCHLambdaCorrelations(fCorPool, real_lambda_list_physicalPrimary, fDphiRecoHRealLambdaMixed_MCKin_physicalPrimary, primZ);
                 MakeMixedHHCorrelations(fCorPool, associated_h_list, fDphiHHMixed, primZ);
-                MakeMixedHHCorrelations(fCorPool, associated_proton_list, fDphiHProtonMixed, primZ);
-                MakeMixedHHCorrelations(fCorPool, associated_pion_list, fDphiHPionMixed, primZ);
+                MakeMixedHHCorrelations(fCorPool, associated_primary_proton_list, fDphiHPrimaryProtonMixed, primZ);
+                MakeMixedHHCorrelations(fCorPool, associated_primary_pion_list, fDphiHPrimaryPionMixed, primZ);
+                MakeMixedHHCorrelations(fCorPool, associated_secondary_proton_list, fDphiHSecondaryProtonMixed, primZ);
+                MakeMixedHHCorrelations(fCorPool, associated_secondary_pion_list, fDphiHSecondaryPionMixed, primZ);
                 MakeMixedHDaughterCorrelations_withMCKin(fCorPool, antilambda_list_checkMotherPDG, fDphiHDaughterProtonMixed_MCKin, fDphiHDaughterPionMixed_MCKin, primZ);
                 MakeMixedHDaughterCorrelations_withMCKin(fCorPool, lambda_list_checkMotherPDG, fDphiHDaughterProtonMixed_MCKin, fDphiHDaughterPionMixed_MCKin, primZ);
             }
@@ -1771,8 +1830,10 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
                 MakeMixedMCHLambdaCorrelations(fMCCorPool, real_lambda_list, fDphiHLambdaMixed_MC, primZ);
                 MakeMixedMCHLambdaCorrelations(fMCCorPool, real_lambda_list_physicalPrimary, fDphiHLambdaMixed_MC_physicalPrimary, primZ);
                 MakeMixedMCHHCorrelations(fMCCorPool, real_associated_list, fDphiHHMixed_MC, primZ);
-                MakeMixedMCHHCorrelations(fMCCorPool, real_proton_list, fDphiHProtonMixed_MC, primZ);
-                MakeMixedMCHHCorrelations(fMCCorPool, real_pion_list, fDphiHPionMixed_MC, primZ);
+                MakeMixedMCHHCorrelations(fMCCorPool, real_primary_proton_list, fDphiHPrimaryProtonMixed_MC, primZ);
+                MakeMixedMCHHCorrelations(fMCCorPool, real_primary_pion_list, fDphiHPrimaryPionMixed_MC, primZ);
+                MakeMixedMCHHCorrelations(fMCCorPool, real_secondary_proton_list, fDphiHSecondaryProtonMixed_MC, primZ);
+                MakeMixedMCHHCorrelations(fMCCorPool, real_secondary_pion_list, fDphiHSecondaryPionMixed_MC, primZ);
                 MakeMixedMCHDaughterCorrelations(fMCCorPool, real_lambda_list, fDphiHDaughterProtonMixed_MC, fDphiHDaughterPionMixed_MC, primZ);
             }
             if(fMixedMCTrackObjArray->GetEntries() > 0) {

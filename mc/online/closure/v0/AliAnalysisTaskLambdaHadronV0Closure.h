@@ -94,8 +94,13 @@ private:
   THnSparse* fDphiHLambdaEff_MCKin;  //!>! hadron-lambda correlation hist (efficiency corrected, using MC kinematics)
   THnSparse* fDphiHDaughterProton_MCKin;  //!>! hadron-daughter proton correlation hist
   THnSparse* fDphiHDaughterPion_MCKin;  //!>! hadron-daughter pion correlation hist 
-  THnSparse* fDphiHProton;  //!>! hadron-proton correlation hist
-  THnSparse* fDphiHPion;  //!>! hadron-pion correlation hist 
+
+  THnSparse* fDphiHPrimaryProton;  //!>! hadron-proton correlation hist (primary proton)
+  THnSparse* fDphiHPrimaryPion;  //!>! hadron-pion correlation hist  (primary pion)
+
+  THnSparse* fDphiHSecondaryProton;  //!>! hadron-proton correlation hist (secondary proton)
+  THnSparse* fDphiHSecondaryPion;  //!>! hadron-pion correlation hist  (secondary pion)
+
   THnSparse* fDphiHLambdaEff_MCKin_physicalPrimary;  //!>! hadron-lambda correlation hist (efficiency corrected, using MC kinematics, trigger and lambda are physical primary)
   THnSparse* fDphiRecoHRealLambdaEff_MCKin_physicalPrimary; //!>! hadron-lambda correlation hist (efficiency corrected, using MC kinematics, trigger and lambda are physical primary)
   THnSparse* fDphiHHEff;   //!>! hadron-hadron correlation hist (efficiency corrected)
@@ -105,23 +110,29 @@ private:
   THnSparse* fDphiHLambdaMixed_MCKin; //!>! hadron-lambda mixed correlation hist (MC kinematics)
   THnSparse* fDphiHDaughterProtonMixed_MCKin;  //!>! hadron-daughter proton mixed correlation hist
   THnSparse* fDphiHDaughterPionMixed_MCKin;  //!>! hadron-daughter pion mixed correlation hist 
-  THnSparse* fDphiHProtonMixed;  //!>! hadron-proton correlation hist (mixed)
-  THnSparse* fDphiHPionMixed;  //!>! hadron-pion correlation hist (mixed)
+  THnSparse* fDphiHPrimaryProtonMixed;  //!>! hadron-proton correlation hist (mixed) (primary proton)
+  THnSparse* fDphiHPrimaryPionMixed;  //!>! hadron-pion correlation hist (mixed) (primary pion)
+  THnSparse* fDphiHSecondaryProtonMixed;  //!>! hadron-proton correlation hist (mixed) (secondary proton)
+  THnSparse* fDphiHSecondaryPionMixed;  //!>! hadron-pion correlation hist (mixed) (secondary pion)
   THnSparse* fDphiHLambdaMixed_MCKin_physicalPrimary; //!>! hadron-lambda mixed correlation hist (MC kinematics, trigger and lambda are physical primary)
   THnSparse* fDphiRecoHRealLambdaMixed_MCKin_physicalPrimary; //!>! hadron-lambda mixed correlation hist (MC kinematics, trigger and lambda are physical primary) 
 
   THnSparse* fDphiHLambda_MC;  //!>! hadron-lambda correlation hist (MC truth)
   THnSparse* fDphiHDaughterProton_MC;  //!>! hadron-daughter proton correlation hist (MC truth)
   THnSparse* fDphiHDaughterPion_MC;  //!>! hadron-daughter pion correlation hist (MC truth)
-  THnSparse* fDphiHProton_MC;  //!>! hadron-proton correlation hist (MC truth)
-  THnSparse* fDphiHPion_MC;  //!>! hadron-pion correlation hist (MC truth)
+  THnSparse* fDphiHPrimaryProton_MC;  //!>! hadron-proton correlation hist (MC truth) (primary proton )
+  THnSparse* fDphiHPrimaryPion_MC;  //!>! hadron-pion correlation hist (MC truth) (primary pion)
+  THnSparse* fDphiHSecondaryProton_MC;  //!>! hadron-proton correlation hist (MC truth) (secondary proton)
+  THnSparse* fDphiHSecondaryPion_MC;  //!>! hadron-pion correlation hist (MC truth) (secondary pion)
   THnSparse* fDphiHLambda_MC_physicalPrimary;  //!>! hadron-lambda correlation hist (MC truth, lambda is physical primary)
   THnSparse* fDphiHH_MC;   //!>! hadron-hadron correlation hist (MC truth)
   THnSparse* fDphiHLambdaMixed_MC; //!>! hadron-lambda mixed correlation hist (MC truth)
   THnSparse* fDphiHDaughterProtonMixed_MC; //!>! hadron-daughter proton mixed correlation hist (MC truth)
   THnSparse* fDphiHDaughterPionMixed_MC; //!>! hadron-daughter pion mixed correlation hist (MC truth)
-  THnSparse* fDphiHProtonMixed_MC;  //!>! hadron-proton mixed correlation hist (MC truth)
-  THnSparse* fDphiHPionMixed_MC;  //!>! hadron-pion mixed correlation hist (MC truth)
+  THnSparse* fDphiHPrimaryProtonMixed_MC;  //!>! hadron-proton mixed correlation hist (MC truth) (primary proton)
+  THnSparse* fDphiHPrimaryPionMixed_MC;  //!>! hadron-pion mixed correlation hist (MC truth) (primary pion)
+  THnSparse* fDphiHSecondaryProtonMixed_MC;  //!>! hadron-proton mixed correlation hist (MC truth) (secondary proton)
+  THnSparse* fDphiHSecondaryPionMixed_MC;  //!>! hadron-pion mixed correlation hist (MC truth) (secondary pion)
   THnSparse* fDphiHLambdaMixed_MC_physicalPrimary; //!>! hadron-lambda mixed correlation hist (MC truth, lambda is physical primary)
   THnSparse* fDphiHHMixed_MC; //!>! hadron-hadron mixed correlation hist (MC truth)
 
