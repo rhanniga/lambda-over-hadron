@@ -99,7 +99,23 @@ AliAnalysisTaskLambdaHadronV0Closure::AliAnalysisTaskLambdaHadronV0Closure() :
     fDphiHH_MC(0x0),
     fDphiHLambdaMixed_MC(0x0),
     fDphiHLambdaMixed_MC_physicalPrimary(0x0),
-    fDphiHHMixed_MC(0x0)
+    fDphiHHMixed_MC(0x0),
+    fDphiHPrimaryProton(0x0),
+    fDphiHPrimaryPion(0x0),
+    fDphiHPrimaryProtonMixed(0x0),
+    fDphiHPrimaryPionMixed(0x0),
+    fDphiHSecondaryProton(0x0),
+    fDphiHSecondaryPion(0x0),
+    fDphiHSecondaryProtonMixed(0x0),
+    fDphiHSecondaryPionMixed(0x0),
+    fDphiHPrimaryProton_MC(0x0),
+    fDphiHPrimaryPion_MC(0x0),
+    fDphiHPrimaryProtonMixed_MC(0x0),
+    fDphiHPrimaryPionMixed_MC(0x0),
+    fDphiHSecondaryProton_MC(0x0),
+    fDphiHSecondaryPion_MC(0x0),
+    fDphiHSecondaryProtonMixed_MC(0x0),
+    fDphiHSecondaryPionMixed_MC(0x0)
 {
 }
 
@@ -154,7 +170,23 @@ AliAnalysisTaskLambdaHadronV0Closure::AliAnalysisTaskLambdaHadronV0Closure(const
     fDphiHH_MC(0x0),
     fDphiHLambdaMixed_MC(0x0),
     fDphiHLambdaMixed_MC_physicalPrimary(0x0),
-    fDphiHHMixed_MC(0x0)
+    fDphiHHMixed_MC(0x0),
+    fDphiHPrimaryProton(0x0),
+    fDphiHPrimaryPion(0x0),
+    fDphiHPrimaryProtonMixed(0x0),
+    fDphiHPrimaryPionMixed(0x0),
+    fDphiHSecondaryProton(0x0),
+    fDphiHSecondaryPion(0x0),
+    fDphiHSecondaryProtonMixed(0x0),
+    fDphiHSecondaryPionMixed(0x0),
+    fDphiHPrimaryProton_MC(0x0),
+    fDphiHPrimaryPion_MC(0x0),
+    fDphiHPrimaryProtonMixed_MC(0x0),
+    fDphiHPrimaryPionMixed_MC(0x0),
+    fDphiHSecondaryProton_MC(0x0),
+    fDphiHSecondaryPion_MC(0x0),
+    fDphiHSecondaryProtonMixed_MC(0x0),
+    fDphiHSecondaryPionMixed_MC(0x0)
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -1772,6 +1804,12 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
         }
     }
 
+    // std::cout << "The length of the MC stack is: " << fMCArray->GetEntries() << std::endl;
+    // std::cout << "The length of the primary proton list is: " << real_primary_proton_list.size() << std::endl;
+    // std::cout << "The length of the primary pion list is: " << real_primary_pion_list.size() << std::endl;
+    // std::cout << "The length of the secondary proton list is: " << real_secondary_proton_list.size() << std::endl;
+    // std::cout << "The length of the secondary pion list is: " << real_secondary_pion_list.size() << std::endl;
+
     FillSingleMCParticleDist(real_trigger_list, primZ, fTriggerDist_MC);
     FillSingleMCParticleDist(real_associated_list, primZ, fAssociatedDist_MC);
     FillMCMotherDist(real_lambda_list, primZ, fLambdaDist_MC);
@@ -1779,6 +1817,7 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
 
     MakeSameMCHLambdaCorrelations(real_trigger_list, real_lambda_list, fDphiHLambda_MC, primZ);
     MakeSameMCHLambdaCorrelations(real_trigger_list, real_lambda_list_physicalPrimary, fDphiHLambda_MC_physicalPrimary, primZ);
+
     MakeSameMCHHCorrelations(real_trigger_list, real_associated_list, fDphiHH_MC, primZ);
     MakeSameMCHHCorrelations(real_trigger_list, real_primary_proton_list, fDphiHPrimaryProton_MC, primZ);
     MakeSameMCHHCorrelations(real_trigger_list, real_primary_pion_list, fDphiHPrimaryPion_MC, primZ);

@@ -22,7 +22,7 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
 
   TString work_dir = "lambda_hadron_v0closure";
-  TString output_dir = "closure_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_dphi_template_correct_eff";
+  TString output_dir = "closure_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_initialize_to_null";
   
   //If we want to download test files from grid then run in one swoop (usually just run completely locally):
   bool gridTest = false;
@@ -70,12 +70,12 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
     chain->Add("~/Wonderland/native/sim/265525_0002.root");
     chain->Add("~/Wonderland/native/sim/265525_0003.root");
     chain->Add("~/Wonderland/native/sim/265525_0004.root");
-    chain->Add("~/Wonderland/native/sim/265525_0005.root");
-    chain->Add("~/Wonderland/native/sim/265525_0006.root");
-    chain->Add("~/Wonderland/native/sim/265525_0007.root");
-    chain->Add("~/Wonderland/native/sim/265525_0008.root");
-    chain->Add("~/Wonderland/native/sim/265525_0009.root");
-    chain->Add("~/Wonderland/native/sim/265525_0010.root");
+    // chain->Add("~/Wonderland/native/sim/265525_0005.root");
+    // chain->Add("~/Wonderland/native/sim/265525_0006.root");
+    // chain->Add("~/Wonderland/native/sim/265525_0007.root");
+    // chain->Add("~/Wonderland/native/sim/265525_0008.root");
+    // chain->Add("~/Wonderland/native/sim/265525_0009.root");
+    // chain->Add("~/Wonderland/native/sim/265525_0010.root");
     manage->StartAnalysis("local", chain);
   }
 
