@@ -22,12 +22,15 @@ DO_SIDEBAND_SUBTRACTION = config.getboolean("GENERAL", "DO_SIDEBAND_SUBTRACTION"
 DO_HIGHEST_PT = config.getboolean("GENERAL", "DO_HIGHEST_PT")
 
 # UE line method
+
 USE_AVG_4 = config.getboolean("GENERAL", "USE_AVG_4")
 USE_AVG_6 = config.getboolean("GENERAL", "USE_AVG_6")
 USE_AVG_6_NONNEGATIVE = config.getboolean("GENERAL", "USE_AVG_6_NONNEGATIVE")
 USE_ZYAM = config.getboolean("GENERAL", "USE_ZYAM")
 USE_FIT = config.getboolean("GENERAL", "USE_FIT")
-assert sum([USE_AVG_4, USE_AVG_6, USE_AVG_6_NONNEGATIVE, USE_ZYAM, USE_FIT]) == 1, "Only select 1 method for UE line please"
+USE_V2 = config.getboolean("GENERAL", "USE_V2")
+
+assert sum([USE_AVG_4, USE_AVG_6, USE_AVG_6_NONNEGATIVE, USE_ZYAM, USE_FIT, USE_V2]) == 1, "Only select 1 method for UE line please"
 
 # ETA CUTS 
 ETA_MIN = config.getfloat("ETA_CUTS", "ETA_MIN")
@@ -49,6 +52,19 @@ SIG_MAX = config.getfloat("REGION_CUTS", "SIG_MAX") - EPSILON
 RSB_MIN = config.getfloat("REGION_CUTS", "RSB_MIN")
 RSB_MAX = config.getfloat("REGION_CUTS", "RSB_MAX") - EPSILON
 
+# V2 VALUES
+TRIGGER_V2_0_20 = config.getfloat("V2_VALUES", "TRIGGER_V2")
+ASSOCIATED_V2_0_20 = config.getfloat("V2_VALUES", "ASSOCIATED_V2")
+LAMBDA_V2_0_20 = config.getfloat("V2_VALUES", "LAMBDA_V2")
+
+TRIGGER_V2_20_50 = 0.85*TRIGGER_V2_0_20
+ASSOCIATED_V2_20_50 = 0.85*ASSOCIATED_V2_0_20
+LAMBDA_V2_20_50 = 0.85*LAMBDA_V2_0_20
+
+TRIGGER_V2_50_80 = 0.5*TRIGGER_V2_0_20
+ASSOCIATED_V2_50_80 = 0.5*ASSOCIATED_V2_0_20
+LAMBDA_V2_50_80 = 0.5*LAMBDA_V2_0_20
+
 
 # Output file containing all of the relevant results (long name )
 output_file_string = "output/v0_" 
@@ -57,6 +73,7 @@ output_file_string += ("avg4_" if USE_AVG_4 else "")
 output_file_string += ("avg6_" if USE_AVG_6 else "") 
 output_file_string += ("avg6nonneg_" if USE_AVG_6_NONNEGATIVE else "") 
 output_file_string += ("fullfit_" if USE_FIT else "") 
+output_file_string += ("v2_" if USE_V2 else "") 
 output_file_string += ("zyam_" if USE_ZYAM else "") 
 output_file_string += ("sideband_subtraction_" if DO_SIDEBAND_SUBTRACTION else "")
 output_file_string += "rsb_" + str(RSB_MIN).replace(".", "") + "_" + str(RSB_MAX + EPSILON).replace(".", "") + "_"
@@ -66,6 +83,7 @@ output_file_string += "assoc_" + str(ASSOC_PT_LOW).replace(".", "") + "_" + str(
 output_file_string += "delta_eta_" + str(DELTA_ETA_MAX + EPSILON).replace(".", "") + ".root"
 
 output_file = rt.TFile(output_file_string, "RECREATE")
+
 
 ############################################################################################################
 ############################################################################################################
@@ -359,6 +377,20 @@ elif USE_FIT:
     ue_avg_fit_0_20.SetParameter(0, ue_avg_0_20)
     ue_avg_fit_0_20.SetParError(0, ue_avg_error_0_20)
 
+elif USE_V2:
+    ue_avg_0_20 = (h_lambda_dphi_subtracted_0_20.GetBinContent(1) 
+                   + h_lambda_dphi_subtracted_0_20.GetBinContent(2)
+                   + h_lambda_dphi_subtracted_0_20.GetBinContent(7)
+                   + h_lambda_dphi_subtracted_0_20.GetBinContent(8)
+                   + h_lambda_dphi_subtracted_0_20.GetBinContent(9)
+                   + h_lambda_dphi_subtracted_0_20.GetBinContent(16))/6
+
+    v2_fit_0_20 = rt.TF1("v2_fit_0_20", "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))", -2, 6)
+
+    v2_fit_0_20.SetParameter(0, ue_avg_0_20)
+    v2_fit_0_20.SetParameter(1, TRIGGER_V2_0_20)
+    v2_fit_0_20.SetParameter(2, LAMBDA_V2_0_20)
+
 else:
     raise NotImplementedError("UE line mode not supported")
 
@@ -381,6 +413,30 @@ if USE_FIT:
 
     h_lambda_ue_integral_0_20 = ue_avg_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
     h_lambda_ue_integral_error_0_20 = 0
+
+elif USE_V2:
+
+    DPHI_BINS = h_lambda_dphi_subtracted_0_20.GetNbinsX()
+    h_lambda_total_integral_0_20 = 0
+    h_lambda_near_integral_0_20 = 0
+    h_lambda_away_integral_0_20 = 0
+    h_lambda_ue_integral_0_20 = v2_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+
+    h_lambda_total_integral_error_0_20 = 0
+    h_lambda_near_integral_error_0_20 = 0
+    h_lambda_away_integral_error_0_20 = 0
+    h_lambda_ue_integral_error_0_20 = 0
+
+    for bin_num in range(1, DPHI_BINS + 1):
+        h_lambda_total_integral_0_20 += h_lambda_dphi_subtracted_0_20.GetBinContent(bin_num)
+        part = h_lambda_dphi_subtracted_0_20.GetBinContent(bin_num) - v2_fit_0_20.Eval(h_lambda_dphi_subtracted_0_20.GetBinCenter(bin_num))
+        if part < 0 and USE_AVG_6_NONNEGATIVE:
+            part = 0
+        if bin_num < 9:
+            h_lambda_near_integral_0_20 += part
+        else:
+            h_lambda_away_integral_0_20 += part
+
 else: 
     h_lambda_dphi_subtracted_0_20_zeroed = h_lambda_dphi_subtracted_0_20.Clone("h_lambda_dphi_subtracted_0_20_zeroed")
     h_lambda_dphi_subtracted_0_20_zeroed.Add(ue_line_0_20, -1)
@@ -542,6 +598,20 @@ elif USE_FIT:
     hh_ue_avg_fit_0_20.SetParameter(0, hh_ue_avg_0_20)
     hh_ue_avg_fit_0_20.SetParError(0, hh_ue_avg_error_0_20)
 
+elif USE_V2:
+    hh_ue_avg_0_20 = (h_h_dphi_0_20.GetBinContent(1) 
+                   + h_h_dphi_0_20.GetBinContent(2)
+                   + h_h_dphi_0_20.GetBinContent(7)
+                   + h_h_dphi_0_20.GetBinContent(8)
+                   + h_h_dphi_0_20.GetBinContent(9)
+                   + h_h_dphi_0_20.GetBinContent(16))/6
+
+    hh_v2_fit_0_20 = rt.TF1("hh_v2_fit_0_20", "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))", -2, 6)
+
+    hh_v2_fit_0_20.SetParameter(0, hh_ue_avg_0_20)
+    hh_v2_fit_0_20.SetParameter(1, TRIGGER_V2_0_20)
+    hh_v2_fit_0_20.SetParameter(2, ASSOCIATED_V2_0_20)
+
 else:
     raise NotImplementedError("UE line mode not supported")
 
@@ -561,6 +631,29 @@ if USE_FIT:
 
     h_h_ue_integral_0_20 = hh_ue_avg_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
     h_h_ue_integral_error_0_20 = 0
+
+elif USE_V2:
+    DPHI_BINS = h_h_dphi_0_20.GetNbinsX()
+    h_h_total_integral_0_20 = 0
+    h_h_near_integral_0_20 = 0
+    h_h_away_integral_0_20 = 0
+    h_h_ue_integral_0_20 = hh_v2_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+
+    h_h_total_integral_error_0_20 = 0
+    h_h_near_integral_error_0_20 = 0
+    h_h_away_integral_error_0_20 = 0
+    h_h_ue_integral_error_0_20 = 0
+
+    for bin_num in range(1, DPHI_BINS + 1):
+        h_h_total_integral_0_20 += h_h_dphi_0_20.GetBinContent(bin_num)
+        part = h_h_dphi_0_20.GetBinContent(bin_num) - hh_v2_fit_0_20.Eval(h_h_dphi_0_20.GetBinCenter(bin_num))
+        if part < 0 and USE_AVG_6_NONNEGATIVE:
+            part = 0
+        if bin_num < 9:
+            h_h_near_integral_0_20 += part
+        else:
+            h_h_away_integral_0_20 += part
+
 else:
 
     h_h_dphi_0_20_zeroed = h_h_dphi_0_20.Clone("h_h_dphi_0_20_zeroed")
@@ -600,9 +693,8 @@ output_file.cd()
 h_lambda_2d_subtracted_0_20.Write()
 
 h_lambda_dphi_subtracted_0_20.Write()
-h_lambda_dphi_subtracted_0_20_zeroed.Write()
 h_h_dphi_0_20.Write()
-h_h_dphi_0_20_zeroed.Write()
+
 
 
 if USE_FIT:
@@ -612,6 +704,11 @@ if USE_FIT:
     hh_ue_avg_fit_0_20.Write()
     h_lambda_dphi_subtracted_with_fit_0_20.Write()
     h_h_dphi_with_fit_0_20.Write()
+    h_lambda_dphi_subtracted_0_20_zeroed.Write()
+    h_h_dphi_0_20_zeroed.Write()
+elif USE_V2:
+    v2_fit_0_20.Write()
+    hh_v2_fit_0_20.Write()
 else:
     ue_upper_line_0_20.Write()
     ue_line_0_20.Write()
@@ -626,6 +723,9 @@ else:
     hh_zero_upper_line_0_20.Write()
     hh_zero_line_0_20.Write()
     hh_zero_lower_line_0_20.Write()
+
+    h_lambda_dphi_subtracted_0_20_zeroed.Write()
+    h_h_dphi_0_20_zeroed.Write()
 
 
 near_ratio_0_20 = h_lambda_near_integral_0_20/h_h_near_integral_0_20
@@ -944,6 +1044,19 @@ elif USE_FIT:
     ue_avg_fit_20_50 = rt.TF1("ue_avg_fit_20_50", "pol0", -2, 6)
     ue_avg_fit_20_50.SetParameter(0, ue_avg_20_50)
     ue_avg_fit_20_50.SetParError(0, ue_avg_error_20_50)
+elif USE_V2:
+    ue_avg_20_50 = (h_lambda_dphi_subtracted_20_50.GetBinContent(1) 
+                   + h_lambda_dphi_subtracted_20_50.GetBinContent(2)
+                   + h_lambda_dphi_subtracted_20_50.GetBinContent(7)
+                   + h_lambda_dphi_subtracted_20_50.GetBinContent(8)
+                   + h_lambda_dphi_subtracted_20_50.GetBinContent(9)
+                   + h_lambda_dphi_subtracted_20_50.GetBinContent(16))/6
+
+    v2_fit_20_50 = rt.TF1("v2_fit_20_50", "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))", -2, 6)
+
+    v2_fit_20_50.SetParameter(0, ue_avg_20_50)
+    v2_fit_20_50.SetParameter(1, TRIGGER_V2_20_50)
+    v2_fit_20_50.SetParameter(2, LAMBDA_V2_20_50)
 else:
     raise NotImplementedError("UE line mode not supported")
 
@@ -964,6 +1077,28 @@ if USE_FIT:
 
     h_lambda_ue_integral_20_50 = ue_avg_fit_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
     h_lambda_ue_integral_error_20_50 = 0
+elif USE_V2:
+    DPHI_BINS = h_lambda_dphi_subtracted_20_50.GetNbinsX()
+    h_lambda_total_integral_20_50 = 0
+    h_lambda_near_integral_20_50 = 0
+    h_lambda_away_integral_20_50 = 0
+    h_lambda_ue_integral_20_50 = v2_fit_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+
+    h_lambda_total_integral_error_20_50 = 0
+    h_lambda_near_integral_error_20_50 = 0
+    h_lambda_away_integral_error_20_50 = 0
+    h_lambda_ue_integral_error_20_50 = 0
+
+    for bin_num in range(1, DPHI_BINS + 1):
+        h_lambda_total_integral_20_50 += h_lambda_dphi_subtracted_20_50.GetBinContent(bin_num)
+        part = h_lambda_dphi_subtracted_20_50.GetBinContent(bin_num) - v2_fit_20_50.Eval(h_lambda_dphi_subtracted_20_50.GetBinCenter(bin_num))
+        if part < 0 and USE_AVG_6_NONNEGATIVE:
+            part = 0
+        if bin_num < 9:
+            h_lambda_near_integral_20_50 += part
+        else:
+            h_lambda_away_integral_20_50 += part
+
 else: 
     h_lambda_dphi_subtracted_20_50_zeroed = h_lambda_dphi_subtracted_20_50.Clone("h_lambda_dphi_subtracted_20_50_zeroed")
     h_lambda_dphi_subtracted_20_50_zeroed.Add(ue_line_20_50, -1)
@@ -1124,6 +1259,19 @@ elif USE_FIT:
     hh_ue_avg_fit_20_50 = rt.TF1("hh_ue_avg_fit_20_50", "pol0", -2, 6)
     hh_ue_avg_fit_20_50.SetParameter(0, hh_ue_avg_20_50)
     hh_ue_avg_fit_20_50.SetParError(0, hh_ue_avg_error_20_50)
+elif USE_V2:
+    hh_ue_avg_20_50 = (h_h_dphi_20_50.GetBinContent(1) 
+                   + h_h_dphi_20_50.GetBinContent(2)
+                   + h_h_dphi_20_50.GetBinContent(7)
+                   + h_h_dphi_20_50.GetBinContent(8)
+                   + h_h_dphi_20_50.GetBinContent(9)
+                   + h_h_dphi_20_50.GetBinContent(16))/6
+
+    hh_v2_fit_20_50 = rt.TF1("hh_v2_fit_20_50", "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))", -2, 6)
+
+    hh_v2_fit_20_50.SetParameter(0, hh_ue_avg_20_50)
+    hh_v2_fit_20_50.SetParameter(1, TRIGGER_V2_20_50)
+    hh_v2_fit_20_50.SetParameter(2, ASSOCIATED_V2_20_50)
 else:
     raise NotImplementedError("UE line mode not supported")
 
@@ -1143,6 +1291,27 @@ if USE_FIT:
 
     h_h_ue_integral_20_50 = hh_ue_avg_fit_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
     h_h_ue_integral_error_20_50 = 0
+elif USE_V2:
+    DPHI_BINS = h_h_dphi_20_50.GetNbinsX()
+    h_h_total_integral_20_50 = 0
+    h_h_near_integral_20_50 = 0
+    h_h_away_integral_20_50 = 0
+    h_h_ue_integral_20_50 = hh_v2_fit_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+
+    h_h_total_integral_error_20_50 = 0
+    h_h_near_integral_error_20_50 = 0
+    h_h_away_integral_error_20_50 = 0
+    h_h_ue_integral_error_20_50 = 0
+
+    for bin_num in range(1, DPHI_BINS + 1):
+        h_h_total_integral_20_50 += h_h_dphi_20_50.GetBinContent(bin_num)
+        part = h_h_dphi_20_50.GetBinContent(bin_num) - hh_v2_fit_20_50.Eval(h_h_dphi_20_50.GetBinCenter(bin_num))
+        if part < 0 and USE_AVG_6_NONNEGATIVE:
+            part = 0
+        if bin_num < 9:
+            h_h_near_integral_20_50 += part
+        else:
+            h_h_away_integral_20_50 += part
 else:
     h_h_dphi_20_50_zeroed = h_h_dphi_20_50.Clone("h_h_dphi_20_50_zeroed")
     h_h_dphi_20_50_zeroed.Add(hh_ue_line_20_50, -1)
@@ -1179,9 +1348,7 @@ output_file.cd()
 h_lambda_2d_subtracted_20_50.Write()
 
 h_lambda_dphi_subtracted_20_50.Write()
-h_lambda_dphi_subtracted_20_50_zeroed.Write()
 h_h_dphi_20_50.Write()
-h_h_dphi_20_50_zeroed.Write()
 
 
 if USE_FIT:
@@ -1191,6 +1358,11 @@ if USE_FIT:
     hh_ue_avg_fit_20_50.Write()
     h_lambda_dphi_subtracted_with_fit_20_50.Write()
     h_h_dphi_with_fit_20_50.Write()
+    h_lambda_dphi_subtracted_20_50_zeroed.Write()
+    h_h_dphi_20_50_zeroed.Write()
+elif USE_V2:
+    v2_fit_20_50.Write()
+    hh_v2_fit_20_50.Write()
 else:
     ue_upper_line_20_50.Write()
     ue_line_20_50.Write()
@@ -1204,6 +1376,8 @@ else:
     hh_zero_upper_line_20_50.Write()
     hh_zero_line_20_50.Write()
     hh_zero_lower_line_20_50.Write()
+    h_lambda_dphi_subtracted_20_50_zeroed.Write()
+    h_h_dphi_20_50_zeroed.Write()
 
 near_ratio_20_50 = h_lambda_near_integral_20_50/h_h_near_integral_20_50
 away_ratio_20_50 = h_lambda_away_integral_20_50/h_h_away_integral_20_50
@@ -1522,6 +1696,19 @@ elif USE_FIT:
     ue_avg_fit_50_80 = rt.TF1("ue_avg_fit_50_80", "pol0", -2, 6)
     ue_avg_fit_50_80.SetParameter(0, ue_avg_50_80)
     ue_avg_fit_50_80.SetParError(0, ue_avg_error_50_80)
+elif USE_V2:
+    ue_avg_50_80 = (h_lambda_dphi_subtracted_50_80.GetBinContent(1) 
+                   + h_lambda_dphi_subtracted_50_80.GetBinContent(2)
+                   + h_lambda_dphi_subtracted_50_80.GetBinContent(7)
+                   + h_lambda_dphi_subtracted_50_80.GetBinContent(8)
+                   + h_lambda_dphi_subtracted_50_80.GetBinContent(9)
+                   + h_lambda_dphi_subtracted_50_80.GetBinContent(16))/6
+
+    v2_fit_50_80 = rt.TF1("v2_fit_50_80", "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))", -2, 6)
+
+    v2_fit_50_80.SetParameter(0, ue_avg_50_80)
+    v2_fit_50_80.SetParameter(1, TRIGGER_V2_50_80)
+    v2_fit_50_80.SetParameter(2, LAMBDA_V2_50_80)
 else:
     raise NotImplementedError("UE line mode not supported")
 
@@ -1542,6 +1729,29 @@ if USE_FIT:
 
     h_lambda_ue_integral_50_80 = ue_avg_fit_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
     h_lambda_ue_integral_error_50_80 = 0
+elif USE_V2:
+
+    DPHI_BINS = h_lambda_dphi_subtracted_50_80.GetNbinsX()
+    h_lambda_total_integral_50_80 = 0
+    h_lambda_near_integral_50_80 = 0
+    h_lambda_away_integral_50_80 = 0
+    h_lambda_ue_integral_50_80 = v2_fit_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+
+    h_lambda_total_integral_error_50_80 = 0
+    h_lambda_near_integral_error_50_80 = 0
+    h_lambda_away_integral_error_50_80 = 0
+    h_lambda_ue_integral_error_50_80 = 0
+
+    for bin_num in range(1, DPHI_BINS + 1):
+        h_lambda_total_integral_50_80 += h_lambda_dphi_subtracted_50_80.GetBinContent(bin_num)
+        part = h_lambda_dphi_subtracted_50_80.GetBinContent(bin_num) - v2_fit_50_80.Eval(h_lambda_dphi_subtracted_50_80.GetBinCenter(bin_num))
+        if part < 0 and USE_AVG_6_NONNEGATIVE:
+            part = 0
+        if bin_num < 9:
+            h_lambda_near_integral_50_80 += part
+        else:
+            h_lambda_away_integral_50_80 += part
+
 else: 
     h_lambda_dphi_subtracted_50_80_zeroed = h_lambda_dphi_subtracted_50_80.Clone("h_lambda_dphi_subtracted_50_80_zeroed")
     h_lambda_dphi_subtracted_50_80_zeroed.Add(ue_line_50_80, -1)
@@ -1703,6 +1913,19 @@ elif USE_FIT:
     hh_ue_avg_fit_50_80 = rt.TF1("hh_ue_avg_fit_50_80", "pol0", -2, 6)
     hh_ue_avg_fit_50_80.SetParameter(0, hh_ue_avg_50_80)
     hh_ue_avg_fit_50_80.SetParError(0, hh_ue_avg_error_50_80)
+elif USE_V2:
+    hh_ue_avg_50_80 = (h_h_dphi_50_80.GetBinContent(1) 
+                   + h_h_dphi_50_80.GetBinContent(2)
+                   + h_h_dphi_50_80.GetBinContent(7)
+                   + h_h_dphi_50_80.GetBinContent(8)
+                   + h_h_dphi_50_80.GetBinContent(9)
+                   + h_h_dphi_50_80.GetBinContent(16))/6
+
+    hh_v2_fit_50_80 = rt.TF1("hh_v2_fit_50_80", "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))", -2, 6)
+
+    hh_v2_fit_50_80.SetParameter(0, hh_ue_avg_50_80)
+    hh_v2_fit_50_80.SetParameter(1, TRIGGER_V2_50_80)
+    hh_v2_fit_50_80.SetParameter(2, ASSOCIATED_V2_50_80)
 else:
     raise NotImplementedError("UE line mode not supported")
 
@@ -1721,6 +1944,27 @@ if USE_FIT:
 
     h_h_ue_integral_50_80 = hh_ue_avg_fit_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
     h_h_ue_integral_error_50_80 = 0
+elif USE_V2:
+    DPHI_BINS = h_h_dphi_50_80.GetNbinsX()
+    h_h_total_integral_50_80 = 0
+    h_h_near_integral_50_80 = 0
+    h_h_away_integral_50_80 = 0
+    h_h_ue_integral_50_80 = hh_v2_fit_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+
+    h_h_total_integral_error_50_80 = 0
+    h_h_near_integral_error_50_80 = 0
+    h_h_away_integral_error_50_80 = 0
+    h_h_ue_integral_error_50_80 = 0
+
+    for bin_num in range(1, DPHI_BINS + 1):
+        h_h_total_integral_50_80 += h_h_dphi_50_80.GetBinContent(bin_num)
+        part = h_h_dphi_50_80.GetBinContent(bin_num) - hh_v2_fit_50_80.Eval(h_h_dphi_50_80.GetBinCenter(bin_num))
+        if part < 0 and USE_AVG_6_NONNEGATIVE:
+            part = 0
+        if bin_num < 9:
+            h_h_near_integral_50_80 += part
+        else:
+            h_h_away_integral_50_80 += part
 else:
 
     h_h_dphi_50_80_zeroed = h_h_dphi_50_80.Clone("h_h_dphi_50_80_zeroed")
@@ -1758,10 +2002,7 @@ output_file.cd()
 h_lambda_2d_subtracted_50_80.Write()
 
 h_lambda_dphi_subtracted_50_80.Write()
-h_lambda_dphi_subtracted_50_80_zeroed.Write()
 h_h_dphi_50_80.Write()
-h_h_dphi_50_80_zeroed.Write()
-
 
 if USE_FIT:
     fit_function_50_80.Write()
@@ -1770,6 +2011,11 @@ if USE_FIT:
     hh_ue_avg_fit_50_80.Write()
     h_lambda_dphi_subtracted_with_fit_50_80.Write()
     h_h_dphi_with_fit_50_80.Write()
+    h_lambda_dphi_subtracted_50_80_zeroed.Write()
+    h_h_dphi_50_80_zeroed.Write()
+elif USE_V2:
+    v2_fit_50_80.Write()
+    hh_v2_fit_50_80.Write()
 else:
     ue_upper_line_50_80.Write()
     ue_line_50_80.Write()
@@ -1783,6 +2029,8 @@ else:
     hh_zero_upper_line_50_80.Write()
     hh_zero_line_50_80.Write()
     hh_zero_lower_line_50_80.Write()
+    h_lambda_dphi_subtracted_50_80_zeroed.Write()
+    h_h_dphi_50_80_zeroed.Write()
 
 
 near_ratio_50_80 = h_lambda_near_integral_50_80/h_h_near_integral_50_80
