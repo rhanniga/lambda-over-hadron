@@ -24,8 +24,10 @@ DO_HIGHEST_PT = config.getboolean("GENERAL", "DO_HIGHEST_PT")
 # UE line method
 USE_AVG_4 = config.getboolean("GENERAL", "USE_AVG_4")
 USE_AVG_6 = config.getboolean("GENERAL", "USE_AVG_6")
+USE_AVG_6_NONNEGATIVE = config.getboolean("GENERAL", "USE_AVG_6_NONNEGATIVE")
 USE_ZYAM = config.getboolean("GENERAL", "USE_ZYAM")
-assert sum([USE_AVG_4, USE_AVG_6, USE_ZYAM]) == 1, "Only select 1 method for UE line please"
+USE_FIT = config.getboolean("GENERAL", "USE_FIT")
+assert sum([USE_AVG_4, USE_AVG_6, USE_AVG_6_NONNEGATIVE, USE_ZYAM, USE_FIT]) == 1, "Only select 1 method for UE line please"
 
 # ETA CUTS 
 ETA_MIN = config.getfloat("ETA_CUTS", "ETA_MIN")
@@ -53,6 +55,8 @@ output_file_string = "output/v0_"
 output_file_string += ("highest_pt_" if DO_HIGHEST_PT else "") 
 output_file_string += ("avg4_" if USE_AVG_4 else "") 
 output_file_string += ("avg6_" if USE_AVG_6 else "") 
+output_file_string += ("avg6nonneg_" if USE_AVG_6_NONNEGATIVE else "") 
+output_file_string += ("fullfit_" if USE_FIT else "") 
 output_file_string += ("zyam_" if USE_ZYAM else "") 
 output_file_string += ("sideband_subtraction_" if DO_SIDEBAND_SUBTRACTION else "")
 output_file_string += "rsb_" + str(RSB_MIN).replace(".", "") + "_" + str(RSB_MAX + EPSILON).replace(".", "") + "_"
@@ -256,7 +260,7 @@ if USE_AVG_4:
     zero_upper_line_0_20.SetParameter(0, ue_avg_error_0_20)
     zero_lower_line_0_20.SetParameter(0, -ue_avg_error_0_20)
 
-elif USE_AVG_6:
+elif USE_AVG_6 or USE_AVG_6_NONNEGATIVE:
     ue_line_0_20 = rt.TF1("ue_line_0_20", "pol0", -2, 6)
     ue_upper_line_0_20 = rt.TF1("ue_upper_line_0_20", "pol0", -2, 6)
     ue_lower_line_0_20 = rt.TF1("ue_lower_line_0_20", "pol0", -2, 6)
@@ -305,45 +309,112 @@ elif USE_ZYAM:
     zero_line_0_20.SetParameter(0, 0)
     zero_upper_line_0_20.SetParameter(0, ue_avg_error_0_20)
     zero_lower_line_0_20.SetParameter(0, -ue_avg_error_0_20)
+
+elif USE_FIT:
+    # fitting to four gaussians + a constant background
+    fit_function_0_20 = rt.TF1("fit_function_0_20", "gaus(0) + gaus(3) + gaus(6) + gaus(9) + pol0(12)", -2, 6)
+    fit_function_0_20.SetNpx(1000)
+
+    # setting parameters for first gaussian (centered at 0)
+    fit_function_0_20.SetParameter(0, 0.003)
+    fit_function_0_20.FixParameter(1, 0)
+    fit_function_0_20.SetParameter(2, 0.8)
+
+    # setting parameters for second gaussian (centered at 0 + 2pi)
+    fit_function_0_20.SetParameter(3, 0.003)
+    fit_function_0_20.SetParameter(4, 2*rt.TMath.Pi())
+    fit_function_0_20.SetParameter(5, 0.8)
+
+    # setting parameters for third gaussian (centered at pi)
+    fit_function_0_20.SetParameter(6, 0.003)
+    fit_function_0_20.FixParameter(7, rt.TMath.Pi())
+    fit_function_0_20.SetParameter(8, 1)
+
+    # setting parameters for fourth gaussian (centered at pi + 2pi)
+    fit_function_0_20.SetParameter(9, 0.003)
+    fit_function_0_20.SetParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
+    fit_function_0_20.SetParameter(11, 1)
+
+    # setting parameters for constant background
+    ue_avg_0_20 = (h_lambda_dphi_subtracted_0_20.GetBinContent(1) 
+                + h_lambda_dphi_subtracted_0_20.GetBinContent(2)
+                + h_lambda_dphi_subtracted_0_20.GetBinContent(7)
+                + h_lambda_dphi_subtracted_0_20.GetBinContent(8)
+                + h_lambda_dphi_subtracted_0_20.GetBinContent(9)
+                + h_lambda_dphi_subtracted_0_20.GetBinContent(16))/6
+
+    ue_avg_error_0_20 = (1/6)*(math.sqrt(h_lambda_dphi_subtracted_0_20.GetBinError(1)**2 
+                   + h_lambda_dphi_subtracted_0_20.GetBinError(2)**2
+                   + h_lambda_dphi_subtracted_0_20.GetBinError(7)**2
+                   + h_lambda_dphi_subtracted_0_20.GetBinError(8)**2
+                   + h_lambda_dphi_subtracted_0_20.GetBinError(9)**2
+                   + h_lambda_dphi_subtracted_0_20.GetBinError(16)**2))
+
+    fit_function_0_20.SetParameter(12, ue_avg_0_20)
+
+
+    h_lambda_dphi_subtracted_with_fit_0_20 = h_lambda_dphi_subtracted_0_20.Clone("h_lambda_dphi_subtracted_with_fit_0_20")
+    h_lambda_dphi_subtracted_with_fit_0_20.Fit(fit_function_0_20, "R")
+    ue_avg_fit_0_20 = rt.TF1("ue_avg_fit_0_20", "pol0", -2, 6)
+    ue_avg_fit_0_20.SetParameter(0, ue_avg_0_20)
+    ue_avg_fit_0_20.SetParError(0, ue_avg_error_0_20)
+
 else:
     raise NotImplementedError("UE line mode not supported")
 
 
-h_lambda_dphi_subtracted_0_20_zeroed = h_lambda_dphi_subtracted_0_20.Clone("h_lambda_dphi_subtracted_0_20_zeroed")
-h_lambda_dphi_subtracted_0_20_zeroed.Add(ue_line_0_20, -1)
 
 
-DPHI_BINS = h_lambda_dphi_subtracted_0_20.GetNbinsX()
 
-h_lambda_total_integral_0_20 = 0
-h_lambda_near_integral_0_20 = 0
-h_lambda_away_integral_0_20 = 0
-h_lambda_ue_integral_0_20 = ue_avg_0_20*DPHI_BINS
+if USE_FIT:
+    h_lambda_dphi_subtracted_0_20_zeroed = h_lambda_dphi_subtracted_0_20.Clone("h_lambda_dphi_subtracted_0_20_zeroed")
+    h_lambda_dphi_subtracted_0_20_zeroed.Add(ue_avg_fit_0_20, -1)
 
-h_lambda_total_integral_error_0_20 = 0
-h_lambda_near_integral_error_0_20 = 0
-h_lambda_away_integral_error_0_20 = 0
-h_lambda_ue_integral_error_0_20 = ue_avg_error_0_20*DPHI_BINS
+    h_lambda_total_integral_0_20 = fit_function_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_total_integral_error_0_20 = 0
 
-for bin_num in range(1, DPHI_BINS + 1):
-    h_lambda_total_integral_0_20 += h_lambda_dphi_subtracted_0_20.GetBinContent(bin_num)
-    h_lambda_total_integral_error_0_20 += h_lambda_dphi_subtracted_0_20.GetBinError(bin_num)**2
-    part = h_lambda_dphi_subtracted_0_20.GetBinContent(bin_num) - ue_avg_0_20
-    if part < 0:
-        continue
-    if bin_num < 9:
-        h_lambda_near_integral_0_20 += part
-        h_lambda_near_integral_error_0_20 += h_lambda_dphi_subtracted_0_20.GetBinError(bin_num)**2
-        h_lambda_near_integral_error_0_20 += ue_avg_error_0_20**2
-    else:
-        h_lambda_away_integral_0_20 += part
-        h_lambda_away_integral_error_0_20 += h_lambda_dphi_subtracted_0_20.GetBinError(bin_num)**2
-        h_lambda_away_integral_error_0_20 += ue_avg_error_0_20**2
+    h_lambda_near_integral_0_20 = fit_function_0_20.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2) - ue_avg_fit_0_20.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)
+    h_lambda_near_integral_error_0_20 = 0
 
-h_lambda_total_integral_error_0_20 = math.sqrt(h_lambda_total_integral_error_0_20)
-h_lambda_near_integral_error_0_20 = math.sqrt(h_lambda_near_integral_error_0_20)
-h_lambda_away_integral_error_0_20 = math.sqrt(h_lambda_away_integral_error_0_20)
+    h_lambda_away_integral_0_20 = fit_function_0_20.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2) - ue_avg_fit_0_20.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_away_integral_error_0_20 = 0
 
+    h_lambda_ue_integral_0_20 = ue_avg_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_ue_integral_error_0_20 = 0
+else: 
+    h_lambda_dphi_subtracted_0_20_zeroed = h_lambda_dphi_subtracted_0_20.Clone("h_lambda_dphi_subtracted_0_20_zeroed")
+    h_lambda_dphi_subtracted_0_20_zeroed.Add(ue_line_0_20, -1)
+
+    DPHI_BINS = h_lambda_dphi_subtracted_0_20.GetNbinsX()
+
+    h_lambda_total_integral_0_20 = 0
+    h_lambda_near_integral_0_20 = 0
+    h_lambda_away_integral_0_20 = 0
+    h_lambda_ue_integral_0_20 = ue_avg_0_20*DPHI_BINS
+
+    h_lambda_total_integral_error_0_20 = 0
+    h_lambda_near_integral_error_0_20 = 0
+    h_lambda_away_integral_error_0_20 = 0
+    h_lambda_ue_integral_error_0_20 = ue_avg_error_0_20*DPHI_BINS
+
+    for bin_num in range(1, DPHI_BINS + 1):
+        h_lambda_total_integral_0_20 += h_lambda_dphi_subtracted_0_20.GetBinContent(bin_num)
+        h_lambda_total_integral_error_0_20 += h_lambda_dphi_subtracted_0_20.GetBinError(bin_num)**2
+        part = h_lambda_dphi_subtracted_0_20.GetBinContent(bin_num) - ue_avg_0_20
+        if part < 0 and USE_AVG_6_NONNEGATIVE:
+            part = 0
+        if bin_num < 9:
+            h_lambda_near_integral_0_20 += part
+            h_lambda_near_integral_error_0_20 += h_lambda_dphi_subtracted_0_20.GetBinError(bin_num)**2
+            h_lambda_near_integral_error_0_20 += ue_avg_error_0_20**2
+        else:
+            h_lambda_away_integral_0_20 += part
+            h_lambda_away_integral_error_0_20 += h_lambda_dphi_subtracted_0_20.GetBinError(bin_num)**2
+            h_lambda_away_integral_error_0_20 += ue_avg_error_0_20**2
+
+    h_lambda_total_integral_error_0_20 = math.sqrt(h_lambda_total_integral_error_0_20)
+    h_lambda_near_integral_error_0_20 = math.sqrt(h_lambda_near_integral_error_0_20)
+    h_lambda_away_integral_error_0_20 = math.sqrt(h_lambda_away_integral_error_0_20)
 
 
 h_h_dphi_0_20 = h_h_2d_mixcor_0_20.ProjectionY("h_h_dphi_0_20")
@@ -374,7 +445,7 @@ if USE_AVG_4:
     hh_zero_upper_line_0_20.SetParameter(0, hh_ue_avg_error_0_20)
     hh_zero_lower_line_0_20.SetParameter(0, -hh_ue_avg_error_0_20)
 
-elif USE_AVG_6:
+elif USE_AVG_6 or USE_AVG_6_NONNEGATIVE:
     hh_ue_line_0_20 = rt.TF1("hh_ue_line_0_20", "pol0", -2, 6)
     hh_ue_upper_line_0_20 = rt.TF1("hh_ue_upper_line_0_20", "pol0", -2, 6)
     hh_ue_lower_line_0_20 = rt.TF1("hh_ue_lower_line_0_20", "pol0", -2, 6)
@@ -395,7 +466,6 @@ elif USE_AVG_6:
                    + h_h_dphi_0_20.GetBinError(9)**2
                    + h_h_dphi_0_20.GetBinError(16)**2))
 
-
     hh_ue_line_0_20.SetParameter(0, hh_ue_avg_0_20)
     hh_ue_upper_line_0_20.SetParameter(0, hh_ue_avg_0_20 + hh_ue_avg_error_0_20)
     hh_ue_lower_line_0_20.SetParameter(0, hh_ue_avg_0_20 - hh_ue_avg_error_0_20)
@@ -403,6 +473,7 @@ elif USE_AVG_6:
     hh_zero_line_0_20.SetParameter(0, 0)
     hh_zero_upper_line_0_20.SetParameter(0, hh_ue_avg_error_0_20)
     hh_zero_lower_line_0_20.SetParameter(0, -hh_ue_avg_error_0_20)
+
 elif USE_ZYAM:
     hh_ue_line_0_20 = rt.TF1("hh_ue_line_0_20", "pol0", -2, 6)
     hh_ue_upper_line_0_20 = rt.TF1("hh_ue_upper_line_0_20", "pol0", -2, 6)
@@ -422,40 +493,108 @@ elif USE_ZYAM:
     hh_zero_line_0_20.SetParameter(0, 0)
     hh_zero_upper_line_0_20.SetParameter(0, hh_ue_avg_error_0_20)
     hh_zero_lower_line_0_20.SetParameter(0, -hh_ue_avg_error_0_20)
+elif USE_FIT:
+    # fitting to four gaussians + a constant background
+    hh_fit_function_0_20 = rt.TF1("hh_fit_function_0_20", "gaus(0) + gaus(3) + gaus(6) + gaus(9) + pol0(12)", -2, 6)
+    hh_fit_function_0_20.SetNpx(1000)
+
+    # setting parameters for first gaussian (centered at 0)
+    hh_fit_function_0_20.SetParameter(0, 0.003)
+    hh_fit_function_0_20.FixParameter(1, 0)
+    hh_fit_function_0_20.SetParameter(2, 0.8)
+
+    # setting parameters for second gaussian (centered at 0 + 2pi)
+    hh_fit_function_0_20.SetParameter(3, 0.003)
+    hh_fit_function_0_20.SetParameter(4, 2*rt.TMath.Pi())
+    hh_fit_function_0_20.SetParameter(5, 0.8)
+
+    # setting parameters for third gaussian (centered at pi)
+    hh_fit_function_0_20.SetParameter(6, 0.003)
+    hh_fit_function_0_20.FixParameter(7, rt.TMath.Pi())
+    hh_fit_function_0_20.SetParameter(8, 1)
+
+    # setting parameters for fourth gaussian (centered at pi + 2pi)
+    hh_fit_function_0_20.SetParameter(9, 0.003)
+    hh_fit_function_0_20.SetParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
+    hh_fit_function_0_20.SetParameter(11, 1)
+
+    # setting parameters for constant background
+    hh_ue_avg_0_20 = (h_h_dphi_0_20.GetBinContent(1) 
+                + h_h_dphi_0_20.GetBinContent(2)
+                + h_h_dphi_0_20.GetBinContent(7)
+                + h_h_dphi_0_20.GetBinContent(8)
+                + h_h_dphi_0_20.GetBinContent(9)
+                + h_h_dphi_0_20.GetBinContent(16))/6
+
+    hh_ue_avg_error_0_20 = (1/6)*(math.sqrt(h_h_dphi_0_20.GetBinError(1)**2 
+                   + h_h_dphi_0_20.GetBinError(2)**2
+                   + h_h_dphi_0_20.GetBinError(7)**2
+                   + h_h_dphi_0_20.GetBinError(8)**2
+                   + h_h_dphi_0_20.GetBinError(9)**2
+                   + h_h_dphi_0_20.GetBinError(16)**2))
+
+    hh_fit_function_0_20.SetParameter(12, hh_ue_avg_0_20)
+
+
+    h_h_dphi_with_fit_0_20 = h_h_dphi_0_20.Clone("h_h_dphi_with_fit_0_20")
+    h_h_dphi_with_fit_0_20.Fit(hh_fit_function_0_20, "R")
+    hh_ue_avg_fit_0_20 = rt.TF1("hh_ue_avg_fit_0_20", "pol0", -2, 6)
+    hh_ue_avg_fit_0_20.SetParameter(0, hh_ue_avg_0_20)
+    hh_ue_avg_fit_0_20.SetParError(0, hh_ue_avg_error_0_20)
+
 else:
     raise NotImplementedError("UE line mode not supported")
 
 
-h_h_dphi_0_20_zeroed = h_h_dphi_0_20.Clone("h_h_dphi_0_20_zeroed")
-h_h_dphi_0_20_zeroed.Add(hh_ue_line_0_20, -1)
+if USE_FIT:
+    h_h_dphi_0_20_zeroed = h_h_dphi_0_20.Clone("h_h_dphi_0_20_zeroed")
+    h_h_dphi_0_20_zeroed.Add(hh_ue_avg_fit_0_20, -1)
 
-h_h_total_integral_0_20 = 0
-h_h_near_integral_0_20 = 0
-h_h_away_integral_0_20 = 0
-h_h_ue_integral_0_20 = hh_ue_avg_0_20*DPHI_BINS
+    h_h_total_integral_0_20 = hh_fit_function_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_total_integral_error_0_20 = 0
 
-h_h_total_integral_error_0_20 = 0
-h_h_near_integral_error_0_20 = 0
-h_h_away_integral_error_0_20 = 0
-h_h_ue_integral_error_0_20 = hh_ue_avg_error_0_20*DPHI_BINS
+    h_h_near_integral_0_20 = hh_fit_function_0_20.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2) - hh_ue_avg_fit_0_20.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)
+    h_h_near_integral_error_0_20 = 0
 
-for bin_num in range(1, DPHI_BINS + 1):
-    h_h_total_integral_0_20 += h_h_dphi_0_20.GetBinContent(bin_num)
-    h_h_total_integral_error_0_20 += h_h_dphi_0_20.GetBinError(bin_num)**2
-    part = h_h_dphi_0_20.GetBinContent(bin_num) - hh_ue_avg_0_20
-    if part < 0:
-        continue
-    if bin_num < 9:
-        h_h_near_integral_0_20 += part
-        h_h_near_integral_error_0_20 += h_h_dphi_0_20.GetBinError(bin_num)**2
-        h_h_near_integral_error_0_20 += hh_ue_avg_error_0_20**2
-    else:
-        h_h_away_integral_0_20 += part
-        h_h_away_integral_error_0_20 += h_h_dphi_0_20.GetBinError(bin_num)**2
-        h_h_away_integral_error_0_20 += hh_ue_avg_error_0_20**2
-h_h_total_integral_error_0_20 = math.sqrt(h_h_total_integral_error_0_20)
-h_h_near_integral_error_0_20 = math.sqrt(h_h_near_integral_error_0_20)
-h_h_away_integral_error_0_20 = math.sqrt(h_h_away_integral_error_0_20)
+    h_h_away_integral_0_20 = hh_fit_function_0_20.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2) - hh_ue_avg_fit_0_20.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_away_integral_error_0_20 = 0
+
+    h_h_ue_integral_0_20 = hh_ue_avg_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_ue_integral_error_0_20 = 0
+else:
+
+    h_h_dphi_0_20_zeroed = h_h_dphi_0_20.Clone("h_h_dphi_0_20_zeroed")
+    h_h_dphi_0_20_zeroed.Add(hh_ue_line_0_20, -1)
+
+    h_h_total_integral_0_20 = 0
+    h_h_near_integral_0_20 = 0
+    h_h_away_integral_0_20 = 0
+    h_h_ue_integral_0_20 = hh_ue_avg_0_20*DPHI_BINS
+
+    h_h_total_integral_error_0_20 = 0
+    h_h_near_integral_error_0_20 = 0
+    h_h_away_integral_error_0_20 = 0
+    h_h_ue_integral_error_0_20 = hh_ue_avg_error_0_20*DPHI_BINS
+
+    for bin_num in range(1, DPHI_BINS + 1):
+        h_h_total_integral_0_20 += h_h_dphi_0_20.GetBinContent(bin_num)
+        h_h_total_integral_error_0_20 += h_h_dphi_0_20.GetBinError(bin_num)**2
+        part = h_h_dphi_0_20.GetBinContent(bin_num) - hh_ue_avg_0_20
+        if part < 0 and USE_AVG_6_NONNEGATIVE:
+            part = 0
+        if bin_num < 9:
+            h_h_near_integral_0_20 += part
+            h_h_near_integral_error_0_20 += h_h_dphi_0_20.GetBinError(bin_num)**2
+            h_h_near_integral_error_0_20 += hh_ue_avg_error_0_20**2
+        else:
+            h_h_away_integral_0_20 += part
+            h_h_away_integral_error_0_20 += h_h_dphi_0_20.GetBinError(bin_num)**2
+            h_h_away_integral_error_0_20 += hh_ue_avg_error_0_20**2
+    h_h_total_integral_error_0_20 = math.sqrt(h_h_total_integral_error_0_20)
+    h_h_near_integral_error_0_20 = math.sqrt(h_h_near_integral_error_0_20)
+    h_h_away_integral_error_0_20 = math.sqrt(h_h_away_integral_error_0_20)
+
+
 
 output_file.cd()
 h_lambda_2d_subtracted_0_20.Write()
@@ -465,19 +604,29 @@ h_lambda_dphi_subtracted_0_20_zeroed.Write()
 h_h_dphi_0_20.Write()
 h_h_dphi_0_20_zeroed.Write()
 
-ue_upper_line_0_20.Write()
-ue_line_0_20.Write()
-ue_lower_line_0_20.Write()
-zero_upper_line_0_20.Write()
-zero_line_0_20.Write()
-zero_lower_line_0_20.Write()
 
-hh_ue_upper_line_0_20.Write()
-hh_ue_line_0_20.Write()
-hh_ue_lower_line_0_20.Write()
-hh_zero_upper_line_0_20.Write()
-hh_zero_line_0_20.Write()
-hh_zero_lower_line_0_20.Write()
+if USE_FIT:
+    fit_function_0_20.Write()
+    ue_avg_fit_0_20.Write()
+    hh_fit_function_0_20.Write()
+    hh_ue_avg_fit_0_20.Write()
+    h_lambda_dphi_subtracted_with_fit_0_20.Write()
+    h_h_dphi_with_fit_0_20.Write()
+else:
+    ue_upper_line_0_20.Write()
+    ue_line_0_20.Write()
+    ue_lower_line_0_20.Write()
+    zero_upper_line_0_20.Write()
+    zero_line_0_20.Write()
+    zero_lower_line_0_20.Write()
+
+    hh_ue_upper_line_0_20.Write()
+    hh_ue_line_0_20.Write()
+    hh_ue_lower_line_0_20.Write()
+    hh_zero_upper_line_0_20.Write()
+    hh_zero_line_0_20.Write()
+    hh_zero_lower_line_0_20.Write()
+
 
 near_ratio_0_20 = h_lambda_near_integral_0_20/h_h_near_integral_0_20
 away_ratio_0_20 = h_lambda_away_integral_0_20/h_h_away_integral_0_20
@@ -691,7 +840,7 @@ if USE_AVG_4:
     zero_upper_line_20_50.SetParameter(0, ue_avg_error_20_50)
     zero_lower_line_20_50.SetParameter(0, -ue_avg_error_20_50)
 
-elif USE_AVG_6:
+elif USE_AVG_6 or USE_AVG_6_NONNEGATIVE:
     ue_line_20_50 = rt.TF1("ue_line_20_50", "pol0", -2, 6)
     ue_upper_line_20_50 = rt.TF1("ue_upper_line_20_50", "pol0", -2, 6)
     ue_lower_line_20_50 = rt.TF1("ue_lower_line_20_50", "pol0", -2, 6)
@@ -711,7 +860,6 @@ elif USE_AVG_6:
                    + h_lambda_dphi_subtracted_20_50.GetBinError(8)**2
                    + h_lambda_dphi_subtracted_20_50.GetBinError(9)**2
                    + h_lambda_dphi_subtracted_20_50.GetBinError(16)**2))
-
 
     ue_line_20_50.SetParameter(0, ue_avg_20_50)
     ue_upper_line_20_50.SetParameter(0, ue_avg_20_50 + ue_avg_error_20_50)
@@ -740,45 +888,116 @@ elif USE_ZYAM:
     zero_line_20_50.SetParameter(0, 0)
     zero_upper_line_20_50.SetParameter(0, ue_avg_error_20_50)
     zero_lower_line_20_50.SetParameter(0, -ue_avg_error_20_50)
+elif USE_FIT:
+    # fitting to four gaussians + a constant background
+    fit_function_20_50 = rt.TF1("fit_function_20_50", "gaus(0) + gaus(3) + gaus(6) + gaus(9) + pol0(12)", -2, 6)
+    fit_function_20_50.SetNpx(1000)
+
+    # setting parameters for first gaussian (centered at 0)
+    fit_function_20_50.SetParLimits(0, 0, 0.1)
+    fit_function_20_50.SetParameter(0, 0.003)
+    fit_function_20_50.FixParameter(1, 0)
+    fit_function_20_50.SetParLimits(2, 0, 2)
+    fit_function_20_50.SetParameter(2, 0.8)
+
+    # setting parameters for second gaussian (centered at 0 + 2pi)
+    fit_function_20_50.SetParLimits(3, 0, 0.1)
+    fit_function_20_50.SetParameter(3, 0.00175)
+    fit_function_20_50.FixParameter(4, 2*rt.TMath.Pi())
+    fit_function_20_50.SetParLimits(5, 0, 2)
+    fit_function_20_50.SetParameter(5, 0.8)
+
+    # setting parameters for third gaussian (centered at pi)
+    fit_function_20_50.SetParLimits(6, 0, 0.1)
+    fit_function_20_50.SetParameter(6, 0.003)
+    fit_function_20_50.FixParameter(7, rt.TMath.Pi())
+    fit_function_20_50.SetParLimits(8, 0, 2)
+    fit_function_20_50.SetParameter(8, 1)
+
+    # setting parameters for fourth gaussian (centered at pi + 2pi)
+    fit_function_20_50.SetParLimits(9, 0, 0.1)
+    fit_function_20_50.SetParameter(9, 0.1)
+    fit_function_20_50.FixParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
+    fit_function_20_50.SetParLimits(11, 0, 2)
+    fit_function_20_50.SetParameter(11, 0.5)
+
+    # setting parameters for constant background
+    ue_avg_20_50 = (h_lambda_dphi_subtracted_20_50.GetBinContent(1) 
+                + h_lambda_dphi_subtracted_20_50.GetBinContent(2)
+                + h_lambda_dphi_subtracted_20_50.GetBinContent(7)
+                + h_lambda_dphi_subtracted_20_50.GetBinContent(8)
+                + h_lambda_dphi_subtracted_20_50.GetBinContent(9)
+                + h_lambda_dphi_subtracted_20_50.GetBinContent(16))/6
+
+    ue_avg_error_20_50 = (1/6)*(math.sqrt(h_lambda_dphi_subtracted_20_50.GetBinError(1)**2 
+                   + h_lambda_dphi_subtracted_20_50.GetBinError(2)**2
+                   + h_lambda_dphi_subtracted_20_50.GetBinError(7)**2
+                   + h_lambda_dphi_subtracted_20_50.GetBinError(8)**2
+                   + h_lambda_dphi_subtracted_20_50.GetBinError(9)**2
+                   + h_lambda_dphi_subtracted_20_50.GetBinError(16)**2))
+
+    fit_function_20_50.SetParameter(12, ue_avg_20_50)
+
+
+    h_lambda_dphi_subtracted_with_fit_20_50 = h_lambda_dphi_subtracted_20_50.Clone("h_lambda_dphi_subtracted_with_fit_20_50")
+    h_lambda_dphi_subtracted_with_fit_20_50.Fit(fit_function_20_50, "R")
+    ue_avg_fit_20_50 = rt.TF1("ue_avg_fit_20_50", "pol0", -2, 6)
+    ue_avg_fit_20_50.SetParameter(0, ue_avg_20_50)
+    ue_avg_fit_20_50.SetParError(0, ue_avg_error_20_50)
 else:
     raise NotImplementedError("UE line mode not supported")
 
 
-h_lambda_dphi_subtracted_20_50_zeroed = h_lambda_dphi_subtracted_20_50.Clone("h_lambda_dphi_subtracted_20_50_zeroed")
-h_lambda_dphi_subtracted_20_50_zeroed.Add(ue_line_20_50, -1)
 
+if USE_FIT:
+    h_lambda_dphi_subtracted_20_50_zeroed = h_lambda_dphi_subtracted_20_50.Clone("h_lambda_dphi_subtracted_20_50_zeroed")
+    h_lambda_dphi_subtracted_20_50_zeroed.Add(ue_avg_fit_20_50, -1)
 
-DPHI_BINS = h_lambda_dphi_subtracted_20_50.GetNbinsX()
+    h_lambda_total_integral_20_50 = fit_function_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_total_integral_error_20_50 = 0
 
-h_lambda_total_integral_20_50 = 0
-h_lambda_near_integral_20_50 = 0
-h_lambda_away_integral_20_50 = 0
-h_lambda_ue_integral_20_50 = ue_avg_20_50*DPHI_BINS
+    h_lambda_near_integral_20_50 = fit_function_20_50.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2) - ue_avg_fit_20_50.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)
+    h_lambda_near_integral_error_20_50 = 0
 
-h_lambda_total_integral_error_20_50 = 0
-h_lambda_near_integral_error_20_50 = 0
-h_lambda_away_integral_error_20_50 = 0
-h_lambda_ue_integral_error_20_50 = ue_avg_error_20_50*DPHI_BINS
+    h_lambda_away_integral_20_50 = fit_function_20_50.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2) - ue_avg_fit_20_50.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_away_integral_error_20_50 = 0
 
-for bin_num in range(1, DPHI_BINS + 1):
-    h_lambda_total_integral_20_50 += h_lambda_dphi_subtracted_20_50.GetBinContent(bin_num)
-    h_lambda_total_integral_error_20_50 += h_lambda_dphi_subtracted_20_50.GetBinError(bin_num)**2
-    part = h_lambda_dphi_subtracted_20_50.GetBinContent(bin_num) - ue_avg_20_50
-    if part < 0:
-        continue
-    if bin_num < 9:
-        h_lambda_near_integral_20_50 += part
-        h_lambda_near_integral_error_20_50 += h_lambda_dphi_subtracted_20_50.GetBinError(bin_num)**2
-        h_lambda_near_integral_error_20_50 += ue_avg_error_20_50**2
-    else:
-        h_lambda_away_integral_20_50 += part
-        h_lambda_away_integral_error_20_50 += h_lambda_dphi_subtracted_20_50.GetBinError(bin_num)**2
-        h_lambda_away_integral_error_20_50 += ue_avg_error_20_50**2
+    h_lambda_ue_integral_20_50 = ue_avg_fit_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_ue_integral_error_20_50 = 0
+else: 
+    h_lambda_dphi_subtracted_20_50_zeroed = h_lambda_dphi_subtracted_20_50.Clone("h_lambda_dphi_subtracted_20_50_zeroed")
+    h_lambda_dphi_subtracted_20_50_zeroed.Add(ue_line_20_50, -1)
 
-h_lambda_total_integral_error_20_50 = math.sqrt(h_lambda_total_integral_error_20_50)
-h_lambda_near_integral_error_20_50 = math.sqrt(h_lambda_near_integral_error_20_50)
-h_lambda_away_integral_error_20_50 = math.sqrt(h_lambda_away_integral_error_20_50)
+    DPHI_BINS = h_lambda_dphi_subtracted_20_50.GetNbinsX()
 
+    h_lambda_total_integral_20_50 = 0
+    h_lambda_near_integral_20_50 = 0
+    h_lambda_away_integral_20_50 = 0
+    h_lambda_ue_integral_20_50 = ue_avg_20_50*DPHI_BINS
+
+    h_lambda_total_integral_error_20_50 = 0
+    h_lambda_near_integral_error_20_50 = 0
+    h_lambda_away_integral_error_20_50 = 0
+    h_lambda_ue_integral_error_20_50 = ue_avg_error_20_50*DPHI_BINS
+
+    for bin_num in range(1, DPHI_BINS + 1):
+        h_lambda_total_integral_20_50 += h_lambda_dphi_subtracted_20_50.GetBinContent(bin_num)
+        h_lambda_total_integral_error_20_50 += h_lambda_dphi_subtracted_20_50.GetBinError(bin_num)**2
+        part = h_lambda_dphi_subtracted_20_50.GetBinContent(bin_num) - ue_avg_20_50
+        if part < 0 and USE_AVG_6_NONNEGATIVE:
+            part = 0
+        if bin_num < 9:
+            h_lambda_near_integral_20_50 += part
+            h_lambda_near_integral_error_20_50 += h_lambda_dphi_subtracted_20_50.GetBinError(bin_num)**2
+            h_lambda_near_integral_error_20_50 += ue_avg_error_20_50**2
+        else:
+            h_lambda_away_integral_20_50 += part
+            h_lambda_away_integral_error_20_50 += h_lambda_dphi_subtracted_20_50.GetBinError(bin_num)**2
+            h_lambda_away_integral_error_20_50 += ue_avg_error_20_50**2
+
+    h_lambda_total_integral_error_20_50 = math.sqrt(h_lambda_total_integral_error_20_50)
+    h_lambda_near_integral_error_20_50 = math.sqrt(h_lambda_near_integral_error_20_50)
+    h_lambda_away_integral_error_20_50 = math.sqrt(h_lambda_away_integral_error_20_50)
 
 
 h_h_dphi_20_50 = h_h_2d_mixcor_20_50.ProjectionY("h_h_dphi_20_50")
@@ -809,7 +1028,7 @@ if USE_AVG_4:
     hh_zero_upper_line_20_50.SetParameter(0, hh_ue_avg_error_20_50)
     hh_zero_lower_line_20_50.SetParameter(0, -hh_ue_avg_error_20_50)
 
-elif USE_AVG_6:
+elif USE_AVG_6 or USE_AVG_6_NONNEGATIVE:
     hh_ue_line_20_50 = rt.TF1("hh_ue_line_20_50", "pol0", -2, 6)
     hh_ue_upper_line_20_50 = rt.TF1("hh_ue_upper_line_20_50", "pol0", -2, 6)
     hh_ue_lower_line_20_50 = rt.TF1("hh_ue_lower_line_20_50", "pol0", -2, 6)
@@ -830,7 +1049,6 @@ elif USE_AVG_6:
                    + h_h_dphi_20_50.GetBinError(9)**2
                    + h_h_dphi_20_50.GetBinError(16)**2))
 
-
     hh_ue_line_20_50.SetParameter(0, hh_ue_avg_20_50)
     hh_ue_upper_line_20_50.SetParameter(0, hh_ue_avg_20_50 + hh_ue_avg_error_20_50)
     hh_ue_lower_line_20_50.SetParameter(0, hh_ue_avg_20_50 - hh_ue_avg_error_20_50)
@@ -838,6 +1056,7 @@ elif USE_AVG_6:
     hh_zero_line_20_50.SetParameter(0, 0)
     hh_zero_upper_line_20_50.SetParameter(0, hh_ue_avg_error_20_50)
     hh_zero_lower_line_20_50.SetParameter(0, -hh_ue_avg_error_20_50)
+
 elif USE_ZYAM:
     hh_ue_line_20_50 = rt.TF1("hh_ue_line_20_50", "pol0", -2, 6)
     hh_ue_upper_line_20_50 = rt.TF1("hh_ue_upper_line_20_50", "pol0", -2, 6)
@@ -857,39 +1076,104 @@ elif USE_ZYAM:
     hh_zero_line_20_50.SetParameter(0, 0)
     hh_zero_upper_line_20_50.SetParameter(0, hh_ue_avg_error_20_50)
     hh_zero_lower_line_20_50.SetParameter(0, -hh_ue_avg_error_20_50)
+elif USE_FIT:
+    # fitting to four gaussians + a constant background
+    hh_fit_function_20_50 = rt.TF1("hh_fit_function_20_50", "gaus(0) + gaus(3) + gaus(6) + gaus(9) + pol0(12)", -2, 6)
+    hh_fit_function_20_50.SetNpx(1000)
+
+    # setting parameters for first gaussian (centered at 0)
+    hh_fit_function_20_50.SetParameter(0, 0.003)
+    hh_fit_function_20_50.FixParameter(1, 0)
+    hh_fit_function_20_50.SetParameter(2, 0.8)
+
+    # setting parameters for second gaussian (centered at 0 + 2pi)
+    hh_fit_function_20_50.SetParameter(3, 0.003)
+    hh_fit_function_20_50.SetParameter(4, 2*rt.TMath.Pi())
+    hh_fit_function_20_50.SetParameter(5, 0.8)
+
+    # setting parameters for third gaussian (centered at pi)
+    hh_fit_function_20_50.SetParameter(6, 0.003)
+    hh_fit_function_20_50.FixParameter(7, rt.TMath.Pi())
+    hh_fit_function_20_50.SetParameter(8, 1)
+
+    # setting parameters for fourth gaussian (centered at pi + 2pi)
+    hh_fit_function_20_50.SetParameter(9, 0.003)
+    hh_fit_function_20_50.SetParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
+    hh_fit_function_20_50.SetParameter(11, 1)
+
+    # setting parameters for constant background
+    hh_ue_avg_20_50 = (h_h_dphi_20_50.GetBinContent(1) 
+                + h_h_dphi_20_50.GetBinContent(2)
+                + h_h_dphi_20_50.GetBinContent(7)
+                + h_h_dphi_20_50.GetBinContent(8)
+                + h_h_dphi_20_50.GetBinContent(9)
+                + h_h_dphi_20_50.GetBinContent(16))/6
+
+    hh_ue_avg_error_20_50 = (1/6)*(math.sqrt(h_h_dphi_20_50.GetBinError(1)**2 
+                   + h_h_dphi_20_50.GetBinError(2)**2
+                   + h_h_dphi_20_50.GetBinError(7)**2
+                   + h_h_dphi_20_50.GetBinError(8)**2
+                   + h_h_dphi_20_50.GetBinError(9)**2
+                   + h_h_dphi_20_50.GetBinError(16)**2))
+
+    hh_fit_function_20_50.SetParameter(12, hh_ue_avg_20_50)
+
+
+    h_h_dphi_with_fit_20_50 = h_h_dphi_20_50.Clone("h_h_dphi_with_fit_20_50")
+    h_h_dphi_with_fit_20_50.Fit(hh_fit_function_20_50, "R")
+    hh_ue_avg_fit_20_50 = rt.TF1("hh_ue_avg_fit_20_50", "pol0", -2, 6)
+    hh_ue_avg_fit_20_50.SetParameter(0, hh_ue_avg_20_50)
+    hh_ue_avg_fit_20_50.SetParError(0, hh_ue_avg_error_20_50)
 else:
     raise NotImplementedError("UE line mode not supported")
 
-h_h_dphi_20_50_zeroed = h_h_dphi_20_50.Clone("h_h_dphi_20_50_zeroed")
-h_h_dphi_20_50_zeroed.Add(hh_ue_line_20_50, -1)
 
-h_h_total_integral_20_50 = 0
-h_h_near_integral_20_50 = 0
-h_h_away_integral_20_50 = 0
-h_h_ue_integral_20_50 = hh_ue_avg_20_50*DPHI_BINS
+if USE_FIT:
+    h_h_dphi_20_50_zeroed = h_h_dphi_20_50.Clone("h_h_dphi_20_50_zeroed")
+    h_h_dphi_20_50_zeroed.Add(hh_ue_avg_fit_20_50, -1)
 
-h_h_total_integral_error_20_50 = 0
-h_h_near_integral_error_20_50 = 0
-h_h_away_integral_error_20_50 = 0
-h_h_ue_integral_error_20_50 = hh_ue_avg_error_20_50*DPHI_BINS
+    h_h_total_integral_20_50 = hh_fit_function_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_total_integral_error_20_50 = 0
 
-for bin_num in range(1, DPHI_BINS + 1):
-    h_h_total_integral_20_50 += h_h_dphi_20_50.GetBinContent(bin_num)
-    h_h_total_integral_error_20_50 += h_h_dphi_20_50.GetBinError(bin_num)**2
-    part = h_h_dphi_20_50.GetBinContent(bin_num) - hh_ue_avg_20_50
-    if part < 0:
-        continue
-    if bin_num < 9:
-        h_h_near_integral_20_50 += part
-        h_h_near_integral_error_20_50 += h_h_dphi_20_50.GetBinError(bin_num)**2
-        h_h_near_integral_error_20_50 += hh_ue_avg_error_20_50**2
-    else:
-        h_h_away_integral_20_50 += part
-        h_h_away_integral_error_20_50 += h_h_dphi_20_50.GetBinError(bin_num)**2
-        h_h_away_integral_error_20_50 += hh_ue_avg_error_20_50**2
-h_h_total_integral_error_20_50 = math.sqrt(h_h_total_integral_error_20_50)
-h_h_near_integral_error_20_50 = math.sqrt(h_h_near_integral_error_20_50)
-h_h_away_integral_error_20_50 = math.sqrt(h_h_away_integral_error_20_50)
+    h_h_near_integral_20_50 = hh_fit_function_20_50.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2) - hh_ue_avg_fit_20_50.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)
+    h_h_near_integral_error_20_50 = 0
+
+    h_h_away_integral_20_50 = hh_fit_function_20_50.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2) - hh_ue_avg_fit_20_50.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_away_integral_error_20_50 = 0
+
+    h_h_ue_integral_20_50 = hh_ue_avg_fit_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_ue_integral_error_20_50 = 0
+else:
+    h_h_dphi_20_50_zeroed = h_h_dphi_20_50.Clone("h_h_dphi_20_50_zeroed")
+    h_h_dphi_20_50_zeroed.Add(hh_ue_line_20_50, -1)
+
+    h_h_total_integral_20_50 = 0
+    h_h_near_integral_20_50 = 0
+    h_h_away_integral_20_50 = 0
+    h_h_ue_integral_20_50 = hh_ue_avg_20_50*DPHI_BINS
+
+    h_h_total_integral_error_20_50 = 0
+    h_h_near_integral_error_20_50 = 0
+    h_h_away_integral_error_20_50 = 0
+    h_h_ue_integral_error_20_50 = hh_ue_avg_error_20_50*DPHI_BINS
+
+    for bin_num in range(1, DPHI_BINS + 1):
+        h_h_total_integral_20_50 += h_h_dphi_20_50.GetBinContent(bin_num)
+        h_h_total_integral_error_20_50 += h_h_dphi_20_50.GetBinError(bin_num)**2
+        part = h_h_dphi_20_50.GetBinContent(bin_num) - hh_ue_avg_20_50
+        if part < 0 and USE_AVG_6_NONNEGATIVE:
+            part = 0
+        if bin_num < 9:
+            h_h_near_integral_20_50 += part
+            h_h_near_integral_error_20_50 += h_h_dphi_20_50.GetBinError(bin_num)**2
+            h_h_near_integral_error_20_50 += hh_ue_avg_error_20_50**2
+        else:
+            h_h_away_integral_20_50 += part
+            h_h_away_integral_error_20_50 += h_h_dphi_20_50.GetBinError(bin_num)**2
+            h_h_away_integral_error_20_50 += hh_ue_avg_error_20_50**2
+    h_h_total_integral_error_20_50 = math.sqrt(h_h_total_integral_error_20_50)
+    h_h_near_integral_error_20_50 = math.sqrt(h_h_near_integral_error_20_50)
+    h_h_away_integral_error_20_50 = math.sqrt(h_h_away_integral_error_20_50)
 
 output_file.cd()
 h_lambda_2d_subtracted_20_50.Write()
@@ -899,20 +1183,27 @@ h_lambda_dphi_subtracted_20_50_zeroed.Write()
 h_h_dphi_20_50.Write()
 h_h_dphi_20_50_zeroed.Write()
 
-ue_upper_line_20_50.Write()
-ue_line_20_50.Write()
-ue_lower_line_20_50.Write()
-zero_upper_line_20_50.Write()
-zero_line_20_50.Write()
-zero_lower_line_20_50.Write()
 
-hh_ue_upper_line_20_50.Write()
-hh_ue_line_20_50.Write()
-hh_ue_lower_line_20_50.Write()
-hh_zero_upper_line_20_50.Write()
-hh_zero_line_20_50.Write()
-hh_zero_lower_line_20_50.Write()
-
+if USE_FIT:
+    fit_function_20_50.Write()
+    ue_avg_fit_20_50.Write()
+    hh_fit_function_20_50.Write()
+    hh_ue_avg_fit_20_50.Write()
+    h_lambda_dphi_subtracted_with_fit_20_50.Write()
+    h_h_dphi_with_fit_20_50.Write()
+else:
+    ue_upper_line_20_50.Write()
+    ue_line_20_50.Write()
+    ue_lower_line_20_50.Write()
+    zero_upper_line_20_50.Write()
+    zero_line_20_50.Write()
+    zero_lower_line_20_50.Write()
+    hh_ue_upper_line_20_50.Write()
+    hh_ue_line_20_50.Write()
+    hh_ue_lower_line_20_50.Write()
+    hh_zero_upper_line_20_50.Write()
+    hh_zero_line_20_50.Write()
+    hh_zero_lower_line_20_50.Write()
 
 near_ratio_20_50 = h_lambda_near_integral_20_50/h_h_near_integral_20_50
 away_ratio_20_50 = h_lambda_away_integral_20_50/h_h_away_integral_20_50
@@ -1126,7 +1417,7 @@ if USE_AVG_4:
     zero_upper_line_50_80.SetParameter(0, ue_avg_error_50_80)
     zero_lower_line_50_80.SetParameter(0, -ue_avg_error_50_80)
 
-elif USE_AVG_6:
+elif USE_AVG_6 or USE_AVG_6_NONNEGATIVE:
     ue_line_50_80 = rt.TF1("ue_line_50_80", "pol0", -2, 6)
     ue_upper_line_50_80 = rt.TF1("ue_upper_line_50_80", "pol0", -2, 6)
     ue_lower_line_50_80 = rt.TF1("ue_lower_line_50_80", "pol0", -2, 6)
@@ -1175,44 +1466,117 @@ elif USE_ZYAM:
     zero_line_50_80.SetParameter(0, 0)
     zero_upper_line_50_80.SetParameter(0, ue_avg_error_50_80)
     zero_lower_line_50_80.SetParameter(0, -ue_avg_error_50_80)
+elif USE_FIT:
+    # fitting to four gaussians + a constant background
+    fit_function_50_80 = rt.TF1("fit_function_50_80", "gaus(0) + gaus(3) + gaus(6) + gaus(9) + pol0(12)", -2, 6)
+    fit_function_50_80.SetNpx(1000)
+
+    # setting parameters for first gaussian (centered at 0)
+    fit_function_50_80.SetParLimits(0, 0, 0.1)
+    fit_function_50_80.SetParameter(0, 0.003)
+    fit_function_50_80.FixParameter(1, 0)
+    fit_function_50_80.SetParLimits(2, 0, 2)
+    fit_function_50_80.SetParameter(2, 0.8)
+
+    # setting parameters for second gaussian (centered at 0 + 2pi)
+    fit_function_50_80.SetParLimits(3, 0, 0.1)
+    fit_function_50_80.SetParameter(3, 0.00175)
+    fit_function_50_80.FixParameter(4, 2*rt.TMath.Pi())
+    fit_function_50_80.SetParLimits(5, 0, 0.5)
+    fit_function_50_80.SetParameter(5, 0.8)
+
+    # setting parameters for third gaussian (centered at pi)
+    fit_function_50_80.SetParLimits(6, 0, 0.1)
+    fit_function_50_80.SetParameter(6, 0.003)
+    fit_function_50_80.FixParameter(7, rt.TMath.Pi())
+    fit_function_50_80.SetParLimits(8, 0, 2)
+    fit_function_50_80.SetParameter(8, 1)
+
+    # setting parameters for fourth gaussian (centered at pi + 2pi)
+    fit_function_50_80.SetParLimits(9, 0, 0.1)
+    fit_function_50_80.SetParameter(9, 0.1)
+    fit_function_50_80.FixParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
+    fit_function_50_80.SetParLimits(11, 0, 2)
+    fit_function_50_80.SetParameter(11, 0.5)
+
+    # setting parameters for constant background
+    ue_avg_50_80 = (h_lambda_dphi_subtracted_50_80.GetBinContent(1) 
+                + h_lambda_dphi_subtracted_50_80.GetBinContent(2)
+                + h_lambda_dphi_subtracted_50_80.GetBinContent(7)
+                + h_lambda_dphi_subtracted_50_80.GetBinContent(8)
+                + h_lambda_dphi_subtracted_50_80.GetBinContent(9)
+                + h_lambda_dphi_subtracted_50_80.GetBinContent(16))/6
+
+    ue_avg_error_50_80 = (1/6)*(math.sqrt(h_lambda_dphi_subtracted_50_80.GetBinError(1)**2 
+                   + h_lambda_dphi_subtracted_50_80.GetBinError(2)**2
+                   + h_lambda_dphi_subtracted_50_80.GetBinError(7)**2
+                   + h_lambda_dphi_subtracted_50_80.GetBinError(8)**2
+                   + h_lambda_dphi_subtracted_50_80.GetBinError(9)**2
+                   + h_lambda_dphi_subtracted_50_80.GetBinError(16)**2))
+
+    fit_function_50_80.SetParameter(12, ue_avg_50_80)
+
+
+    h_lambda_dphi_subtracted_with_fit_50_80 = h_lambda_dphi_subtracted_50_80.Clone("h_lambda_dphi_subtracted_with_fit_50_80")
+    h_lambda_dphi_subtracted_with_fit_50_80.Fit(fit_function_50_80, "R")
+    ue_avg_fit_50_80 = rt.TF1("ue_avg_fit_50_80", "pol0", -2, 6)
+    ue_avg_fit_50_80.SetParameter(0, ue_avg_50_80)
+    ue_avg_fit_50_80.SetParError(0, ue_avg_error_50_80)
 else:
     raise NotImplementedError("UE line mode not supported")
 
 
-h_lambda_dphi_subtracted_50_80_zeroed = h_lambda_dphi_subtracted_50_80.Clone("h_lambda_dphi_subtracted_50_80_zeroed")
-h_lambda_dphi_subtracted_50_80_zeroed.Add(ue_line_50_80, -1)
 
+if USE_FIT:
+    h_lambda_dphi_subtracted_50_80_zeroed = h_lambda_dphi_subtracted_50_80.Clone("h_lambda_dphi_subtracted_50_80_zeroed")
+    h_lambda_dphi_subtracted_50_80_zeroed.Add(ue_avg_fit_50_80, -1)
 
-DPHI_BINS = h_lambda_dphi_subtracted_50_80.GetNbinsX()
+    h_lambda_total_integral_50_80 = fit_function_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_total_integral_error_50_80 = 0
 
-h_lambda_total_integral_50_80 = 0
-h_lambda_near_integral_50_80 = 0
-h_lambda_away_integral_50_80 = 0
-h_lambda_ue_integral_50_80 = ue_avg_50_80*DPHI_BINS
+    h_lambda_near_integral_50_80 = fit_function_50_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2) - ue_avg_fit_50_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)
+    h_lambda_near_integral_error_50_80 = 0
 
-h_lambda_total_integral_error_50_80 = 0
-h_lambda_near_integral_error_50_80 = 0
-h_lambda_away_integral_error_50_80 = 0
-h_lambda_ue_integral_error_50_80 = ue_avg_error_50_80*DPHI_BINS
+    h_lambda_away_integral_50_80 = fit_function_50_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2) - ue_avg_fit_50_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_away_integral_error_50_80 = 0
 
-for bin_num in range(1, DPHI_BINS + 1):
-    h_lambda_total_integral_50_80 += h_lambda_dphi_subtracted_50_80.GetBinContent(bin_num)
-    h_lambda_total_integral_error_50_80 += h_lambda_dphi_subtracted_50_80.GetBinError(bin_num)**2
-    part = h_lambda_dphi_subtracted_50_80.GetBinContent(bin_num) - ue_avg_50_80
-    if part < 0:
-        continue
-    if bin_num < 9:
-        h_lambda_near_integral_50_80 += part
-        h_lambda_near_integral_error_50_80 += h_lambda_dphi_subtracted_50_80.GetBinError(bin_num)**2
-        h_lambda_near_integral_error_50_80 += ue_avg_error_50_80**2
-    else:
-        h_lambda_away_integral_50_80 += part
-        h_lambda_away_integral_error_50_80 += h_lambda_dphi_subtracted_50_80.GetBinError(bin_num)**2
-        h_lambda_away_integral_error_50_80 += ue_avg_error_50_80**2
+    h_lambda_ue_integral_50_80 = ue_avg_fit_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_ue_integral_error_50_80 = 0
+else: 
+    h_lambda_dphi_subtracted_50_80_zeroed = h_lambda_dphi_subtracted_50_80.Clone("h_lambda_dphi_subtracted_50_80_zeroed")
+    h_lambda_dphi_subtracted_50_80_zeroed.Add(ue_line_50_80, -1)
 
-h_lambda_total_integral_error_50_80 = math.sqrt(h_lambda_total_integral_error_50_80)
-h_lambda_near_integral_error_50_80 = math.sqrt(h_lambda_near_integral_error_50_80)
-h_lambda_away_integral_error_50_80 = math.sqrt(h_lambda_away_integral_error_50_80)
+    DPHI_BINS = h_lambda_dphi_subtracted_50_80.GetNbinsX()
+
+    h_lambda_total_integral_50_80 = 0
+    h_lambda_near_integral_50_80 = 0
+    h_lambda_away_integral_50_80 = 0
+    h_lambda_ue_integral_50_80 = ue_avg_50_80*DPHI_BINS
+
+    h_lambda_total_integral_error_50_80 = 0
+    h_lambda_near_integral_error_50_80 = 0
+    h_lambda_away_integral_error_50_80 = 0
+    h_lambda_ue_integral_error_50_80 = ue_avg_error_50_80*DPHI_BINS
+
+    for bin_num in range(1, DPHI_BINS + 1):
+        h_lambda_total_integral_50_80 += h_lambda_dphi_subtracted_50_80.GetBinContent(bin_num)
+        h_lambda_total_integral_error_50_80 += h_lambda_dphi_subtracted_50_80.GetBinError(bin_num)**2
+        part = h_lambda_dphi_subtracted_50_80.GetBinContent(bin_num) - ue_avg_50_80
+        if part < 0 and USE_AVG_6_NONNEGATIVE:
+            part = 0
+        if bin_num < 9:
+            h_lambda_near_integral_50_80 += part
+            h_lambda_near_integral_error_50_80 += h_lambda_dphi_subtracted_50_80.GetBinError(bin_num)**2
+            h_lambda_near_integral_error_50_80 += ue_avg_error_50_80**2
+        else:
+            h_lambda_away_integral_50_80 += part
+            h_lambda_away_integral_error_50_80 += h_lambda_dphi_subtracted_50_80.GetBinError(bin_num)**2
+            h_lambda_away_integral_error_50_80 += ue_avg_error_50_80**2
+
+    h_lambda_total_integral_error_50_80 = math.sqrt(h_lambda_total_integral_error_50_80)
+    h_lambda_near_integral_error_50_80 = math.sqrt(h_lambda_near_integral_error_50_80)
+    h_lambda_away_integral_error_50_80 = math.sqrt(h_lambda_away_integral_error_50_80)
+
 
 h_h_dphi_50_80 = h_h_2d_mixcor_50_80.ProjectionY("h_h_dphi_50_80")
 
@@ -1242,7 +1606,7 @@ if USE_AVG_4:
     hh_zero_upper_line_50_80.SetParameter(0, hh_ue_avg_error_50_80)
     hh_zero_lower_line_50_80.SetParameter(0, -hh_ue_avg_error_50_80)
 
-elif USE_AVG_6:
+elif USE_AVG_6 or USE_AVG_6_NONNEGATIVE:
     hh_ue_line_50_80 = rt.TF1("hh_ue_line_50_80", "pol0", -2, 6)
     hh_ue_upper_line_50_80 = rt.TF1("hh_ue_upper_line_50_80", "pol0", -2, 6)
     hh_ue_lower_line_50_80 = rt.TF1("hh_ue_lower_line_50_80", "pol0", -2, 6)
@@ -1271,6 +1635,7 @@ elif USE_AVG_6:
     hh_zero_line_50_80.SetParameter(0, 0)
     hh_zero_upper_line_50_80.SetParameter(0, hh_ue_avg_error_50_80)
     hh_zero_lower_line_50_80.SetParameter(0, -hh_ue_avg_error_50_80)
+
 elif USE_ZYAM:
     hh_ue_line_50_80 = rt.TF1("hh_ue_line_50_80", "pol0", -2, 6)
     hh_ue_upper_line_50_80 = rt.TF1("hh_ue_upper_line_50_80", "pol0", -2, 6)
@@ -1290,39 +1655,104 @@ elif USE_ZYAM:
     hh_zero_line_50_80.SetParameter(0, 0)
     hh_zero_upper_line_50_80.SetParameter(0, hh_ue_avg_error_50_80)
     hh_zero_lower_line_50_80.SetParameter(0, -hh_ue_avg_error_50_80)
+elif USE_FIT:
+    # fitting to four gaussians + a constant background
+    hh_fit_function_50_80 = rt.TF1("hh_fit_function_50_80", "gaus(0) + gaus(3) + gaus(6) + gaus(9) + pol0(12)", -2, 6)
+    hh_fit_function_50_80.SetNpx(1000)
+
+    # setting parameters for first gaussian (centered at 0)
+    hh_fit_function_50_80.SetParameter(0, 0.003)
+    hh_fit_function_50_80.FixParameter(1, 0)
+    hh_fit_function_50_80.SetParameter(2, 0.8)
+
+    # setting parameters for second gaussian (centered at 0 + 2pi)
+    hh_fit_function_50_80.SetParameter(3, 0.003)
+    hh_fit_function_50_80.SetParameter(4, 2*rt.TMath.Pi())
+    hh_fit_function_50_80.SetParameter(5, 0.8)
+
+    # setting parameters for third gaussian (centered at pi)
+    hh_fit_function_50_80.SetParameter(6, 0.003)
+    hh_fit_function_50_80.FixParameter(7, rt.TMath.Pi())
+    hh_fit_function_50_80.SetParameter(8, 1)
+
+    # setting parameters for fourth gaussian (centered at pi + 2pi)
+    hh_fit_function_50_80.SetParameter(9, 0.003)
+    hh_fit_function_50_80.SetParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
+    hh_fit_function_50_80.SetParameter(11, 1)
+
+    # setting parameters for constant background
+    hh_ue_avg_50_80 = (h_h_dphi_50_80.GetBinContent(1) 
+                + h_h_dphi_50_80.GetBinContent(2)
+                + h_h_dphi_50_80.GetBinContent(7)
+                + h_h_dphi_50_80.GetBinContent(8)
+                + h_h_dphi_50_80.GetBinContent(9)
+                + h_h_dphi_50_80.GetBinContent(16))/6
+
+    hh_ue_avg_error_50_80 = (1/6)*(math.sqrt(h_h_dphi_50_80.GetBinError(1)**2 
+                   + h_h_dphi_50_80.GetBinError(2)**2
+                   + h_h_dphi_50_80.GetBinError(7)**2
+                   + h_h_dphi_50_80.GetBinError(8)**2
+                   + h_h_dphi_50_80.GetBinError(9)**2
+                   + h_h_dphi_50_80.GetBinError(16)**2))
+
+    hh_fit_function_50_80.SetParameter(12, hh_ue_avg_50_80)
+
+
+    h_h_dphi_with_fit_50_80 = h_h_dphi_50_80.Clone("h_h_dphi_with_fit_50_80")
+    h_h_dphi_with_fit_50_80.Fit(hh_fit_function_50_80, "R")
+    hh_ue_avg_fit_50_80 = rt.TF1("hh_ue_avg_fit_50_80", "pol0", -2, 6)
+    hh_ue_avg_fit_50_80.SetParameter(0, hh_ue_avg_50_80)
+    hh_ue_avg_fit_50_80.SetParError(0, hh_ue_avg_error_50_80)
 else:
     raise NotImplementedError("UE line mode not supported")
 
-h_h_dphi_50_80_zeroed = h_h_dphi_50_80.Clone("h_h_dphi_50_80_zeroed")
-h_h_dphi_50_80_zeroed.Add(hh_ue_line_50_80, -1)
+if USE_FIT:
+    h_h_dphi_50_80_zeroed = h_h_dphi_50_80.Clone("h_h_dphi_50_80_zeroed")
+    h_h_dphi_50_80_zeroed.Add(hh_ue_avg_fit_50_80, -1)
 
-h_h_total_integral_50_80 = 0
-h_h_near_integral_50_80 = 0
-h_h_away_integral_50_80 = 0
-h_h_ue_integral_50_80 = hh_ue_avg_50_80*DPHI_BINS
+    h_h_total_integral_50_80 = hh_fit_function_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_total_integral_error_50_80 = 0
 
-h_h_total_integral_error_50_80 = 0
-h_h_near_integral_error_50_80 = 0
-h_h_away_integral_error_50_80 = 0
-h_h_ue_integral_error_50_80 = hh_ue_avg_error_50_80*DPHI_BINS
+    h_h_near_integral_50_80 = hh_fit_function_50_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2) - hh_ue_avg_fit_50_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)
+    h_h_near_integral_error_50_80 = 0
 
-for bin_num in range(1, DPHI_BINS + 1):
-    h_h_total_integral_50_80 += h_h_dphi_50_80.GetBinContent(bin_num)
-    h_h_total_integral_error_50_80 += h_h_dphi_50_80.GetBinError(bin_num)**2
-    part = h_h_dphi_50_80.GetBinContent(bin_num) - hh_ue_avg_50_80
-    if part < 0:
-        continue
-    if bin_num < 9:
-        h_h_near_integral_50_80 += part
-        h_h_near_integral_error_50_80 += h_h_dphi_50_80.GetBinError(bin_num)**2
-        h_h_near_integral_error_50_80 += hh_ue_avg_error_50_80**2
-    else:
-        h_h_away_integral_50_80 += part
-        h_h_away_integral_error_50_80 += h_h_dphi_50_80.GetBinError(bin_num)**2
-        h_h_away_integral_error_50_80 += hh_ue_avg_error_50_80**2
-h_h_total_integral_error_50_80 = math.sqrt(h_h_total_integral_error_50_80)
-h_h_near_integral_error_50_80 = math.sqrt(h_h_near_integral_error_50_80)
-h_h_away_integral_error_50_80 = math.sqrt(h_h_away_integral_error_50_80)
+    h_h_away_integral_50_80 = hh_fit_function_50_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2) - hh_ue_avg_fit_50_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_away_integral_error_50_80 = 0
+
+    h_h_ue_integral_50_80 = hh_ue_avg_fit_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_ue_integral_error_50_80 = 0
+else:
+
+    h_h_dphi_50_80_zeroed = h_h_dphi_50_80.Clone("h_h_dphi_50_80_zeroed")
+    h_h_dphi_50_80_zeroed.Add(hh_ue_line_50_80, -1)
+
+    h_h_total_integral_50_80 = 0
+    h_h_near_integral_50_80 = 0
+    h_h_away_integral_50_80 = 0
+    h_h_ue_integral_50_80 = hh_ue_avg_50_80*DPHI_BINS
+
+    h_h_total_integral_error_50_80 = 0
+    h_h_near_integral_error_50_80 = 0
+    h_h_away_integral_error_50_80 = 0
+    h_h_ue_integral_error_50_80 = hh_ue_avg_error_50_80*DPHI_BINS
+
+    for bin_num in range(1, DPHI_BINS + 1):
+        h_h_total_integral_50_80 += h_h_dphi_50_80.GetBinContent(bin_num)
+        h_h_total_integral_error_50_80 += h_h_dphi_50_80.GetBinError(bin_num)**2
+        part = h_h_dphi_50_80.GetBinContent(bin_num) - hh_ue_avg_50_80
+        if part < 0 and USE_AVG_6_NONNEGATIVE:
+            part = 0
+        if bin_num < 9:
+            h_h_near_integral_50_80 += part
+            h_h_near_integral_error_50_80 += h_h_dphi_50_80.GetBinError(bin_num)**2
+            h_h_near_integral_error_50_80 += hh_ue_avg_error_50_80**2
+        else:
+            h_h_away_integral_50_80 += part
+            h_h_away_integral_error_50_80 += h_h_dphi_50_80.GetBinError(bin_num)**2
+            h_h_away_integral_error_50_80 += hh_ue_avg_error_50_80**2
+    h_h_total_integral_error_50_80 = math.sqrt(h_h_total_integral_error_50_80)
+    h_h_near_integral_error_50_80 = math.sqrt(h_h_near_integral_error_50_80)
+    h_h_away_integral_error_50_80 = math.sqrt(h_h_away_integral_error_50_80)
 
 output_file.cd()
 h_lambda_2d_subtracted_50_80.Write()
@@ -1332,19 +1762,28 @@ h_lambda_dphi_subtracted_50_80_zeroed.Write()
 h_h_dphi_50_80.Write()
 h_h_dphi_50_80_zeroed.Write()
 
-ue_upper_line_50_80.Write()
-ue_line_50_80.Write()
-ue_lower_line_50_80.Write()
-zero_upper_line_50_80.Write()
-zero_line_50_80.Write()
-zero_lower_line_50_80.Write()
 
-hh_ue_upper_line_50_80.Write()
-hh_ue_line_50_80.Write()
-hh_ue_lower_line_50_80.Write()
-hh_zero_upper_line_50_80.Write()
-hh_zero_line_50_80.Write()
-hh_zero_lower_line_50_80.Write()
+if USE_FIT:
+    fit_function_50_80.Write()
+    ue_avg_fit_50_80.Write()
+    hh_fit_function_50_80.Write()
+    hh_ue_avg_fit_50_80.Write()
+    h_lambda_dphi_subtracted_with_fit_50_80.Write()
+    h_h_dphi_with_fit_50_80.Write()
+else:
+    ue_upper_line_50_80.Write()
+    ue_line_50_80.Write()
+    ue_lower_line_50_80.Write()
+    zero_upper_line_50_80.Write()
+    zero_line_50_80.Write()
+    zero_lower_line_50_80.Write()
+    hh_ue_upper_line_50_80.Write()
+    hh_ue_line_50_80.Write()
+    hh_ue_lower_line_50_80.Write()
+    hh_zero_upper_line_50_80.Write()
+    hh_zero_line_50_80.Write()
+    hh_zero_lower_line_50_80.Write()
+
 
 near_ratio_50_80 = h_lambda_near_integral_50_80/h_h_near_integral_50_80
 away_ratio_50_80 = h_lambda_away_integral_50_80/h_h_away_integral_50_80
