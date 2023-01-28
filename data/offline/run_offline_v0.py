@@ -29,8 +29,9 @@ USE_AVG_6_NONNEGATIVE = config.getboolean("GENERAL", "USE_AVG_6_NONNEGATIVE")
 USE_ZYAM = config.getboolean("GENERAL", "USE_ZYAM")
 USE_FIT = config.getboolean("GENERAL", "USE_FIT")
 USE_V2 = config.getboolean("GENERAL", "USE_V2")
+USE_VON = config.getboolean("GENERAL", "USE_VON")
 
-assert sum([USE_AVG_4, USE_AVG_6, USE_AVG_6_NONNEGATIVE, USE_ZYAM, USE_FIT, USE_V2]) == 1, "Only select 1 method for UE line please"
+assert sum([USE_AVG_4, USE_AVG_6, USE_AVG_6_NONNEGATIVE, USE_ZYAM, USE_FIT, USE_V2, USE_VON]) == 1, "Only select 1 method for UE line please"
 
 # ETA CUTS 
 ETA_MIN = config.getfloat("ETA_CUTS", "ETA_MIN")
@@ -83,6 +84,7 @@ output_file_string += "assoc_" + str(ASSOC_PT_LOW).replace(".", "") + "_" + str(
 output_file_string += "delta_eta_" + str(DELTA_ETA_MAX + EPSILON).replace(".", "") + ".root"
 
 output_file = rt.TFile(output_file_string, "RECREATE")
+# output_file = rt.TFile("test1.root", "RECREATE")
 
 
 ############################################################################################################
@@ -93,6 +95,7 @@ output_file = rt.TFile(output_file_string, "RECREATE")
 
 
 input_file_0_20 = rt.TFile("~/OneDrive/Research/Output/lambda-over-hadron/data/v0_cent_0_20_fullstat.root")
+# input_file_0_20 = rt.TFile("AnalysisResults_0_20.root")
 input_list_0_20 = input_file_0_20.Get("h-lambda")
 input_file_0_20.Close()
 
@@ -386,6 +389,24 @@ elif USE_V2:
                    + h_lambda_dphi_subtracted_0_20.GetBinContent(16))/6
 
     v2_fit_0_20 = rt.TF1("v2_fit_0_20", "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))", -2, 6)
+
+    v2_fit_0_20.SetParameter(0, ue_avg_0_20)
+    v2_fit_0_20.SetParameter(1, TRIGGER_V2_0_20)
+    v2_fit_0_20.SetParameter(2, LAMBDA_V2_0_20)
+elif USE_VON:
+    ue_avg_0_20 = (h_lambda_dphi_subtracted_0_20.GetBinContent(1) 
+                   + h_lambda_dphi_subtracted_0_20.GetBinContent(2)
+                   + h_lambda_dphi_subtracted_0_20.GetBinContent(7)
+                   + h_lambda_dphi_subtracted_0_20.GetBinContent(8)
+                   + h_lambda_dphi_subtracted_0_20.GetBinContent(9)
+                   + h_lambda_dphi_subtracted_0_20.GetBinContent(16))/6
+
+    v2_fit_0_20 = rt.TF1("v2_fit_0_20", "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))", -2, 6)
+    von_fit_string = "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))"
+    von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x- - [1]))"
+    von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()-[4]))"
+
+    "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x))) + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x- 2*TMath::Pi() - [1])) + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- 2*TMath::Pi()-[4]))"
 
     v2_fit_0_20.SetParameter(0, ue_avg_0_20)
     v2_fit_0_20.SetParameter(1, TRIGGER_V2_0_20)
