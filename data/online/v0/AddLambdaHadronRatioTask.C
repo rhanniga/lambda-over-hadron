@@ -4,6 +4,10 @@ AliAnalysisTaskLambdaHadronRatio* AddLambdaHadronRatioTask(
   float multHigh = 80,
   float trigBit = 1048576,
   float assocBit = 1024,
+  float nSigmaTPC_proton = 2,
+  float nSigmaTOF_proton = 2,
+  float nSigmaTPC_pion = 3,
+  float nSigmaTOF_pion = 3,
   TString effFilePath = "eff_out.root",
   TString centEstimator = "V0A"
   ) {
@@ -28,6 +32,7 @@ AliAnalysisTaskLambdaHadronRatio* AddLambdaHadronRatioTask(
   task->SetMultBounds(multLow, multHigh);
   task->SetTriggerBit(trigBit);
   task->SetAssociatedBit(assocBit);
+  task->SetPIDCuts(nSigmaTPC_proton, nSigmaTOF_proton, nSigmaTPC_pion, nSigmaTOF_pion);
   task->LoadEfficiencies(effFilePath);
   task->SetCentEstimator(centEstimator);
 

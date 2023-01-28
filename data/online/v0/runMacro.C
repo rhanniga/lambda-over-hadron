@@ -8,16 +8,25 @@
 void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
   float MULT_LOW = 0;
-  float MULT_HIGH = 80;
+  float MULT_HIGH = 20;
 
   float TRIG_BIT = AliAODTrack::kIsHybridGCG;
   float ASSOC_BIT =  1024; 
+
+  float NSIGMA_TPC_PROTON = 1.4*2;
+  float NSIGMA_TOF_PROTON = 1.4*2;
+
+  float NSIGMA_TPC_PION = 1.4*3;
+  float NSIGMA_TOF_PION = 1.4*3;
+
+
   char *EFF_FILE_PATH = "eff_out.root";
   char *CENT_ESTIMATOR = "V0A";
 
   //Starting and ending index of the array containing the run numbers, specifies which range to run over
   int startIndex = 0; 
-  int endIndex = 10;
+  /* int endIndex = 0; */
+  int endIndex = 17;
 
   /* int startIndex = 18; */
   /* int endIndex = 28; */
@@ -26,7 +35,8 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   // int endIndex = 28;
 
   TString work_dir = "lambda_hadron_ratio_v0";
-  TString output_dir = "cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_PID_plots_v3";
+  /* TString work_dir = "test"; */
+  TString output_dir = "cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_pid_cuts_wide_wide";
   
   //If we want to download test files from grid then run in one swoop (usually just run completely locally):
   bool gridTest = false;
@@ -54,12 +64,16 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
   // Generating task object
   gInterpreter->LoadMacro("AliAnalysisTaskLambdaHadronRatio.cxx++g");
-  AliAnalysisTaskLambdaHadronRatio *task = reinterpret_cast<AliAnalysisTaskLambdaHadronRatio*>(gInterpreter->ProcessLine(Form(".x AddLambdaHadronRatioTask.C(\"%s\", %f, %f, %f, %f, \"%s\", \"%s\")",
+  AliAnalysisTaskLambdaHadronRatio *task = reinterpret_cast<AliAnalysisTaskLambdaHadronRatio*>(gInterpreter->ProcessLine(Form(".x AddLambdaHadronRatioTask.C(\"%s\", %f, %f, %f, %f, %f, %f, %f, %f, \"%s\", \"%s\")",
   "lambdaHadronRatio",
   MULT_LOW,
   MULT_HIGH,
   TRIG_BIT,
   ASSOC_BIT,
+  NSIGMA_TPC_PROTON,
+  NSIGMA_TOF_PROTON,
+  NSIGMA_TPC_PION,
+  NSIGMA_TOF_PION,
   EFF_FILE_PATH,
   CENT_ESTIMATOR)));
 
@@ -70,56 +84,58 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
   if(local) {
     TChain *chain = new TChain("aodTree");
+
     chain->Add("~/Wonderland/native/data/265525_0001.root");  
     chain->Add("~/Wonderland/native/data/265525_0007.root");
-    chain->Add("~/Wonderland/native/data/265525_0012.root");
-    chain->Add("~/Wonderland/native/data/265525_0018.root");
-    chain->Add("~/Wonderland/native/data/265525_0024.root");
-    chain->Add("~/Wonderland/native/data/265525_0030.root");
-    chain->Add("~/Wonderland/native/data/265525_0036.root");
-    chain->Add("~/Wonderland/native/data/265525_0042.root");
-    chain->Add("~/Wonderland/native/data/265525_0048.root");
-    chain->Add("~/Wonderland/native/data/265525_0002.root");
-    chain->Add("~/Wonderland/native/data/265525_0008.root");
-    chain->Add("~/Wonderland/native/data/265525_0013.root");
-    chain->Add("~/Wonderland/native/data/265525_0019.root");
-    chain->Add("~/Wonderland/native/data/265525_0025.root");
-    chain->Add("~/Wonderland/native/data/265525_0031.root");
-    chain->Add("~/Wonderland/native/data/265525_0037.root");
-    chain->Add("~/Wonderland/native/data/265525_0049.root");
-    chain->Add("~/Wonderland/native/data/265525_0003.root");
-    chain->Add("~/Wonderland/native/data/265525_0009.root");
-    chain->Add("~/Wonderland/native/data/265525_0014.root");
-    chain->Add("~/Wonderland/native/data/265525_0020.root");
-    chain->Add("~/Wonderland/native/data/265525_0026.root");
-    chain->Add("~/Wonderland/native/data/265525_0032.root");
-    chain->Add("~/Wonderland/native/data/265525_0038.root");
-    chain->Add("~/Wonderland/native/data/265525_0044.root");
-    chain->Add("~/Wonderland/native/data/265525_0050.root");
-    chain->Add("~/Wonderland/native/data/265525_0004.root");
-    chain->Add("~/Wonderland/native/data/265525_000.root ");
-    chain->Add("~/Wonderland/native/data/265525_0015.root");
-    chain->Add("~/Wonderland/native/data/265525_0021.root");
-    chain->Add("~/Wonderland/native/data/265525_0027.root");
-    chain->Add("~/Wonderland/native/data/265525_0033.root");
-    chain->Add("~/Wonderland/native/data/265525_0039.root");
-    chain->Add("~/Wonderland/native/data/265525_0045.root");
-    chain->Add("~/Wonderland/native/data/265525_0005.root");
-    chain->Add("~/Wonderland/native/data/265525_0010.root");
-    chain->Add("~/Wonderland/native/data/265525_0016.root");
-    chain->Add("~/Wonderland/native/data/265525_0022.root");
-    chain->Add("~/Wonderland/native/data/265525_0028.root");
-    chain->Add("~/Wonderland/native/data/265525_0034.root");
-    chain->Add("~/Wonderland/native/data/265525_0040.root");
-    chain->Add("~/Wonderland/native/data/265525_0046.root");
-    chain->Add("~/Wonderland/native/data/265525_0006.root");
-    chain->Add("~/Wonderland/native/data/265525_0011.root");
-    chain->Add("~/Wonderland/native/data/265525_0017.root");
-    chain->Add("~/Wonderland/native/data/265525_0023.root");
-    chain->Add("~/Wonderland/native/data/265525_0029.root");
-    chain->Add("~/Wonderland/native/data/265525_0035.root");
-    chain->Add("~/Wonderland/native/data/265525_0041.root");
-    chain->Add("~/Wonderland/native/data/265525_0047.root");
+    // chain->Add("~/Wonderland/native/data/265525_0012.root");
+    // chain->Add("~/Wonderland/native/data/265525_0018.root");
+    // chain->Add("~/Wonderland/native/data/265525_0024.root");
+    // chain->Add("~/Wonderland/native/data/265525_0030.root");
+    // chain->Add("~/Wonderland/native/data/265525_0036.root");
+    // chain->Add("~/Wonderland/native/data/265525_0042.root");
+    // chain->Add("~/Wonderland/native/data/265525_0048.root");
+    // chain->Add("~/Wonderland/native/data/265525_0002.root");
+    // chain->Add("~/Wonderland/native/data/265525_0008.root");
+    // chain->Add("~/Wonderland/native/data/265525_0013.root");
+    // chain->Add("~/Wonderland/native/data/265525_0019.root");
+    // chain->Add("~/Wonderland/native/data/265525_0025.root");
+    // chain->Add("~/Wonderland/native/data/265525_0031.root");
+    // chain->Add("~/Wonderland/native/data/265525_0037.root");
+    // chain->Add("~/Wonderland/native/data/265525_0049.root");
+    // chain->Add("~/Wonderland/native/data/265525_0003.root");
+    // chain->Add("~/Wonderland/native/data/265525_0009.root");
+    // chain->Add("~/Wonderland/native/data/265525_0014.root");
+    // chain->Add("~/Wonderland/native/data/265525_0020.root");
+    // chain->Add("~/Wonderland/native/data/265525_0026.root");
+    // chain->Add("~/Wonderland/native/data/265525_0032.root");
+    // chain->Add("~/Wonderland/native/data/265525_0038.root");
+    // chain->Add("~/Wonderland/native/data/265525_0044.root");
+    // chain->Add("~/Wonderland/native/data/265525_0050.root");
+    // chain->Add("~/Wonderland/native/data/265525_0004.root");
+    // chain->Add("~/Wonderland/native/data/265525_000.root ");
+    // chain->Add("~/Wonderland/native/data/265525_0015.root");
+    // chain->Add("~/Wonderland/native/data/265525_0021.root");
+    // chain->Add("~/Wonderland/native/data/265525_0027.root");
+    // chain->Add("~/Wonderland/native/data/265525_0033.root");
+    // chain->Add("~/Wonderland/native/data/265525_0039.root");
+    // chain->Add("~/Wonderland/native/data/265525_0045.root");
+    // chain->Add("~/Wonderland/native/data/265525_0005.root");
+    // chain->Add("~/Wonderland/native/data/265525_0010.root");
+    // chain->Add("~/Wonderland/native/data/265525_0016.root");
+    // chain->Add("~/Wonderland/native/data/265525_0022.root");
+    // chain->Add("~/Wonderland/native/data/265525_0028.root");
+    // chain->Add("~/Wonderland/native/data/265525_0034.root");
+    // chain->Add("~/Wonderland/native/data/265525_0040.root");
+    // chain->Add("~/Wonderland/native/data/265525_0046.root");
+    // chain->Add("~/Wonderland/native/data/265525_0006.root");
+    // chain->Add("~/Wonderland/native/data/265525_0011.root");
+    // chain->Add("~/Wonderland/native/data/265525_0017.root");
+    // chain->Add("~/Wonderland/native/data/265525_0023.root");
+    // chain->Add("~/Wonderland/native/data/265525_0029.root");
+    // chain->Add("~/Wonderland/native/data/265525_0035.root");
+    // chain->Add("~/Wonderland/native/data/265525_0041.root");
+    // chain->Add("~/Wonderland/native/data/265525_0047.root");
+
     manage->StartAnalysis("local", chain);
   }
 

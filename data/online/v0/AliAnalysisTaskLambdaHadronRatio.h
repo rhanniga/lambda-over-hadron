@@ -46,6 +46,7 @@ public:
   void SetTriggerBit(float trigBit);
   void SetAssociatedBit(float assocBit);
   void SetCentEstimator(TString estimator);
+  void SetPIDCuts(float nSigmaTPC_proton, float nSigmaTOF_proton, float nSigmaTPC_pion, float nSigmaTOF_pion);
 
   struct AliMotherContainer {
     AliAODv0* vzero;
@@ -59,6 +60,10 @@ private:
   float fDaughterBit; // filter bit for daughter particle
   float fAssociatedBit; // filter bit for associated particle
   float fTriggerBit; // filter bit for trigger particle
+  float fTPCnSigmaProtonCut; // TPC n sigma cut for protons
+  float fTOFnSigmaProtonCut; // TOF n sigma cut for protons (veto)
+  float fTPCnSigmaPionCut; // TPC n sigma cut for pions
+  float fTOFnSigmaPionCut; // TOF n sigma cut for pions (veto)
 
   TString fCentEstimator;
 

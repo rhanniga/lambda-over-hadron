@@ -81,7 +81,11 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     fMultHigh(0.0),
     fDaughterBit(0.0),
     fAssociatedBit(0.0),
-    fTriggerBit(0.0)
+    fTriggerBit(0.0),
+    fTPCnSigmaProtonCut(0.0),
+    fTOFnSigmaProtonCut(0.0),
+    fTPCnSigmaPionCut(0.0),
+    fTOFnSigmaPionCut(0.0)
 {
 }
 
@@ -120,8 +124,11 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     fMultHigh(0.0),
     fDaughterBit(0.0),
     fAssociatedBit(0.0),
-    fTriggerBit(0.0)
-
+    fTriggerBit(0.0),
+    fTPCnSigmaProtonCut(0.0),
+    fTOFnSigmaProtonCut(0.0),
+    fTPCnSigmaPionCut(0.0),
+    fTOFnSigmaPionCut(0.0)
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -325,6 +332,13 @@ void AliAnalysisTaskLambdaHadronRatio::SetAssociatedBit(float associatedBit) {
 
 void AliAnalysisTaskLambdaHadronRatio::SetCentEstimator(TString centEstimator) {
     fCentEstimator = centEstimator;
+}
+
+void AliAnalysisTaskLambdaHadronRatio::SetPIDCuts(float nSigmaTPC_proton, float nSigmaTOF_proton, float nSigmaTPC_pion, float nSigmaTOF_pion) {
+    fTPCnSigmaProtonCut = nSigmaTPC_proton;
+    fTOFnSigmaProtonCut = nSigmaTOF_proton;
+    fTPCnSigmaPionCut = nSigmaTPC_pion;
+    fTOFnSigmaPionCut = nSigmaTOF_pion;
 }
 
 void AliAnalysisTaskLambdaHadronRatio::LoadEfficiencies(TString filePath) {
@@ -716,31 +730,23 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
         pos_TPCNSigmaPion = fpidResponse->NumberOfSigmasTPC(posTrack, AliPID::kPion);
         pos_TOFNSigmaPion = fpidResponse->NumberOfSigmasTOF(posTrack, AliPID::kPion);
 
-        fTPCnSigmaProton->Fill(posTrack->Pt(), pos_TPCNSigmaProton);
-        fTPCnSigmaPion->Fill(negTrack->Pt(), neg_TPCNSigmaPion);
-        fTPCnSigmaProton->Fill(negTrack->Pt(), neg_TPCNSigmaProton);
-        fTPCnSigmaPion->Fill(posTrack->Pt(), pos_TPCNSigmaPion);
-
-        fTOFnSigmaProton->Fill(posTrack->Pt(), pos_TOFNSigmaProton);
-        fTOFnSigmaPion->Fill(negTrack->Pt(), neg_TOFNSigmaPion);
-        fTOFnSigmaProton->Fill(negTrack->Pt(), neg_TOFNSigmaProton);
-        fTOFnSigmaPion->Fill(posTrack->Pt(), pos_TOFNSigmaPion);
-
-        fTOFvTPCnSigmaProton ->Fill(neg_TPCNSigmaProton, neg_TOFNSigmaProton);
-        fTOFvTPCnSigmaProton ->Fill(pos_TPCNSigmaProton, pos_TOFNSigmaProton);
-
-        fTOFvTPCnSigmaPion ->Fill(neg_TPCNSigmaPion, neg_TOFNSigmaPion);
-        fTOFvTPCnSigmaPion ->Fill(pos_TPCNSigmaPion, pos_TOFNSigmaPion);
 
 
-        bool isNegTrackPion = TMath::Abs(neg_TPCNSigmaPion) <= 3 && (TMath::Abs(neg_TOFNSigmaPion) <= 3 || neg_TOFNSigmaPion == -999);
-        bool isPosTrackProton = TMath::Abs(pos_TPCNSigmaProton) <= 2 && (TMath::Abs(pos_TOFNSigmaProton) <= 2 || pos_TOFNSigmaProton == -999);
 
-        bool isPosTrackPion = TMath::Abs(pos_TPCNSigmaPion) <= 3 && (TMath::Abs(pos_TOFNSigmaPion) <= 3 || pos_TOFNSigmaPion == -999);
-        bool isNegTrackProton = TMath::Abs(neg_TPCNSigmaProton) <= 2 && (TMath::Abs(neg_TOFNSigmaProton) <= 2 || neg_TOFNSigmaProton == -999);
+        bool isNegTrackPion = TMath::Abs(neg_TPCNSigmaPion) <= fTPCnSigmaPionCut && (TMath::Abs(neg_TOFNSigmaPion) <= fTOFnSigmaPionCut || neg_TOFNSigmaPion == -999);
+        bool isPosTrackProton = TMath::Abs(pos_TPCNSigmaProton) <= fTPCnSigmaProtonCut && (TMath::Abs(pos_TOFNSigmaProton) <= fTOFnSigmaProtonCut || pos_TOFNSigmaProton == -999);
+
+        bool isPosTrackPion = TMath::Abs(pos_TPCNSigmaPion) <= fTPCnSigmaPionCut && (TMath::Abs(pos_TOFNSigmaPion) <= fTOFnSigmaPionCut || pos_TOFNSigmaPion == -999);
+        bool isNegTrackProton = TMath::Abs(neg_TPCNSigmaProton) <= fTPCnSigmaProtonCut && (TMath::Abs(neg_TOFNSigmaProton) <= fTOFnSigmaProtonCut || neg_TOFNSigmaProton == -999);
 
 
         if((isNegTrackPion && isPosTrackProton)) {
+            fTOFnSigmaProton->Fill(posTrack->Pt(), pos_TOFNSigmaProton);
+            fTOFnSigmaPion->Fill(negTrack->Pt(), neg_TOFNSigmaPion);
+            fTPCnSigmaProton->Fill(posTrack->Pt(), pos_TPCNSigmaProton);
+            fTPCnSigmaPion->Fill(negTrack->Pt(), neg_TPCNSigmaPion);
+            fTOFvTPCnSigmaProton ->Fill(pos_TPCNSigmaProton, pos_TOFNSigmaProton);
+            fTOFvTPCnSigmaPion ->Fill(neg_TPCNSigmaPion, neg_TOFNSigmaPion);
             AliMotherContainer lambda;
             lambda.vzero = v0;
             lambda.daughter1ID = posTrack->GetID();
@@ -749,6 +755,12 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
         }
 
         if((isPosTrackPion && isNegTrackProton)) {
+            fTOFnSigmaProton->Fill(negTrack->Pt(), neg_TOFNSigmaProton);
+            fTOFnSigmaPion->Fill(posTrack->Pt(), pos_TOFNSigmaPion);
+            fTPCnSigmaProton->Fill(negTrack->Pt(), neg_TPCNSigmaProton);
+            fTPCnSigmaPion->Fill(posTrack->Pt(), pos_TPCNSigmaPion);
+            fTOFvTPCnSigmaPion ->Fill(pos_TPCNSigmaPion, pos_TOFNSigmaPion);
+            fTOFvTPCnSigmaProton ->Fill(neg_TPCNSigmaProton, neg_TOFNSigmaProton);
             AliMotherContainer antilambda;
             antilambda.vzero = v0;
             antilambda.daughter1ID = posTrack->GetID();
@@ -759,53 +771,53 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     }
 
 
-    // // Filling all of our single particle distribution histograms:
-    // FillSingleParticleDist(trigger_list, primZ, fTriggerDist, true);
-    // FillSingleParticleDist(trigger_list_highestPt, primZ, fTriggerDist_highestPt, true);
-    // FillSingleParticleDist(associated_h_list, primZ, fAssociatedHDist);
+    // Filling all of our single particle distribution histograms:
+    FillSingleParticleDist(trigger_list, primZ, fTriggerDist, true);
+    FillSingleParticleDist(trigger_list_highestPt, primZ, fTriggerDist_highestPt, true);
+    FillSingleParticleDist(associated_h_list, primZ, fAssociatedHDist);
 
-    // FillMotherDist(lambda_list, multPercentile, fLambdaDist, false);
-    // FillMotherDist(antilambda_list, multPercentile, fLambdaDist, true);
+    FillMotherDist(lambda_list, multPercentile, fLambdaDist, false);
+    FillMotherDist(antilambda_list, multPercentile, fLambdaDist, true);
 
-    // // Filling our single particle lambda distribution histogram:
-    // if(is_triggered_event) FillMotherDist(lambda_list, multPercentile, fTriggeredLambdaDist, false);
-    // if(is_triggered_event) FillMotherDist(antilambda_list, multPercentile, fTriggeredLambdaDist, true);
+    // Filling our single particle lambda distribution histogram:
+    if(is_triggered_event) FillMotherDist(lambda_list, multPercentile, fTriggeredLambdaDist, false);
+    if(is_triggered_event) FillMotherDist(antilambda_list, multPercentile, fTriggeredLambdaDist, true);
 
-    // MakeSameHLambdaCorrelations(trigger_list, antilambda_list, fDphiHLambda, primZ, true, true);
-    // MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambda, primZ, true, false);
+    MakeSameHLambdaCorrelations(trigger_list, antilambda_list, fDphiHLambda, primZ, true, true);
+    MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambda, primZ, true, false);
 
-    // MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHH, primZ, true);
+    MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHH, primZ, true);
 
-    // // Highest pt trigger correlations
-    // MakeSameHLambdaCorrelations(trigger_list_highestPt, antilambda_list, fDphiHLambda_highestPt, primZ, true, true);
-    // MakeSameHLambdaCorrelations(trigger_list_highestPt, lambda_list, fDphiHLambda_highestPt, primZ, true, false);
-    // MakeSameHHCorrelations(trigger_list_highestPt, associated_h_list, fDphiHH_highestPt, primZ, true);
+    // Highest pt trigger correlations
+    MakeSameHLambdaCorrelations(trigger_list_highestPt, antilambda_list, fDphiHLambda_highestPt, primZ, true, true);
+    MakeSameHLambdaCorrelations(trigger_list_highestPt, lambda_list, fDphiHLambda_highestPt, primZ, true, false);
+    MakeSameHHCorrelations(trigger_list_highestPt, associated_h_list, fDphiHH_highestPt, primZ, true);
 
-    // if(lambda_list.size() > 0 && associated_h_list.size() > 0) {
-    //     AliEventPool *fCorPool = fCorPoolMgr->GetEventPool(multPercentile, primZ);
-    //     AliEventPool *fCorPool_highestPt = fCorPoolMgr_highestPt->GetEventPool(multPercentile, primZ);
-    //     if(!fCorPool) {
-    //         AliFatal(Form("No pool found for multiplicity = %f, zVtx = %f", multPercentile, primZ));
-    //     }
-    //     else {
-    //         if(fCorPool->IsReady()) {
-    //             MakeMixedHLambdaCorrelations(fCorPool, antilambda_list, fDphiHLambdaMixed, primZ, true, true);
-    //             MakeMixedHLambdaCorrelations(fCorPool, lambda_list, fDphiHLambdaMixed, primZ, true, false);
-    //             MakeMixedHHCorrelations(fCorPool, associated_h_list, fDphiHHMixed, primZ);
-    //         }
-    //         if(fCorPool_highestPt->IsReady()) {
-    //             MakeMixedHLambdaCorrelations(fCorPool_highestPt, antilambda_list, fDphiHLambdaMixed_highestPt, primZ, true, true);
-    //             MakeMixedHLambdaCorrelations(fCorPool_highestPt, lambda_list, fDphiHLambdaMixed_highestPt, primZ, true, false);
-    //             MakeMixedHHCorrelations(fCorPool_highestPt, associated_h_list, fDphiHHMixed_highestPt, primZ);
-    //         }
-    //         if(fMixedTrackObjArray->GetEntries() > 0) {
-    //             fCorPool->UpdatePool(fMixedTrackObjArray);
-    //         }
-    //         if(fMixedTrackObjArray_highestPt->GetEntries() > 0) {
-    //             fCorPool_highestPt->UpdatePool(fMixedTrackObjArray_highestPt);
-    //         }
-    //     }
-    // }
+    if(lambda_list.size() > 0 && associated_h_list.size() > 0) {
+        AliEventPool *fCorPool = fCorPoolMgr->GetEventPool(multPercentile, primZ);
+        AliEventPool *fCorPool_highestPt = fCorPoolMgr_highestPt->GetEventPool(multPercentile, primZ);
+        if(!fCorPool) {
+            AliFatal(Form("No pool found for multiplicity = %f, zVtx = %f", multPercentile, primZ));
+        }
+        else {
+            if(fCorPool->IsReady()) {
+                MakeMixedHLambdaCorrelations(fCorPool, antilambda_list, fDphiHLambdaMixed, primZ, true, true);
+                MakeMixedHLambdaCorrelations(fCorPool, lambda_list, fDphiHLambdaMixed, primZ, true, false);
+                MakeMixedHHCorrelations(fCorPool, associated_h_list, fDphiHHMixed, primZ);
+            }
+            if(fCorPool_highestPt->IsReady()) {
+                MakeMixedHLambdaCorrelations(fCorPool_highestPt, antilambda_list, fDphiHLambdaMixed_highestPt, primZ, true, true);
+                MakeMixedHLambdaCorrelations(fCorPool_highestPt, lambda_list, fDphiHLambdaMixed_highestPt, primZ, true, false);
+                MakeMixedHHCorrelations(fCorPool_highestPt, associated_h_list, fDphiHHMixed_highestPt, primZ);
+            }
+            if(fMixedTrackObjArray->GetEntries() > 0) {
+                fCorPool->UpdatePool(fMixedTrackObjArray);
+            }
+            if(fMixedTrackObjArray_highestPt->GetEntries() > 0) {
+                fCorPool_highestPt->UpdatePool(fMixedTrackObjArray_highestPt);
+            }
+        }
+    }
 
     PostData(1, fOutputList);
 }
