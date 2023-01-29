@@ -746,6 +746,8 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
 
 
         if((isNegTrackPion && isPosTrackProton)) {
+            std::cout << "pos_TOFNSigmaProton: " << pos_TOFNSigmaProton << std::endl;
+            std::cout << "neg_TOFNSigmaPion: " << neg_TOFNSigmaPion << std::endl;
             fTOFnSigmaProton->Fill(posTrack->Pt(), pos_TOFNSigmaProton);
             fTOFnSigmaPion->Fill(negTrack->Pt(), neg_TOFNSigmaPion);
             fTPCnSigmaProton->Fill(posTrack->Pt(), pos_TPCNSigmaProton);
@@ -760,6 +762,8 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
         }
 
         if((isPosTrackPion && isNegTrackProton)) {
+            std::cout << "neg_TOFNSigmaProton: " << neg_TOFNSigmaProton << std::endl;
+            std::cout << "pos_TOFNSigmaPion: " << pos_TOFNSigmaPion << std::endl;
             fTOFnSigmaProton->Fill(negTrack->Pt(), neg_TOFNSigmaProton);
             fTOFnSigmaPion->Fill(posTrack->Pt(), pos_TOFNSigmaPion);
             fTPCnSigmaProton->Fill(negTrack->Pt(), neg_TPCNSigmaProton);

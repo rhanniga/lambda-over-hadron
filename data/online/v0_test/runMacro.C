@@ -13,11 +13,11 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   float TRIG_BIT = AliAODTrack::kIsHybridGCG;
   float ASSOC_BIT =  1024; 
 
-  float NSIGMA_TPC_PROTON = 1.4*2;
-  float NSIGMA_TOF_PROTON = 1.4*2;
+  float NSIGMA_TPC_PROTON = 2;
+  float NSIGMA_TOF_PROTON =2;
 
-  float NSIGMA_TPC_PION = 1.4*3;
-  float NSIGMA_TOF_PION = 1.4*3;
+  float NSIGMA_TPC_PION = 3;
+  float NSIGMA_TOF_PION = 3;
 
 
   char *EFF_FILE_PATH = "eff_out.root";
@@ -34,7 +34,7 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   // int endIndex = 28;
 
   TString work_dir = "lambda_hadron_ratio_v0_multbins";
-  TString output_dir = "cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_pid_cuts_wide_wide";
+  TString output_dir = "cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_pid_cuts_normal_normal";
   
   //If we want to download test files from grid then run in one swoop (usually just run completely locally):
   bool gridTest = false;
