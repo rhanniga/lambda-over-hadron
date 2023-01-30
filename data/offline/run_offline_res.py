@@ -44,8 +44,12 @@ ASSOC_PT_HIGH = config.getfloat("PT_CUTS", "ASSOC_PT_HIGH") - EPSILON
 # SIGNAL AND SIDEBAND REGION CUTS
 SIG_MIN = config.getfloat("REGION_CUTS", "SIG_MIN")
 SIG_MAX = config.getfloat("REGION_CUTS", "SIG_MAX") - EPSILON
-RSB_MIN = config.getfloat("REGION_CUTS", "RSB_MIN")
-RSB_MAX = config.getfloat("REGION_CUTS", "RSB_MAX") - EPSILON
+RSB_MIN_0_20 = config.getfloat("REGION_CUTS", "RSB_MIN_0_20")
+RSB_MAX_0_20 = config.getfloat("REGION_CUTS", "RSB_MAX_0_20") - EPSILON
+RSB_MIN_20_50 = config.getfloat("REGION_CUTS", "RSB_MIN_20_50")
+RSB_MAX_20_50 = config.getfloat("REGION_CUTS", "RSB_MAX_20_50") - EPSILON
+RSB_MIN_50_80 = config.getfloat("REGION_CUTS", "RSB_MIN_50_80")
+RSB_MAX_50_80 = config.getfloat("REGION_CUTS", "RSB_MAX_50_80") - EPSILON
 
 
 # Output file containing all of the relevant results (long name )
@@ -55,7 +59,6 @@ output_file_string += ("avg4_" if USE_AVG_4 else "")
 output_file_string += ("avg6_" if USE_AVG_6 else "") 
 output_file_string += ("zyam_" if USE_ZYAM else "") 
 output_file_string += ("sideband_subtraction_" if DO_SIDEBAND_SUBTRACTION else "")
-output_file_string += "rsb_" + str(RSB_MIN).replace(".", "") + "_" + str(RSB_MAX + EPSILON).replace(".", "") + "_"
 output_file_string += "sig_" + str(SIG_MIN).replace(".", "") + "_" + str(SIG_MAX + EPSILON).replace(".", "") + "_"
 output_file_string += "trig_" + str(TRIG_PT_LOW).replace(".", "") + "_" + str(TRIG_PT_HIGH + EPSILON).replace(".", "") + "_"
 output_file_string += "assoc_" + str(ASSOC_PT_LOW).replace(".", "") + "_" + str(ASSOC_PT_HIGH + EPSILON).replace(".", "") + "_"
@@ -152,26 +155,26 @@ lambda_mass_ls_dist_0_20 = lambda_ls_dist_0_20.Projection(3).Clone("lambda_mass_
 
 
 # scale LS to match lambda dist in RSB
-left_rsb_bin_0_20 = lambda_mass_dist_0_20.FindBin(RSB_MIN)
-right_rsb_bin_0_20 = lambda_mass_dist_0_20.FindBin(RSB_MAX)
+left_rsb_bin_0_20 = lambda_mass_dist_0_20.FindBin(RSB_MIN_0_20)
+right_rsb_bin_0_20 = lambda_mass_dist_0_20.FindBin(RSB_MAX_0_20)
 lambda_mass_ls_dist_0_20.Scale(lambda_mass_dist_0_20.Integral(left_rsb_bin_0_20, right_rsb_bin_0_20)/lambda_mass_ls_dist_0_20.Integral(left_rsb_bin_0_20, right_rsb_bin_0_20))
 
 residual_0_20 = lambda_mass_dist_0_20.Clone("residual_0_20")
 residual_0_20.Add(lambda_mass_ls_dist_0_20, -1)
 
-RSB_region_0_20 = rt.TBox(RSB_MIN, 0, RSB_MAX, lambda_mass_dist_0_20.GetMaximum()*1.055)
+RSB_region_0_20 = rt.TBox(RSB_MIN_0_20, 0, RSB_MAX_0_20, lambda_mass_dist_0_20.GetMaximum()*1.055)
 RSB_region_0_20.SetLineColor(rt.kRed)
 RSB_region_0_20.SetFillColor(rt.kRed)
 RSB_region_0_20.SetFillStyle(3003)
 
 
-RSB_min_line_0_20 = rt.TLine(RSB_MIN, 0, RSB_MIN, lambda_mass_dist_0_20.GetMaximum()*1.05)
+RSB_min_line_0_20 = rt.TLine(RSB_MIN_0_20, 0, RSB_MIN_0_20, lambda_mass_dist_0_20.GetMaximum()*1.05)
 RSB_min_line_0_20.SetLineColor(rt.kRed)
 RSB_min_line_0_20.SetLineWidth(2)
 RSB_min_line_0_20.SetLineStyle(2)
 
 
-RSB_max_line_0_20 = rt.TLine(RSB_MAX, 0, RSB_MAX, lambda_mass_dist_0_20.GetMaximum()*1.05)
+RSB_max_line_0_20 = rt.TLine(RSB_MAX_0_20, 0, RSB_MAX_0_20, lambda_mass_dist_0_20.GetMaximum()*1.05)
 RSB_max_line_0_20.SetLineColor(rt.kRed)
 RSB_max_line_0_20.SetLineWidth(2)
 RSB_max_line_0_20.SetLineStyle(2)
@@ -221,7 +224,7 @@ h_h_2d_nomixcor_0_20 = h_h_0_20.Project3D("xye").Clone("h_h_2d_nomixcor_0_20")
 h_h_mixed_2d_0_20 = h_h_mixed_0_20.Project3D("xye").Clone("h_h_mixed_2d_0_20")
 
 h_lambda_2d_mixcor_sig_0_20 = make_mixed_corrections(h_lambda_0_20, h_lambda_mixed_0_20, SIG_MIN, SIG_MAX)
-h_lambda_2d_mixcor_rsb_0_20 = make_mixed_corrections(h_lambda_0_20, h_lambda_mixed_0_20, RSB_MIN, RSB_MAX)
+h_lambda_2d_mixcor_rsb_0_20 = make_mixed_corrections(h_lambda_0_20, h_lambda_mixed_0_20, RSB_MIN_0_20, RSB_MAX_0_20)
 
 h_h_2d_mixcor_0_20 = make_mixed_corrections(h_h_0_20, h_h_mixed_0_20, SIG_MIN, SIG_MAX, is_hh=True)
 
@@ -262,6 +265,10 @@ h_lambda_2d_mixcor_rsb_0_20.Scale(1/h_lambda_2d_mixcor_rsb_0_20.Integral())
 h_lambda_2d_subtracted_0_20 = h_lambda_2d_mixcor_sig_0_20.Clone("h_lambda_2d_subtracted_0_20")
 bg_integral_0_20 = (1 - lambda_signal_total_ratio_0_20)*h_lambda_2d_subtracted_0_20.Integral()
 h_lambda_2d_subtracted_0_20.Add(h_lambda_2d_mixcor_rsb_0_20, -bg_integral_0_20)
+
+h_lambda_dphi_rsb_0_20 = h_lambda_2d_mixcor_rsb_0_20.ProjectionY("h_lambda_dphi_rsb_0_20")
+output_file.cd()
+h_lambda_dphi_rsb_0_20.Write()
 
 
 # INTEGRAL AND RATIO SECTION
@@ -601,26 +608,26 @@ lambda_mass_ls_dist_20_50 = lambda_ls_dist_20_50.Projection(3).Clone("lambda_mas
 
 
 # scale LS to match lambda dist in RSB
-left_rsb_bin_20_50 = lambda_mass_dist_20_50.FindBin(RSB_MIN)
-right_rsb_bin_20_50 = lambda_mass_dist_20_50.FindBin(RSB_MAX)
+left_rsb_bin_20_50 = lambda_mass_dist_20_50.FindBin(RSB_MIN_20_50)
+right_rsb_bin_20_50 = lambda_mass_dist_20_50.FindBin(RSB_MAX_20_50)
 lambda_mass_ls_dist_20_50.Scale(lambda_mass_dist_20_50.Integral(left_rsb_bin_20_50, right_rsb_bin_20_50)/lambda_mass_ls_dist_20_50.Integral(left_rsb_bin_20_50, right_rsb_bin_20_50))
 
 residual_20_50 = lambda_mass_dist_20_50.Clone("residual_20_50")
 residual_20_50.Add(lambda_mass_ls_dist_20_50, -1)
 
-RSB_region_20_50 = rt.TBox(RSB_MIN, 0, RSB_MAX, lambda_mass_dist_20_50.GetMaximum()*1.055)
+RSB_region_20_50 = rt.TBox(RSB_MIN_20_50, 0, RSB_MAX_20_50, lambda_mass_dist_20_50.GetMaximum()*1.055)
 RSB_region_20_50.SetLineColor(rt.kRed)
 RSB_region_20_50.SetFillColor(rt.kRed)
 RSB_region_20_50.SetFillStyle(3003)
 
 
-RSB_min_line_20_50 = rt.TLine(RSB_MIN, 0, RSB_MIN, lambda_mass_dist_20_50.GetMaximum()*1.05)
+RSB_min_line_20_50 = rt.TLine(RSB_MIN_20_50, 0, RSB_MIN_20_50, lambda_mass_dist_20_50.GetMaximum()*1.05)
 RSB_min_line_20_50.SetLineColor(rt.kRed)
 RSB_min_line_20_50.SetLineWidth(2)
 RSB_min_line_20_50.SetLineStyle(2)
 
 
-RSB_max_line_20_50 = rt.TLine(RSB_MAX, 0, RSB_MAX, lambda_mass_dist_20_50.GetMaximum()*1.05)
+RSB_max_line_20_50 = rt.TLine(RSB_MAX_20_50, 0, RSB_MAX_20_50, lambda_mass_dist_20_50.GetMaximum()*1.05)
 RSB_max_line_20_50.SetLineColor(rt.kRed)
 RSB_max_line_20_50.SetLineWidth(2)
 RSB_max_line_20_50.SetLineStyle(2)
@@ -669,7 +676,7 @@ h_h_2d_nomixcor_20_50 = h_h_20_50.Project3D("xye").Clone("h_h_2d_nomixcor_20_50"
 h_h_mixed_2d_20_50 = h_h_mixed_20_50.Project3D("xye").Clone("h_h_mixed_2d_20_50")
 
 h_lambda_2d_mixcor_sig_20_50 = make_mixed_corrections(h_lambda_20_50, h_lambda_mixed_20_50, SIG_MIN, SIG_MAX)
-h_lambda_2d_mixcor_rsb_20_50 = make_mixed_corrections(h_lambda_20_50, h_lambda_mixed_20_50, RSB_MIN, RSB_MAX)
+h_lambda_2d_mixcor_rsb_20_50 = make_mixed_corrections(h_lambda_20_50, h_lambda_mixed_20_50, RSB_MIN_20_50, RSB_MAX_20_50)
 
 h_h_2d_mixcor_20_50 = make_mixed_corrections(h_h_20_50, h_h_mixed_20_50, SIG_MIN, SIG_MAX, is_hh=True)
 
@@ -1047,26 +1054,26 @@ lambda_mass_ls_dist_50_80 = lambda_ls_dist_50_80.Projection(3).Clone("lambda_mas
 
 
 # scale LS to match lambda dist in RSB
-left_rsb_bin_50_80 = lambda_mass_dist_50_80.FindBin(RSB_MIN)
-right_rsb_bin_50_80 = lambda_mass_dist_50_80.FindBin(RSB_MAX)
+left_rsb_bin_50_80 = lambda_mass_dist_50_80.FindBin(RSB_MIN_50_80)
+right_rsb_bin_50_80 = lambda_mass_dist_50_80.FindBin(RSB_MAX_50_80)
 lambda_mass_ls_dist_50_80.Scale(lambda_mass_dist_50_80.Integral(left_rsb_bin_50_80, right_rsb_bin_50_80)/lambda_mass_ls_dist_50_80.Integral(left_rsb_bin_50_80, right_rsb_bin_50_80))
 
 residual_50_80 = lambda_mass_dist_50_80.Clone("residual_50_80")
 residual_50_80.Add(lambda_mass_ls_dist_50_80, -1)
 
-RSB_region_50_80 = rt.TBox(RSB_MIN, 0, RSB_MAX, lambda_mass_dist_50_80.GetMaximum()*1.055)
+RSB_region_50_80 = rt.TBox(RSB_MIN_50_80, 0, RSB_MAX_50_80, lambda_mass_dist_50_80.GetMaximum()*1.055)
 RSB_region_50_80.SetLineColor(rt.kRed)
 RSB_region_50_80.SetFillColor(rt.kRed)
 RSB_region_50_80.SetFillStyle(3003)
 
 
-RSB_min_line_50_80 = rt.TLine(RSB_MIN, 0, RSB_MIN, lambda_mass_dist_50_80.GetMaximum()*1.05)
+RSB_min_line_50_80 = rt.TLine(RSB_MIN_50_80, 0, RSB_MIN_50_80, lambda_mass_dist_50_80.GetMaximum()*1.05)
 RSB_min_line_50_80.SetLineColor(rt.kRed)
 RSB_min_line_50_80.SetLineWidth(2)
 RSB_min_line_50_80.SetLineStyle(2)
 
 
-RSB_max_line_50_80 = rt.TLine(RSB_MAX, 0, RSB_MAX, lambda_mass_dist_50_80.GetMaximum()*1.05)
+RSB_max_line_50_80 = rt.TLine(RSB_MAX_50_80, 0, RSB_MAX_50_80, lambda_mass_dist_50_80.GetMaximum()*1.05)
 RSB_max_line_50_80.SetLineColor(rt.kRed)
 RSB_max_line_50_80.SetLineWidth(2)
 RSB_max_line_50_80.SetLineStyle(2)
@@ -1115,7 +1122,7 @@ h_h_2d_nomixcor_50_80 = h_h_50_80.Project3D("xye").Clone("h_h_2d_nomixcor_50_80"
 h_h_mixed_2d_50_80 = h_h_mixed_50_80.Project3D("xye").Clone("h_h_mixed_2d_50_80")
 
 h_lambda_2d_mixcor_sig_50_80 = make_mixed_corrections(h_lambda_50_80, h_lambda_mixed_50_80, SIG_MIN, SIG_MAX)
-h_lambda_2d_mixcor_rsb_50_80 = make_mixed_corrections(h_lambda_50_80, h_lambda_mixed_50_80, RSB_MIN, RSB_MAX)
+h_lambda_2d_mixcor_rsb_50_80 = make_mixed_corrections(h_lambda_50_80, h_lambda_mixed_50_80, RSB_MIN_50_80, RSB_MAX_50_80)
 
 h_h_2d_mixcor_50_80 = make_mixed_corrections(h_h_50_80, h_h_mixed_50_80, SIG_MIN, SIG_MAX, is_hh=True)
 
