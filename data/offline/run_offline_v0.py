@@ -66,6 +66,32 @@ TRIGGER_V2_50_80 = 0.5*TRIGGER_V2_0_20
 ASSOCIATED_V2_50_80 = 0.5*ASSOCIATED_V2_0_20
 LAMBDA_V2_50_80 = 0.5*LAMBDA_V2_0_20
 
+# PID CUTS (already applied online, need to correct for % loss)
+IS_NORMAL_PID = config.getboolean("PID_CUTS", "IS_NORMAL")
+IS_WIDE_PID = config.getboolean("PID_CUTS", "IS_WIDE")
+IS_NARROW_PID = config.getboolean("PID_CUTS", "IS_NARROW")
+IS_TOF_PID = config.getboolean("PID_CUTS", "IS_TOF")
+
+assert sum([IS_NORMAL_PID, IS_NARROW_PID, IS_WIDE_PID, IS_TOF_PID]) == 1, "Only 1 PID cut is applied online"
+
+two_sigma_normal = 0.9544
+three_sigma_normal = 0.9974
+
+two_sigma_wide = 0.9948 # 2 * 1.4 sigma
+three_sigma_wide = 1.0 # 3 * 1.4 sigma
+
+two_sigma_narrow = 0.7700 # 2 * 0.6
+three_sigma_narrow = 0.9282 # 3 * 0.6
+
+if IS_NORMAL_PID:
+    PID_CORRECTION = 1/(two_sigma_normal*three_sigma_normal)
+if IS_WIDE_PID:
+    PID_CORRECTION = 1/(two_sigma_wide*three_sigma_wide)
+if IS_NARROW_PID:
+    PID_CORRECTION = 1/(two_sigma_narrow*three_sigma_narrow)
+if IS_TOF_PID:
+    PID_CORRECTION = (1.02/(1.71e-1)) # found from fitting dphi ratios of final dists with and without TOF veto
+
 
 # Output file containing all of the relevant results (long name )
 output_file_string = "output/v0_" 
@@ -75,6 +101,7 @@ output_file_string += ("avg6_" if USE_AVG_6 else "")
 output_file_string += ("avg6nonneg_" if USE_AVG_6_NONNEGATIVE else "") 
 output_file_string += ("fullfit_" if USE_FIT else "") 
 output_file_string += ("v2_" if USE_V2 else "") 
+output_file_string += ("von_" if USE_VON else "") 
 output_file_string += ("zyam_" if USE_ZYAM else "") 
 output_file_string += ("sideband_subtraction_" if DO_SIDEBAND_SUBTRACTION else "")
 output_file_string += "rsb_" + str(RSB_MIN).replace(".", "") + "_" + str(RSB_MAX + EPSILON).replace(".", "") + "_"
@@ -82,9 +109,14 @@ output_file_string += "sig_" + str(SIG_MIN).replace(".", "") + "_" + str(SIG_MAX
 output_file_string += "trig_" + str(TRIG_PT_LOW).replace(".", "") + "_" + str(TRIG_PT_HIGH + EPSILON).replace(".", "") + "_"
 output_file_string += "assoc_" + str(ASSOC_PT_LOW).replace(".", "") + "_" + str(ASSOC_PT_HIGH + EPSILON).replace(".", "") + "_"
 output_file_string += "delta_eta_" + str(DELTA_ETA_MAX + EPSILON).replace(".", "") + "_"
-output_file_string += "normal_normal.root"
+output_file_string += ("normal" if IS_NORMAL_PID else "" )
+output_file_string += ("wide" if IS_WIDE_PID else "" )
+output_file_string += ("narrow" if IS_NARROW_PID else "" )
+output_file_string += ("tof" if IS_TOF_PID else "" )
+output_file_string += ".root"
 
 output_file = rt.TFile(output_file_string, "RECREATE")
+# output_file = rt.TFile("tmp.root", "RECREATE")
 
 
 ############################################################################################################
@@ -96,6 +128,8 @@ output_file = rt.TFile(output_file_string, "RECREATE")
 
 # input_file_0_20 = rt.TFile("~/OneDrive/Research/Output/lambda-over-hadron/data/v0_cent_0_20_fullstat.root")
 input_file_0_20 = rt.TFile("../online/v0_test/output/v0_cent_0_20_normal_normal.root")
+# input_file_0_20 = rt.TFile("../online/v0_test/output/v0_cent_0_20_wide_wide.root")
+# input_file_0_20 = rt.TFile("../online/v0_test/output/v0_cent_0_20_narrow_narrow.root")
 input_list_0_20 = input_file_0_20.Get("h-lambda")
 input_file_0_20.Close()
 
@@ -170,6 +204,15 @@ lambda_mass_bg_fit_0_20.SetNpx(1000)
 lambda_mass_bg_fit_0_20.SetParameter(0, lambda_mass_fit_0_20.GetParameter(4))
 lambda_mass_bg_fit_0_20.SetParameter(1, lambda_mass_fit_0_20.GetParameter(5))
 
+voigt_fit_0_20 = rt.TF1("voigt_fit_0_20", "[0]*TMath::Voigt(x - [1], [2], [3], 4)", 1.1, 1.14)
+voigt_fit_0_20.SetNpx(1000)
+voigt_fit_0_20.SetParameter(0, lambda_mass_fit_0_20.GetParameter(0))
+voigt_fit_0_20.SetParameter(1, lambda_mass_fit_0_20.GetParameter(1))
+voigt_fit_0_20.SetParameter(2, lambda_mass_fit_0_20.GetParameter(2))
+voigt_fit_0_20.SetParameter(3, lambda_mass_fit_0_20.GetParameter(3))
+
+signal_scale_0_20 = voigt_fit_0_20.Integral(1.1, 1.14)/voigt_fit_0_20.Integral(SIG_MIN, SIG_MAX)
+
 residual_0_20 = lambda_mass_dist_0_20.Clone("residual_0_20")
 residual_0_20.GetXaxis().SetRangeUser(1.094, 1.142)
 residual_0_20.Add(lambda_mass_bg_fit_0_20, -1)
@@ -200,8 +243,10 @@ for bin_num in range(left_signal_bin_0_20, right_signal_bin_0_20 + 1):
     lambda_total_0_20 += lambda_mass_dist_0_20.GetBinContent(bin_num)
     lambda_bg_0_20 += lambda_mass_bg_fit_0_20.Eval(lambda_mass_dist_0_20.GetBinCenter(bin_num))
 
+
 lambda_signal_0_20 = lambda_total_0_20 - lambda_bg_0_20
 lambda_signal_total_ratio_0_20 = lambda_signal_0_20/lambda_total_0_20
+
 
 output_file.cd()
 RSB_region_0_20.Write("RSB_region_0_20")
@@ -285,6 +330,11 @@ if DO_SIDEBAND_SUBTRACTION:
 else:
     h_lambda_2d_subtracted_0_20 = h_lambda_2d_mixcor_sig_0_20.Clone("h_lambda_2d_subtracted_0_20")
 
+
+# Correct for signal scale
+h_lambda_2d_subtracted_0_20.Scale(signal_scale_0_20)
+# Correct for PID loss
+h_lambda_2d_subtracted_0_20.Scale(PID_CORRECTION)
 
 # INTEGRAL AND RATIO SECTION
 h_lambda_dphi_subtracted_0_20 = h_lambda_2d_subtracted_0_20.ProjectionY("h_lambda_dphi_subtracted_0_20")
@@ -431,6 +481,7 @@ elif USE_V2:
     v2_fit_0_20.SetParameter(0, ue_avg_0_20)
     v2_fit_0_20.SetParameter(1, TRIGGER_V2_0_20)
     v2_fit_0_20.SetParameter(2, LAMBDA_V2_0_20)
+
 elif USE_VON:
     ue_avg_0_20 = (h_lambda_dphi_subtracted_0_20.GetBinContent(1) 
                    + h_lambda_dphi_subtracted_0_20.GetBinContent(2)
@@ -441,18 +492,33 @@ elif USE_VON:
 
     v2_fit_0_20 = rt.TF1("v2_fit_0_20", "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))", -2, 6)
     von_fit_string = "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))"
-    von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x- - [1]))"
-    von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()-[4]))"
+    von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x))"
+    von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()))"
 
-    "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x))) + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x- 2*TMath::Pi() - [1])) + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- 2*TMath::Pi()-[4]))"
+    von_fit_0_20 = rt.TF1("von_fit_0_20", von_fit_string, -2, 6)
 
-    v2_fit_0_20.SetParameter(0, ue_avg_0_20)
+    von_fit_0_20.FixParameter(0, ue_avg_0_20)
+    von_fit_0_20.FixParameter(1, TRIGGER_V2_0_20)
+    von_fit_0_20.FixParameter(2, LAMBDA_V2_0_20)
+    von_fit_0_20.SetParLimits(3, 0, 1)
+    von_fit_0_20.SetParameter(3, 0.02)
+    von_fit_0_20.SetParLimits(4, 0, 100)
+    von_fit_0_20.SetParameter(4, 1)
+    von_fit_0_20.SetParLimits(5, 0, 1)
+    von_fit_0_20.SetParameter(5, 0.01)
+    von_fit_0_20.SetParLimits(6, 0, 100)
+    von_fit_0_20.SetParameter(6, 1)
+
+    h_lambda_dphi_subtracted_with_fit_0_20 = h_lambda_dphi_subtracted_0_20.Clone("h_lambda_dphi_subtracted_with_fit_0_20")
+    h_lambda_dphi_subtracted_with_fit_0_20.Fit(von_fit_0_20, "R")
+
+
+    v2_fit_0_20.SetParameter(0, von_fit_0_20.GetParameter(0))
     v2_fit_0_20.SetParameter(1, TRIGGER_V2_0_20)
     v2_fit_0_20.SetParameter(2, LAMBDA_V2_0_20)
 
 else:
     raise NotImplementedError("UE line mode not supported")
-
 
 
 if USE_FIT:
@@ -469,6 +535,18 @@ if USE_FIT:
     h_lambda_away_integral_error_0_20 = 0
 
     h_lambda_ue_integral_0_20 = ue_avg_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_ue_integral_error_0_20 = 0
+
+elif USE_VON:
+    h_lambda_dphi_subtracted_0_20_zeroed = h_lambda_dphi_subtracted_0_20.Clone("h_lambda_dphi_subtracted_0_20_zeroed")
+    h_lambda_dphi_subtracted_0_20_zeroed.Add(v2_fit_0_20, -1)
+    h_lambda_total_integral_0_20 = von_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_total_integral_error_0_20 = 0
+    h_lambda_near_integral_0_20 = von_fit_0_20.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2) - v2_fit_0_20.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)
+    h_lambda_near_integral_error_0_20 = 0
+    h_lambda_away_integral_0_20 = von_fit_0_20.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2) - v2_fit_0_20.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_away_integral_error_0_20 = 0
+    h_lambda_ue_integral_0_20 = v2_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
     h_lambda_ue_integral_error_0_20 = 0
 
 elif USE_V2:
@@ -673,6 +751,36 @@ elif USE_V2:
     hh_v2_fit_0_20.SetParameter(1, TRIGGER_V2_0_20)
     hh_v2_fit_0_20.SetParameter(2, ASSOCIATED_V2_0_20)
 
+elif USE_VON:
+    hh_ue_avg_0_20 = (h_h_dphi_0_20.GetBinContent(1) 
+                   + h_h_dphi_0_20.GetBinContent(2)
+                   + h_h_dphi_0_20.GetBinContent(7)
+                   + h_h_dphi_0_20.GetBinContent(8)
+                   + h_h_dphi_0_20.GetBinContent(9)
+                   + h_h_dphi_0_20.GetBinContent(16))/6
+    hh_v2_fit_0_20 = rt.TF1("hh_v2_fit_0_20", "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))", -2, 6)
+    hh_von_fit_string = "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))"
+    hh_von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x))"
+    hh_von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()))"
+    hh_von_fit_0_20 = rt.TF1("hh_von_fit_0_20", hh_von_fit_string, -2, 6)
+    hh_von_fit_0_20.FixParameter(0, hh_ue_avg_0_20)
+    hh_von_fit_0_20.FixParameter(1, TRIGGER_V2_0_20)
+    hh_von_fit_0_20.FixParameter(2, ASSOCIATED_V2_0_20)
+    hh_von_fit_0_20.SetParLimits(3, 0, 1)
+    hh_von_fit_0_20.SetParameter(3, 0.02)
+    hh_von_fit_0_20.SetParLimits(4, 0, 100)
+    hh_von_fit_0_20.SetParameter(4, 1)
+    hh_von_fit_0_20.SetParLimits(5, 0, 4)
+    hh_von_fit_0_20.SetParameter(5, 0.01)
+    hh_von_fit_0_20.SetParLimits(6, 0, 100)
+    hh_von_fit_0_20.SetParameter(6, 1)
+    h_h_dphi_with_fit_0_20 = h_h_dphi_0_20.Clone("h_h_dphi_with_fit_0_20")
+    h_h_dphi_with_fit_0_20.Fit(hh_von_fit_0_20, "R")
+
+    hh_v2_fit_0_20.SetParameter(0, hh_ue_avg_0_20)
+    hh_v2_fit_0_20.SetParameter(1, TRIGGER_V2_0_20)
+    hh_v2_fit_0_20.SetParameter(2, ASSOCIATED_V2_0_20)
+
 else:
     raise NotImplementedError("UE line mode not supported")
 
@@ -691,6 +799,18 @@ if USE_FIT:
     h_h_away_integral_error_0_20 = 0
 
     h_h_ue_integral_0_20 = hh_ue_avg_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_ue_integral_error_0_20 = 0
+
+elif USE_VON:
+    h_h_dphi_0_20_zeroed = h_h_dphi_0_20.Clone("h_h_dphi_subtracted_0_20_zeroed")
+    h_h_dphi_0_20_zeroed.Add(hh_v2_fit_0_20, -1)
+    h_h_total_integral_0_20 = hh_von_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_total_integral_error_0_20 = 0
+    h_h_near_integral_0_20 = hh_von_fit_0_20.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2) - hh_v2_fit_0_20.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)
+    h_h_near_integral_error_0_20 = 0
+    h_h_away_integral_0_20 = hh_von_fit_0_20.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2) - hh_v2_fit_0_20.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_away_integral_error_0_20 = 0
+    h_h_ue_integral_0_20 = hh_v2_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
     h_h_ue_integral_error_0_20 = 0
 
 elif USE_V2:
@@ -770,6 +890,15 @@ if USE_FIT:
 elif USE_V2:
     v2_fit_0_20.Write()
     hh_v2_fit_0_20.Write()
+elif USE_VON:
+    von_fit_0_20.Write()
+    hh_von_fit_0_20.Write()
+    v2_fit_0_20.Write()
+    hh_v2_fit_0_20.Write()
+    h_lambda_dphi_subtracted_with_fit_0_20.Write()
+    h_h_dphi_with_fit_0_20.Write()
+    h_lambda_dphi_subtracted_0_20_zeroed.Write()
+    h_h_dphi_0_20_zeroed.Write()
 else:
     ue_upper_line_0_20.Write()
     ue_line_0_20.Write()
@@ -811,11 +940,10 @@ total_ratio_error_0_20 = total_ratio_0_20*math.sqrt((h_lambda_total_integral_err
 ############################################################################################################
 ############################################################################################################
 
-
 # input_file_20_50 = rt.TFile("~/OneDrive/Research/Output/lambda-over-hadron/data/v0_cent_20_50_fullstat.root")
-
 input_file_20_50 = rt.TFile("../online/v0_test/output/v0_cent_20_50_normal_normal.root")
-
+# input_file_20_50 = rt.TFile("../online/v0_test/output/v0_cent_20_50_wide_wide.root")
+# input_file_20_50 = rt.TFile("../online/v0_test/output/v0_cent_20_50_narrow_narrow.root")
 input_list_20_50 = input_file_20_50.Get("h-lambda")
 input_file_20_50.Close()
 
@@ -877,7 +1005,7 @@ point_two = [1.13, lambda_mass_dist_20_50.GetBinContent(bin_2)]
 bg_starting_params_20_50 = get_straight_line(point_one, point_two)
 lambda_mass_fit_20_50 = rt.TF1("lambda_mass_fit_20_50", "[0]*TMath::Voigt(x - [1], [2], [3], 4) + pol1(4)", 1.1, 1.14)
 lambda_mass_fit_20_50.SetNpx(1000)
-lambda_mass_fit_20_50.SetParameter(0, 5.94e02)
+lambda_mass_fit_20_50.SetParameter(0, 8.94e02)
 lambda_mass_fit_20_50.SetParameter(1, 1.116)
 lambda_mass_fit_20_50.SetParameter(2, 1.30576e-03 )
 lambda_mass_fit_20_50.SetParameter(3, 1.504166e-03)
@@ -890,6 +1018,14 @@ lambda_mass_bg_fit_20_50.SetNpx(1000)
 lambda_mass_bg_fit_20_50.SetParameter(0, lambda_mass_fit_20_50.GetParameter(4))
 lambda_mass_bg_fit_20_50.SetParameter(1, lambda_mass_fit_20_50.GetParameter(5))
 
+voigt_fit_20_50 = rt.TF1("voigt_fit_20_50", "[0]*TMath::Voigt(x - [1], [2], [3], 4)", 1.1, 1.14)
+voigt_fit_20_50.SetNpx(1000)
+voigt_fit_20_50.SetParameter(0, lambda_mass_fit_20_50.GetParameter(0))
+voigt_fit_20_50.SetParameter(1, lambda_mass_fit_20_50.GetParameter(1))
+voigt_fit_20_50.SetParameter(2, lambda_mass_fit_20_50.GetParameter(2))
+voigt_fit_20_50.SetParameter(3, lambda_mass_fit_20_50.GetParameter(3))
+
+signal_scale_20_50 = voigt_fit_20_50.Integral(1.1, 1.14)/voigt_fit_20_50.Integral(SIG_MIN, SIG_MAX)
 
 residual_20_50 = lambda_mass_dist_20_50.Clone("residual_20_50")
 residual_20_50.GetXaxis().SetRangeUser(1.094, 1.142)
@@ -921,8 +1057,10 @@ for bin_num in range(left_signal_bin_20_50, right_signal_bin_20_50 + 1):
     lambda_total_20_50 += lambda_mass_dist_20_50.GetBinContent(bin_num)
     lambda_bg_20_50 += lambda_mass_bg_fit_20_50.Eval(lambda_mass_dist_20_50.GetBinCenter(bin_num))
 
+
 lambda_signal_20_50 = lambda_total_20_50 - lambda_bg_20_50
 lambda_signal_total_ratio_20_50 = lambda_signal_20_50/lambda_total_20_50
+
 
 output_file.cd()
 RSB_region_20_50.Write("RSB_region_20_50")
@@ -1006,6 +1144,11 @@ if DO_SIDEBAND_SUBTRACTION:
 else:
     h_lambda_2d_subtracted_20_50 = h_lambda_2d_mixcor_sig_20_50.Clone("h_lambda_2d_subtracted_20_50")
 
+
+# Correct for signal scale
+h_lambda_2d_subtracted_20_50.Scale(signal_scale_20_50)
+# Correct for PID loss
+h_lambda_2d_subtracted_20_50.Scale(PID_CORRECTION)
 
 # INTEGRAL AND RATIO SECTION
 h_lambda_dphi_subtracted_20_50 = h_lambda_2d_subtracted_20_50.ProjectionY("h_lambda_dphi_subtracted_20_50")
@@ -1092,32 +1235,28 @@ elif USE_FIT:
     fit_function_20_50.SetNpx(1000)
 
     # setting parameters for first gaussian (centered at 0)
-    fit_function_20_50.SetParLimits(0, 0, 0.1)
+    fit_function_20_50.SetParLimits(0, 0, 1)
     fit_function_20_50.SetParameter(0, 0.03)
     fit_function_20_50.FixParameter(1, 0)
-    fit_function_20_50.SetParLimits(2, 0, 2)
     fit_function_20_50.SetParameter(2, 0.8)
 
     # setting parameters for second gaussian (centered at 0 + 2pi)
-    fit_function_20_50.SetParLimits(3, 0, 0.1)
-    fit_function_20_50.SetParameter(3, 0.0175)
+    fit_function_20_50.SetParLimits(3, 0,  0.001)
+    fit_function_20_50.SetParameter(3, 0.0005)
     fit_function_20_50.FixParameter(4, 2*rt.TMath.Pi())
-    fit_function_20_50.SetParLimits(5, 0, 2)
     fit_function_20_50.SetParameter(5, 0.8)
 
     # setting parameters for third gaussian (centered at pi)
-    fit_function_20_50.SetParLimits(6, 0, 0.1)
+    fit_function_20_50.SetParLimits(6, 0, 1)
     fit_function_20_50.SetParameter(6, 0.03)
     fit_function_20_50.FixParameter(7, rt.TMath.Pi())
-    fit_function_20_50.SetParLimits(8, 0, 2)
     fit_function_20_50.SetParameter(8, 1)
 
     # setting parameters for fourth gaussian (centered at pi + 2pi)
-    fit_function_20_50.SetParLimits(9, 0, 0.1)
-    fit_function_20_50.SetParameter(9, 0.1)
+    fit_function_20_50.SetParLimits(9, 0, 1)
+    fit_function_20_50.SetParameter(9, 0.03)
     fit_function_20_50.FixParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
-    fit_function_20_50.SetParLimits(11, 0, 2)
-    fit_function_20_50.SetParameter(11, 0.5)
+    fit_function_20_50.SetParameter(11, 1)
 
     # setting parameters for constant background
     ue_avg_20_50 = (h_lambda_dphi_subtracted_20_50.GetBinContent(1) 
@@ -1156,6 +1295,7 @@ elif USE_V2:
     v2_fit_20_50.SetParameter(0, ue_avg_20_50)
     v2_fit_20_50.SetParameter(1, TRIGGER_V2_20_50)
     v2_fit_20_50.SetParameter(2, LAMBDA_V2_20_50)
+
 elif USE_VON:
     ue_avg_20_50 = (h_lambda_dphi_subtracted_20_50.GetBinContent(1) 
                    + h_lambda_dphi_subtracted_20_50.GetBinContent(2)
@@ -1166,10 +1306,26 @@ elif USE_VON:
 
     v2_fit_20_50 = rt.TF1("v2_fit_20_50", "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))", -2, 6)
     von_fit_string = "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))"
-    von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x- - [1]))"
-    von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()-[4]))"
+    von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x))"
+    von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()))"
 
-    "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x))) + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x- 2*TMath::Pi() - [1])) + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- 2*TMath::Pi()-[4]))"
+    von_fit_20_50 = rt.TF1("von_fit_20_50", von_fit_string, -2, 6)
+
+    von_fit_20_50.FixParameter(0, ue_avg_20_50)
+    von_fit_20_50.FixParameter(1, TRIGGER_V2_20_50)
+    von_fit_20_50.FixParameter(2, LAMBDA_V2_20_50)
+    von_fit_20_50.SetParLimits(3, 0, 1)
+    von_fit_20_50.SetParameter(3, 0.02)
+    von_fit_20_50.SetParLimits(4, 0, 100)
+    von_fit_20_50.SetParameter(4, 1)
+    von_fit_20_50.SetParLimits(5, 0, 1)
+    von_fit_20_50.SetParameter(5, 0.01)
+    von_fit_20_50.SetParLimits(6, 0, 100)
+    von_fit_20_50.SetParameter(6, 1)
+
+    h_lambda_dphi_subtracted_with_fit_20_50 = h_lambda_dphi_subtracted_20_50.Clone("h_lambda_dphi_subtracted_with_fit_20_50")
+    h_lambda_dphi_subtracted_with_fit_20_50.Fit(von_fit_20_50, "R")
+
 
     v2_fit_20_50.SetParameter(0, ue_avg_20_50)
     v2_fit_20_50.SetParameter(1, TRIGGER_V2_20_50)
@@ -1177,9 +1333,6 @@ elif USE_VON:
 
 else:
     raise NotImplementedError("UE line mode not supported")
-
-
-
 
 
 if USE_FIT:
@@ -1196,6 +1349,18 @@ if USE_FIT:
     h_lambda_away_integral_error_20_50 = 0
 
     h_lambda_ue_integral_20_50 = ue_avg_fit_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_ue_integral_error_20_50 = 0
+
+elif USE_VON:
+    h_lambda_dphi_subtracted_20_50_zeroed = h_lambda_dphi_subtracted_20_50.Clone("h_lambda_dphi_subtracted_20_50_zeroed")
+    h_lambda_dphi_subtracted_20_50_zeroed.Add(v2_fit_20_50, -1)
+    h_lambda_total_integral_20_50 = von_fit_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_total_integral_error_20_50 = 0
+    h_lambda_near_integral_20_50 = von_fit_20_50.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2) - v2_fit_20_50.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)
+    h_lambda_near_integral_error_20_50 = 0
+    h_lambda_away_integral_20_50 = von_fit_20_50.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2) - v2_fit_20_50.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_away_integral_error_20_50 = 0
+    h_lambda_ue_integral_20_50 = v2_fit_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
     h_lambda_ue_integral_error_20_50 = 0
 
 elif USE_V2:
@@ -1356,7 +1521,7 @@ elif USE_FIT:
     hh_fit_function_20_50.FixParameter(7, rt.TMath.Pi())
     hh_fit_function_20_50.SetParameter(8, 1)
 
-    # setting parameters for fourth gaussian (centered at pi - 2pi)
+    # setting parameters for fourth gaussian (centered at pi + 2pi)
     hh_fit_function_20_50.SetParLimits(9, 0, 2)
     hh_fit_function_20_50.SetParameter(9, 0.03)
     hh_fit_function_20_50.SetParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
@@ -1400,6 +1565,37 @@ elif USE_V2:
     hh_v2_fit_20_50.SetParameter(1, TRIGGER_V2_20_50)
     hh_v2_fit_20_50.SetParameter(2, ASSOCIATED_V2_20_50)
 
+elif USE_VON:
+    hh_ue_avg_20_50 = (h_h_dphi_20_50.GetBinContent(1) 
+                   + h_h_dphi_20_50.GetBinContent(2)
+                   + h_h_dphi_20_50.GetBinContent(7)
+                   + h_h_dphi_20_50.GetBinContent(8)
+                   + h_h_dphi_20_50.GetBinContent(9)
+                   + h_h_dphi_20_50.GetBinContent(16))/6
+    hh_v2_fit_20_50 = rt.TF1("hh_v2_fit_20_50", "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))", -2, 6)
+    hh_von_fit_string = "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))"
+    hh_von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x))"
+    hh_von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()))"
+    hh_von_fit_20_50 = rt.TF1("hh_von_fit_20_50", hh_von_fit_string, -2, 6)
+    hh_von_fit_20_50.FixParameter(0, hh_ue_avg_20_50)
+    hh_von_fit_20_50.FixParameter(1, TRIGGER_V2_20_50)
+    hh_von_fit_20_50.FixParameter(2, ASSOCIATED_V2_20_50)
+    hh_von_fit_20_50.SetParLimits(3, 0, 1)
+    hh_von_fit_20_50.SetParameter(3, 0.02)
+    hh_von_fit_20_50.SetParLimits(4, 0, 100)
+    hh_von_fit_20_50.SetParameter(4, 1)
+    hh_von_fit_20_50.SetParLimits(5, 0, 4)
+    hh_von_fit_20_50.SetParameter(5, 0.01)
+    hh_von_fit_20_50.SetParLimits(6, 0, 100)
+    hh_von_fit_20_50.SetParameter(6, 1)
+    h_h_dphi_with_fit_20_50 = h_h_dphi_20_50.Clone("h_h_dphi_with_fit_20_50")
+    h_h_dphi_with_fit_20_50.Fit(hh_von_fit_20_50, "R")
+
+
+    hh_v2_fit_20_50.SetParameter(0, hh_ue_avg_20_50)
+    hh_v2_fit_20_50.SetParameter(1, TRIGGER_V2_20_50)
+    hh_v2_fit_20_50.SetParameter(2, ASSOCIATED_V2_20_50)
+
 else:
     raise NotImplementedError("UE line mode not supported")
 
@@ -1418,6 +1614,18 @@ if USE_FIT:
     h_h_away_integral_error_20_50 = 0
 
     h_h_ue_integral_20_50 = hh_ue_avg_fit_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_ue_integral_error_20_50 = 0
+
+elif USE_VON:
+    h_h_dphi_20_50_zeroed = h_h_dphi_20_50.Clone("h_h_dphi_subtracted_20_50_zeroed")
+    h_h_dphi_20_50_zeroed.Add(hh_v2_fit_20_50, -1)
+    h_h_total_integral_20_50 = hh_von_fit_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_total_integral_error_20_50 = 0
+    h_h_near_integral_20_50 = hh_von_fit_20_50.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2) - hh_v2_fit_20_50.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)
+    h_h_near_integral_error_20_50 = 0
+    h_h_away_integral_20_50 = hh_von_fit_20_50.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2) - hh_v2_fit_20_50.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_away_integral_error_20_50 = 0
+    h_h_ue_integral_20_50 = hh_v2_fit_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
     h_h_ue_integral_error_20_50 = 0
 
 elif USE_V2:
@@ -1490,6 +1698,7 @@ if USE_FIT:
     ue_avg_fit_20_50.Write()
     hh_fit_function_20_50.Write()
     hh_ue_avg_fit_20_50.Write()
+
     h_lambda_dphi_subtracted_with_fit_20_50.Write()
     h_h_dphi_with_fit_20_50.Write()
     h_lambda_dphi_subtracted_20_50_zeroed.Write()
@@ -1497,6 +1706,16 @@ if USE_FIT:
 elif USE_V2:
     v2_fit_20_50.Write()
     hh_v2_fit_20_50.Write()
+elif USE_VON:
+    von_fit_20_50.Write()
+    hh_von_fit_20_50.Write()
+    v2_fit_20_50.Write()
+    hh_v2_fit_20_50.Write()
+    h_lambda_dphi_subtracted_with_fit_20_50.Write()
+    h_h_dphi_with_fit_20_50.Write()
+    h_lambda_dphi_subtracted_20_50_zeroed.Write()
+    h_h_dphi_20_50_zeroed.Write()
+
 else:
     ue_upper_line_20_50.Write()
     ue_line_20_50.Write()
@@ -1532,15 +1751,17 @@ total_ratio_error_20_50 = total_ratio_20_50*math.sqrt((h_lambda_total_integral_e
 
 
 
+
 ############################################################################################################
 ############################################################################################################
 ############################################# 50-80 CENTRALITY ##############################################
 ############################################################################################################
 ############################################################################################################
 
-
 # input_file_50_80 = rt.TFile("~/OneDrive/Research/Output/lambda-over-hadron/data/v0_cent_50_80_fullstat.root")
 input_file_50_80 = rt.TFile("../online/v0_test/output/v0_cent_50_80_normal_normal.root")
+# input_file_50_80 = rt.TFile("../online/v0_test/output/v0_cent_50_80_wide_wide.root")
+# input_file_50_80 = rt.TFile("../online/v0_test/output/v0_cent_50_80_narrow_narrow.root")
 input_list_50_80 = input_file_50_80.Get("h-lambda")
 input_file_50_80.Close()
 
@@ -1602,7 +1823,7 @@ point_two = [1.13, lambda_mass_dist_50_80.GetBinContent(bin_2)]
 bg_starting_params_50_80 = get_straight_line(point_one, point_two)
 lambda_mass_fit_50_80 = rt.TF1("lambda_mass_fit_50_80", "[0]*TMath::Voigt(x - [1], [2], [3], 4) + pol1(4)", 1.1, 1.14)
 lambda_mass_fit_50_80.SetNpx(1000)
-lambda_mass_fit_50_80.SetParameter(0, 5.94e02)
+lambda_mass_fit_50_80.SetParameter(0, 8.94e02)
 lambda_mass_fit_50_80.SetParameter(1, 1.116)
 lambda_mass_fit_50_80.SetParameter(2, 1.30576e-03 )
 lambda_mass_fit_50_80.SetParameter(3, 1.504166e-03)
@@ -1615,7 +1836,14 @@ lambda_mass_bg_fit_50_80.SetNpx(1000)
 lambda_mass_bg_fit_50_80.SetParameter(0, lambda_mass_fit_50_80.GetParameter(4))
 lambda_mass_bg_fit_50_80.SetParameter(1, lambda_mass_fit_50_80.GetParameter(5))
 
+voigt_fit_50_80 = rt.TF1("voigt_fit_50_80", "[0]*TMath::Voigt(x - [1], [2], [3], 4)", 1.1, 1.14)
+voigt_fit_50_80.SetNpx(1000)
+voigt_fit_50_80.SetParameter(0, lambda_mass_fit_50_80.GetParameter(0))
+voigt_fit_50_80.SetParameter(1, lambda_mass_fit_50_80.GetParameter(1))
+voigt_fit_50_80.SetParameter(2, lambda_mass_fit_50_80.GetParameter(2))
+voigt_fit_50_80.SetParameter(3, lambda_mass_fit_50_80.GetParameter(3))
 
+signal_scale_50_80 = voigt_fit_50_80.Integral(1.1, 1.14)/voigt_fit_50_80.Integral(SIG_MIN, SIG_MAX)
 
 residual_50_80 = lambda_mass_dist_50_80.Clone("residual_50_80")
 residual_50_80.GetXaxis().SetRangeUser(1.094, 1.142)
@@ -1647,8 +1875,10 @@ for bin_num in range(left_signal_bin_50_80, right_signal_bin_50_80 + 1):
     lambda_total_50_80 += lambda_mass_dist_50_80.GetBinContent(bin_num)
     lambda_bg_50_80 += lambda_mass_bg_fit_50_80.Eval(lambda_mass_dist_50_80.GetBinCenter(bin_num))
 
+
 lambda_signal_50_80 = lambda_total_50_80 - lambda_bg_50_80
 lambda_signal_total_ratio_50_80 = lambda_signal_50_80/lambda_total_50_80
+
 
 output_file.cd()
 RSB_region_50_80.Write("RSB_region_50_80")
@@ -1732,6 +1962,11 @@ if DO_SIDEBAND_SUBTRACTION:
 else:
     h_lambda_2d_subtracted_50_80 = h_lambda_2d_mixcor_sig_50_80.Clone("h_lambda_2d_subtracted_50_80")
 
+
+# Correct for signal scale
+h_lambda_2d_subtracted_50_80.Scale(signal_scale_50_80)
+# Correct for PID loss
+h_lambda_2d_subtracted_50_80.Scale(PID_CORRECTION)
 
 # INTEGRAL AND RATIO SECTION
 h_lambda_dphi_subtracted_50_80 = h_lambda_2d_subtracted_50_80.ProjectionY("h_lambda_dphi_subtracted_50_80")
@@ -1819,31 +2054,27 @@ elif USE_FIT:
 
     # setting parameters for first gaussian (centered at 0)
     fit_function_50_80.SetParLimits(0, 0, 1)
-    fit_function_50_80.SetParameter(0, 0.01)
+    fit_function_50_80.SetParameter(0, 0.03)
     fit_function_50_80.FixParameter(1, 0)
-    fit_function_50_80.SetParLimits(2, 0, 2)
     fit_function_50_80.SetParameter(2, 0.8)
 
     # setting parameters for second gaussian (centered at 0 + 2pi)
-    fit_function_50_80.SetParLimits(3, 0, 1)
-    fit_function_50_80.SetParameter(3, 0.0175)
+    fit_function_50_80.SetParLimits(3, 0,  0.001)
+    fit_function_50_80.SetParameter(3, 0.0005)
     fit_function_50_80.FixParameter(4, 2*rt.TMath.Pi())
-    fit_function_50_80.SetParLimits(5, 0, 0.5)
     fit_function_50_80.SetParameter(5, 0.8)
 
     # setting parameters for third gaussian (centered at pi)
     fit_function_50_80.SetParLimits(6, 0, 1)
-    fit_function_50_80.SetParameter(6, 0.01)
+    fit_function_50_80.SetParameter(6, 0.03)
     fit_function_50_80.FixParameter(7, rt.TMath.Pi())
-    fit_function_50_80.SetParLimits(8, 0, 2)
     fit_function_50_80.SetParameter(8, 1)
 
     # setting parameters for fourth gaussian (centered at pi + 2pi)
-    fit_function_50_80.SetParLimits(9, 0, 0.1)
-    fit_function_50_80.SetParameter(9, 0.001)
+    fit_function_50_80.SetParLimits(9, 0, 1)
+    fit_function_50_80.SetParameter(9, 0.03)
     fit_function_50_80.FixParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
-    fit_function_50_80.SetParLimits(11, 0, 2)
-    fit_function_50_80.SetParameter(11, 0.5)
+    fit_function_50_80.SetParameter(11, 1)
 
     # setting parameters for constant background
     ue_avg_50_80 = (h_lambda_dphi_subtracted_50_80.GetBinContent(1) 
@@ -1882,6 +2113,7 @@ elif USE_V2:
     v2_fit_50_80.SetParameter(0, ue_avg_50_80)
     v2_fit_50_80.SetParameter(1, TRIGGER_V2_50_80)
     v2_fit_50_80.SetParameter(2, LAMBDA_V2_50_80)
+
 elif USE_VON:
     ue_avg_50_80 = (h_lambda_dphi_subtracted_50_80.GetBinContent(1) 
                    + h_lambda_dphi_subtracted_50_80.GetBinContent(2)
@@ -1892,20 +2124,33 @@ elif USE_VON:
 
     v2_fit_50_80 = rt.TF1("v2_fit_50_80", "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))", -2, 6)
     von_fit_string = "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))"
-    von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x- - [1]))"
-    von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()-[4]))"
+    von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x))"
+    von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()))"
 
-    "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x))) + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x- 2*TMath::Pi() - [1])) + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- 2*TMath::Pi()-[4]))"
+    von_fit_50_80 = rt.TF1("von_fit_50_80", von_fit_string, -2, 6)
 
-    v2_fit_50_80.SetParameter(0, ue_avg_50_80)
+    von_fit_50_80.FixParameter(0, ue_avg_50_80)
+    von_fit_50_80.FixParameter(1, TRIGGER_V2_50_80)
+    von_fit_50_80.FixParameter(2, LAMBDA_V2_50_80)
+    von_fit_50_80.SetParLimits(3, 0, 1)
+    von_fit_50_80.SetParameter(3, 0.02)
+    von_fit_50_80.SetParLimits(4, 0, 100)
+    von_fit_50_80.SetParameter(4, 1)
+    von_fit_50_80.SetParLimits(5, 0, 1)
+    von_fit_50_80.SetParameter(5, 0.01)
+    von_fit_50_80.SetParLimits(6, 0, 100)
+    von_fit_50_80.SetParameter(6, 1)
+
+    h_lambda_dphi_subtracted_with_fit_50_80 = h_lambda_dphi_subtracted_50_80.Clone("h_lambda_dphi_subtracted_with_fit_50_80")
+    h_lambda_dphi_subtracted_with_fit_50_80.Fit(von_fit_50_80, "R")
+
+
+    v2_fit_50_80.SetParameter(0, von_fit_50_80.GetParameter(0))
     v2_fit_50_80.SetParameter(1, TRIGGER_V2_50_80)
     v2_fit_50_80.SetParameter(2, LAMBDA_V2_50_80)
 
 else:
     raise NotImplementedError("UE line mode not supported")
-
-
-
 
 
 if USE_FIT:
@@ -1922,6 +2167,18 @@ if USE_FIT:
     h_lambda_away_integral_error_50_80 = 0
 
     h_lambda_ue_integral_50_80 = ue_avg_fit_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_ue_integral_error_50_80 = 0
+
+elif USE_VON:
+    h_lambda_dphi_subtracted_50_80_zeroed = h_lambda_dphi_subtracted_50_80.Clone("h_lambda_dphi_subtracted_50_80_zeroed")
+    h_lambda_dphi_subtracted_50_80_zeroed.Add(v2_fit_50_80, -1)
+    h_lambda_total_integral_50_80 = von_fit_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_total_integral_error_50_80 = 0
+    h_lambda_near_integral_50_80 = von_fit_50_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2) - v2_fit_50_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)
+    h_lambda_near_integral_error_50_80 = 0
+    h_lambda_away_integral_50_80 = von_fit_50_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2) - v2_fit_50_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_away_integral_error_50_80 = 0
+    h_lambda_ue_integral_50_80 = v2_fit_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
     h_lambda_ue_integral_error_50_80 = 0
 
 elif USE_V2:
@@ -2073,7 +2330,7 @@ elif USE_FIT:
     # setting parameters for second gaussian (centered at 0 + 2pi)
     hh_fit_function_50_80.SetParLimits(3, 0, 2)
     hh_fit_function_50_80.SetParameter(3, 0.03)
-    hh_fit_function_50_80.FixParameter(4, 2*rt.TMath.Pi())
+    hh_fit_function_50_80.SetParameter(4, 2*rt.TMath.Pi())
     hh_fit_function_50_80.SetParameter(5, 0.8)
 
     # setting parameters for third gaussian (centered at pi)
@@ -2085,7 +2342,7 @@ elif USE_FIT:
     # setting parameters for fourth gaussian (centered at pi + 2pi)
     hh_fit_function_50_80.SetParLimits(9, 0, 2)
     hh_fit_function_50_80.SetParameter(9, 0.03)
-    hh_fit_function_50_80.FixParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
+    hh_fit_function_50_80.SetParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
     hh_fit_function_50_80.SetParameter(11, 1)
 
     # setting parameters for constant background
@@ -2126,6 +2383,37 @@ elif USE_V2:
     hh_v2_fit_50_80.SetParameter(1, TRIGGER_V2_50_80)
     hh_v2_fit_50_80.SetParameter(2, ASSOCIATED_V2_50_80)
 
+elif USE_VON:
+    hh_ue_avg_50_80 = (h_h_dphi_50_80.GetBinContent(1) 
+                   + h_h_dphi_50_80.GetBinContent(2)
+                   + h_h_dphi_50_80.GetBinContent(7)
+                   + h_h_dphi_50_80.GetBinContent(8)
+                   + h_h_dphi_50_80.GetBinContent(9)
+                   + h_h_dphi_50_80.GetBinContent(16))/6
+    hh_v2_fit_50_80 = rt.TF1("hh_v2_fit_50_80", "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))", -2, 6)
+    hh_von_fit_string = "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))"
+    hh_von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x))"
+    hh_von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()))"
+    hh_von_fit_50_80 = rt.TF1("hh_von_fit_50_80", hh_von_fit_string, -2, 6)
+    hh_von_fit_50_80.FixParameter(0, hh_ue_avg_50_80)
+    hh_von_fit_50_80.FixParameter(1, TRIGGER_V2_50_80)
+    hh_von_fit_50_80.FixParameter(2, ASSOCIATED_V2_50_80)
+    hh_von_fit_50_80.SetParLimits(3, 0, 1)
+    hh_von_fit_50_80.SetParameter(3, 0.02)
+    hh_von_fit_50_80.SetParLimits(4, 0, 100)
+    hh_von_fit_50_80.SetParameter(4, 1)
+    hh_von_fit_50_80.SetParLimits(5, 0, 4)
+    hh_von_fit_50_80.SetParameter(5, 0.01)
+    hh_von_fit_50_80.SetParLimits(6, 0, 100)
+    hh_von_fit_50_80.SetParameter(6, 1)
+    h_h_dphi_with_fit_50_80 = h_h_dphi_50_80.Clone("h_h_dphi_with_fit_50_80")
+    h_h_dphi_with_fit_50_80.Fit(hh_von_fit_50_80, "R")
+
+
+    hh_v2_fit_50_80.SetParameter(0, hh_ue_avg_50_80)
+    hh_v2_fit_50_80.SetParameter(1, TRIGGER_V2_50_80)
+    hh_v2_fit_50_80.SetParameter(2, ASSOCIATED_V2_50_80)
+
 else:
     raise NotImplementedError("UE line mode not supported")
 
@@ -2144,6 +2432,18 @@ if USE_FIT:
     h_h_away_integral_error_50_80 = 0
 
     h_h_ue_integral_50_80 = hh_ue_avg_fit_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_ue_integral_error_50_80 = 0
+
+elif USE_VON:
+    h_h_dphi_50_80_zeroed = h_h_dphi_50_80.Clone("h_h_dphi_subtracted_50_80_zeroed")
+    h_h_dphi_50_80_zeroed.Add(hh_v2_fit_50_80, -1)
+    h_h_total_integral_50_80 = hh_von_fit_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_total_integral_error_50_80 = 0
+    h_h_near_integral_50_80 = hh_von_fit_50_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2) - hh_v2_fit_50_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)
+    h_h_near_integral_error_50_80 = 0
+    h_h_away_integral_50_80 = hh_von_fit_50_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2) - hh_v2_fit_50_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_away_integral_error_50_80 = 0
+    h_h_ue_integral_50_80 = hh_v2_fit_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
     h_h_ue_integral_error_50_80 = 0
 
 elif USE_V2:
@@ -2223,6 +2523,15 @@ if USE_FIT:
 elif USE_V2:
     v2_fit_50_80.Write()
     hh_v2_fit_50_80.Write()
+elif USE_VON:
+    von_fit_50_80.Write()
+    hh_von_fit_50_80.Write()
+    v2_fit_50_80.Write()
+    hh_v2_fit_50_80.Write()
+    h_lambda_dphi_subtracted_with_fit_50_80.Write()
+    h_h_dphi_with_fit_50_80.Write()
+    h_lambda_dphi_subtracted_50_80_zeroed.Write()
+    h_h_dphi_50_80_zeroed.Write()
 else:
     ue_upper_line_50_80.Write()
     ue_line_50_80.Write()

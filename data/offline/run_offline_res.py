@@ -64,6 +64,8 @@ output_file_string += "trig_" + str(TRIG_PT_LOW).replace(".", "") + "_" + str(TR
 output_file_string += "assoc_" + str(ASSOC_PT_LOW).replace(".", "") + "_" + str(ASSOC_PT_HIGH + EPSILON).replace(".", "") + "_"
 output_file_string += "delta_eta_" + str(DELTA_ETA_MAX + EPSILON).replace(".", "") + ".root"
 
+PID_CORRECTION = (1.025/(1.71e-1)) # found from fitting dphi ratios of final dists with and without TOF veto
+
 output_file = rt.TFile(output_file_string, "RECREATE")
 
 ############################################################################################################
@@ -244,6 +246,9 @@ h_h_2d_mixcor_0_20.Scale(1.0/num_trigs_0_20)
 # scaling by total signal/signal region done here
 h_lambda_2d_mixcor_sig_0_20.Scale(scale_factor_0_20)
 h_lambda_2d_mixcor_rsb_0_20.Scale(scale_factor_0_20)
+h_lambda_2d_mixcor_sig_0_20.Scale(PID_CORRECTION)
+h_lambda_2d_mixcor_rsb_0_20.Scale(PID_CORRECTION)
+
 
 output_file.cd()
 h_lambda_2d_nomixcor_0_20.Write()
@@ -696,6 +701,8 @@ h_h_2d_mixcor_20_50.Scale(1.0/num_trigs_20_50)
 # scaling by total signal/signal region done here
 h_lambda_2d_mixcor_sig_20_50.Scale(scale_factor_20_50)
 h_lambda_2d_mixcor_rsb_20_50.Scale(scale_factor_20_50)
+h_lambda_2d_mixcor_sig_20_50.Scale(PID_CORRECTION)
+h_lambda_2d_mixcor_rsb_20_50.Scale(PID_CORRECTION)
 
 output_file.cd()
 h_lambda_2d_nomixcor_20_50.Write()
@@ -1142,6 +1149,8 @@ h_h_2d_mixcor_50_80.Scale(1.0/num_trigs_50_80)
 # scaling by total signal/signal region done here
 h_lambda_2d_mixcor_sig_50_80.Scale(scale_factor_50_80)
 h_lambda_2d_mixcor_rsb_50_80.Scale(scale_factor_50_80)
+h_lambda_2d_mixcor_sig_50_80.Scale(PID_CORRECTION)
+h_lambda_2d_mixcor_rsb_50_80.Scale(PID_CORRECTION)
 
 output_file.cd()
 h_lambda_2d_nomixcor_50_80.Write()

@@ -13,28 +13,28 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   float TRIG_BIT = AliAODTrack::kIsHybridGCG;
   float ASSOC_BIT =  1024; 
 
-  float NSIGMA_TPC_PROTON = 2;
-  float NSIGMA_TOF_PROTON =2;
+  float NSIGMA_TPC_PROTON = 0.6*2;
+  float NSIGMA_TOF_PROTON =0.6*2;
 
-  float NSIGMA_TPC_PION = 3;
-  float NSIGMA_TOF_PION = 3;
+  float NSIGMA_TPC_PION = 0.6*3;
+  float NSIGMA_TOF_PION = 0.6*3;
 
 
   char *EFF_FILE_PATH = "eff_out.root";
   char *CENT_ESTIMATOR = "V0A";
 
   //Starting and ending index of the array containing the run numbers, specifies which range to run over
-  int startIndex = 0; 
-  int endIndex = 17;
+  /* int startIndex = 0; */ 
+  /* int endIndex = 17; */
 
-  /* int startIndex = 18; */
-  /* int endIndex = 28; */
+  int startIndex = 18;
+  int endIndex = 28;
 
   // int startIndex = 15;
   // int endIndex = 28;
 
   TString work_dir = "lambda_hadron_ratio_v0_multbins";
-  TString output_dir = "cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_pid_cuts_normal_normal";
+  TString output_dir = "cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_pid_cuts_narrow_narrow";
   
   //If we want to download test files from grid then run in one swoop (usually just run completely locally):
   bool gridTest = false;
