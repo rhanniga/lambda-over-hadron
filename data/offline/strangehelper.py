@@ -11,6 +11,16 @@ def get_parabola(point_one, point_two, point_three):
     
     return C, B, A
 
+# a function to calculate the straight line that passes through all two input points
+def get_straight_line(point_one, point_two):
+    x1, x2 = point_one[0], point_two[0]
+    y1, y2 = point_one[1], point_two[1]
+    
+    m = (y2 - y1) / (x2 - x1)
+    c = y1 - m * x1
+    
+    return c, m
+
 def make_mixed_corrections(same, mixed, mass_low=1.11, mass_high=1.12, is_hh=False):
     if is_hh:
         same3d = same
