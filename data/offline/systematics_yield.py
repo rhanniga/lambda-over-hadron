@@ -3,6 +3,17 @@ import math
 import array as arr
 import ROOT as rt
 
+def get_average(numbers, errors):
+    s = 0
+    e = 0
+    l = len(numbers)
+    for n, en in zip(numbers, errors):
+        s += n
+        e += (en**2)
+    
+    return s/l, math.sqrt(e)/l
+
+
 def get_rms(ratios):
     rms = 0
     for ratio in ratios:
@@ -15,8 +26,9 @@ def ratio_error(X, Y, X_err, Y_err):
 
 
 LOW_PT = False
-HIGH_PT = False
-NORMAL_PT = True
+HIGH_PT = True
+NORMAL_PT = False
+assert sum([LOW_PT, HIGH_PT, NORMAL_PT]) == 1, "Only one of LOW_PT, HIGH_PT, NORMAL_PT can be True"
 
 
 CENTRAL_TECHNIQUE = "6 bin avg"
@@ -517,7 +529,13 @@ away_ratio_graph_final_syst = rt.TGraphErrors(3, mult_list, away_ratio_graph_val
 ue_ratio_graph_final_syst = rt.TGraphErrors(3, mult_list, ue_ratio_graph_values, mult_error_list_sys, ue_ratio_graph_sys)
 total_ratio_graph_final_syst = rt.TGraphErrors(3, mult_list, total_ratio_graph_values, mult_error_list_sys, total_ratio_graph_sys)
 
-justin_infile = rt.TFile("output/fitsyst_fullpt.root")
+
+if LOW_PT:
+    justin_infile = rt.TFile("output/fitsyst_lowpt6ptbdtest.root")
+elif HIGH_PT:
+    justin_infile = rt.TFile("output/fitsyst_highpt6ptbdtest.root")
+else:
+    justin_infile = rt.TFile("output/fitsyst_fullpt.root")
 
 ratiosNear = justin_infile.Get("ratiosNear")
 ratiosAway = justin_infile.Get("ratiosAway")
@@ -555,6 +573,76 @@ justin_away_ratio_graph_final_syst = rt.TGraphErrors(3, mult_list, justin_away_r
 justin_ue_ratio_graph_final_syst = rt.TGraphErrors(3, mult_list, justin_ue_ratio_graph_values, mult_error_list_sys, justin_ue_ratio_graph_sys)
 justin_total_ratio_graph_final_syst = rt.TGraphErrors(3, mult_list, justin_total_ratio_graph_values, mult_error_list_sys, justin_total_ratio_graph_sys)
 
+# getting nch from table 1 on this paper: https://link.springer.com/article/10.1140/epjc/s10052-016-3915-1
+nch_0_10 = 56.3
+nch_0_10_err = 2.3
+nch_10_20 = 41.9
+nch_10_20_err = 1.7
+nch_20_30 = 34.7
+nch_20_30_err = 1.4
+nch_30_40 = 29.0
+nch_30_40_err = 1.2
+nch_40_50 = 24.1
+nch_40_50_err = 1.0
+nch_50_60 = 18.5
+nch_50_60_err = 0.7
+nch_60_70 = 16.3
+nch_60_70_err = 0.7 
+nch_70_80 = 11.2
+nch_70_80_err = 0.4
+
+nch_0_20, nch_0_20_err = get_average([nch_0_10, nch_10_20], [nch_0_10_err, nch_10_20_err])
+nch_20_50, nch_20_50_err = get_average([nch_20_30, nch_30_40, nch_40_50], [nch_20_30_err, nch_30_40_err, nch_40_50_err])
+nch_50_80, nch_50_80_err = get_average([nch_50_60, nch_60_70, nch_70_80], [nch_50_60_err, nch_60_70_err, nch_70_80_err])
+
+print("nch_0_20: ", nch_0_20, " +/- ", nch_0_20_err)
+print("nch_20_50: ", nch_20_50, " +/- ", nch_20_50_err)
+print("nch_50_80: ", nch_50_80, " +/- ", nch_50_80_err)
+
+new_x_axis = arr.array("d", [nch_50_80, nch_20_50, nch_0_20])
+new_x_axis_err = arr.array("d", [nch_50_80_err, nch_20_50_err, nch_0_20_err])
+new_x_axis_stat_err = arr.array("d", [0.0, 0.0, 0.0])
+
+near_graph_new_x_axis = rt.TGraphErrors(3, new_x_axis, near_graph.GetY(), new_x_axis_stat_err, near_graph.GetEY())
+away_graph_new_x_axis = rt.TGraphErrors(3, new_x_axis, away_graph.GetY(), new_x_axis_stat_err, away_graph.GetEY())
+ue_graph_new_x_axis = rt.TGraphErrors(3, new_x_axis, ue_graph.GetY(), new_x_axis_stat_err, ue_graph.GetEY())
+total_graph_new_x_axis = rt.TGraphErrors(3, new_x_axis, total_graph.GetY(), new_x_axis_stat_err, total_graph.GetEY())
+
+hh_near_graph_new_x_axis = rt.TGraphErrors(3, new_x_axis, hh_near_graph.GetY(), new_x_axis_stat_err, hh_near_graph.GetEY())
+hh_away_graph_new_x_axis = rt.TGraphErrors(3, new_x_axis, hh_away_graph.GetY(), new_x_axis_stat_err, hh_away_graph.GetEY())
+hh_ue_graph_new_x_axis = rt.TGraphErrors(3, new_x_axis, hh_ue_graph.GetY(), new_x_axis_stat_err, hh_ue_graph.GetEY())
+hh_total_graph_new_x_axis = rt.TGraphErrors(3, new_x_axis, hh_total_graph.GetY(), new_x_axis_stat_err, hh_total_graph.GetEY())
+
+near_graph_final_syst_new_x_axis = rt.TGraphAsymmErrors(3, new_x_axis, near_graph_final_syst.GetY(), new_x_axis_err, new_x_axis_err, near_graph_final_syst.GetEYlow(), near_graph_final_syst.GetEYhigh())
+away_graph_final_syst_new_x_axis = rt.TGraphAsymmErrors(3, new_x_axis, away_graph_final_syst.GetY(), new_x_axis_err, new_x_axis_err, away_graph_final_syst.GetEYlow(), away_graph_final_syst.GetEYhigh())
+ue_graph_final_syst_new_x_axis = rt.TGraphAsymmErrors(3, new_x_axis, ue_graph_final_syst.GetY(), new_x_axis_err, new_x_axis_err, ue_graph_final_syst.GetEYlow(), ue_graph_final_syst.GetEYhigh())
+total_graph_final_syst_new_x_axis = rt.TGraphAsymmErrors(3, new_x_axis, total_graph_final_syst.GetY(), new_x_axis_err, new_x_axis_err, total_graph_final_syst.GetEYlow(), total_graph_final_syst.GetEYhigh())
+
+hh_near_graph_final_syst_new_x_axis = rt.TGraphAsymmErrors(3, new_x_axis, hh_near_graph_final_syst.GetY(), new_x_axis_err, new_x_axis_err, hh_near_graph_final_syst.GetEYlow(), hh_near_graph_final_syst.GetEYhigh())
+hh_away_graph_final_syst_new_x_axis = rt.TGraphAsymmErrors(3, new_x_axis, hh_away_graph_final_syst.GetY(), new_x_axis_err, new_x_axis_err, hh_away_graph_final_syst.GetEYlow(), hh_away_graph_final_syst.GetEYhigh())
+hh_ue_graph_final_syst_new_x_axis = rt.TGraphAsymmErrors(3, new_x_axis, hh_ue_graph_final_syst.GetY(), new_x_axis_err, new_x_axis_err, hh_ue_graph_final_syst.GetEYlow(), hh_ue_graph_final_syst.GetEYhigh())
+hh_total_graph_final_syst_new_x_axis = rt.TGraphAsymmErrors(3, new_x_axis, hh_total_graph_final_syst.GetY(), new_x_axis_err, new_x_axis_err, hh_total_graph_final_syst.GetEYlow(), hh_total_graph_final_syst.GetEYhigh())
+
+near_ratio_graph_new_x_axis = rt.TGraphErrors(3, new_x_axis, near_ratio_graph.GetY(), new_x_axis_stat_err, near_ratio_graph.GetEY())
+away_ratio_graph_new_x_axis = rt.TGraphErrors(3, new_x_axis, away_ratio_graph.GetY(), new_x_axis_stat_err, away_ratio_graph.GetEY())
+ue_ratio_graph_new_x_axis = rt.TGraphErrors(3, new_x_axis, ue_ratio_graph.GetY(), new_x_axis_stat_err, ue_ratio_graph.GetEY())
+total_ratio_graph_new_x_axis = rt.TGraphErrors(3, new_x_axis, total_ratio_graph.GetY(), new_x_axis_stat_err, total_ratio_graph.GetEY())
+
+near_ratio_graph_final_syst_new_x_axis = rt.TGraphErrors(3, new_x_axis, near_ratio_graph_final_syst.GetY(), new_x_axis_err, near_ratio_graph_final_syst.GetEY())
+away_ratio_graph_final_syst_new_x_axis = rt.TGraphErrors(3, new_x_axis, away_ratio_graph_final_syst.GetY(), new_x_axis_err, away_ratio_graph_final_syst.GetEY())
+ue_ratio_graph_final_syst_new_x_axis = rt.TGraphErrors(3, new_x_axis, ue_ratio_graph_final_syst.GetY(), new_x_axis_err, ue_ratio_graph_final_syst.GetEY())
+total_ratio_graph_final_syst_new_x_axis = rt.TGraphErrors(3, new_x_axis, total_ratio_graph_final_syst.GetY(), new_x_axis_err, total_ratio_graph_final_syst.GetEY())
+
+justin_near_ratio_graph_new_x_axis = rt.TGraphErrors(3, new_x_axis, justin_near_ratio_graph.GetY(), new_x_axis_stat_err, justin_near_ratio_graph.GetEY())
+justin_away_ratio_graph_new_x_axis = rt.TGraphErrors(3, new_x_axis, justin_away_ratio_graph.GetY(), new_x_axis_stat_err, justin_away_ratio_graph.GetEY())
+justin_ue_ratio_graph_new_x_axis = rt.TGraphErrors(3, new_x_axis, justin_ue_ratio_graph.GetY(), new_x_axis_stat_err, justin_ue_ratio_graph.GetEY())
+justin_total_ratio_graph_new_x_axis = rt.TGraphErrors(3, new_x_axis, justin_total_ratio_graph.GetY(), new_x_axis_stat_err, justin_total_ratio_graph.GetEY())
+
+justin_near_ratio_graph_final_syst_new_x_axis = rt.TGraphErrors(3, new_x_axis, justin_near_ratio_graph_final_syst.GetY(), new_x_axis_err, justin_near_ratio_graph_final_syst.GetEY())
+justin_away_ratio_graph_final_syst_new_x_axis = rt.TGraphErrors(3, new_x_axis, justin_away_ratio_graph_final_syst.GetY(), new_x_axis_err, justin_away_ratio_graph_final_syst.GetEY())
+justin_ue_ratio_graph_final_syst_new_x_axis = rt.TGraphErrors(3, new_x_axis, justin_ue_ratio_graph_final_syst.GetY(), new_x_axis_err, justin_ue_ratio_graph_final_syst.GetEY())
+justin_total_ratio_graph_final_syst_new_x_axis = rt.TGraphErrors(3, new_x_axis, justin_total_ratio_graph_final_syst.GetY(), new_x_axis_err, justin_total_ratio_graph_final_syst.GetEY())
+
 outfile_string = "output/final_yield_ratio_syst"
 if LOW_PT:
     outfile_string += "_lowpt"
@@ -575,6 +663,15 @@ away_graph_final_syst.Write("away_yield_graph_final_syst")
 ue_graph_final_syst.Write("ue_yield_graph_final_syst")
 total_graph_final_syst.Write("total_yield_graph_final_syst")
 
+near_graph_new_x_axis.Write("near_yield_graph_new_x_axis")
+away_graph_new_x_axis.Write("away_yield_graph_new_x_axis")
+ue_graph_new_x_axis.Write("ue_yield_graph_new_x_axis")
+total_graph_new_x_axis.Write("total_yield_graph_new_x_axis")
+near_graph_final_syst_new_x_axis.Write("near_yield_graph_final_syst_new_x_axis")
+away_graph_final_syst_new_x_axis.Write("away_yield_graph_final_syst_new_x_axis")
+ue_graph_final_syst_new_x_axis.Write("ue_yield_graph_final_syst_new_x_axis")
+total_graph_final_syst_new_x_axis.Write("total_yield_graph_final_syst_new_x_axis")
+
 hh_near_graph.Write("hh_near_yield_graph")
 hh_away_graph.Write("hh_away_yield_graph")
 hh_ue_graph.Write("hh_ue_yield_graph")
@@ -584,7 +681,14 @@ hh_away_graph_final_syst.Write("hh_away_yield_graph_final_syst")
 hh_ue_graph_final_syst.Write("hh_ue_yield_graph_final_syst")
 hh_total_graph_final_syst.Write("hh_total_yield_graph_final_syst")
 
-
+hh_near_graph_new_x_axis.Write("hh_near_yield_graph_new_x_axis")
+hh_away_graph_new_x_axis.Write("hh_away_yield_graph_new_x_axis")
+hh_ue_graph_new_x_axis.Write("hh_ue_yield_graph_new_x_axis")
+hh_total_graph_new_x_axis.Write("hh_total_yield_graph_new_x_axis")
+hh_near_graph_final_syst_new_x_axis.Write("hh_near_yield_graph_final_syst_new_x_axis")
+hh_away_graph_final_syst_new_x_axis.Write("hh_away_yield_graph_final_syst_new_x_axis")
+hh_ue_graph_final_syst_new_x_axis.Write("hh_ue_yield_graph_final_syst_new_x_axis")
+hh_total_graph_final_syst_new_x_axis.Write("hh_total_yield_graph_final_syst_new_x_axis")
 
 near_ratio_graph.Write("near_ratio_graph")
 away_ratio_graph.Write("away_ratio_graph")
@@ -595,6 +699,14 @@ away_ratio_graph_final_syst.Write("away_ratio_graph_final_syst")
 ue_ratio_graph_final_syst.Write("ue_ratio_graph_final_syst")
 total_ratio_graph_final_syst.Write("total_ratio_graph_final_syst")
 
+near_ratio_graph_new_x_axis.Write("near_ratio_graph_new_x_axis")
+away_ratio_graph_new_x_axis.Write("away_ratio_graph_new_x_axis")
+ue_ratio_graph_new_x_axis.Write("ue_ratio_graph_new_x_axis")
+total_ratio_graph_new_x_axis.Write("total_ratio_graph_new_x_axis")
+near_ratio_graph_final_syst_new_x_axis.Write("near_ratio_graph_final_syst_new_x_axis")
+away_ratio_graph_final_syst_new_x_axis.Write("away_ratio_graph_final_syst_new_x_axis")
+ue_ratio_graph_final_syst_new_x_axis.Write("ue_ratio_graph_final_syst_new_x_axis")
+total_ratio_graph_final_syst_new_x_axis.Write("total_ratio_graph_final_syst_new_x_axis")
 
 
 justin_near_ratio_graph.Write("lambda_phi_near_ratio_graph")
@@ -605,5 +717,14 @@ justin_near_ratio_graph_final_syst.Write("lambda_phi_near_ratio_graph_final_syst
 justin_away_ratio_graph_final_syst.Write("lambda_phi_away_ratio_graph_final_syst")
 justin_ue_ratio_graph_final_syst.Write("lambda_phi_ue_ratio_graph_final_syst")
 justin_total_ratio_graph_final_syst.Write("lambda_phi_total_ratio_graph_final_syst")
+
+justin_near_ratio_graph_new_x_axis.Write("lambda_phi_near_ratio_graph_new_x_axis")
+justin_away_ratio_graph_new_x_axis.Write("lambda_phi_away_ratio_graph_new_x_axis")
+justin_ue_ratio_graph_new_x_axis.Write("lambda_phi_ue_ratio_graph_new_x_axis")
+justin_total_ratio_graph_new_x_axis.Write("lambda_phi_total_ratio_graph_new_x_axis")
+justin_near_ratio_graph_final_syst_new_x_axis.Write("lambda_phi_near_ratio_graph_final_syst_new_x_axis")
+justin_away_ratio_graph_final_syst_new_x_axis.Write("lambda_phi_away_ratio_graph_final_syst_new_x_axis")
+justin_ue_ratio_graph_final_syst_new_x_axis.Write("lambda_phi_ue_ratio_graph_final_syst_new_x_axis")
+justin_total_ratio_graph_final_syst_new_x_axis.Write("lambda_phi_total_ratio_graph_final_syst_new_x_axis")
 
 out_file.Close()
