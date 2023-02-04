@@ -3,15 +3,12 @@ import math
 import array as arr
 import ROOT as rt
 
-def get_average(numbers, errors):
+def get_average(numbers):
     s = 0
-    e = 0
     l = len(numbers)
-    for n, en in zip(numbers, errors):
+    for n in numbers:
         s += n
-        e += (en**2)
-    
-    return s/l, math.sqrt(e)/l
+    return s/l
 
 
 def get_rms(ratios):
@@ -25,8 +22,8 @@ def ratio_error(X, Y, X_err, Y_err):
     return math.sqrt((X_err/X)**2 + (Y_err/Y)**2) * (X/Y)
 
 
-LOW_PT = False
-HIGH_PT = True
+LOW_PT = True
+HIGH_PT = False
 NORMAL_PT = False
 assert sum([LOW_PT, HIGH_PT, NORMAL_PT]) == 1, "Only one of LOW_PT, HIGH_PT, NORMAL_PT can be True"
 
@@ -35,15 +32,15 @@ CENTRAL_TECHNIQUE = "6 bin avg"
 N_DPHI_BINS = 16
 
 PRINT_YIELDS = False
-PRINT_SYSTEMATICS = False
+PRINT_SYSTEMATICS = True
 
-total_dphi_sys_0_20 = math.sqrt(0.01**2 + 0.001**2 + 0.011**2 + 0.052**2)
-total_dphi_sys_20_50 = math.sqrt(0.009**2 + 0.003**2 + 0.018**2 + 0.052**2)
-total_dphi_sys_50_80 = math.sqrt(0.019**2 + 0.008**2 + 0.037**2 + 0.052**2)
+total_dphi_sys_0_20 = math.sqrt(0.01**2 + 0.001**2 + 0.011**2 + 0.037**2)
+total_dphi_sys_20_50 = math.sqrt(0.009**2 + 0.003**2 + 0.018**2 + 0.037**2)
+total_dphi_sys_50_80 = math.sqrt(0.019**2 + 0.008**2 + 0.037**2 + 0.037**2)
 
-hh_total_dphi_sys_0_20 = 0.051
-hh_total_dphi_sys_20_50 = 0.051
-hh_total_dphi_sys_50_80 = 0.051
+hh_total_dphi_sys_0_20 = 0.035
+hh_total_dphi_sys_20_50 = 0.035
+hh_total_dphi_sys_50_80 = 0.035
 
 
 if LOW_PT:
@@ -591,9 +588,13 @@ nch_60_70_err = 0.7
 nch_70_80 = 11.2
 nch_70_80_err = 0.4
 
-nch_0_20, nch_0_20_err = get_average([nch_0_10, nch_10_20], [nch_0_10_err, nch_10_20_err])
-nch_20_50, nch_20_50_err = get_average([nch_20_30, nch_30_40, nch_40_50], [nch_20_30_err, nch_30_40_err, nch_40_50_err])
-nch_50_80, nch_50_80_err = get_average([nch_50_60, nch_60_70, nch_70_80], [nch_50_60_err, nch_60_70_err, nch_70_80_err])
+nch_0_20  = get_average([nch_0_10, nch_10_20])
+nch_20_50 = get_average([nch_20_30, nch_30_40, nch_40_50])
+nch_50_80 = get_average([nch_50_60, nch_60_70, nch_70_80])
+
+nch_0_20_err = nch_0_20*0.04
+nch_20_50_err = nch_20_50*0.04
+nch_50_80_err = nch_50_80*0.04
 
 print("nch_0_20: ", nch_0_20, " +/- ", nch_0_20_err)
 print("nch_20_50: ", nch_20_50, " +/- ", nch_20_50_err)
