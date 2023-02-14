@@ -802,7 +802,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     MakeSameHLambdaCorrelations(trigger_list_highestPt, lambda_list, fDphiHLambda_highestPt, primZ, multPercentile, true, false);
     MakeSameHHCorrelations(trigger_list_highestPt, associated_h_list, fDphiHH_highestPt, primZ, multPercentile, true);
 
-    if(lambda_list.size() > 0 && associated_h_list.size() > 0) {
+    if(lambda_list.size() > 0 || associated_h_list.size() > 0) {
         AliEventPool *fCorPool = fCorPoolMgr->GetEventPool(multPercentile, primZ);
         AliEventPool *fCorPool_highestPt = fCorPoolMgr_highestPt->GetEventPool(multPercentile, primZ);
         if(!fCorPool) {
