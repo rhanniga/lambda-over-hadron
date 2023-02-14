@@ -56,6 +56,8 @@ AliAnalysisTaskLambdaHadronV0Closure::AliAnalysisTaskLambdaHadronV0Closure() :
     fCorPoolMgr(0x0),
     fTriggerEff(0x0),
     fAssociatedEff(0x0),
+    fPrimaryEff(0x0),
+    fSecondaryEff(0x0),
     fLambdaEff(0x0),
     fTriggerDistEff(0x0),
     fTriggerDistEff_checkMC(0x0),
@@ -127,6 +129,8 @@ AliAnalysisTaskLambdaHadronV0Closure::AliAnalysisTaskLambdaHadronV0Closure(const
     fCorPoolMgr(0x0),
     fTriggerEff(0x0),
     fAssociatedEff(0x0),
+    fPrimaryEff(0x0),
+    fSecondaryEff(0x0),
     fLambdaEff(0x0),
     fTriggerDistEff(0x0),
     fTriggerDistEff_checkMC(0x0),
@@ -574,6 +578,16 @@ void AliAnalysisTaskLambdaHadronV0Closure::LoadEfficiencies(TString filePath) {
         AliFatal("UNABLE TO FIND ASSOCIATED EFF, EXITING");
     }
 
+    fPrimaryEff = (TH1D*) effFile->Get("fPrimaryEff")->Clone("fPrimaryEffClone");
+    if(!fPrimaryEff) {
+        AliFatal("UNABLE TO FIND PRIMARY EFF, EXITING");
+    }
+
+    fSecondaryEff = (TH1D*) effFile->Get("fSecondaryEff")->Clone("fSecondaryEffClone");
+    if(!fSecondaryEff) {
+        AliFatal("UNABLE TO FIND SECONDARY EFF, EXITING");
+    }
+
     fTriggerEff = (TH1D*) effFile->Get("fTriggerEff")->Clone("fTriggerEffClone");
     if(!fTriggerEff) {
         AliFatal("UNABLE TO FIND TRIGGER EFF, EXITING");
@@ -630,6 +644,7 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeSameHLambdaCorrelations(std::vect
         }
     }
 }
+
 void AliAnalysisTaskLambdaHadronV0Closure::MakeSameRecoHRealLambdaCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAODMCParticle*> lambda_list, THnSparse* fDphi, double zVtx, bool eff)
 {
     double dphi_point[6];
@@ -928,7 +943,7 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeSameMCHDaughterCorrelations(std::
 }
 
 
-void AliAnalysisTaskLambdaHadronV0Closure::MakeSameHHCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAODTrack*> associated_h_list, THnSparse* fDphi, double zVtx, bool eff)
+void AliAnalysisTaskLambdaHadronV0Closure::MakeSameHHCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAODTrack*> associated_h_list, THnSparse* fDphi, double zVtx, bool eff, bool isOnlyPrimary, bool isOnlySecondary)
 {
     double dphi_point[5];
 
@@ -962,10 +977,24 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeSameHHCorrelations(std::vector<Al
                 int trigBin = fTriggerEff->FindBin(trigger->Pt());
                 double trigEff = fTriggerEff->GetBinContent(trigBin);
                 double triggerScale = 1.0/trigEff;
+                double associatedScale = 1.0;
 
-                int associatedBin = fAssociatedEff->FindBin(associate->Pt());
-                double associatedEff = fAssociatedEff->GetBinContent(associatedBin);
-                double associatedScale = 1.0/associatedEff;
+                if(isOnlyPrimary) {
+                    int associatedBin = fPrimaryEff->FindBin(associate->Pt());
+                    double associatedEff = fPrimaryEff->GetBinContent(associatedBin);
+                    associatedScale = 1.0/associatedEff;
+                }
+                else if(isOnlySecondary) {
+                    int associatedBin = fSecondaryEff->FindBin(associate->Pt());
+                    double associatedEff = fSecondaryEff->GetBinContent(associatedBin);
+                    associatedScale = 1.0/associatedEff;
+                }
+                else {
+                    int associatedBin = fAssociatedEff->FindBin(associate->Pt());
+                    double associatedEff = fAssociatedEff->GetBinContent(associatedBin);
+                    associatedScale = 1.0/associatedEff;
+                }
+
 
                 double totalScale = triggerScale*associatedScale;
 
@@ -1263,7 +1292,7 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeMixedMCHDaughterCorrelations(AliE
     }
 }
 
-void AliAnalysisTaskLambdaHadronV0Closure::MakeMixedHHCorrelations(AliEventPool* fPool, std::vector<AliAODTrack*> associated_h_list, THnSparse* fDphi, double zVtx, bool eff)
+void AliAnalysisTaskLambdaHadronV0Closure::MakeMixedHHCorrelations(AliEventPool* fPool, std::vector<AliAODTrack*> associated_h_list, THnSparse* fDphi, double zVtx, bool eff, bool isOnlyPrimary, bool isOnlySecondary)
 {
     double dphi_point[5];
 
@@ -1300,9 +1329,24 @@ void AliAnalysisTaskLambdaHadronV0Closure::MakeMixedHHCorrelations(AliEventPool*
                     int trigBin = fTriggerEff->FindBin(trigger->Pt());
                     double trigEff = fTriggerEff->GetBinContent(trigBin);
                     double triggerScale = 1.0/trigEff;
-                    int associatedBin = fAssociatedEff->FindBin(associate->Pt());
-                    double associatedEff = fAssociatedEff->GetBinContent(associatedBin);
-                    double associatedScale = 1.0/associatedEff;
+                    double associatedScale = 1.0;
+
+                    if(isOnlyPrimary) {
+                        int associatedBin = fPrimaryEff->FindBin(associate->Pt());
+                        double associatedEff = fPrimaryEff->GetBinContent(associatedBin);
+                        associatedScale = 1.0/associatedEff;
+                    }
+                    else if(isOnlySecondary) {
+                        int associatedBin = fSecondaryEff->FindBin(associate->Pt());
+                        double associatedEff = fSecondaryEff->GetBinContent(associatedBin);
+                        associatedScale = 1.0/associatedEff;
+                    }
+                    else {
+                        int associatedBin = fAssociatedEff->FindBin(associate->Pt());
+                        double associatedEff = fAssociatedEff->GetBinContent(associatedBin);
+                        associatedScale = 1.0/associatedEff;
+                    }
+
                     double totalScale = triggerScale*associatedScale;
                     fDphi->Fill(dphi_point, totalScale);
                 }
@@ -1372,8 +1416,6 @@ bool AliAnalysisTaskLambdaHadronV0Closure::PassDaughterCuts(AliAODTrack *track){
 
     AliAODMCParticle* mcpart = (AliAODMCParticle*)fMCArray->At(label);
 
-    // if(mcpart->IsPhysicalPrimary()) return false;
-
     return pass;
 }
 
@@ -1440,7 +1482,6 @@ bool AliAnalysisTaskLambdaHadronV0Closure::PassAssociatedCuts(AliAODTrack *track
 
         int pdg = mcpart->GetPdgCode();
         if(!IsMCChargedHadron(pdg)) return false;
-        if(!mcpart->IsPhysicalPrimary()) return false;
     }
 
     return true;
@@ -1460,7 +1501,6 @@ bool AliAnalysisTaskLambdaHadronV0Closure::PassTriggerCuts(AliAODTrack *track, b
 
         int pdg = mcpart->GetPdgCode();
         if(!IsMCChargedHadron(pdg)) return false;
-        if(!mcpart->IsPhysicalPrimary()) return false;
     }
 
     return true;
@@ -1480,7 +1520,7 @@ bool AliAnalysisTaskLambdaHadronV0Closure::IsMCChargedHadron(int pdg_code) {
 bool AliAnalysisTaskLambdaHadronV0Closure::PassMCTriggerCuts(AliAODMCParticle *mc_particle){
 
     if(!IsMCChargedHadron(mc_particle->PdgCode())) return false;
-    if(!mc_particle->IsPhysicalPrimary()) return false; // for now trigger is physical primary, could change
+    if(!mc_particle->IsPhysicalPrimary()) return false; 
     if(!(TMath::Abs(mc_particle->Eta()) < 0.8)) return false;
     if(!(mc_particle->Pt() > 0.15)) return false;
 
@@ -1756,11 +1796,11 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
     MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHHEff, primZ, true);
     MakeSameHHCorrelations(trigger_list_checkMC, associated_h_list_checkMC, fDphiHHEff_checkMC, primZ, true);
 
-    MakeSameHHCorrelations(trigger_list_checkMC, associated_primary_proton_list, fDphiHPrimaryProton, primZ, true);
-    MakeSameHHCorrelations(trigger_list_checkMC, associated_primary_pion_list, fDphiHPrimaryPion, primZ, true);
+    MakeSameHHCorrelations(trigger_list_checkMC, associated_primary_proton_list, fDphiHPrimaryProton, primZ, true, true, false);
+    MakeSameHHCorrelations(trigger_list_checkMC, associated_primary_pion_list, fDphiHPrimaryPion, primZ, true, true, false);
 
-    MakeSameHHCorrelations(trigger_list_checkMC, associated_secondary_proton_list, fDphiHSecondaryProton, primZ, true);
-    MakeSameHHCorrelations(trigger_list_checkMC, associated_secondary_pion_list, fDphiHSecondaryPion, primZ, true);
+    MakeSameHHCorrelations(trigger_list_checkMC, associated_secondary_proton_list, fDphiHSecondaryProton, primZ, true, false, true);
+    MakeSameHHCorrelations(trigger_list_checkMC, associated_secondary_pion_list, fDphiHSecondaryPion, primZ, true, false, true);
 
     MakeSameHDaughterCorrelations_withMCKin(trigger_list, antilambda_list_checkMotherPDG, fDphiHDaughterProton_MCKin, fDphiHDaughterPion_MCKin, primZ);
     MakeSameHDaughterCorrelations_withMCKin(trigger_list, lambda_list_checkMotherPDG, fDphiHDaughterProton_MCKin, fDphiHDaughterPion_MCKin, primZ);
@@ -1804,11 +1844,6 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
         }
     }
 
-    // std::cout << "The length of the MC stack is: " << fMCArray->GetEntries() << std::endl;
-    // std::cout << "The length of the primary proton list is: " << real_primary_proton_list.size() << std::endl;
-    // std::cout << "The length of the primary pion list is: " << real_primary_pion_list.size() << std::endl;
-    // std::cout << "The length of the secondary proton list is: " << real_secondary_proton_list.size() << std::endl;
-    // std::cout << "The length of the secondary pion list is: " << real_secondary_pion_list.size() << std::endl;
 
     FillSingleMCParticleDist(real_trigger_list, primZ, fTriggerDist_MC);
     FillSingleMCParticleDist(real_associated_list, primZ, fAssociatedDist_MC);
@@ -1845,10 +1880,10 @@ void AliAnalysisTaskLambdaHadronV0Closure::UserExec(Option_t*)
                 MakeMixedHLambdaCorrelations_withMCKin(fCorPool, lambda_list_checkMotherPDG_isPrimary, fDphiHLambdaMixed_MCKin_physicalPrimary, primZ, true);
                 MakeMixedMCHLambdaCorrelations(fCorPool, real_lambda_list_physicalPrimary, fDphiRecoHRealLambdaMixed_MCKin_physicalPrimary, primZ);
                 MakeMixedHHCorrelations(fCorPool, associated_h_list, fDphiHHMixed, primZ);
-                MakeMixedHHCorrelations(fCorPool, associated_primary_proton_list, fDphiHPrimaryProtonMixed, primZ);
-                MakeMixedHHCorrelations(fCorPool, associated_primary_pion_list, fDphiHPrimaryPionMixed, primZ);
-                MakeMixedHHCorrelations(fCorPool, associated_secondary_proton_list, fDphiHSecondaryProtonMixed, primZ);
-                MakeMixedHHCorrelations(fCorPool, associated_secondary_pion_list, fDphiHSecondaryPionMixed, primZ);
+                MakeMixedHHCorrelations(fCorPool, associated_primary_proton_list, fDphiHPrimaryProtonMixed, primZ, true, true, false);
+                MakeMixedHHCorrelations(fCorPool, associated_primary_pion_list, fDphiHPrimaryPionMixed, primZ, true, true, false);
+                MakeMixedHHCorrelations(fCorPool, associated_secondary_proton_list, fDphiHSecondaryProtonMixed, primZ, true, false, true);
+                MakeMixedHHCorrelations(fCorPool, associated_secondary_pion_list, fDphiHSecondaryPionMixed, primZ, true, false, true);
                 MakeMixedHDaughterCorrelations_withMCKin(fCorPool, antilambda_list_checkMotherPDG, fDphiHDaughterProtonMixed_MCKin, fDphiHDaughterPionMixed_MCKin, primZ);
                 MakeMixedHDaughterCorrelations_withMCKin(fCorPool, lambda_list_checkMotherPDG, fDphiHDaughterProtonMixed_MCKin, fDphiHDaughterPionMixed_MCKin, primZ);
             }

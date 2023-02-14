@@ -138,6 +138,8 @@ private:
     THnSparse  *fRecoLambdaWithAODProtonDist;//! Dist of Recon lambda with cor AOD proton
 
     THnSparse  *fRealChargedDist;//! real charged hadron dist
+    THnSparse  *fRealPrimaryChargedDist;//! real primary charged hadron dist
+    THnSparse  *fRealSecondaryChargedDist;//! real secondary charged hadron dist 
     THnSparse  *fRealTriggerDist;//! real trigger hadron dist (charged hadron, not always physical primary)
     THnSparse  *fRealKDist;//! real charged K dist
     THnSparse  *fRealPiDist;//! real charged pion dist
@@ -148,6 +150,8 @@ private:
     THnSparse  *fRealMuonDist;//! real muon dist
   
     THnSparse  *fRecoChargedDist;//!
+    THnSparse  *fRecoPrimaryChargedDist;//!
+    THnSparse  *fRecoSecondaryChargedDist;//!
     THnSparse  *fRecoKDist;//!
     THnSparse  *fRecoPiDist;//!
     THnSparse  *fRecoeDist;//!

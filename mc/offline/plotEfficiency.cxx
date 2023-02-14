@@ -111,7 +111,7 @@ void plotEfficiency(){
     Float_t mult[4] = {0.0, 20.0, 50.0, 80.0};
     
     /* TFile* infile = new TFile("~/OneDrive/Research/Output/lambda-over-hadron/mc/efficiency_run_etacutonline.root"); */
-    TFile* infile = new TFile("../online/eff_out_online_pp.root");
+    TFile* infile = new TFile("../online/efficiency_run_FINAL.root");
     TList* list = (TList*)infile->Get("h-lambda_eff");
     
     // This actually isnt entire range and misses 10% of signal
@@ -119,15 +119,24 @@ void plotEfficiency(){
     // float SIG_MAX = 1.16 - 0.00000001;
     
     //single track histos
-    THnSparseF* realTrigger = (THnSparseF*)list->FindObject("fRealChargedDist");
+    THnSparseF* realTrigger = (THnSparseF*)list->FindObject("fRealTriggerDist");
     THnSparseF* recoTrigger = (THnSparseF*)list->FindObject("fRecoChargedTriggerDist");
     THnSparseF* realCharged = (THnSparseF*)list->FindObject("fRealChargedDist");
     THnSparseF* recoCharged = (THnSparseF*)list->FindObject("fRecoChargedDist");
+    THnSparseF* realPrimaryCharged = (THnSparseF*)list->FindObject("fRealPrimaryChargedDist");
+    THnSparseF* recoPrimaryCharged = (THnSparseF*)list->FindObject("fRecoPrimaryChargedDist");
+    THnSparseF* realSecondaryCharged = (THnSparseF*)list->FindObject("fRealSecondaryChargedDist");
+    THnSparseF* recoSecondaryCharged = (THnSparseF*)list->FindObject("fRecoSecondaryChargedDist");
 
     realTrigger->GetAxis(0)->SetRangeUser(0.5, 10.0);
     recoTrigger->GetAxis(0)->SetRangeUser(0.5, 10.0);
     realCharged->GetAxis(0)->SetRangeUser(0.5, 10.0);
     recoCharged->GetAxis(0)->SetRangeUser(0.5, 10.0);
+    realPrimaryCharged->GetAxis(0)->SetRangeUser(0.5, 10.0);
+    recoPrimaryCharged->GetAxis(0)->SetRangeUser(0.5, 10.0);
+    realSecondaryCharged->GetAxis(0)->SetRangeUser(0.5, 10.0);
+    recoSecondaryCharged->GetAxis(0)->SetRangeUser(0.5, 10.0);
+
 
     // offline eta cuts no longer required
     //recoTrigger->GetAxis(2)->SetRangeUser(-0.8, 0.8);
@@ -139,30 +148,53 @@ void plotEfficiency(){
     recoTrigger->GetAxis(3)->SetRangeUser(-10.0, 10.0);
     recoCharged->GetAxis(3)->SetRangeUser(-10.0, 10.0);
     realCharged->GetAxis(3)->SetRangeUser(-10.0, 10.0);
+    realPrimaryCharged->GetAxis(3)->SetRangeUser(-10.0, 10.0);
+    recoPrimaryCharged->GetAxis(3)->SetRangeUser(-10.0, 10.0);
+    realSecondaryCharged->GetAxis(3)->SetRangeUser(-10.0, 10.0);
+    recoSecondaryCharged->GetAxis(3)->SetRangeUser(-10.0, 10.0);
 
     realTrigger->Sumw2();
     recoTrigger->Sumw2();
     recoCharged->Sumw2();
     realCharged->Sumw2();
+    realPrimaryCharged->Sumw2();
+    recoPrimaryCharged->Sumw2();
+    realSecondaryCharged->Sumw2();
+    recoSecondaryCharged->Sumw2();
+
     
     TH1D* realTrigger_PT_mult[4];
     TH1D* recoTrigger_PT_mult[4];
     TH1D* recoCharged_PT_mult[4];
     TH1D* realCharged_PT_mult[4];
+    TH1D* realPrimaryCharged_PT_mult[4];
+    TH1D* recoPrimaryCharged_PT_mult[4];
+    TH1D* realSecondaryCharged_PT_mult[4];
+    TH1D* recoSecondaryCharged_PT_mult[4];
 
     TH1D* effTrigger_PT_mult[4];
     TH1D* effCharged_PT_mult[4];
+    TH1D* effPrimaryCharged_PT_mult[4];
+    TH1D* effSecondaryCharged_PT_mult[4];
 
     TH1D* ratioTrigger_PT_mult[3];
     TH1D* ratioCharged_PT_mult[3];
+    TH1D* ratioPrimaryCharged_PT_mult[3];
+    TH1D* ratioSecondaryCharged_PT_mult[3];
 
     TCanvas* ceffTrigger_PT = new TCanvas("ceffTrigger_PT", "effTrigger_PT", 50, 50, 600, 600);
     TCanvas* ceffCharged_PT = new TCanvas("ceffCharged_PT", "effCharged_PT", 50, 50, 600, 600);
+    TCanvas* ceffPrimaryCharged_PT = new TCanvas("ceffPrimaryCharged_PT", "effPrimaryCharged_PT", 50, 50, 600, 600);
+    TCanvas* ceffSecondaryCharged_PT = new TCanvas("ceffSecondaryCharged_PT", "effSecondaryCharged_PT", 50, 50, 600, 600);
 
     TCanvas* cratioTrigger_PT = new TCanvas("cratioTrigger_PT", "ratioTrigger_PT", 50, 50, 600, 600);
     TCanvas* cratioCharged_PT = new TCanvas("cratioCharged_PT", "ratioCharged_PT", 50, 50, 600, 600);
+    TCanvas* cratioPrimaryCharged_PT = new TCanvas("cratioPrimaryCharged_PT", "ratioPrimaryCharged_PT", 50, 50, 600, 600);
+    TCanvas* cratioSecondaryCharged_PT = new TCanvas("cratioSecondaryCharged_PT", "ratioSecondaryCharged_PT", 50, 50, 600, 600);
     plotMultEff(recoTrigger, realTrigger, recoTrigger_PT_mult, realTrigger_PT_mult, effTrigger_PT_mult, ratioTrigger_PT_mult, mult, 3, 0, ceffTrigger_PT, cratioTrigger_PT, kTRUE);
     plotMultEff(recoCharged, realCharged, recoCharged_PT_mult, realCharged_PT_mult, effCharged_PT_mult, ratioCharged_PT_mult, mult, 3, 0, ceffCharged_PT, cratioCharged_PT, kTRUE);
+    plotMultEff(recoPrimaryCharged, realPrimaryCharged, recoPrimaryCharged_PT_mult, realPrimaryCharged_PT_mult, effPrimaryCharged_PT_mult, ratioPrimaryCharged_PT_mult, mult, 3, 0, ceffPrimaryCharged_PT, cratioPrimaryCharged_PT, kTRUE);
+    plotMultEff(recoSecondaryCharged, realSecondaryCharged, recoSecondaryCharged_PT_mult, realSecondaryCharged_PT_mult, effSecondaryCharged_PT_mult, ratioSecondaryCharged_PT_mult, mult, 3, 0, ceffSecondaryCharged_PT, cratioSecondaryCharged_PT, kTRUE);
 
     // real lambda histo
     THnSparseF* realLambda = (THnSparseF*)list->FindObject("fRealTotalLambdaDist");
@@ -231,21 +263,21 @@ void plotEfficiency(){
     etaPtRefitRowsRatioLambdaV0->GetAxis(0)->SetRangeUser(0.5, 10.0);
        
     // ETA AXIS (WE DONT DO THIS ANYMORE) 
-    realLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
 
-    recoLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
-    etaLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
-    etaPtLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
-    etaPtRefitLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
-    etaPtRefitRowsLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
-    etaPtRefitRowsRatioLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
+    // realLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
+    // recoLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
+    // etaLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
+    // etaPtLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
+    // etaPtRefitLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
+    // etaPtRefitRowsLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
+    // etaPtRefitRowsRatioLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
 
-    recoLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
-    etaLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
-    etaPtLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
-    etaPtRefitLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
-    etaPtRefitRowsLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
-    etaPtRefitRowsRatioLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
+    // recoLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
+    // etaLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
+    // etaPtLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
+    // etaPtRefitLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
+    // etaPtRefitRowsLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
+    // etaPtRefitRowsRatioLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
 
     // Z VTX AXIS  
     realLambda->GetAxis(3)->SetRangeUser(-10.0, 10.0-0.0001);
@@ -395,6 +427,12 @@ void plotEfficiency(){
 
     effTrigger_PT_mult[3]->SetName("fTriggerEff");
     effTrigger_PT_mult[3]->Write();
+
+    effPrimaryCharged_PT_mult[3]->SetName("fPrimaryEff");
+    effPrimaryCharged_PT_mult[3]->Write();
+
+    effSecondaryCharged_PT_mult[3]->SetName("fSecondaryEff");
+    effSecondaryCharged_PT_mult[3]->Write();
 
     etaPtRefitRowsRatioeffPT_mult[3]->SetName("fLambdaEff");
     etaPtRefitRowsRatioeffPT_mult[3]->Write();

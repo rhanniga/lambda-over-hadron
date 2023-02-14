@@ -7,11 +7,11 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
    //Starting and ending index of the array containing the run numbers, specifies which range to run over
    int startIndex = 0;
-   int endIndex = 20;
+   int endIndex = 28;
   //  int startIndex = 15;
   //  int endIndex = 28;
    char* work_dir = "lambda_hadron_efficiency";
-   char* output_dir = "full_output_fix_pt";
+   char* output_dir = "FINAL_EFFICIENCY_NO_CAP_ON_A_STACK";
 
    bool gridTest = false;
    int numTestFiles = 2;
@@ -68,7 +68,8 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
     alienHandler->SetAnalysisSource("AliAnalysisTaskLambdaHadronEfficiency.cxx");
     // select the aliphysics version. all other packages
     // are LOADED AUTOMATICALLY!
-    alienHandler->SetAliPhysicsVersion("vAN-20201026_ROOT6-1");
+    // alienHandler->SetAliPhysicsVersion("vAN-20201026_ROOT6-1");
+    alienHandler->SetAliPhysicsVersion("vAN-20230210_O2-1");
     alienHandler->SetAPIVersion("V1.1x");
     // select the input data
    alienHandler->SetGridDataDir("//alice/sim/2017/LHC17f2b_fast/");

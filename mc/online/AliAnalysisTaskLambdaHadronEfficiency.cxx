@@ -303,6 +303,14 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     fRealChargedDist->Sumw2();
     fOutputList->Add(fRealChargedDist);
 
+    fRealPrimaryChargedDist = new THnSparseF("fRealPrimaryChargedDist", "Real PrimaryCharged Hadron distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRealPrimaryChargedDist->Sumw2();
+    fOutputList->Add(fRealPrimaryChargedDist);
+
+    fRealSecondaryChargedDist = new THnSparseF("fRealSecondaryChargedDist", "Real SecondaryCharged Hadron distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRealSecondaryChargedDist->Sumw2();
+    fOutputList->Add(fRealSecondaryChargedDist);
+
     fRealTriggerDist = new THnSparseF("fRealTriggerDist", "Real Trigger Hadron distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
     fRealTriggerDist->Sumw2();
     fOutputList->Add(fRealTriggerDist);
@@ -338,6 +346,14 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     fRecoChargedDist = new THnSparseF("fRecoChargedDist", "Reco Charged Hadron distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
     fRecoChargedDist->Sumw2();
     fOutputList->Add(fRecoChargedDist);
+
+    fRecoPrimaryChargedDist = new THnSparseF("fRecoPrimaryChargedDist", "Reco PrimaryCharged Hadron distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRecoPrimaryChargedDist->Sumw2();
+    fOutputList->Add(fRecoPrimaryChargedDist);
+
+    fRecoSecondaryChargedDist = new THnSparseF("fRecoSecondaryChargedDist", "Reco SecondaryCharged Hadron distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRecoSecondaryChargedDist->Sumw2();
+    fOutputList->Add(fRecoSecondaryChargedDist);
 
     fRecoKDist = new THnSparseF("fRecoKDist", "Reco Kaon distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
     fRecoKDist->Sumw2();
@@ -941,47 +957,78 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         singledistPoint[3] = Zvertex;
         singledistPoint[4] = multPercentile;
 
-        if(mcpart->IsPhysicalPrimary()){
-            if(associatedPass){ 
-                if(TMath::Abs(pdgcode) == 211){
-                    fRecoPiDist->Fill(singledistPoint);
-                    fRecoChargedDist->Fill(singledistPoint);
-                }else if(TMath::Abs(pdgcode) == 321){
-                    fRecoKDist->Fill(singledistPoint);
-                    fRecoChargedDist->Fill(singledistPoint);
-                }else if(TMath::Abs(pdgcode) == 2212){
-                    fRecopDist->Fill(singledistPoint);
-                    fRecoChargedDist->Fill(singledistPoint);
-                }else if(TMath::Abs(pdgcode) == 11){
-                    fRecoeDist->Fill(singledistPoint);
-                    fRecoChargedDist->Fill(singledistPoint);
-                }else if(TMath::Abs(pdgcode) == 13){
-                    fRecoMuonDist->Fill(singledistPoint);
-                    fRecoChargedDist->Fill(singledistPoint);
-                }
-            }
 
+        if(associatedPass){ 
+            if(TMath::Abs(pdgcode) == 211){
+                fRecoPiDist->Fill(singledistPoint);
+                fRecoChargedDist->Fill(singledistPoint);
+            }else if(TMath::Abs(pdgcode) == 321){
+                fRecoKDist->Fill(singledistPoint);
+                fRecoChargedDist->Fill(singledistPoint);
+            }else if(TMath::Abs(pdgcode) == 2212){
+                fRecopDist->Fill(singledistPoint);
+                fRecoChargedDist->Fill(singledistPoint);
+            }else if(TMath::Abs(pdgcode) == 11){
+                fRecoeDist->Fill(singledistPoint);
+                fRecoChargedDist->Fill(singledistPoint);
+            }else if(TMath::Abs(pdgcode) == 13){
+                fRecoMuonDist->Fill(singledistPoint);
+                fRecoChargedDist->Fill(singledistPoint);
+            }
         }
 
+        unsigned int daughterCuts = PassDaughterCuts(aodnegtrack);
+        bool daughterPass = ((daughterCuts & maskEtaPtRefitRowsRatio) == maskEtaPtRefitRowsRatio);
+
         if(mcpart->IsPhysicalPrimary()){
-            if(triggerPass){
-                if(TMath::Abs(pdgcode) == 321){
-                    fRecoKTriggerDist->Fill(singledistPoint);
-                    fRecoChargedTriggerDist->Fill(singledistPoint);
-                }else if(TMath::Abs(pdgcode) == 211){
-                    fRecoPiTriggerDist->Fill(singledistPoint);
-                    fRecoChargedTriggerDist->Fill(singledistPoint);
+            if(daughterPass){ 
+                if(TMath::Abs(pdgcode) == 211){
+                    fRecoPrimaryChargedDist->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 321){
+                    fRecoPrimaryChargedDist->Fill(singledistPoint);
                 }else if(TMath::Abs(pdgcode) == 2212){
-                    fRecopTriggerDist->Fill(singledistPoint);
-                    fRecoChargedTriggerDist->Fill(singledistPoint);
-            }else if(TMath::Abs(pdgcode) == 11){
-                    fRecoeTriggerDist->Fill(singledistPoint);
-                    fRecoChargedTriggerDist->Fill(singledistPoint);
+                    fRecoPrimaryChargedDist->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 11){
+                    fRecoPrimaryChargedDist->Fill(singledistPoint);
                 }else if(TMath::Abs(pdgcode) == 13){
-                    fRecoMuonTriggerDist->Fill(singledistPoint);
-                    fRecoChargedTriggerDist->Fill(singledistPoint);
+                    fRecoPrimaryChargedDist->Fill(singledistPoint);
                 }
             }
+        }
+        else {
+            if(daughterPass){ 
+                if(TMath::Abs(pdgcode) == 211){
+                    fRecoSecondaryChargedDist->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 321){
+                    fRecoSecondaryChargedDist->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 2212){
+                    fRecoSecondaryChargedDist->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 11){
+                    fRecoSecondaryChargedDist->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 13){
+                    fRecoSecondaryChargedDist->Fill(singledistPoint);
+                }
+            }
+        }
+
+        if(triggerPass){
+            if(TMath::Abs(pdgcode) == 321){
+                fRecoKTriggerDist->Fill(singledistPoint);
+                fRecoChargedTriggerDist->Fill(singledistPoint);
+            }else if(TMath::Abs(pdgcode) == 211){
+                fRecoPiTriggerDist->Fill(singledistPoint);
+                fRecoChargedTriggerDist->Fill(singledistPoint);
+            }else if(TMath::Abs(pdgcode) == 2212){
+                fRecopTriggerDist->Fill(singledistPoint);
+                fRecoChargedTriggerDist->Fill(singledistPoint);
+        }else if(TMath::Abs(pdgcode) == 11){
+                fRecoeTriggerDist->Fill(singledistPoint);
+                fRecoChargedTriggerDist->Fill(singledistPoint);
+            }else if(TMath::Abs(pdgcode) == 13){
+                fRecoMuonTriggerDist->Fill(singledistPoint);
+                fRecoChargedTriggerDist->Fill(singledistPoint);
+            }
+
         }
 
         negPassCuts = PassDaughterCuts(aodnegtrack);
@@ -1293,28 +1340,65 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
             if(TMath::Abs(pdgcode) == 321){
                 fRealKDist->Fill(singledistPoint);
                 fRealChargedDist->Fill(singledistPoint);
-                fRealTriggerDist->Fill(singledistPoint);
                 numCharged += 1;
             }else if(TMath::Abs(pdgcode) == 211){
                 fRealPiDist->Fill(singledistPoint);
                 fRealChargedDist->Fill(singledistPoint);
-                fRealTriggerDist->Fill(singledistPoint);
                 numCharged += 1;
             }else if(TMath::Abs(pdgcode) == 2212){
                 fRealpDist->Fill(singledistPoint);
                 fRealChargedDist->Fill(singledistPoint);
-                fRealTriggerDist->Fill(singledistPoint);
                 numCharged += 1;
             }else if(TMath::Abs(pdgcode) == 11){
                 fRealeDist->Fill(singledistPoint);
                 fRealChargedDist->Fill(singledistPoint);
-                fRealTriggerDist->Fill(singledistPoint);
                 numCharged += 1;
             }else if(TMath::Abs(pdgcode) == 13){
                 fRealMuonDist->Fill(singledistPoint);
                 fRealChargedDist->Fill(singledistPoint);
-                fRealTriggerDist->Fill(singledistPoint);
                 numCharged += 1;
+            }
+        }
+
+        if(AODMCtrack->IsPhysicalPrimary() && TMath::Abs(mcEta) < 0.8){
+            if(TMath::Abs(pdgcode) == 321){
+                fRealPrimaryChargedDist->Fill(singledistPoint);
+            }else if(TMath::Abs(pdgcode) == 211){
+                fRealPrimaryChargedDist->Fill(singledistPoint);
+            }else if(TMath::Abs(pdgcode) == 2212){
+                fRealPrimaryChargedDist->Fill(singledistPoint);
+            }else if(TMath::Abs(pdgcode) == 11){
+                fRealPrimaryChargedDist->Fill(singledistPoint);
+            }else if(TMath::Abs(pdgcode) == 13){
+                fRealPrimaryChargedDist->Fill(singledistPoint);
+            }
+        }
+
+        if((!AODMCtrack->IsPhysicalPrimary()) && TMath::Abs(mcEta) < 0.8){
+            if(TMath::Abs(pdgcode) == 321){
+                fRealSecondaryChargedDist->Fill(singledistPoint);
+            }else if(TMath::Abs(pdgcode) == 211){
+                fRealSecondaryChargedDist->Fill(singledistPoint);
+            }else if(TMath::Abs(pdgcode) == 2212){
+                fRealSecondaryChargedDist->Fill(singledistPoint);
+            }else if(TMath::Abs(pdgcode) == 11){
+                fRealSecondaryChargedDist->Fill(singledistPoint);
+            }else if(TMath::Abs(pdgcode) == 13){
+                fRealSecondaryChargedDist->Fill(singledistPoint);
+            }
+        }
+
+        if(AODMCtrack->IsPhysicalPrimary() && TMath::Abs(mcEta) < 0.8 ){
+            if(TMath::Abs(pdgcode) == 321){
+                fRealTriggerDist->Fill(singledistPoint);
+            }else if(TMath::Abs(pdgcode) == 211){
+                fRealTriggerDist->Fill(singledistPoint);
+            }else if(TMath::Abs(pdgcode) == 2212){
+                fRealTriggerDist->Fill(singledistPoint);
+            }else if(TMath::Abs(pdgcode) == 11){
+                fRealTriggerDist->Fill(singledistPoint);
+            }else if(TMath::Abs(pdgcode) == 13){
+                fRealTriggerDist->Fill(singledistPoint);
             }
         }
 

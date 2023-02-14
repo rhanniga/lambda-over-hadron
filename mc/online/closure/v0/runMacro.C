@@ -7,7 +7,7 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
   float TRIG_BIT = AliAODTrack::kIsHybridGCG;
   float ASSOC_BIT =  1024; 
-  char *EFF_FILE_PATH = "eff_out.root";
+  char *EFF_FILE_PATH = "eff_out_FINAL.root";
   // char *EFF_FILE_PATH = "eff_out_pp.root";
   char *CENT_ESTIMATOR = "V0A";
 
@@ -22,7 +22,7 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
 
   TString work_dir = "lambda_hadron_v0closure";
-  TString output_dir = "closure_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_initialize_to_null";
+  TString output_dir = "closure_cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_FINAL";
   
   //If we want to download test files from grid then run in one swoop (usually just run completely locally):
   bool gridTest = false;
@@ -89,7 +89,8 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
     alienHandler->SetAnalysisSource("AliAnalysisTaskLambdaHadronV0Closure.cxx");
     // select the aliphysics version. all other packages
     // are LOADED AUTOMATICALLY!
-    alienHandler->SetAliPhysicsVersion("vAN-20201026_ROOT6-1");
+    // alienHandler->SetAliPhysicsVersion("vAN-20201026_ROOT6-1");
+    alienHandler->SetAliPhysicsVersion("vAN-20230210_O2-1");
     alienHandler->SetAPIVersion("V1.1x");
     // select the input data
     alienHandler->SetGridDataDir("//alice/sim/2017/LHC17f2b_fast/");
