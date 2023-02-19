@@ -285,9 +285,9 @@ h_lambda_2d_mixcor_rsb_0_20 = make_mixed_corrections(h_lambda_0_20, h_lambda_mix
 h_h_2d_mixcor_0_20 = make_mixed_corrections(h_h_0_20, h_h_mixed_0_20, SIG_MIN, SIG_MAX, is_hh=True)
 
 
-h_lambda_2d_mixcor_sig_0_20.GetXaxis().SetRangeUser(-DELTA_ETA_MAX, DELTA_ETA_MAX)
-h_lambda_2d_mixcor_rsb_0_20.GetXaxis().SetRangeUser(-DELTA_ETA_MAX, DELTA_ETA_MAX)
-h_h_2d_mixcor_0_20.GetXaxis().SetRangeUser(-DELTA_ETA_MAX, DELTA_ETA_MAX)
+h_lambda_2d_mixcor_sig_0_20.GetXaxis().SetRangeUser(DELTA_ETA_MIN, DELTA_ETA_MAX)
+h_lambda_2d_mixcor_rsb_0_20.GetXaxis().SetRangeUser(DELTA_ETA_MIN, DELTA_ETA_MAX)
+h_h_2d_mixcor_0_20.GetXaxis().SetRangeUser(DELTA_ETA_MIN, DELTA_ETA_MAX)
 
 h_lambda_2d_mixcor_sig_0_20.SetName("h_lambda_2d_mixcor_sig_0_20")
 h_lambda_2d_mixcor_rsb_0_20.SetName("h_lambda_2d_mixcor_rsb_0_20")
@@ -476,7 +476,7 @@ elif USE_V2:
                    + h_lambda_dphi_subtracted_0_20.GetBinContent(9)
                    + h_lambda_dphi_subtracted_0_20.GetBinContent(16))/6
 
-    v2_fit_0_20 = rt.TF1("v2_fit_0_20", "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))", -2, 6)
+    v2_fit_0_20 = rt.TF1("v2_fit_0_20", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
 
     v2_fit_0_20.SetParameter(0, ue_avg_0_20)
     v2_fit_0_20.SetParameter(1, TRIGGER_V2_0_20)
@@ -490,8 +490,8 @@ elif USE_VON:
                    + h_lambda_dphi_subtracted_0_20.GetBinContent(9)
                    + h_lambda_dphi_subtracted_0_20.GetBinContent(16))/6
 
-    v2_fit_0_20 = rt.TF1("v2_fit_0_20", "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))", -2, 6)
-    von_fit_string = "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))"
+    v2_fit_0_20 = rt.TF1("v2_fit_0_20", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
+    von_fit_string = "[0]*(1 + 2*([1]*[2]*cos(2*x)))"
     von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x))"
     von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()))"
 
@@ -745,7 +745,7 @@ elif USE_V2:
                    + h_h_dphi_0_20.GetBinContent(9)
                    + h_h_dphi_0_20.GetBinContent(16))/6
 
-    hh_v2_fit_0_20 = rt.TF1("hh_v2_fit_0_20", "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))", -2, 6)
+    hh_v2_fit_0_20 = rt.TF1("hh_v2_fit_0_20", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
 
     hh_v2_fit_0_20.SetParameter(0, hh_ue_avg_0_20)
     hh_v2_fit_0_20.SetParameter(1, TRIGGER_V2_0_20)
@@ -758,8 +758,8 @@ elif USE_VON:
                    + h_h_dphi_0_20.GetBinContent(8)
                    + h_h_dphi_0_20.GetBinContent(9)
                    + h_h_dphi_0_20.GetBinContent(16))/6
-    hh_v2_fit_0_20 = rt.TF1("hh_v2_fit_0_20", "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))", -2, 6)
-    hh_von_fit_string = "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))"
+    hh_v2_fit_0_20 = rt.TF1("hh_v2_fit_0_20", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
+    hh_von_fit_string = "[0]*(1 + 2*([1]*[2]*cos(2*x)))"
     hh_von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x))"
     hh_von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()))"
     hh_von_fit_0_20 = rt.TF1("hh_von_fit_0_20", hh_von_fit_string, -2, 6)
@@ -1099,9 +1099,9 @@ h_lambda_2d_mixcor_rsb_20_50 = make_mixed_corrections(h_lambda_20_50, h_lambda_m
 h_h_2d_mixcor_20_50 = make_mixed_corrections(h_h_20_50, h_h_mixed_20_50, SIG_MIN, SIG_MAX, is_hh=True)
 
 
-h_lambda_2d_mixcor_sig_20_50.GetXaxis().SetRangeUser(-DELTA_ETA_MAX, DELTA_ETA_MAX)
-h_lambda_2d_mixcor_rsb_20_50.GetXaxis().SetRangeUser(-DELTA_ETA_MAX, DELTA_ETA_MAX)
-h_h_2d_mixcor_20_50.GetXaxis().SetRangeUser(-DELTA_ETA_MAX, DELTA_ETA_MAX)
+h_lambda_2d_mixcor_sig_20_50.GetXaxis().SetRangeUser(DELTA_ETA_MIN, DELTA_ETA_MAX)
+h_lambda_2d_mixcor_rsb_20_50.GetXaxis().SetRangeUser(DELTA_ETA_MIN, DELTA_ETA_MAX)
+h_h_2d_mixcor_20_50.GetXaxis().SetRangeUser(DELTA_ETA_MIN, DELTA_ETA_MAX)
 
 h_lambda_2d_mixcor_sig_20_50.SetName("h_lambda_2d_mixcor_sig_20_50")
 h_lambda_2d_mixcor_rsb_20_50.SetName("h_lambda_2d_mixcor_rsb_20_50")
@@ -1290,7 +1290,7 @@ elif USE_V2:
                    + h_lambda_dphi_subtracted_20_50.GetBinContent(9)
                    + h_lambda_dphi_subtracted_20_50.GetBinContent(16))/6
 
-    v2_fit_20_50 = rt.TF1("v2_fit_20_50", "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))", -2, 6)
+    v2_fit_20_50 = rt.TF1("v2_fit_20_50", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
 
     v2_fit_20_50.SetParameter(0, ue_avg_20_50)
     v2_fit_20_50.SetParameter(1, TRIGGER_V2_20_50)
@@ -1304,8 +1304,8 @@ elif USE_VON:
                    + h_lambda_dphi_subtracted_20_50.GetBinContent(9)
                    + h_lambda_dphi_subtracted_20_50.GetBinContent(16))/6
 
-    v2_fit_20_50 = rt.TF1("v2_fit_20_50", "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))", -2, 6)
-    von_fit_string = "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))"
+    v2_fit_20_50 = rt.TF1("v2_fit_20_50", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
+    von_fit_string = "[0]*(1 + 2*([1]*[2]*cos(2*x)))"
     von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x))"
     von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()))"
 
@@ -1559,7 +1559,7 @@ elif USE_V2:
                    + h_h_dphi_20_50.GetBinContent(9)
                    + h_h_dphi_20_50.GetBinContent(16))/6
 
-    hh_v2_fit_20_50 = rt.TF1("hh_v2_fit_20_50", "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))", -2, 6)
+    hh_v2_fit_20_50 = rt.TF1("hh_v2_fit_20_50", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
 
     hh_v2_fit_20_50.SetParameter(0, hh_ue_avg_20_50)
     hh_v2_fit_20_50.SetParameter(1, TRIGGER_V2_20_50)
@@ -1572,8 +1572,8 @@ elif USE_VON:
                    + h_h_dphi_20_50.GetBinContent(8)
                    + h_h_dphi_20_50.GetBinContent(9)
                    + h_h_dphi_20_50.GetBinContent(16))/6
-    hh_v2_fit_20_50 = rt.TF1("hh_v2_fit_20_50", "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))", -2, 6)
-    hh_von_fit_string = "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))"
+    hh_v2_fit_20_50 = rt.TF1("hh_v2_fit_20_50", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
+    hh_von_fit_string = "[0]*(1 + 2*([1]*[2]*cos(2*x)))"
     hh_von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x))"
     hh_von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()))"
     hh_von_fit_20_50 = rt.TF1("hh_von_fit_20_50", hh_von_fit_string, -2, 6)
@@ -1917,9 +1917,9 @@ h_lambda_2d_mixcor_rsb_50_80 = make_mixed_corrections(h_lambda_50_80, h_lambda_m
 h_h_2d_mixcor_50_80 = make_mixed_corrections(h_h_50_80, h_h_mixed_50_80, SIG_MIN, SIG_MAX, is_hh=True)
 
 
-h_lambda_2d_mixcor_sig_50_80.GetXaxis().SetRangeUser(-DELTA_ETA_MAX, DELTA_ETA_MAX)
-h_lambda_2d_mixcor_rsb_50_80.GetXaxis().SetRangeUser(-DELTA_ETA_MAX, DELTA_ETA_MAX)
-h_h_2d_mixcor_50_80.GetXaxis().SetRangeUser(-DELTA_ETA_MAX, DELTA_ETA_MAX)
+h_lambda_2d_mixcor_sig_50_80.GetXaxis().SetRangeUser(DELTA_ETA_MIN, DELTA_ETA_MAX)
+h_lambda_2d_mixcor_rsb_50_80.GetXaxis().SetRangeUser(DELTA_ETA_MIN, DELTA_ETA_MAX)
+h_h_2d_mixcor_50_80.GetXaxis().SetRangeUser(DELTA_ETA_MIN, DELTA_ETA_MAX)
 
 h_lambda_2d_mixcor_sig_50_80.SetName("h_lambda_2d_mixcor_sig_50_80")
 h_lambda_2d_mixcor_rsb_50_80.SetName("h_lambda_2d_mixcor_rsb_50_80")
@@ -2108,7 +2108,7 @@ elif USE_V2:
                    + h_lambda_dphi_subtracted_50_80.GetBinContent(9)
                    + h_lambda_dphi_subtracted_50_80.GetBinContent(16))/6
 
-    v2_fit_50_80 = rt.TF1("v2_fit_50_80", "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))", -2, 6)
+    v2_fit_50_80 = rt.TF1("v2_fit_50_80", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
 
     v2_fit_50_80.SetParameter(0, ue_avg_50_80)
     v2_fit_50_80.SetParameter(1, TRIGGER_V2_50_80)
@@ -2122,8 +2122,8 @@ elif USE_VON:
                    + h_lambda_dphi_subtracted_50_80.GetBinContent(9)
                    + h_lambda_dphi_subtracted_50_80.GetBinContent(16))/6
 
-    v2_fit_50_80 = rt.TF1("v2_fit_50_80", "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))", -2, 6)
-    von_fit_string = "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))"
+    v2_fit_50_80 = rt.TF1("v2_fit_50_80", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
+    von_fit_string = "[0]*(1 + 2*([1]*[2]*cos(2*x)))"
     von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x))"
     von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()))"
 
@@ -2377,7 +2377,7 @@ elif USE_V2:
                    + h_h_dphi_50_80.GetBinContent(9)
                    + h_h_dphi_50_80.GetBinContent(16))/6
 
-    hh_v2_fit_50_80 = rt.TF1("hh_v2_fit_50_80", "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))", -2, 6)
+    hh_v2_fit_50_80 = rt.TF1("hh_v2_fit_50_80", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
 
     hh_v2_fit_50_80.SetParameter(0, hh_ue_avg_50_80)
     hh_v2_fit_50_80.SetParameter(1, TRIGGER_V2_50_80)
@@ -2390,8 +2390,8 @@ elif USE_VON:
                    + h_h_dphi_50_80.GetBinContent(8)
                    + h_h_dphi_50_80.GetBinContent(9)
                    + h_h_dphi_50_80.GetBinContent(16))/6
-    hh_v2_fit_50_80 = rt.TF1("hh_v2_fit_50_80", "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))", -2, 6)
-    hh_von_fit_string = "[0]*(1 + 2*([1]*[2])*((1/2) + cos(2*x)))"
+    hh_v2_fit_50_80 = rt.TF1("hh_v2_fit_50_80", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
+    hh_von_fit_string = "[0]*(1 + 2*([1]*[2]*cos(2*x)))"
     hh_von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x))"
     hh_von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()))"
     hh_von_fit_50_80 = rt.TF1("hh_von_fit_50_80", hh_von_fit_string, -2, 6)

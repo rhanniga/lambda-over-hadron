@@ -13,28 +13,60 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   float TRIG_BIT = AliAODTrack::kIsHybridGCG;
   float ASSOC_BIT =  1024; 
 
-  float NSIGMA_TPC_PROTON = 0.6*2;
-  float NSIGMA_TOF_PROTON =0.6*2;
+// PID CUTS -------------------------------
+// narrow cuts:
 
-  float NSIGMA_TPC_PION = 0.6*3;
-  float NSIGMA_TOF_PION = 0.6*3;
+  // float NSIGMA_TPC_PROTON = 0.6*2;
+  // float NSIGMA_TOF_PROTON =0.6*2;
+  // float NSIGMA_TPC_PION = 0.6*3;
+  // float NSIGMA_TOF_PION = 0.6*3;
+  // bool TOF_VETO = true;
+
+// wide cuts:
+
+  // float NSIGMA_TPC_PROTON = 1.4*2;
+  // float NSIGMA_TOF_PROTON =1.4*2;
+  // float NSIGMA_TPC_PION = 1.4*3;
+  // float NSIGMA_TOF_PION = 1.4*3;
+  // bool TOF_VETO = true;
 
 
-  char *EFF_FILE_PATH = "eff_out.root";
+// normal cuts:
+
+  float NSIGMA_TPC_PROTON = 2;
+  float NSIGMA_TOF_PROTON = 2;
+  float NSIGMA_TPC_PION = 3;
+  float NSIGMA_TOF_PION = 3;
+  bool TOF_VETO = true;
+
+// require TOF hit:
+
+  // float NSIGMA_TPC_PROTON = 1.0*2;
+  // float NSIGMA_TOF_PROTON =1.0*2;
+  // float NSIGMA_TPC_PION = 1.0*3;
+  // float NSIGMA_TOF_PION = 1.0*3;
+  // bool TOF_VETO = false;
+
+// ---------------------------------------
+
+
+
+  char *EFF_FILE_PATH = "eff_out_mult_eta_dep.root";
   char *CENT_ESTIMATOR = "V0A";
 
   //Starting and ending index of the array containing the run numbers, specifies which range to run over
-  /* int startIndex = 0; */ 
-  /* int endIndex = 17; */
 
-  int startIndex = 18;
-  int endIndex = 28;
+  int startIndex = 0;
+  int endIndex = 17;
+
+  // int startIndex = 18;
+  // int endIndex = 28;
 
   // int startIndex = 15;
   // int endIndex = 28;
 
-  TString work_dir = "lambda_hadron_ratio_v0_multbins";
-  TString output_dir = "cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_pid_cuts_narrow_narrow";
+  TString work_dir = "lambda_hadron_ratio_v0";
+  TString output_dir = "cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_normal_pid_v2";
   
   //If we want to download test files from grid then run in one swoop (usually just run completely locally):
   bool gridTest = false;
@@ -62,7 +94,7 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
   // Generating task object
   gInterpreter->LoadMacro("AliAnalysisTaskLambdaHadronRatio.cxx++g");
-  AliAnalysisTaskLambdaHadronRatio *task = reinterpret_cast<AliAnalysisTaskLambdaHadronRatio*>(gInterpreter->ProcessLine(Form(".x AddLambdaHadronRatioTask.C(\"%s\", %f, %f, %f, %f, %f, %f, %f, %f, \"%s\", \"%s\")",
+  AliAnalysisTaskLambdaHadronRatio *task = reinterpret_cast<AliAnalysisTaskLambdaHadronRatio*>(gInterpreter->ProcessLine(Form(".x AddLambdaHadronRatioTask.C(\"%s\", %f, %f, %f, %f, %f, %f, %f, %f, %d, \"%s\", \"%s\")",
   "lambdaHadronRatio",
   MULT_LOW,
   MULT_HIGH,
@@ -72,6 +104,7 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   NSIGMA_TOF_PROTON,
   NSIGMA_TPC_PION,
   NSIGMA_TOF_PION,
+  TOF_VETO,
   EFF_FILE_PATH,
   CENT_ESTIMATOR)));
 

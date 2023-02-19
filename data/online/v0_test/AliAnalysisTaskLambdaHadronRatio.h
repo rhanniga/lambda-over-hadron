@@ -46,7 +46,7 @@ public:
   void SetTriggerBit(float trigBit);
   void SetAssociatedBit(float assocBit);
   void SetCentEstimator(TString estimator);
-  void SetPIDCuts(float nSigmaTPC_proton, float nSigmaTOF_proton, float nSigmaTPC_pion, float nSigmaTOF_pion);
+  void SetPIDCuts(float nSigmaTPC_proton, float nSigmaTOF_proton, float nSigmaTPC_pion, float nSigmaTOF_pion, bool tofVeto);
 
   struct AliMotherContainer {
     AliAODv0* vzero;
@@ -61,9 +61,10 @@ private:
   float fAssociatedBit; // filter bit for associated particle
   float fTriggerBit; // filter bit for trigger particle
   float fTPCnSigmaProtonCut; // TPC n sigma cut for protons
-  float fTOFnSigmaProtonCut; // TOF n sigma cut for protons (veto)
+  float fTOFnSigmaProtonCut; // TOF n sigma cut for protons (veto if fTOFVeto is true, else just cut)
   float fTPCnSigmaPionCut; // TPC n sigma cut for pions
-  float fTOFnSigmaPionCut; // TOF n sigma cut for pions (veto)
+  float fTOFnSigmaPionCut; // TOF n sigma cut for pions (veto if fTOFVeto is true, else just cut)
+  bool fTOFVeto; // if true, use TOF n sigma cut as a veto, else just cut
 
   TString fCentEstimator;
 
@@ -73,9 +74,19 @@ private:
   AliEventPoolManager *fCorPoolMgr; //!>! correlation pool manager
   AliEventPoolManager *fCorPoolMgr_highestPt; //!>! correlation pool manager for highest pt trigger
   
-  TH1D* fTriggerEff; ///> trigger efficiency
-  TH1D* fAssociatedEff; ///> associated efficiency
-  TH1D* fLambdaEff; ///> lambda efficiency
+  // for efficiency: x axis is pt, y axis is eta
+
+  TH2D* fTriggerEff_0_20; ///> trigger efficiency (0-20% mult)
+  TH2D* fAssociatedEff_0_20; ///> associated efficiency (0-20% mult)
+  TH2D* fLambdaEff_0_20; ///> lambda efficiency (0-20% mult)
+  
+  TH2D* fTriggerEff_20_50; ///> trigger efficiency (20-50% mult)
+  TH2D* fAssociatedEff_20_50; ///> associated efficiency (20-50% mult)
+  TH2D* fLambdaEff_20_50; ///> lambda efficiency (20-50% mult)
+  
+  TH2D* fTriggerEff_50_80; ///> trigger efficiency (50-80% mult)
+  TH2D* fAssociatedEff_50_80; ///> associated efficiency (50-80% mult)
+  TH2D* fLambdaEff_50_80; ///> lambda efficiency (50-80% mult)
 
   AliPIDResponse *fpidResponse; //!>!pid response
   AliMultSelection *fMultSelection; //!>!mult selection

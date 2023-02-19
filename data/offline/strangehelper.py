@@ -54,7 +54,9 @@ def make_mixed_corrections(same, mixed, mass_low=1.11, mass_high=1.12, is_hh=Fal
         
         if zbin == 0:
             same2d_total = same2d.Clone("2dproj_total")
+            mixed2d_total = mixed2d.Clone("2dproj_total_mixed")
         else:
             same2d_total.Add(same2d)
+            mixed2d_total.Add(mixed2d)
 
     return same2d_total

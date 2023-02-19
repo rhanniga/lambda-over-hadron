@@ -13,11 +13,11 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   float TRIG_BIT = AliAODTrack::kIsHybridGCG;
   float ASSOC_BIT =  1024; 
 
-  float NSIGMA_TPC_PROTON = 1.4*2;
-  float NSIGMA_TOF_PROTON = 1.4*2;
+  float NSIGMA_TPC_PROTON = 2;
+  float NSIGMA_TOF_PROTON = 2;
 
-  float NSIGMA_TPC_PION = 1.4*3;
-  float NSIGMA_TOF_PION = 1.4*3;
+  float NSIGMA_TPC_PION = 3;
+  float NSIGMA_TOF_PION = 3;
 
 
   char *EFF_FILE_PATH = "eff_out.root";

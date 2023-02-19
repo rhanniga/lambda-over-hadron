@@ -87,8 +87,6 @@ private:
                                 {3077, 7},
                                 {3381, 8}};
 
-
-
     enum{
         kAODanalysis = BIT(20),
     };
@@ -112,6 +110,18 @@ private:
     THnSparse  *fRealTotalLambdaDist;//! Dist of Real lambda and anti lambda
     THnSparse  *fRealLambdaDist;//! Dist of Real lambda
     THnSparse  *fRealAntiLambdaDist;//! Dist of Real anti lambda
+
+    THnSparse  *fRealTotalPrimaryLambdaDist;//! Dist of Real lambda and anti lambda
+    THnSparse  *fRealPrimaryLambdaDist;//! Dist of Real lambda
+    THnSparse  *fRealAntiPrimaryLambdaDist;//! Dist of Real anti lambda
+
+    THnSparse  *fRealTotalLambdaDist_triggeredEvent;//! Dist of Real lambda and anti lambda (in triggered event)
+    THnSparse  *fRealLambdaDist_triggeredEvent;//! Dist of Real lambda (in triggered event)
+    THnSparse  *fRealAntiLambdaDist_triggeredEvent;//! Dist of Real anti lambda (in triggered event)
+
+    THnSparse  *fRealTotalPrimaryLambdaDist_triggeredEvent;//! Dist of Real lambda and anti lambda (in triggered event)
+    THnSparse  *fRealPrimaryLambdaDist_triggeredEvent;//! Dist of Real lambda (in triggered event)
+    THnSparse  *fRealAntiPrimaryLambdaDist_triggeredEvent;//! Dist of Real anti lambda (in triggered event)
     
     THnSparse  *fRecoTotalV0LambdaDist;//! Dist of Recon lambda and anti lambda (from v0)
     THnSparse  *fRecoEtaV0LambdaDist;//! Dist of Recon lambda and anti lambda (from v0, eta cut on daughters)
@@ -119,13 +129,19 @@ private:
     THnSparse  *fRecoEtaPtRefitV0LambdaDist;//! Dist of Recon lambda and anti lambda (from v0, eta pt refit cut on daughters)
     THnSparse  *fRecoEtaPtRefitRowsV0LambdaDist;//! Dist of Recon lambda and anti lambda (from v0, eta pt refit rows  cut on daughters)
     THnSparse  *fRecoEtaPtRefitRowsRatioV0LambdaDist;//! Dist of Recon lambda and anti lambda (from v0, eta pt refit rows ratio cut on daughters)
+    THnSparse  *fRecoEtaPtRefitRowsRatioV0LambdaDist_triggeredEvent;//! Dist of Recon lambda and anti lambda (from v0, eta pt refit rows ratio cut on daughters) (in a triggered event)
+    THnSparse  *fRecoEtaPtRefitRowsRatioV0PrimaryLambdaDist;//! Dist of Recon lambda and anti lambda (from v0, eta pt refit rows ratio cut on daughters) (primary lambda)
+    THnSparse  *fRecoEtaPtRefitRowsRatioV0PrimaryLambdaDist_triggeredEvent;//! Dist of Recon lambda and anti lambda (from v0, eta pt refit rows ratio cut on daughters) (in a triggered event) (primary lambda)
 
     THnSparse  *fRecoTotalLambdaDist;//! Dist of Recon lambda and anti lambda
     THnSparse  *fRecoEtaLambdaDist;//! Dist of Recon lambda and anti lambda (eta cut on daughters)
     THnSparse  *fRecoEtaPtLambdaDist;//! Dist of Recon lambda and anti lambda (eta pt cut on daughters)
     THnSparse  *fRecoEtaPtRefitLambdaDist;//! Dist of Recon lambda and anti lambda ( eta pt refit cut on daughters)
     THnSparse  *fRecoEtaPtRefitRowsLambdaDist;//! Dist of Recon lambda and anti lambda ( eta pt refit rows  cut on daughters)
-    THnSparse  *fRecoEtaPtRefitRowsRatioLambdaDist;//! Dist of Recon lambda and anti lambda ( eta pt refit rows ratio cut on daughters)
+    THnSparse  *fRecoEtaPtRefitRowsRatioLambdaDist;//! Dist of Recon lambda and anti lambda (from v0, eta pt refit rows ratio cut on daughters)
+    THnSparse  *fRecoEtaPtRefitRowsRatioLambdaDist_triggeredEvent;//! Dist of Recon lambda and anti lambda (from v0, eta pt refit rows ratio cut on daughters) (in a triggered event)
+    THnSparse  *fRecoEtaPtRefitRowsRatioPrimaryLambdaDist;//! Dist of Recon lambda and anti lambda (from v0, eta pt refit rows ratio cut on daughters) (primary lambda)
+    THnSparse  *fRecoEtaPtRefitRowsRatioPrimaryLambdaDist_triggeredEvent;//! Dist of Recon lambda and anti lambda (from v0, eta pt refit rows ratio cut on daughters) (in a triggered event) (primary lambda)
 
     THnSparse  *fRecoTotalLambdaFilterDist;//! Dist of Recon lambda and anti lambda with filter bit of daughters
     THnSparse  *fRecoEtaPtRefitRowsRatioLambdaFilterDist;//! Dist of Recon lambda and anti lambda with filter bit of daughters (proton then pion)
@@ -138,9 +154,11 @@ private:
     THnSparse  *fRecoLambdaWithAODProtonDist;//! Dist of Recon lambda with cor AOD proton
 
     THnSparse  *fRealChargedDist;//! real charged hadron dist
+    THnSparse  *fRealChargedDist_triggeredEvent;//! real charged hadron dist (in triggered event)
     THnSparse  *fRealPrimaryChargedDist;//! real primary charged hadron dist
     THnSparse  *fRealSecondaryChargedDist;//! real secondary charged hadron dist 
     THnSparse  *fRealTriggerDist;//! real trigger hadron dist (charged hadron, not always physical primary)
+    THnSparse  *fRealTriggerDist_triggeredEvent;//! real trigger hadron dist (charged hadron, not always physical primary) (in triggered event)
     THnSparse  *fRealKDist;//! real charged K dist
     THnSparse  *fRealPiDist;//! real charged pion dist
     THnSparse  *fRealPiFromLambdaDist;//! real pions (from lambda) dist
@@ -150,6 +168,7 @@ private:
     THnSparse  *fRealMuonDist;//! real muon dist
   
     THnSparse  *fRecoChargedDist;//!
+    THnSparse  *fRecoChargedDist_triggeredEvent;//!
     THnSparse  *fRecoPrimaryChargedDist;//!
     THnSparse  *fRecoSecondaryChargedDist;//!
     THnSparse  *fRecoKDist;//!
@@ -159,6 +178,7 @@ private:
     THnSparse  *fRecoMuonDist;//!
 
     THnSparse  *fRecoChargedTriggerDist;//!
+    THnSparse  *fRecoChargedTriggerDist_triggeredEvent;//!
     THnSparse  *fRecoKTriggerDist;//!
     THnSparse  *fRecoPiTriggerDist;//!
     THnSparse  *fRecoeTriggerDist;//!
@@ -201,6 +221,10 @@ private:
     TH1D      *fPhiV0; //!
     TH1D      *fPhiRes; //!
     TH1D      *fPhiReal; //!
+
+    // Quick test
+
+    TH1D *eventScaleDist; //!
 
     ClassDef(AliAnalysisTaskLambdaHadronEfficiency, 1); 
 };

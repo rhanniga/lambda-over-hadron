@@ -58,20 +58,35 @@ AliAnalysisTaskLambdaHadronEfficiency::AliAnalysisTaskLambdaHadronEfficiency(con
     fVtxX(0x0),
     fVtxY(0x0),
     fRealTotalLambdaDist(0x0),
+    fRealTotalLambdaDist_triggeredEvent(0x0),
+    fRealTotalPrimaryLambdaDist(0x0),
+    fRealTotalPrimaryLambdaDist_triggeredEvent(0x0),
     fRealLambdaDist(0x0),
+    fRealLambdaDist_triggeredEvent(0x0),
     fRealAntiLambdaDist(0x0),
+    fRealAntiLambdaDist_triggeredEvent(0x0),
+    fRealPrimaryLambdaDist(0x0),
+    fRealPrimaryLambdaDist_triggeredEvent(0x0),
+    fRealAntiPrimaryLambdaDist(0x0),
+    fRealAntiPrimaryLambdaDist_triggeredEvent(0x0),
     fRecoTotalV0LambdaDist(0x0),
     fRecoEtaV0LambdaDist(0x0),
     fRecoEtaPtV0LambdaDist(0x0),
     fRecoEtaPtRefitV0LambdaDist(0x0),
     fRecoEtaPtRefitRowsV0LambdaDist(0x0),
     fRecoEtaPtRefitRowsRatioV0LambdaDist(0x0),
+    fRecoEtaPtRefitRowsRatioV0LambdaDist_triggeredEvent(0x0),
+    fRecoEtaPtRefitRowsRatioV0PrimaryLambdaDist(0x0),
+    fRecoEtaPtRefitRowsRatioV0PrimaryLambdaDist_triggeredEvent(0x0),
     fRecoTotalLambdaDist(0x0),
     fRecoEtaLambdaDist(0x0),
     fRecoEtaPtLambdaDist(0x0),
     fRecoEtaPtRefitLambdaDist(0x0),
     fRecoEtaPtRefitRowsLambdaDist(0x0),
     fRecoEtaPtRefitRowsRatioLambdaDist(0x0),
+    fRecoEtaPtRefitRowsRatioLambdaDist_triggeredEvent(0x0),
+    fRecoEtaPtRefitRowsRatioPrimaryLambdaDist(0x0),
+    fRecoEtaPtRefitRowsRatioPrimaryLambdaDist_triggeredEvent(0x0),
     fRecoEtaPtRefitRowsRatioLambdaFilterDist(0x0),
     fRecoEtaPtRefitRowsRatioLambdaDCADist(0x0),
     fRecoTotalLambdaFilterDist(0x0),
@@ -80,7 +95,9 @@ AliAnalysisTaskLambdaHadronEfficiency::AliAnalysisTaskLambdaHadronEfficiency(con
     fRecoLambdaWithAODProtonDist(0x0),
     fRecoAntiLambdaDist(0x0),
     fRealChargedDist(0x0),
+    fRealChargedDist_triggeredEvent(0x0),
     fRealTriggerDist(0x0),
+    fRealTriggerDist_triggeredEvent(0x0),
     fRealKDist(0x0),
     fRealPiDist(0x0),
     fRealPiFromLambdaDist(0x0),
@@ -89,12 +106,14 @@ AliAnalysisTaskLambdaHadronEfficiency::AliAnalysisTaskLambdaHadronEfficiency(con
     fRealpFromLambdaDist(0x0),
     fRealMuonDist(0x0),
     fRecoChargedDist(0x0),
+    fRecoChargedDist_triggeredEvent(0x0),
     fRecoKDist(0x0),
     fRecoPiDist(0x0),
     fRecoeDist(0x0),
     fRecopDist(0x0),
     fRecoMuonDist(0x0),
     fRecoChargedTriggerDist(0x0),
+    fRecoChargedTriggerDist_triggeredEvent(0x0),
     fRecoKTriggerDist(0x0),
     fRecoPiTriggerDist(0x0),
     fRecoeTriggerDist(0x0),
@@ -152,20 +171,35 @@ AliAnalysisTaskLambdaHadronEfficiency::AliAnalysisTaskLambdaHadronEfficiency()
     fVtxX(0x0),
     fVtxY(0x0),
     fRealTotalLambdaDist(0x0),
+    fRealTotalLambdaDist_triggeredEvent(0x0),
+    fRealTotalPrimaryLambdaDist(0x0),
+    fRealTotalPrimaryLambdaDist_triggeredEvent(0x0),
     fRealLambdaDist(0x0),
+    fRealLambdaDist_triggeredEvent(0x0),
     fRealAntiLambdaDist(0x0),
+    fRealAntiLambdaDist_triggeredEvent(0x0),
+    fRealPrimaryLambdaDist(0x0),
+    fRealPrimaryLambdaDist_triggeredEvent(0x0),
+    fRealAntiPrimaryLambdaDist(0x0),
+    fRealAntiPrimaryLambdaDist_triggeredEvent(0x0),
     fRecoTotalV0LambdaDist(0x0),
     fRecoEtaV0LambdaDist(0x0),
     fRecoEtaPtV0LambdaDist(0x0),
     fRecoEtaPtRefitV0LambdaDist(0x0),
     fRecoEtaPtRefitRowsV0LambdaDist(0x0),
     fRecoEtaPtRefitRowsRatioV0LambdaDist(0x0),
+    fRecoEtaPtRefitRowsRatioV0LambdaDist_triggeredEvent(0x0),
+    fRecoEtaPtRefitRowsRatioV0PrimaryLambdaDist(0x0),
+    fRecoEtaPtRefitRowsRatioV0PrimaryLambdaDist_triggeredEvent(0x0),
     fRecoTotalLambdaDist(0x0),
     fRecoEtaLambdaDist(0x0),
     fRecoEtaPtLambdaDist(0x0),
     fRecoEtaPtRefitLambdaDist(0x0),
     fRecoEtaPtRefitRowsLambdaDist(0x0),
     fRecoEtaPtRefitRowsRatioLambdaDist(0x0),
+    fRecoEtaPtRefitRowsRatioLambdaDist_triggeredEvent(0x0),
+    fRecoEtaPtRefitRowsRatioPrimaryLambdaDist(0x0),
+    fRecoEtaPtRefitRowsRatioPrimaryLambdaDist_triggeredEvent(0x0),
     fRecoEtaPtRefitRowsRatioLambdaFilterDist(0x0),
     fRecoEtaPtRefitRowsRatioLambdaDCADist(0x0),
     fRecoTotalLambdaFilterDist(0x0),
@@ -174,7 +208,9 @@ AliAnalysisTaskLambdaHadronEfficiency::AliAnalysisTaskLambdaHadronEfficiency()
     fRecoLambdaWithAODProtonDist(0x0),
     fRecoAntiLambdaDist(0x0),
     fRealChargedDist(0x0),
+    fRealChargedDist_triggeredEvent(0x0),
     fRealTriggerDist(0x0),
+    fRealTriggerDist_triggeredEvent(0x0),
     fRealKDist(0x0),
     fRealPiDist(0x0),
     fRealPiFromLambdaDist(0x0),
@@ -183,12 +219,14 @@ AliAnalysisTaskLambdaHadronEfficiency::AliAnalysisTaskLambdaHadronEfficiency()
     fRealpFromLambdaDist(0x0),
     fRealMuonDist(0x0),
     fRecoChargedDist(0x0),
+    fRecoChargedDist_triggeredEvent(0x0),
     fRecoKDist(0x0),
     fRecoPiDist(0x0),
     fRecoeDist(0x0),
     fRecopDist(0x0),
     fRecoMuonDist(0x0),
     fRecoChargedTriggerDist(0x0),
+    fRecoChargedTriggerDist_triggeredEvent(0x0),
     fRecoKTriggerDist(0x0),
     fRecoPiTriggerDist(0x0),
     fRecoeTriggerDist(0x0),
@@ -303,6 +341,10 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     fRealChargedDist->Sumw2();
     fOutputList->Add(fRealChargedDist);
 
+    fRealChargedDist_triggeredEvent = new THnSparseF("fRealChargedDist_triggeredEvent", "Real Charged Hadron distribution in trig event;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRealChargedDist_triggeredEvent->Sumw2();
+    fOutputList->Add(fRealChargedDist_triggeredEvent);
+
     fRealPrimaryChargedDist = new THnSparseF("fRealPrimaryChargedDist", "Real PrimaryCharged Hadron distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
     fRealPrimaryChargedDist->Sumw2();
     fOutputList->Add(fRealPrimaryChargedDist);
@@ -314,6 +356,10 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     fRealTriggerDist = new THnSparseF("fRealTriggerDist", "Real Trigger Hadron distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
     fRealTriggerDist->Sumw2();
     fOutputList->Add(fRealTriggerDist);
+
+    fRealTriggerDist_triggeredEvent = new THnSparseF("fRealTriggerDist_triggeredEvent", "Real Trigger Hadron distribution in triggered event;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRealTriggerDist_triggeredEvent->Sumw2();
+    fOutputList->Add(fRealTriggerDist_triggeredEvent);
 
     fRealKDist = new THnSparseF("fRealKDist", "Real Kaon distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
     fRealKDist->Sumw2();
@@ -347,6 +393,10 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     fRecoChargedDist->Sumw2();
     fOutputList->Add(fRecoChargedDist);
 
+    fRecoChargedDist_triggeredEvent = new THnSparseF("fRecoChargedDist_triggeredEvent", "Reco Charged Hadron distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRecoChargedDist_triggeredEvent->Sumw2();
+    fOutputList->Add(fRecoChargedDist_triggeredEvent);
+
     fRecoPrimaryChargedDist = new THnSparseF("fRecoPrimaryChargedDist", "Reco PrimaryCharged Hadron distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
     fRecoPrimaryChargedDist->Sumw2();
     fOutputList->Add(fRecoPrimaryChargedDist);
@@ -379,6 +429,10 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     fRecoChargedTriggerDist->Sumw2();
     fOutputList->Add(fRecoChargedTriggerDist);
 
+    fRecoChargedTriggerDist_triggeredEvent = new THnSparseF("fRecoChargedTriggerDist_triggeredEvent", "Reco Charged Hadron Trigger distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
+    fRecoChargedTriggerDist_triggeredEvent->Sumw2();
+    fOutputList->Add(fRecoChargedTriggerDist_triggeredEvent);
+
     fRecoKTriggerDist = new THnSparseF("fRecoKTriggerDist", "Reco Kaon Trigger distribution;p_{T};#varphi;#eta;y;Z_{vtx};Multiplicity Percentile", 5, numbinsSingle, minvalSingle, maxvalSingle);
     fRecoKTriggerDist->Sumw2();
     fOutputList->Add(fRecoKTriggerDist);
@@ -409,13 +463,49 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     fRealTotalLambdaDist->Sumw2();
     fOutputList->Add(fRealTotalLambdaDist);
 
+    fRealTotalLambdaDist_triggeredEvent = new THnSparseF("fRealTotalLambdaDist_triggeredEvent", "Real (#Lambda + #bar{#Lambda}) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{KK};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRealTotalLambdaDist_triggeredEvent->Sumw2();
+    fOutputList->Add(fRealTotalLambdaDist_triggeredEvent);
+
     fRealLambdaDist = new THnSparseF("fRealLambdaDist", "Real #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{KK};Multiplicity Pctl.", 6, numbins, minval, maxval);
     fRealLambdaDist->Sumw2();
     fOutputList->Add(fRealLambdaDist);
 
+    fRealLambdaDist_triggeredEvent = new THnSparseF("fRealLambdaDist_triggeredEvent", "Real #Lambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{KK};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRealLambdaDist_triggeredEvent->Sumw2();
+    fOutputList->Add(fRealLambdaDist_triggeredEvent);
+
     fRealAntiLambdaDist = new THnSparseF("fRealAntiLambdaDist", "Real #bar{#Lambda} distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{KK};Multiplicity Pctl.", 6, numbins, minval, maxval);
     fRealAntiLambdaDist->Sumw2();
     fOutputList->Add(fRealAntiLambdaDist);
+    
+    fRealAntiLambdaDist_triggeredEvent = new THnSparseF("fRealAntiLambdaDist_triggeredEvent", "Real #bar{#Lambda} distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{KK};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRealAntiLambdaDist_triggeredEvent->Sumw2();
+    fOutputList->Add(fRealAntiLambdaDist_triggeredEvent);
+
+    fRealTotalPrimaryLambdaDist = new THnSparseF("fRealTotalPrimaryLambdaDist", "Real (#PrimaryLambda + #bar{#PrimaryLambda}) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{KK};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRealTotalPrimaryLambdaDist->Sumw2();
+    fOutputList->Add(fRealTotalPrimaryLambdaDist);
+
+    fRealTotalPrimaryLambdaDist_triggeredEvent = new THnSparseF("fRealTotalPrimaryLambdaDist_triggeredEvent", "Real (#PrimaryLambda + #bar{#PrimaryLambda}) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{KK};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRealTotalPrimaryLambdaDist_triggeredEvent->Sumw2();
+    fOutputList->Add(fRealTotalPrimaryLambdaDist_triggeredEvent);
+
+    fRealPrimaryLambdaDist = new THnSparseF("fRealPrimaryLambdaDist", "Real #PrimaryLambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{KK};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRealPrimaryLambdaDist->Sumw2();
+    fOutputList->Add(fRealPrimaryLambdaDist);
+
+    fRealPrimaryLambdaDist_triggeredEvent = new THnSparseF("fRealPrimaryLambdaDist_triggeredEvent", "Real #PrimaryLambda distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{KK};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRealPrimaryLambdaDist_triggeredEvent->Sumw2();
+    fOutputList->Add(fRealPrimaryLambdaDist_triggeredEvent);
+
+    fRealAntiPrimaryLambdaDist = new THnSparseF("fRealAntiPrimaryLambdaDist", "Real #bar{#PrimaryLambda} distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{KK};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRealAntiPrimaryLambdaDist->Sumw2();
+    fOutputList->Add(fRealAntiPrimaryLambdaDist);
+
+    fRealAntiPrimaryLambdaDist_triggeredEvent = new THnSparseF("fRealAntiPrimaryLambdaDist_triggeredEvent", "Real #bar{#PrimaryLambda} distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{KK};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRealAntiPrimaryLambdaDist_triggeredEvent->Sumw2();
+    fOutputList->Add(fRealAntiPrimaryLambdaDist_triggeredEvent);
 
     fRecoTotalV0LambdaDist = new THnSparseF("fRecoTotalV0LambdaDist", "Reco (#Lambda + #bar{#Lambda}) from V^{0} distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
     fRecoTotalV0LambdaDist->Sumw2();
@@ -441,6 +531,18 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     fRecoEtaPtRefitRowsRatioV0LambdaDist->Sumw2();
     fOutputList->Add(fRecoEtaPtRefitRowsRatioV0LambdaDist);
 
+    fRecoEtaPtRefitRowsRatioV0PrimaryLambdaDist = new THnSparseF("fRecoEtaPtRefitRowsRatioV0PrimaryLambdaDist", "Reco (#PrimaryLambda + #bar{#PrimaryLambda}) from V^{0} distribution (eta + pt + refit + rows + ratio cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRecoEtaPtRefitRowsRatioV0PrimaryLambdaDist->Sumw2();
+    fOutputList->Add(fRecoEtaPtRefitRowsRatioV0PrimaryLambdaDist);
+
+    fRecoEtaPtRefitRowsRatioV0LambdaDist_triggeredEvent = new THnSparseF("fRecoEtaPtRefitRowsRatioV0LambdaDist_triggeredEvent", "Reco (#Lambda + #bar{#Lambda}) from V^{0} distribution (eta + pt + refit + rows + ratio cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRecoEtaPtRefitRowsRatioV0LambdaDist_triggeredEvent->Sumw2();
+    fOutputList->Add(fRecoEtaPtRefitRowsRatioV0LambdaDist_triggeredEvent);
+
+    fRecoEtaPtRefitRowsRatioV0PrimaryLambdaDist_triggeredEvent = new THnSparseF("fRecoEtaPtRefitRowsRatioV0PrimaryLambdaDist_triggeredEvent", "Reco (#PrimaryLambda + #bar{#PrimaryLambda}) from V^{0} distribution (eta + pt + refit + rows + ratio cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRecoEtaPtRefitRowsRatioV0PrimaryLambdaDist_triggeredEvent->Sumw2();
+    fOutputList->Add(fRecoEtaPtRefitRowsRatioV0PrimaryLambdaDist_triggeredEvent);
+
     fRecoEtaLambdaDist = new THnSparseF("fRecoEtaLambdaDist", "Reco (#Lambda + #bar{#Lambda})  distribution (eta cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
     fRecoEtaLambdaDist->Sumw2();
     fOutputList->Add(fRecoEtaLambdaDist);
@@ -460,6 +562,18 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
     fRecoEtaPtRefitRowsRatioLambdaDist = new THnSparseF("fRecoEtaPtRefitRowsRatioLambdaDist", "Reco (#Lambda + #bar{#Lambda}) distribution (eta + pt + refit + rows + ratio cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
     fRecoEtaPtRefitRowsRatioLambdaDist->Sumw2();
     fOutputList->Add(fRecoEtaPtRefitRowsRatioLambdaDist);
+
+    fRecoEtaPtRefitRowsRatioPrimaryLambdaDist = new THnSparseF("fRecoEtaPtRefitRowsRatioPrimaryLambdaDist", "Reco (#PrimaryLambda + #bar{#PrimaryLambda}) distribution (eta + pt + refit + rows + ratio cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRecoEtaPtRefitRowsRatioPrimaryLambdaDist->Sumw2();
+    fOutputList->Add(fRecoEtaPtRefitRowsRatioPrimaryLambdaDist);
+
+    fRecoEtaPtRefitRowsRatioLambdaDist_triggeredEvent = new THnSparseF("fRecoEtaPtRefitRowsRatioLambdaDist_triggeredEvent", "Reco (#Lambda + #bar{#Lambda}) distribution (eta + pt + refit + rows + ratio cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRecoEtaPtRefitRowsRatioLambdaDist_triggeredEvent->Sumw2();
+    fOutputList->Add(fRecoEtaPtRefitRowsRatioLambdaDist_triggeredEvent);
+
+    fRecoEtaPtRefitRowsRatioPrimaryLambdaDist_triggeredEvent = new THnSparseF("fRecoEtaPtRefitRowsRatioPrimaryLambdaDist_triggeredEvent", "Reco (#PrimaryLambda + #bar{#PrimaryLambda}) distribution (eta + pt + refit + rows + ratio cuts on daughters);p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
+    fRecoEtaPtRefitRowsRatioPrimaryLambdaDist_triggeredEvent->Sumw2();
+    fOutputList->Add(fRecoEtaPtRefitRowsRatioPrimaryLambdaDist_triggeredEvent);
 
     fRecoTotalLambdaDist = new THnSparseF("fRecoTotalLambdaDist", "Reco (#Lambda + #bar{#Lambda}) distribution;p_{T};#varphi;#eta;y;Z_{vtx};m_{p#pi};Multiplicity Pctl.", 6, numbins, minval, maxval);
     fRecoTotalLambdaDist->Sumw2();
@@ -580,6 +694,9 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserCreateOutputObjects()
 
     fPhiV0 = new TH1D("fPhiV0", "#phi of V0", 64, -3.14159, 3.14159);
     fOutputList->Add(fPhiV0);
+
+    eventScaleDist = new TH1D("eventScaleDist", "Event Scale Distribution", 2, 0, 2);
+    fOutputList->Add(eventScaleDist);
 
     PostData(1,fOutputList);
 
@@ -767,6 +884,24 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
     int numRealLambdas = 0;
     int numRecoLambdas = 0;
 
+    bool isTriggeredEvent = false;
+    bool isAssociatedEvent = false;
+    bool isLambdaEvent = false;
+
+    // loop through tracks to see if we have a triggered event (really fun using justins code)
+    for(int iTrack = 0; iTrack < ntracks; iTrack++) {
+        AliAODTrack *track = dynamic_cast<AliAODTrack*>(fVevent->GetTrack(iTrack));
+        if(!track) AliFatal("Not a standard AOD");
+        Bool_t triggerPass = PassTriggerCuts(track);
+        if(triggerPass && (track->Pt() > 4.0) && (track->Pt() < 8.0)){
+            isTriggeredEvent = true;
+        }
+        Bool_t assocPass = PassAssociatedCuts(track);
+        if(assocPass && (track->Pt() > 1.0) && (track->Pt() < 1.2)){
+            isAssociatedEvent = true;
+        }
+    }
+
     // quick test loop over V0's to determine filter mask range for daughter tracks
     int numV0s = fAOD->GetNumberOfV0s();
     for(int iv0 = 0; iv0 < numV0s; iv0++) {
@@ -869,7 +1004,23 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         }
 
         if(((negPassCuts & maskEtaPtRefitRowsRatio) == maskEtaPtRefitRowsRatio) && ((posPassCuts & maskEtaPtRefitRowsRatio)== maskEtaPtRefitRowsRatio)){
+
+            if(mcmother->Pt() > 2.1 && mcmother->Pt() < 2.3) {
+                isLambdaEvent = true;
+            }
+
             fRecoEtaPtRefitRowsRatioV0LambdaDist->Fill(distPoint);
+
+            if(mcmother->IsPhysicalPrimary()){
+                fRecoEtaPtRefitRowsRatioV0PrimaryLambdaDist->Fill(distPoint);
+            }
+
+            if(isTriggeredEvent) {
+                fRecoEtaPtRefitRowsRatioV0LambdaDist_triggeredEvent->Fill(distPoint);
+                if(mcmother->IsPhysicalPrimary()){
+                    fRecoEtaPtRefitRowsRatioV0PrimaryLambdaDist_triggeredEvent->Fill(distPoint);
+                }
+            } 
 
             std::cout << vZero->RadiusV0() << std::endl;
 
@@ -959,6 +1110,21 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
 
         if(associatedPass){ 
+
+            if(isTriggeredEvent) {
+                if(TMath::Abs(pdgcode) == 211){
+                    fRecoChargedDist_triggeredEvent->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 321){
+                    fRecoChargedDist_triggeredEvent->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 2212){
+                    fRecoChargedDist_triggeredEvent->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 11){
+                    fRecoChargedDist_triggeredEvent->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 13){
+                    fRecoChargedDist_triggeredEvent->Fill(singledistPoint);
+                }
+            }
+
             if(TMath::Abs(pdgcode) == 211){
                 fRecoPiDist->Fill(singledistPoint);
                 fRecoChargedDist->Fill(singledistPoint);
@@ -975,6 +1141,7 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 fRecoMuonDist->Fill(singledistPoint);
                 fRecoChargedDist->Fill(singledistPoint);
             }
+
         }
 
         unsigned int daughterCuts = PassDaughterCuts(aodnegtrack);
@@ -1012,6 +1179,21 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         }
 
         if(triggerPass){
+
+            if(isTriggeredEvent) {
+                if(TMath::Abs(pdgcode) == 211){
+                    fRecoChargedTriggerDist_triggeredEvent->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 321){
+                    fRecoChargedTriggerDist_triggeredEvent->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 2212){
+                    fRecoChargedTriggerDist_triggeredEvent->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 11){
+                    fRecoChargedTriggerDist_triggeredEvent->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 13){
+                    fRecoChargedTriggerDist_triggeredEvent->Fill(singledistPoint);
+                }
+            }
+
             if(TMath::Abs(pdgcode) == 321){
                 fRecoKTriggerDist->Fill(singledistPoint);
                 fRecoChargedTriggerDist->Fill(singledistPoint);
@@ -1177,6 +1359,17 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
                 if(((negPassCuts & maskEtaPtRefitRowsRatio) == maskEtaPtRefitRowsRatio) && ((posPassCuts & maskEtaPtRefitRowsRatio)== maskEtaPtRefitRowsRatio)){
                     fRecoEtaPtRefitRowsRatioLambdaDist->Fill(distPoint);
+                    if(mcmother->IsPhysicalPrimary()){
+                        fRecoEtaPtRefitRowsRatioPrimaryLambdaDist->Fill(distPoint);
+                    }
+
+                    if(isTriggeredEvent){
+                        if(mcmother->IsPhysicalPrimary()){
+                            fRecoEtaPtRefitRowsRatioPrimaryLambdaDist_triggeredEvent->Fill(distPoint);
+                        }
+                        fRecoEtaPtRefitRowsRatioLambdaDist_triggeredEvent->Fill(distPoint);
+                    }
+
                     fRecoEtaPtRefitRowsRatioLambdaFilterDist->Fill(filter_distPoint);
                     if(is_pionDCA && is_protonDCA) {
                         double dca_distPoint[8];
@@ -1297,7 +1490,18 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
                 }
 
                 if(((negPassCuts & maskEtaPtRefitRowsRatio) == maskEtaPtRefitRowsRatio) && ((posPassCuts & maskEtaPtRefitRowsRatio)== maskEtaPtRefitRowsRatio)){
+
                     fRecoEtaPtRefitRowsRatioLambdaDist->Fill(distPoint);
+                    if(mcmother->IsPhysicalPrimary()) {
+                        fRecoEtaPtRefitRowsRatioPrimaryLambdaDist->Fill(distPoint);
+                    }
+                    if(isTriggeredEvent) {
+                        fRecoEtaPtRefitRowsRatioLambdaDist_triggeredEvent->Fill(distPoint);
+                        if(mcmother->IsPhysicalPrimary()) {
+                            fRecoEtaPtRefitRowsRatioPrimaryLambdaDist_triggeredEvent->Fill(distPoint);
+                        }
+                    }
+
                     numRecoLambdas += 1;
                     if(is_pionDCA && is_protonDCA) {
                         double dca_distPoint[8];
@@ -1319,6 +1523,21 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
     //loop over MC particles to get original lambda and fill Real dist (and real single particle dist)
     int numCharged = 0;
 
+    bool isAssocEvent_MC = false;
+    bool isLambdaEvent_MC = false;
+
+    for(Int_t imcpart=0; imcpart< fMCArray->GetEntries(); imcpart++){
+        AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)fMCArray->At(imcpart);
+        pdgcode = AODMCtrack->GetPdgCode();
+        if(AODMCtrack->IsPhysicalPrimary() && TMath::Abs(AODMCtrack->Eta()) < 0.8) {
+            bool isChargedHadron = TMath::Abs(pdgcode) == 211 || TMath::Abs(pdgcode) == 321 || TMath::Abs(pdgcode) == 2212 || TMath::Abs(pdgcode) == 11 || TMath::Abs(pdgcode) == 13;
+            if(isChargedHadron && (AODMCtrack->Pt() > 1.0 && AODMCtrack->Pt() < 1.2)) {
+                isAssocEvent_MC = true;
+                break;
+            }
+        }
+    }
+
     for(Int_t imcpart=0; imcpart< fMCArray->GetEntries(); imcpart++){
 
         AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)fMCArray->At(imcpart);
@@ -1337,6 +1556,23 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         singledistPoint[4] = multPercentile;
 
         if(AODMCtrack->IsPhysicalPrimary() && TMath::Abs(mcEta) < 0.8){
+
+            if(isTriggeredEvent) {
+                if(TMath::Abs(pdgcode) == 321){
+                    fRealChargedDist_triggeredEvent->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 211){
+                    fRealChargedDist_triggeredEvent->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 2212){
+                    fRealChargedDist_triggeredEvent->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 11){
+                    fRealChargedDist_triggeredEvent->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 13){
+                    fRealChargedDist_triggeredEvent->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 2112){
+                    fRealChargedDist_triggeredEvent->Fill(singledistPoint);
+                }
+            }
+
             if(TMath::Abs(pdgcode) == 321){
                 fRealKDist->Fill(singledistPoint);
                 fRealChargedDist->Fill(singledistPoint);
@@ -1389,6 +1625,23 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
         }
 
         if(AODMCtrack->IsPhysicalPrimary() && TMath::Abs(mcEta) < 0.8 ){
+            
+            if(isTriggeredEvent) {
+                if(TMath::Abs(pdgcode) == 321){
+                    fRealTriggerDist_triggeredEvent->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 211){
+                    fRealTriggerDist_triggeredEvent->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 2212){
+                    fRealTriggerDist_triggeredEvent->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 11){
+                    fRealTriggerDist_triggeredEvent->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 13){
+                    fRealTriggerDist_triggeredEvent->Fill(singledistPoint);
+                }else if(TMath::Abs(pdgcode) == 2112){
+                    fRealTriggerDist_triggeredEvent->Fill(singledistPoint);
+                }
+            }
+
             if(TMath::Abs(pdgcode) == 321){
                 fRealTriggerDist->Fill(singledistPoint);
             }else if(TMath::Abs(pdgcode) == 211){
@@ -1455,12 +1708,43 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
 
             if(TMath::Abs(mcLambdaEta) < 0.8){
                 fRealTotalLambdaDist->Fill(distPoint);
+                if(AODMCtrack->Pt() > 2.1 && AODMCtrack->Pt() < 2.3) {
+                    isLambdaEvent_MC = true;
+                }
+                if(AODMCtrack->IsPhysicalPrimary()) {
+                    fRealTotalPrimaryLambdaDist->Fill(distPoint);
+                }
+                if(isTriggeredEvent) {
+                    fRealTotalLambdaDist_triggeredEvent->Fill(distPoint);
+                    if(AODMCtrack->IsPhysicalPrimary()) {
+                        fRealTotalPrimaryLambdaDist_triggeredEvent->Fill(distPoint);
+                    }
+                }
 
                 if(pdgcode == 3122) {
                     fRealLambdaDist->Fill(distPoint); 
+                    if(AODMCtrack->IsPhysicalPrimary()) {
+                        fRealPrimaryLambdaDist->Fill(distPoint);
+                    }
+
+                    if(isTriggeredEvent) {
+                        fRealLambdaDist_triggeredEvent->Fill(distPoint);
+                        if(AODMCtrack->IsPhysicalPrimary()) {
+                            fRealPrimaryLambdaDist_triggeredEvent->Fill(distPoint);
+                        }
+                    }
                 }
                 else {
                     fRealAntiLambdaDist->Fill(distPoint);
+                    if(AODMCtrack->IsPhysicalPrimary()) {
+                        fRealAntiPrimaryLambdaDist->Fill(distPoint);
+                    }
+                    if(isTriggeredEvent) {
+                        fRealAntiLambdaDist_triggeredEvent->Fill(distPoint);
+                        if(AODMCtrack->IsPhysicalPrimary()) {
+                            fRealAntiPrimaryLambdaDist_triggeredEvent->Fill(distPoint);
+                        }
+                    }
                 }
             }
         } 
@@ -1530,6 +1814,14 @@ void AliAnalysisTaskLambdaHadronEfficiency::UserExec(Option_t *){
     
     fRealLambdasPerEvent->Fill(numRealLambdas);
     fRecoLambdasPerEvent->Fill(numRecoLambdas);
+
+    if(isTriggeredEvent && isLambdaEvent_MC && isLambdaEvent) {
+        eventScaleDist->Fill(0.5);
+    }
+
+    if(isTriggeredEvent && isLambdaEvent_MC) {
+        eventScaleDist->Fill(1.5);
+    }
 
     PostData(1, fOutputList);
 }    

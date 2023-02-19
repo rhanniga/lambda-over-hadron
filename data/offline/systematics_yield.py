@@ -22,9 +22,9 @@ def ratio_error(X, Y, X_err, Y_err):
     return math.sqrt((X_err/X)**2 + (Y_err/Y)**2) * (X/Y)
 
 
-LOW_PT = True
+LOW_PT = False
 HIGH_PT = False
-NORMAL_PT = False
+NORMAL_PT = True
 assert sum([LOW_PT, HIGH_PT, NORMAL_PT]) == 1, "Only one of LOW_PT, HIGH_PT, NORMAL_PT can be True"
 
 
@@ -32,7 +32,7 @@ CENTRAL_TECHNIQUE = "6 bin avg"
 N_DPHI_BINS = 16
 
 PRINT_YIELDS = False
-PRINT_SYSTEMATICS = True
+PRINT_SYSTEMATICS = False
 
 total_dphi_sys_0_20 = math.sqrt(0.01**2 + 0.001**2 + 0.011**2 + 0.037**2)
 total_dphi_sys_20_50 = math.sqrt(0.009**2 + 0.003**2 + 0.018**2 + 0.037**2)
@@ -526,6 +526,19 @@ away_ratio_graph_final_syst = rt.TGraphErrors(3, mult_list, away_ratio_graph_val
 ue_ratio_graph_final_syst = rt.TGraphErrors(3, mult_list, ue_ratio_graph_values, mult_error_list_sys, ue_ratio_graph_sys)
 total_ratio_graph_final_syst = rt.TGraphErrors(3, mult_list, total_ratio_graph_values, mult_error_list_sys, total_ratio_graph_sys)
 
+near_ue_ratio_graph_values = arr.array('d', [near_ratio_graph.GetY()[i]/ue_ratio_graph.GetY()[i] for i in range(3)])
+near_ue_ratio_graph_sys = arr.array('d', [ratio_error(near_ratio_graph.GetY()[i], ue_ratio_graph.GetY()[i], near_ratio_graph_final_syst.GetEY()[i], ue_ratio_graph_final_syst.GetEY()[i]) for i in range(3)])
+near_ue_ratio_graph_stat = arr.array('d', [ratio_error(near_ratio_graph.GetY()[i], ue_ratio_graph.GetY()[i], near_ratio_graph.GetEY()[i], ue_ratio_graph.GetEY()[i]) for i in range(3)])
+away_ue_ratio_graph_values = arr.array('d', [away_ratio_graph.GetY()[i]/ue_ratio_graph.GetY()[i] for i in range(3)])
+away_ue_ratio_graph_sys = arr.array('d', [ratio_error(away_ratio_graph.GetY()[i], ue_ratio_graph.GetY()[i], away_ratio_graph_final_syst.GetEY()[i], ue_ratio_graph_final_syst.GetEY()[i]) for i in range(3)])
+away_ue_ratio_graph_stat = arr.array('d', [ratio_error(away_ratio_graph.GetY()[i], ue_ratio_graph.GetY()[i], away_ratio_graph.GetEY()[i], ue_ratio_graph.GetEY()[i]) for i in range(3)])
+
+near_ue_ratio_graph_final_syst = rt.TGraphErrors(3, mult_list, near_ue_ratio_graph_values, mult_error_list_sys, near_ue_ratio_graph_sys)
+away_ue_ratio_graph_final_syst = rt.TGraphErrors(3, mult_list, away_ue_ratio_graph_values, mult_error_list_sys, away_ue_ratio_graph_sys)
+near_ue_ratio_graph = rt.TGraphErrors(3, mult_list, near_ue_ratio_graph_values, mult_error_list_stat, near_ue_ratio_graph_stat)
+away_ue_ratio_graph = rt.TGraphErrors(3, mult_list, away_ue_ratio_graph_values, mult_error_list_stat, away_ue_ratio_graph_stat)
+
+
 
 if LOW_PT:
     justin_infile = rt.TFile("output/fitsyst_lowpt6ptbdtest.root")
@@ -699,6 +712,11 @@ near_ratio_graph_final_syst.Write("near_ratio_graph_final_syst")
 away_ratio_graph_final_syst.Write("away_ratio_graph_final_syst")
 ue_ratio_graph_final_syst.Write("ue_ratio_graph_final_syst")
 total_ratio_graph_final_syst.Write("total_ratio_graph_final_syst")
+
+near_ue_ratio_graph.Write("near_ue_ratio_graph")
+away_ue_ratio_graph.Write("away_ue_ratio_graph")
+near_ue_ratio_graph_final_syst.Write("near_ue_ratio_graph_final_syst")
+away_ue_ratio_graph_final_syst.Write("away_ue_ratio_graph_final_syst")
 
 near_ratio_graph_new_x_axis.Write("near_ratio_graph_new_x_axis")
 away_ratio_graph_new_x_axis.Write("away_ratio_graph_new_x_axis")

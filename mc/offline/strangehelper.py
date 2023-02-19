@@ -1,4 +1,7 @@
 # a function to calculate parabola that passes through all three input points
+
+PI = 3.14159265
+
 def get_parabola(point_one, point_two, point_three):
     x1, x2, x3 = point_one[0], point_two[0], point_three[0]
     y1, y2, y3 = point_one[1], point_two[1], point_three[1]
@@ -34,11 +37,20 @@ def make_mixed_corrections(same, mixed, mass_low=1.11, mass_high=1.12, is_hh=Fal
         mixed2d = mixed3d.Project3D("xye")
         mixed2d.SetName(f"mix2dproj_zbin_{zbin}")
 
-        #scaling by average of bins adjacent to 0
+        #scaling by average of bins adjacent to 0, 0
+        print("hello")
         scale = 0.5*(mixed2d.Integral(mixed2d.GetXaxis().FindBin(-0.01),    #xmin
                                     mixed2d.GetXaxis().FindBin(0.01),     #xmax 
                                     mixed2d.GetYaxis().FindBin(0.0),      #ymin
                                     mixed2d.GetYaxis().FindBin(0.0)))     #ymax
+        
+
+        # #scaling by average of bins adjacent to 0 along pi/2 to 3pi/2 for dphi
+        # scale = (1/16)*(mixed2d.Integral(mixed2d.GetXaxis().FindBin(-0.01),    #xmin
+        #                             mixed2d.GetXaxis().FindBin(0.01),     #xmax 
+        #                             9,      #ymin
+        #                             16))     #ymax
+
         same2d.Divide(mixed2d)
         same2d.Scale(scale)
         

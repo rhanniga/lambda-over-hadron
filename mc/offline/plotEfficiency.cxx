@@ -1,3 +1,4 @@
+
 void plotMultEff(THnSparse* reco, THnSparse* real, TH1D** recoVar, TH1D** realVar, TH1D** eff, TH1D** ratio, Float_t* mult, Int_t numMultBins, Int_t axis, TCanvas* ceff, TCanvas* cratio, Bool_t isSingle = kFALSE){
 
     TString var = "";
@@ -11,11 +12,10 @@ void plotMultEff(THnSparse* reco, THnSparse* real, TH1D** recoVar, TH1D** realVa
     Int_t multAxis = 5;
     if(isSingle) multAxis = 4;
 
-    printf("num mult bins: %i\n", numMultBins);
     switch(axis){
         case 0: var = "PT";
                 label = "p_{T}";
-                //rebin = 5;
+                rebin = 5;
                 break;
         case 1: var = "Phi";
                 label = "#varphi";
@@ -41,13 +41,14 @@ void plotMultEff(THnSparse* reco, THnSparse* real, TH1D** recoVar, TH1D** realVa
         recoVar[imult]->SetName(Form("%sreco%s_mult%i%i", reco->GetTitle(), var.Data(), int(mult[imult]), int(mult[imult+1])));
         realVar[imult] = real->Projection(axis);
         realVar[imult]->SetName(Form("%sreco%s_mult%i%i", real->GetTitle(), var.Data(), int(mult[imult]), int(mult[imult+1])));
-        if(axis!=0){
-            recoVar[imult]->Rebin(rebin);
-            realVar[imult]->Rebin(rebin);
-        }else{
-            recoVar[imult]= (TH1D*)recoVar[imult]->Rebin(numbins, Form("%sreco_rebin%s_mult%i%i", reco->GetTitle(), var.Data(), int(mult[imult]), int(mult[imult+1])), binedge);
-            realVar[imult]= (TH1D*)realVar[imult]->Rebin(numbins, Form("%sreal_rebin%s_mult%i%i", real->GetTitle(), var.Data(), int(mult[imult]), int(mult[imult+1])), binedge);
-        } 
+
+        // if(axis!=0){
+        recoVar[imult]->Rebin(rebin);
+        realVar[imult]->Rebin(rebin);
+        // }else{
+        // recoVar[imult]= (TH1D*)recoVar[imult]->Rebin(numbins, Form("%sreco_rebin%s_mult%i%i", reco->GetTitle(), var.Data(), int(mult[imult]), int(mult[imult+1])), binedge);
+        // realVar[imult]= (TH1D*)realVar[imult]->Rebin(numbins, Form("%sreal_rebin%s_mult%i%i", real->GetTitle(), var.Data(), int(mult[imult]), int(mult[imult+1])), binedge);
+        // } 
         eff[imult] = (TH1D*)recoVar[imult]->Clone(Form("%s_%s_eff%s_mult%i%i", reco->GetTitle(), real->GetTitle(), var.Data(), int(mult[imult]), int(mult[imult+1])));
         eff[imult]->Divide(eff[imult], realVar[imult], 1., 1., "B");
         eff[imult]->SetTitle(Form("(%s)/(%s) Efficiency vs. %s for Mult. Bins;%s;Efficiency", reco->GetTitle(), real->GetTitle(), label.Data(), label.Data()));
@@ -64,14 +65,14 @@ void plotMultEff(THnSparse* reco, THnSparse* real, TH1D** recoVar, TH1D** realVa
     recoVar[numMultBins]->SetName(Form("%sreco%s_mult090", reco->GetTitle(), var.Data()));
     realVar[numMultBins] = real->Projection(axis);
     realVar[numMultBins]->SetName(Form("%sreal%s_mult090", real->GetTitle(), var.Data()));
-    if(axis!=0){
-        recoVar[numMultBins]->Rebin(rebin);
-        realVar[numMultBins]->Rebin(rebin);
-    }else{
-        recoVar[numMultBins]= (TH1D*)recoVar[numMultBins]->Rebin(numbins, Form("%sreco_rebin%s_mult090", reco->GetTitle(), var.Data()), binedge);
-        realVar[numMultBins]= (TH1D*)realVar[numMultBins]->Rebin(numbins, Form("%sreal_rebin%s_mult090", real->GetTitle(), var.Data()), binedge);
+    // if(axis!=0){
+    recoVar[numMultBins]->Rebin(rebin);
+    realVar[numMultBins]->Rebin(rebin);
+    // }else{
+        // recoVar[numMultBins]= (TH1D*)recoVar[numMultBins]->Rebin(numbins, Form("%sreco_rebin%s_mult090", reco->GetTitle(), var.Data()), binedge);
+        // realVar[numMultBins]= (TH1D*)realVar[numMultBins]->Rebin(numbins, Form("%sreal_rebin%s_mult090", real->GetTitle(), var.Data()), binedge);
 
-    }
+    // }
     eff[numMultBins] = (TH1D*)recoVar[numMultBins]->Clone(Form("%s_%s_eff%s_mult090",reco->GetTitle(), real->GetTitle(), var.Data()));
     eff[numMultBins]->Divide(eff[numMultBins], realVar[numMultBins], 1., 1., "B");
     eff[numMultBins]->SetTitle(Form("(%s)/(%s) Efficiency vs. %s for Mult. Bins", reco->GetTitle(), real->GetTitle(), label.Data()));
@@ -89,14 +90,12 @@ void plotMultEff(THnSparse* reco, THnSparse* real, TH1D** recoVar, TH1D** realVa
         ratio[i]->GetYaxis()->SetRangeUser(0.75, 1.25);
         ratio[i]->Draw("P SAME");
     } 
-    //cratio->Print(Form("plots/binom_%s_%s_%sratio.pdf", var.Data(), reco->GetName(), real->GetName()));
 
     ceff->SetLeftMargin(0.13);
     ceff->cd();
     for(int j=0; j<=numMultBins; j++){
         eff[j]->Draw("P SAME");
     }
-    //ceff->Print(Form("plots/binom_%s_%s_%seff.pdf", var.Data(), reco->GetName(), real->GetName()));
     TLegend* effleg = new TLegend(0.2, 0.6, 0.6, 0.8);
     effleg->AddEntry(eff[3], "0-100% Mult. Percentile", "lpe");
     effleg->AddEntry(eff[0], "0-20% Mult. Percentile", "lpe");
@@ -106,23 +105,27 @@ void plotMultEff(THnSparse* reco, THnSparse* real, TH1D** recoVar, TH1D** realVa
 
 }; 
 
+TH2D* getPtEtaEfficiency(TH2D* reco, TH2D* real, TString var, TString label){
+    TH2D* eff = (TH2D*)reco->Clone(Form("%s_%s_eff%s", reco->GetTitle(), real->GetTitle(), var.Data()));
+    eff->Divide(eff, real, 1., 1., "B");
+    eff->SetTitle(Form("(%s)/(%s) Efficiency vs. %s", reco->GetTitle(), real->GetTitle(), label.Data()));
+    return eff;
+}
+
+
 void plotEfficiency(){
 
     Float_t mult[4] = {0.0, 20.0, 50.0, 80.0};
     
-    /* TFile* infile = new TFile("~/OneDrive/Research/Output/lambda-over-hadron/mc/efficiency_run_etacutonline.root"); */
-    TFile* infile = new TFile("../online/efficiency_run_FINAL.root");
+    TFile* infile = new TFile("../online/efficiency_run_final_FINAL.root");
     TList* list = (TList*)infile->Get("h-lambda_eff");
-    
-    // This actually isnt entire range and misses 10% of signal
-    // float SIG_MIN = 1.08;
-    // float SIG_MAX = 1.16 - 0.00000001;
-    
+
     //single track histos
     THnSparseF* realTrigger = (THnSparseF*)list->FindObject("fRealTriggerDist");
     THnSparseF* recoTrigger = (THnSparseF*)list->FindObject("fRecoChargedTriggerDist");
     THnSparseF* realCharged = (THnSparseF*)list->FindObject("fRealChargedDist");
     THnSparseF* recoCharged = (THnSparseF*)list->FindObject("fRecoChargedDist");
+
     THnSparseF* realPrimaryCharged = (THnSparseF*)list->FindObject("fRealPrimaryChargedDist");
     THnSparseF* recoPrimaryCharged = (THnSparseF*)list->FindObject("fRecoPrimaryChargedDist");
     THnSparseF* realSecondaryCharged = (THnSparseF*)list->FindObject("fRealSecondaryChargedDist");
@@ -137,12 +140,6 @@ void plotEfficiency(){
     realSecondaryCharged->GetAxis(0)->SetRangeUser(0.5, 10.0);
     recoSecondaryCharged->GetAxis(0)->SetRangeUser(0.5, 10.0);
 
-
-    // offline eta cuts no longer required
-    //recoTrigger->GetAxis(2)->SetRangeUser(-0.8, 0.8);
-    // realTrigger->GetAxis(2)->SetRangeUser(-0.8, 0.8);
-    //recoCharged->GetAxis(2)->SetRangeUser(-0.8, 0.8);
-    // realCharged->GetAxis(2)->SetRangeUser(-0.8, 0.8);
 
     realTrigger->GetAxis(3)->SetRangeUser(-10.0, 10.0);
     recoTrigger->GetAxis(3)->SetRangeUser(-10.0, 10.0);
@@ -161,6 +158,64 @@ void plotEfficiency(){
     recoPrimaryCharged->Sumw2();
     realSecondaryCharged->Sumw2();
     recoSecondaryCharged->Sumw2();
+
+
+    TH2D* triggerPtEtaEffMult[4];
+    TH2D* chargedPtEtaEffMult[4];
+
+    for(int i =0; i < 3; i++) {
+
+        realTrigger->GetAxis(4)->SetRangeUser(mult[i], mult[i+1]);
+        recoTrigger->GetAxis(4)->SetRangeUser(mult[i], mult[i+1]);
+        realCharged->GetAxis(4)->SetRangeUser(mult[i], mult[i+1]);
+        recoCharged->GetAxis(4)->SetRangeUser(mult[i], mult[i+1]);
+        TH2D* realTrigger_PtEta = (TH2D*)realTrigger->Projection(2, 0);
+        TH2D* recoTrigger_PtEta = (TH2D*)recoTrigger->Projection(2, 0);
+        TH2D* realCharged_PtEta = (TH2D*)realCharged->Projection(2, 0);
+        TH2D* recoCharged_PtEta = (TH2D*)recoCharged->Projection(2, 0);
+
+        realTrigger_PtEta->RebinX(5);
+        recoTrigger_PtEta->RebinX(5);
+        realCharged_PtEta->RebinX(5);
+        recoCharged_PtEta->RebinX(5);
+
+        realTrigger_PtEta->RebinY(2);
+        recoTrigger_PtEta->RebinY(2);
+        realCharged_PtEta->RebinY(2);
+        recoCharged_PtEta->RebinY(2);
+
+        TH2D* triggerPtEtaEff = getPtEtaEfficiency(recoTrigger_PtEta, realTrigger_PtEta, "PtEta", "p_{T} vs. #eta");
+        triggerPtEtaEff->SetName(Form("triggerPtEtaEff_mult_%d", i));
+        TH2D* chargedPtEtaEff = getPtEtaEfficiency(recoCharged_PtEta, realCharged_PtEta, "PtEta", "p_{T} vs. #eta");
+        chargedPtEtaEff->SetName(Form("chargedPtEtaEff_mult_%d", i));
+        triggerPtEtaEffMult[i] = triggerPtEtaEff;
+        chargedPtEtaEffMult[i] = chargedPtEtaEff;
+
+    }
+
+    realTrigger->GetAxis(4)->SetRangeUser(0, 0);
+    recoTrigger->GetAxis(4)->SetRangeUser(0, 0);
+    realCharged->GetAxis(4)->SetRangeUser(0, 0);
+    recoCharged->GetAxis(4)->SetRangeUser(0, 0);
+    TH2D* realTrigger_PtEta = (TH2D*)realTrigger->Projection(2, 0);
+    TH2D* recoTrigger_PtEta = (TH2D*)recoTrigger->Projection(2, 0);
+    TH2D* realCharged_PtEta = (TH2D*)realCharged->Projection(2, 0);
+    TH2D* recoCharged_PtEta = (TH2D*)recoCharged->Projection(2, 0);
+    realTrigger_PtEta->RebinX(5);
+    recoTrigger_PtEta->RebinX(5);
+    realCharged_PtEta->RebinX(5);
+    recoCharged_PtEta->RebinX(5);
+    realTrigger_PtEta->RebinY(2);
+    recoTrigger_PtEta->RebinY(2);
+    realCharged_PtEta->RebinY(2);
+    recoCharged_PtEta->RebinY(2);
+    TH2D* triggerPtEtaEff = getPtEtaEfficiency(recoTrigger_PtEta, realTrigger_PtEta, "PtEta", "p_{T} vs. #eta");
+    triggerPtEtaEff->SetName(Form("triggerPtEtaEff_mult_%d", 3));
+    TH2D* chargedPtEtaEff = getPtEtaEfficiency(recoCharged_PtEta, realCharged_PtEta, "PtEta", "p_{T} vs. #eta");
+    chargedPtEtaEff->SetName(Form("chargedPtEtaEff_mult_%d", 3));
+    triggerPtEtaEffMult[3] = triggerPtEtaEff;
+    chargedPtEtaEffMult[3] = chargedPtEtaEff;
+
 
     
     TH1D* realTrigger_PT_mult[4];
@@ -205,6 +260,7 @@ void plotEfficiency(){
     THnSparseF* etaPtLambda = (THnSparseF*)list->FindObject("fRecoEtaPtLambdaDist");
     THnSparseF* etaPtRefitLambda = (THnSparseF*)list->FindObject("fRecoEtaPtRefitLambdaDist");
     THnSparseF* etaPtRefitRowsLambda = (THnSparseF*)list->FindObject("fRecoEtaPtRefitRowsLambdaDist");
+
     THnSparseF* etaPtRefitRowsRatioLambda = (THnSparseF*)list->FindObject("fRecoEtaPtRefitRowsRatioLambdaDist");
 
     //reco lambda from v0 finder histos
@@ -213,6 +269,7 @@ void plotEfficiency(){
     THnSparseF* etaPtLambdaV0 = (THnSparseF*)list->FindObject("fRecoEtaPtV0LambdaDist");
     THnSparseF* etaPtRefitLambdaV0 = (THnSparseF*)list->FindObject("fRecoEtaPtRefitV0LambdaDist");
     THnSparseF* etaPtRefitRowsLambdaV0 = (THnSparseF*)list->FindObject("fRecoEtaPtRefitRowsV0LambdaDist");
+
     THnSparseF* etaPtRefitRowsRatioLambdaV0 = (THnSparseF*)list->FindObject("fRecoEtaPtRefitRowsRatioV0LambdaDist");
 
 
@@ -262,23 +319,6 @@ void plotEfficiency(){
     etaPtRefitRowsLambdaV0->GetAxis(0)->SetRangeUser(0.5, 10.0);
     etaPtRefitRowsRatioLambdaV0->GetAxis(0)->SetRangeUser(0.5, 10.0);
        
-    // ETA AXIS (WE DONT DO THIS ANYMORE) 
-
-    // realLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
-    // recoLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
-    // etaLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
-    // etaPtLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
-    // etaPtRefitLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
-    // etaPtRefitRowsLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
-    // etaPtRefitRowsRatioLambda->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
-
-    // recoLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
-    // etaLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
-    // etaPtLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
-    // etaPtRefitLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
-    // etaPtRefitRowsLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
-    // etaPtRefitRowsRatioLambdaV0->GetAxis(2)->SetRangeUser(-0.8, 0.8-0.0001);
-
     // Z VTX AXIS  
     realLambda->GetAxis(3)->SetRangeUser(-10.0, 10.0-0.0001);
 
@@ -296,27 +336,6 @@ void plotEfficiency(){
     etaPtRefitRowsLambdaV0->GetAxis(3)->SetRangeUser(-10.0, 10.0-0.0001);
     etaPtRefitRowsRatioLambdaV0->GetAxis(3)->SetRangeUser(-10.0, 10.0-0.0001);
 
-
-    // JUST DONT DO THIS ANYMORE!!!
-    // MASS AXIS  
-
-    // realLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
-
-    // recoLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
-    // etaLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
-    // etaPtLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
-    // etaPtRefitLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
-    // etaPtRefitRowsLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
-    // etaPtRefitRowsRatioLambda->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
-
-    // recoLambdaV0->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
-    // etaLambdaV0->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
-    // etaPtLambdaV0->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
-    // etaPtRefitLambdaV0->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
-    // etaPtRefitRowsLambdaV0->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
-    // etaPtRefitRowsRatioLambdaV0->GetAxis(4)->SetRangeUser(SIG_MIN, SIG_MAX);
-
-
     realLambda->Sumw2();
 
     recoLambda->Sumw2();
@@ -332,6 +351,55 @@ void plotEfficiency(){
     etaPtRefitLambdaV0->Sumw2();
     etaPtRefitRowsLambdaV0->Sumw2();
     etaPtRefitRowsRatioLambdaV0->Sumw2();
+
+    TH2D* lambdaPtEtaEffMult[4];
+    TH2D* lambdaV0PtEtaEffMult[4];
+
+    for(int i = 0; i < 3; i++) {
+
+        realLambda->GetAxis(5)->SetRangeUser(mult[i], mult[i+1]);
+        etaPtRefitRowsRatioLambda->GetAxis(5)->SetRangeUser(mult[i], mult[i+1]);
+        etaPtRefitRowsRatioLambdaV0->GetAxis(5)->SetRangeUser(mult[i], mult[i+1]);
+        TH2D* realLambda_PtEta = (TH2D*)realLambda->Projection(2, 0);
+        TH2D* etaPtRefitRowsRatioLambda_PtEta = (TH2D*)etaPtRefitRowsRatioLambda->Projection(2, 0);
+        TH2D* etaPtRefitRowsRatioLambdaV0_PtEta = (TH2D*)etaPtRefitRowsRatioLambdaV0->Projection(2, 0);
+
+        realLambda_PtEta->RebinX(5);
+        etaPtRefitRowsRatioLambda_PtEta->RebinX(5);
+        etaPtRefitRowsRatioLambdaV0_PtEta->RebinX(5);
+        realLambda_PtEta->RebinY(2);
+        etaPtRefitRowsRatioLambda_PtEta->RebinY(2);
+        etaPtRefitRowsRatioLambdaV0_PtEta->RebinY(2);
+
+        TH2D* lambdaPtEtaEff = getPtEtaEfficiency(etaPtRefitRowsRatioLambda_PtEta, realLambda_PtEta, "PtEta", "p_{T} vs. #eta");
+        lambdaPtEtaEff->SetName(Form("lambdaPtEtaEff_mult_%d", i));
+        TH2D* lambdaV0PtEtaEff = getPtEtaEfficiency(etaPtRefitRowsRatioLambdaV0_PtEta, realLambda_PtEta, "PtEta", "p_{T} vs. #eta");
+        lambdaV0PtEtaEff->SetName(Form("lambdaV0PtEtaEff_mult_%d", i));
+        lambdaPtEtaEffMult[i] = lambdaPtEtaEff;
+        lambdaV0PtEtaEffMult[i] = lambdaV0PtEtaEff; 
+
+    }
+
+    realLambda->GetAxis(5)->SetRangeUser(0, 0);
+    etaPtRefitRowsRatioLambda->GetAxis(5)->SetRangeUser(0, 0);
+    etaPtRefitRowsRatioLambdaV0->GetAxis(5)->SetRangeUser(0, 0);
+    TH2D* realLambda_PtEta = (TH2D*)realLambda->Projection(2, 0);
+    TH2D* etaPtRefitRowsRatioLambda_PtEta = (TH2D*)etaPtRefitRowsRatioLambda->Projection(2, 0);
+    TH2D* etaPtRefitRowsRatioLambdaV0_PtEta = (TH2D*)etaPtRefitRowsRatioLambdaV0->Projection(2, 0);
+
+    realLambda_PtEta->RebinX(5);
+    etaPtRefitRowsRatioLambda_PtEta->RebinX(5);
+    etaPtRefitRowsRatioLambdaV0_PtEta->RebinX(5);
+    realLambda_PtEta->RebinY(2);
+    etaPtRefitRowsRatioLambda_PtEta->RebinY(2);
+    etaPtRefitRowsRatioLambdaV0_PtEta->RebinY(2);
+
+    TH2D* lambdaPtEtaEff = getPtEtaEfficiency(etaPtRefitRowsRatioLambda_PtEta, realLambda_PtEta, "PtEta", "p_{T} vs. #eta");
+    lambdaPtEtaEff->SetName(Form("lambdaPtEtaEff_mult_%d", 3));
+    TH2D* lambdaV0PtEtaEff = getPtEtaEfficiency(etaPtRefitRowsRatioLambdaV0_PtEta, realLambda_PtEta, "PtEta", "p_{T} vs. #eta");
+    lambdaV0PtEtaEff->SetName(Form("lambdaV0PtEtaEff_mult_%d", 3));
+    lambdaPtEtaEffMult[3] = lambdaPtEtaEff;
+    lambdaV0PtEtaEffMult[3] = lambdaV0PtEtaEff; 
 
     // pT vs mult
     TH1D* realLambda_PT_mult[4];
@@ -420,7 +488,7 @@ void plotEfficiency(){
     plotMultEff(etaPtRefitRowsLambdaV0, realLambda, etaPtRefitRowsLambdaV0_PT_mult, realLambda_PT_mult, etaPtRefitRowseffV0PT_mult, etaPtRefitRowsratioV0PT_mult, mult, 3, 0, cetaPtRefitRowseffV0PT, cetaPtRefitRowsratioV0PT, kFALSE);
     plotMultEff(etaPtRefitRowsRatioLambdaV0, realLambda, etaPtRefitRowsRatioLambdaV0_PT_mult, realLambda_PT_mult, etaPtRefitRowsRatioeffV0PT_mult, etaPtRefitRowsRatioratioV0PT_mult, mult, 3, 0, cetaPtRefitRowsRatioeffV0PT, cetaPtRefitRowsRatioratioV0PT, kFALSE);
 
-    TFile* output = new TFile("eff_out_pp.root", "RECREATE");
+    TFile* output = new TFile("eff_out_mult_eta_dep.root", "RECREATE");
 
     effCharged_PT_mult[3]->SetName("fAssociatedEff");
     effCharged_PT_mult[3]->Write();
@@ -440,4 +508,26 @@ void plotEfficiency(){
     etaPtRefitRowsRatioeffV0PT_mult[3]->SetName("fLambdaV0Eff");
     etaPtRefitRowsRatioeffV0PT_mult[3]->Write();
 
+    for(int i = 0; i < 3; i++)
+    {
+        triggerPtEtaEffMult[i]->SetName(Form("fTriggerPtEtaEff_mult_%d_%d", int(mult[i]), int(mult[i+1])));
+        triggerPtEtaEffMult[i]->Write();
+        chargedPtEtaEffMult[i]->SetName(Form("fAssociatedPtEtaEff_mult_%d_%d", int(mult[i]), int(mult[i+1])));
+        chargedPtEtaEffMult[i]->Write();
+        lambdaV0PtEtaEffMult[i]->SetName(Form("fLambdaV0PtEtaEff_mult_%d_%d", int(mult[i]), int(mult[i+1])));
+        lambdaV0PtEtaEffMult[i]->Write();
+        lambdaPtEtaEffMult[i]->SetName(Form("fLambdaPtEtaEff_mult_%d_%d", int(mult[i]), int(mult[i+1])));
+        lambdaPtEtaEffMult[i]->Write();
+    }
+
+    triggerPtEtaEffMult[3]->SetName("fTriggerPtEtaEff_mult_0_80");
+    triggerPtEtaEffMult[3]->Write();
+    chargedPtEtaEffMult[3]->SetName("fAssociatedPtEtaEff_mult_0_80");
+    chargedPtEtaEffMult[3]->Write();
+    lambdaV0PtEtaEffMult[3]->SetName("fLambdaV0PtEtaEff_mult_0_80");
+    lambdaV0PtEtaEffMult[3]->Write();
+    lambdaPtEtaEffMult[3]->SetName("fLambdaPtEtaEff_mult_0_80");
+    lambdaPtEtaEffMult[3]->Write();
+
+    output->Close();
 }

@@ -1,4 +1,8 @@
 #include "analyzePythia.h"
+#include "AliRunLoader.h"
+#include "AliStack.h"
+#include "TParticle.h"
+#include <iostream>
 
 void analyzePythia(TString inputFile, TString outputFile) {
 
