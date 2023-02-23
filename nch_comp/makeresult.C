@@ -149,7 +149,7 @@ Double1D etabin = {-0.8, 0.8};
 //Int_t eventclass = kINEL;
 //Int_t triggtype = kHMMBAND;
 
-//--> To caompute dndeta for my analysis (MB)
+//--> To caompute dndeta for my analysis (MB) (300 == 4 GeV XD)
 Int_t eventclass = kINEL300;
 Int_t triggtype = kMBAND300;
 
@@ -157,7 +157,7 @@ Int_t triggtype = kMBAND300;
 //Int_t eventclass = kINEL300;
 //Int_t triggtype = kHMMBAND300;
 
-Int_t centtype = kV0M;
+Int_t centtype = kV0A;
 Double1D cent = {0,10}; 
 Double1D mccent =  cent;
 //Double1D  mccent={1,5};
