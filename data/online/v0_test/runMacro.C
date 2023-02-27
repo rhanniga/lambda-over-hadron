@@ -59,14 +59,14 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   int startIndex = 0;
   int endIndex = 17;
 
-  // int startIndex = 18;
-  // int endIndex = 28;
+   /* int startIndex = 18; */
+  //  int endIndex = 28;
 
   // int startIndex = 15;
   // int endIndex = 28;
 
-  TString work_dir = "lambda_hadron_ratio_v0";
-  TString output_dir = "cent_" + std::to_string(int(MULT_LOW)) + "_" + std::to_string(int(MULT_HIGH)) + "_normal_pid_v2";
+  TString work_dir = "lambda_hadron_ratio_final";
+  TString output_dir = "normal_pid";
   
   //If we want to download test files from grid then run in one swoop (usually just run completely locally):
   bool gridTest = false;
@@ -192,6 +192,10 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
     int runArray[] = {265525, 265521, 265501, 265499, 265435, 265427, 265426, 265425, 265424, 265422, 265421, 265420, 265419, 265388, 265387, 265385, 265384, 265383, 265381, 265378, 265377, 265344, 265343, 265342, 265339, 265338, 265336, 265334, 265332, 265309};
     int runArrayLength = (int)(sizeof(runArray)/sizeof(runArray[0]));
 
+    /* int problematicRunArray[] = {265383, 265387, 265388, 265427, 265419}; */
+    /* int problematicRunArray[] = { 265387}; */
+    /* int problematicRunArrayLength = (int)(sizeof(problematicRunArray)/sizeof(problematicRunArray[0])); */
+
     if(endIndex > (runArrayLength-1) || endIndex < 0) {
             std::cout << "Your end index is out of bounds!" << std::endl;
             std::abort();
@@ -201,6 +205,10 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
             std::cout << "Your start index is out of bounds!" << std::endl;
             std::abort();
     }
+
+    /* for(int i = 0; i < problematicRunArrayLength; i++) { */
+    /*  alienHandler->AddRunNumber(problematicRunArray[i]); */
+    /* } */
 
     for(int i = startIndex; i < endIndex + 1; i++) {
      alienHandler->AddRunNumber(runArray[i]);

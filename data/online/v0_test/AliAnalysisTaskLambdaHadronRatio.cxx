@@ -168,8 +168,8 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     fOutputList->SetOwner(true);
 
     //Generating the mixed event pools:
-    int poolSize = 500;
-    int trackDepth = 1000;
+    int poolSize = 250;
+    int trackDepth = 500;
 
     int numMultBins = 3;
     double multBins[4] = {0.0, 20.0, 50.0, 80.0};
@@ -1053,7 +1053,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     MakeSameHLambdaCorrelations(trigger_list_highestPt, lambda_list, fDphiHLambda_highestPt, primZ, multPercentile, true, false);
     MakeSameHHCorrelations(trigger_list_highestPt, associated_h_list, fDphiHH_highestPt, primZ, multPercentile, true);
 
-    if(lambda_list.size() > 0 || associated_h_list.size() > 0) {
+    if(lambda_list.size() > 0 && associated_h_list.size() > 0) {
         AliEventPool *fCorPool = fCorPoolMgr->GetEventPool(multPercentile, primZ);
         AliEventPool *fCorPool_highestPt = fCorPoolMgr_highestPt->GetEventPool(multPercentile, primZ);
         if(!fCorPool) {
