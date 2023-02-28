@@ -583,31 +583,35 @@ justin_away_ratio_graph_final_syst = rt.TGraphErrors(3, mult_list, justin_away_r
 justin_ue_ratio_graph_final_syst = rt.TGraphErrors(3, mult_list, justin_ue_ratio_graph_values, mult_error_list_sys, justin_ue_ratio_graph_sys)
 justin_total_ratio_graph_final_syst = rt.TGraphErrors(3, mult_list, justin_total_ratio_graph_values, mult_error_list_sys, justin_total_ratio_graph_sys)
 
-# getting nch from table 1 on this paper: https://link.springer.com/article/10.1140/epjc/s10052-016-3915-1
-nch_0_10 = 56.3
-nch_0_10_err = 2.3
-nch_10_20 = 41.9
-nch_10_20_err = 1.7
-nch_20_30 = 34.7
-nch_20_30_err = 1.4
-nch_30_40 = 29.0
-nch_30_40_err = 1.2
-nch_40_50 = 24.1
-nch_40_50_err = 1.0
-nch_50_60 = 18.5
-nch_50_60_err = 0.7
-nch_60_70 = 16.3
-nch_60_70_err = 0.7 
-nch_70_80 = 11.2
-nch_70_80_err = 0.4
+## THIS IS OUTDATED BUT I KEEP IN FOR REFERENCE, avg(dN/dEta) from -0.8 to 0.8 is NOT Nch
+# # getting nch from table 1 on this paper: https://link.springer.com/article/10.1140/epjc/s10052-016-3915-1
 
-nch_0_20  = get_average([nch_0_10, nch_10_20])
-nch_20_50 = get_average([nch_20_30, nch_30_40, nch_40_50])
-nch_50_80 = get_average([nch_50_60, nch_60_70, nch_70_80])
+# nch_0_10 = 56.3
+# nch_0_10_err = 2.3
+# nch_10_20 = 41.9
+# nch_10_20_err = 1.7
+# nch_20_30 = 34.7
+# nch_20_30_err = 1.4
+# nch_30_40 = 29.0
+# nch_30_40_err = 1.2
+# nch_40_50 = 24.1
+# nch_40_50_err = 1.0
+# nch_50_60 = 18.5
+# nch_50_60_err = 0.7
+# nch_60_70 = 16.3
+# nch_60_70_err = 0.7 
+# nch_70_80 = 11.2
+# nch_70_80_err = 0.4
 
-nch_0_20_err = nch_0_20*0.04
-nch_20_50_err = nch_20_50*0.04
-nch_50_80_err = nch_50_80*0.04
+## FOR MIN BIAS, WE TAKE OFFICIAL VALUES OF avg(dN/dEta) FROM -0.5 to 0.5 FROM TABLE 1 OF THIS PAPER: https://alice-publications.web.cern.ch/system/files/draft/179/2013-nov-05-paper_draft-alicepreprint_paspectra-updated.pdf 
+## I HAVE CONFIRMED THAT THE TRIGGERED CODE ALSO REPRODUCE THESE VALUES
+nch_0_20 = 35.6
+nch_0_20_err = 0.9
+nch_20_50 = 21.9
+nch_20_50_err = 0.5
+nch_50_80 = 34.7
+nch_50_80_err = 1.4
+
 
 print("nch_0_20: ", nch_0_20, " +/- ", nch_0_20_err)
 print("nch_20_50: ", nch_20_50, " +/- ", nch_20_50_err)

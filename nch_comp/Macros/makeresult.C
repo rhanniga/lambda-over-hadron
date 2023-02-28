@@ -150,8 +150,8 @@ Double1D etabin = {-0.8, 0.8};
 //Int_t triggtype = kHMMBAND;
 
 //--> To caompute dndeta for my analysis (MB)
-Int_t eventclass = kINEL100;
-Int_t triggtype = kMBAND100;
+Int_t eventclass = kINEL300;
+Int_t triggtype = kMBAND300;
 
 //--> To caompute dndeta for my analysis (MB)
 //Int_t eventclass = kINEL300;
