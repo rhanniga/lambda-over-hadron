@@ -604,13 +604,21 @@ justin_total_ratio_graph_final_syst = rt.TGraphErrors(3, mult_list, justin_total
 # nch_70_80_err = 0.4
 
 ## FOR MIN BIAS, WE TAKE OFFICIAL VALUES OF avg(dN/dEta) FROM -0.5 to 0.5 FROM TABLE 1 OF THIS PAPER: https://alice-publications.web.cern.ch/system/files/draft/179/2013-nov-05-paper_draft-alicepreprint_paspectra-updated.pdf 
-## I HAVE CONFIRMED THAT THE TRIGGERED CODE ALSO REPRODUCE THESE VALUES
+## I HAVE CONFIRMED THAT THE NCH CODE ALSO REPRODUCES THESE VALUES
 nch_0_20 = 35.6
-nch_0_20_err = 0.9
-nch_20_50 = 21.9
+nch_0_20_err = 0.9 
+nch_20_50 = 21.5
 nch_20_50_err = 0.5
-nch_50_80 = 34.7
-nch_50_80_err = 1.4
+nch_50_80 = 12.0
+nch_50_80_err = 0.3
+
+## FOR TRIGGERED ANALYSIS (> 4 GeV TRIGGER), SLIGHTLY HIGHER THAN MINBIAS
+nch_0_20 = 42.4
+nch_0_20_err = 0.9
+nch_20_50 = 27.6
+nch_20_50_err = 0.5
+nch_50_80 = 17.7
+nch_50_80_err = 0.4
 
 
 print("nch_0_20: ", nch_0_20, " +/- ", nch_0_20_err)
