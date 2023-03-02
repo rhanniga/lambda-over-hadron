@@ -1,8 +1,9 @@
 import ROOT as rt
 
 import math
-import os
 import array as arr
+
+from time import sleep
 
 rt.gStyle.SetOptStat(0)
 
@@ -13,7 +14,7 @@ c.SetTopMargin(0.05)
 
 colors = [rt.kGreen - 2, rt.kRed, rt.kBlue, rt.kOrange, rt.kMagenta, rt.kCyan, rt.kYellow, rt.kGray, rt.kViolet, rt.kTeal, rt.kSpring, rt.kAzure, rt.kPink, rt.kCopper, rt.kOrange+7, rt.kSpring+9, rt.kTeal-7, rt.kAzure+2, rt.kPink+10, rt.kCopper+3, rt.kOrange-3, rt.kSpring-5, rt.kTeal+3, rt.kAzure-6, rt.kPink-7, rt.kCopper-9]
 
-pt_mode = 2 # 0 = central, 1 = low, 2 = high 
+pt_mode = 0 # 0 = central, 1 = low, 2 = high 
 
 def do_barlow(dphi_dict, name):
 
@@ -56,7 +57,7 @@ def do_barlow(dphi_dict, name):
     barlow_min.Draw("SAME")
     barlow_max.Draw("SAME")
     barlow_legend.Draw("SAME")
-    print("hello")
+    sleep(0.1)
     c.SaveAs(name)
 
 

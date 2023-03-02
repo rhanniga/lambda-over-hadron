@@ -211,12 +211,12 @@ trig_2d_dist_0_20.Write()
 
 lambda_mass_dist_0_20 = lambda_dist_0_20.Projection(3).Clone("lambda_mass_dist_0_20")
 
-bin_1 = lambda_mass_dist_0_20.FindBin(1.096)
-bin_2 = lambda_mass_dist_0_20.FindBin(1.134)
-point_one = [1.096, lambda_mass_dist_0_20.GetBinContent(bin_1)]
-point_two = [1.134, lambda_mass_dist_0_20.GetBinContent(bin_2)]
+bin_1 = lambda_mass_dist_0_20.FindBin(1.102)
+bin_2 = lambda_mass_dist_0_20.FindBin(1.132)
+point_one = [1.102, lambda_mass_dist_0_20.GetBinContent(bin_1)]
+point_two = [1.132, lambda_mass_dist_0_20.GetBinContent(bin_2)]
 bg_starting_params_0_20 = get_straight_line(point_one, point_two)
-lambda_mass_fit_0_20 = rt.TF1("lambda_mass_fit_0_20", "[0]*TMath::Voigt(x - [1], [2], [3], 4) + pol1(4)", 1.102, 1.130)
+lambda_mass_fit_0_20 = rt.TF1("lambda_mass_fit_0_20", "[0]*TMath::Voigt(x - [1], [2], [3], 4) + pol1(4)", 1.102, 1.127)
 lambda_mass_fit_0_20.SetNpx(1000)
 lambda_mass_fit_0_20.SetParameter(0, 1.74e03)
 lambda_mass_fit_0_20.SetParameter(1, 1.116)
@@ -227,13 +227,13 @@ lambda_mass_fit_0_20.SetParameter(5, bg_starting_params_0_20[1])
 lambda_mass_dist_fit_0_20 = lambda_mass_dist_0_20.Clone("lambda_mass_dist_fit_0_20")
 
 
-lambda_mass_bg_fit_0_20 = rt.TF1("bg_fit_0_20", "pol1", 1.096, 1.14)
+lambda_mass_bg_fit_0_20 = rt.TF1("bg_fit_0_20", "pol1", 1.096, 1.136)
 lambda_mass_bg_fit_0_20.SetNpx(1000)
 lambda_mass_bg_fit_0_20.SetParameter(0, bg_starting_params_0_20[0])
 lambda_mass_bg_fit_0_20.SetParameter(1, bg_starting_params_0_20[1])
 lambda_mass_dist_fit_0_20.Fit(lambda_mass_fit_0_20, "RS")
 
-voigt_fit_0_20 = rt.TF1("voigt_fit_0_20", "[0]*TMath::Voigt(x - [1], [2], [3], 4)", 1.102, 1.130)
+voigt_fit_0_20 = rt.TF1("voigt_fit_0_20", "[0]*TMath::Voigt(x - [1], [2], [3], 4)", 1.102, 1.127)
 voigt_fit_0_20.SetNpx(1000)
 voigt_fit_0_20.SetParameter(0, lambda_mass_fit_0_20.GetParameter(0))
 voigt_fit_0_20.SetParameter(1, lambda_mass_fit_0_20.GetParameter(1))
@@ -1043,12 +1043,12 @@ trig_2d_dist_20_50.Write()
 
 lambda_mass_dist_20_50 = lambda_dist_20_50.Projection(3).Clone("lambda_mass_dist_20_50")
 
-bin_1 = lambda_mass_dist_20_50.FindBin(1.096)
-bin_2 = lambda_mass_dist_20_50.FindBin(1.134)
-point_one = [1.096, lambda_mass_dist_20_50.GetBinContent(bin_1)]
-point_two = [1.134, lambda_mass_dist_20_50.GetBinContent(bin_2)]
+bin_1 = lambda_mass_dist_20_50.FindBin(1.102)
+bin_2 = lambda_mass_dist_20_50.FindBin(1.132)
+point_one = [1.102, lambda_mass_dist_20_50.GetBinContent(bin_1)]
+point_two = [1.132, lambda_mass_dist_20_50.GetBinContent(bin_2)]
 bg_starting_params_20_50 = get_straight_line(point_one, point_two)
-lambda_mass_fit_20_50 = rt.TF1("lambda_mass_fit_20_50", "[0]*TMath::Voigt(x - [1], [2], [3], 4) + pol1(4)", 1.102, 1.130)
+lambda_mass_fit_20_50 = rt.TF1("lambda_mass_fit_20_50", "[0]*TMath::Voigt(x - [1], [2], [3], 4) + pol1(4)", 1.102, 1.127)
 lambda_mass_fit_20_50.SetNpx(1000)
 lambda_mass_fit_20_50.SetParameter(0, 7.8e+02)
 lambda_mass_fit_20_50.SetParameter(1, 1.116)
@@ -1058,25 +1058,17 @@ lambda_mass_fit_20_50.SetParameter(4, bg_starting_params_20_50[0])
 lambda_mass_fit_20_50.SetParameter(5, bg_starting_params_20_50[1])
 lambda_mass_dist_fit_20_50 = lambda_mass_dist_20_50.Clone("lambda_mass_dist_fit_20_50")
 lambda_mass_dist_fit_20_50.Fit(lambda_mass_fit_20_50, "RS")
-lambda_mass_bg_fit_20_50 = rt.TF1("bg_fit_20_50", "pol1", 1.096, 1.14)
+lambda_mass_bg_fit_20_50 = rt.TF1("bg_fit_20_50", "pol1", 1.096, 1.136)
 lambda_mass_bg_fit_20_50.SetNpx(1000)
 lambda_mass_bg_fit_20_50.SetParameter(0, bg_starting_params_20_50[0])
 lambda_mass_bg_fit_20_50.SetParameter(1, bg_starting_params_20_50[1])
 
-voigt_fit_20_50 = rt.TF1("voigt_fit_20_50", "[0]*TMath::Voigt(x - [1], [2], [3], 4)", 1.102, 1.130)
+voigt_fit_20_50 = rt.TF1("voigt_fit_20_50", "[0]*TMath::Voigt(x - [1], [2], [3], 4)", 1.102, 1.127)
 voigt_fit_20_50.SetNpx(1000)
 voigt_fit_20_50.SetParameter(0, lambda_mass_fit_20_50.GetParameter(0))
 voigt_fit_20_50.SetParameter(1, lambda_mass_fit_20_50.GetParameter(1))
 voigt_fit_20_50.SetParameter(2, lambda_mass_fit_20_50.GetParameter(2))
 voigt_fit_20_50.SetParameter(3, lambda_mass_fit_20_50.GetParameter(3))
-
-test_c = rt.TCanvas("test_c", "test_c", 800, 600)
-test_c.cd()
-lambda_mass_dist_fit_20_50.Draw()
-lambda_mass_bg_fit_20_50.Draw("same")
-
-other_c = rt.TCanvas("other_c", "other_c", 800, 600)
-other_c.cd()
 
 
 residual_20_50 = lambda_mass_dist_20_50.Clone("residual_20_50")
@@ -1881,12 +1873,12 @@ trig_2d_dist_50_80.Write()
 
 lambda_mass_dist_50_80 = lambda_dist_50_80.Projection(3).Clone("lambda_mass_dist_50_80")
 
-bin_1 = lambda_mass_dist_50_80.FindBin(1.096)
-bin_2 = lambda_mass_dist_50_80.FindBin(1.134)
-point_one = [1.096, lambda_mass_dist_50_80.GetBinContent(bin_1)]
-point_two = [1.134, lambda_mass_dist_50_80.GetBinContent(bin_2)]
+bin_1 = lambda_mass_dist_50_80.FindBin(1.102)
+bin_2 = lambda_mass_dist_50_80.FindBin(1.132)
+point_one = [1.102, lambda_mass_dist_50_80.GetBinContent(bin_1)]
+point_two = [1.132, lambda_mass_dist_50_80.GetBinContent(bin_2)]
 bg_starting_params_50_80 = get_straight_line(point_one, point_two)
-lambda_mass_fit_50_80 = rt.TF1("lambda_mass_fit_50_80", "[0]*TMath::Voigt(x - [1], [2], [3], 4) + pol1(4)", 1.102, 1.130)
+lambda_mass_fit_50_80 = rt.TF1("lambda_mass_fit_50_80", "[0]*TMath::Voigt(x - [1], [2], [3], 4) + pol1(4)", 1.102, 1.127)
 lambda_mass_fit_50_80.SetNpx(1000)
 lambda_mass_fit_50_80.SetParameter(0, 1.745e+02)
 lambda_mass_fit_50_80.SetParameter(1, 1.116)
@@ -1896,12 +1888,12 @@ lambda_mass_fit_50_80.SetParameter(4, bg_starting_params_50_80[0])
 lambda_mass_fit_50_80.SetParameter(5, bg_starting_params_50_80[1])
 lambda_mass_dist_fit_50_80 = lambda_mass_dist_50_80.Clone("lambda_mass_dist_fit_50_80")
 lambda_mass_dist_fit_50_80.Fit(lambda_mass_fit_50_80, "RS")
-lambda_mass_bg_fit_50_80 = rt.TF1("bg_fit_50_80", "pol1", 1.096, 1.14)
+lambda_mass_bg_fit_50_80 = rt.TF1("bg_fit_50_80", "pol1", 1.096, 1.136)
 lambda_mass_bg_fit_50_80.SetNpx(1000)
 lambda_mass_bg_fit_50_80.SetParameter(0, bg_starting_params_50_80[0])
 lambda_mass_bg_fit_50_80.SetParameter(1, bg_starting_params_50_80[1])
 
-voigt_fit_50_80 = rt.TF1("voigt_fit_50_80", "[0]*TMath::Voigt(x - [1], [2], [3], 4)", 1.102, 1.130)
+voigt_fit_50_80 = rt.TF1("voigt_fit_50_80", "[0]*TMath::Voigt(x - [1], [2], [3], 4)", 1.102, 1.127)
 voigt_fit_50_80.SetNpx(1000)
 voigt_fit_50_80.SetParameter(0, lambda_mass_fit_50_80.GetParameter(0))
 voigt_fit_50_80.SetParameter(1, lambda_mass_fit_50_80.GetParameter(1))
