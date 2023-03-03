@@ -96,6 +96,10 @@ if IS_TOF_PID:
 FULL_REGION_MIN = 1.10
 FULL_REGION_MAX = 1.132 - EPSILON
 
+# need bin width scaling for yields extracted from integration
+N_DPHI_BINS = 16
+BIN_WIDTH = 2*rt.TMath.Pi()/N_DPHI_BINS
+
 
 # Output file containing all of the relevant results (long name )
 if "signal" in argv[1]:
@@ -104,6 +108,8 @@ elif "sideband" in argv[1]:
     output_file_string = "output/sideband_variation/v0_"
 elif "pid" in argv[1]:
     output_file_string = "output/pid_variation/v0_"
+elif "yield" in argv[1]:
+    output_file_string = "output/yield_variation/v0_"
 elif "central" in argv[1]:
     output_file_string = "output/central_value/v0_"
 else:
@@ -454,28 +460,29 @@ elif USE_FIT:
     fit_function_0_20.SetNpx(1000)
 
     # setting parameters for first gaussian (centered at 0)
-    fit_function_0_20.SetParLimits(0, 0, 1)
-    fit_function_0_20.SetParameter(0, 0.01)
+    fit_function_0_20.SetParLimits(0, 5e-4, 0.6)
+    fit_function_0_20.SetParameter(0, 0.009)
     fit_function_0_20.FixParameter(1, 0)
-    fit_function_0_20.SetParameter(2, -0.3)
-
+    fit_function_0_20.SetParLimits(2, 0.1, 2)
+    fit_function_0_20.SetParameter(2, 0.8)
     # setting parameters for second gaussian (centered at 0 + 2pi)
-    fit_function_0_20.SetParLimits(3, 0,  0.001)
-    fit_function_0_20.SetParameter(3, 0.0005)
+    fit_function_0_20.SetParLimits(3, 0,  0.6)
+    fit_function_0_20.SetParameter(3, 0)
     fit_function_0_20.FixParameter(4, 2*rt.TMath.Pi())
-    fit_function_0_20.SetParameter(5, 2)
-
+    fit_function_0_20.SetParLimits(5, 0.1, 2)
+    fit_function_0_20.SetParameter(5, 0.1)
     # setting parameters for third gaussian (centered at pi)
-    fit_function_0_20.SetParLimits(6, 0, 1)
-    fit_function_0_20.SetParameter(6, 0.006)
+    fit_function_0_20.SetParLimits(6, 5e-4, 0.6)
+    fit_function_0_20.SetParameter(6, 0.003)
     fit_function_0_20.FixParameter(7, rt.TMath.Pi())
+    fit_function_0_20.SetParLimits(8, 0.1, 2)
     fit_function_0_20.SetParameter(8, 1)
-
     # setting parameters for fourth gaussian (centered at pi + 2pi)
-    fit_function_0_20.SetParLimits(9, 0, 1)
-    fit_function_0_20.SetParameter(9, 0.07)
+    fit_function_0_20.SetParLimits(9, 0, 0.6)
+    fit_function_0_20.SetParameter(9, 0)
     fit_function_0_20.FixParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
-    fit_function_0_20.SetParameter(11, 0.2)
+    fit_function_0_20.SetParLimits(11, 0.1, 2)
+    fit_function_0_20.SetParameter(11, 0.1)
 
     # setting parameters for constant background
     ue_avg_0_20 = (h_lambda_dphi_subtracted_0_20.GetBinContent(1) 
@@ -529,7 +536,7 @@ elif USE_VON:
 
     von_fit_0_20 = rt.TF1("von_fit_0_20", von_fit_string, -2, 6)
 
-    von_fit_0_20.FixParameter(0, ue_avg_0_20)
+    von_fit_0_20.SetParameter(0, ue_avg_0_20)
     von_fit_0_20.FixParameter(1, TRIGGER_V2_0_20)
     von_fit_0_20.FixParameter(2, LAMBDA_V2_0_20)
     von_fit_0_20.SetParLimits(3, 0, 1)
@@ -545,7 +552,7 @@ elif USE_VON:
     h_lambda_dphi_subtracted_with_fit_0_20.Fit(von_fit_0_20, "R")
 
 
-    v2_fit_0_20.SetParameter(0, von_fit_0_20.GetParameter(0))
+    v2_fit_0_20.SetParameter(0, ue_avg_0_20)
     v2_fit_0_20.SetParameter(1, TRIGGER_V2_0_20)
     v2_fit_0_20.SetParameter(2, LAMBDA_V2_0_20)
 
@@ -557,33 +564,28 @@ if USE_FIT:
     h_lambda_dphi_subtracted_0_20_zeroed = h_lambda_dphi_subtracted_0_20.Clone("h_lambda_dphi_subtracted_0_20_zeroed")
     h_lambda_dphi_subtracted_0_20_zeroed.Add(ue_avg_fit_0_20, -1)
 
-    h_lambda_total_integral_0_20 = fit_function_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
-    h_lambda_total_integral_error_0_20 = fit_function_0_20.IntegralError(-rt.TMath.Pi()/2, 
-                                                                         3*rt.TMath.Pi()/2)
-    print(h_lambda_total_integral_error_0_20)
+    h_lambda_total_integral_0_20 = fit_function_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
+    h_lambda_total_integral_error_0_20 = 0
 
-    h_lambda_near_integral_0_20 = fit_function_0_20.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2) - ue_avg_fit_0_20.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)
-    h_lambda_near_integral_error_0_20 = math.sqrt(fit_function_0_20.IntegralError(-rt.TMath.Pi()/2, 
-                                                                                  rt.TMath.Pi()/2)**2 + 
-                                                    ue_avg_fit_0_20.IntegralError(-rt.TMath.Pi()/2, 
-                                                                                  rt.TMath.Pi()/2)**2)
+    h_lambda_near_integral_0_20 = fit_function_0_20.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH - ue_avg_fit_0_20.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH
+    h_lambda_near_integral_error_0_20 = 0
 
-    h_lambda_away_integral_0_20 = fit_function_0_20.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2) - ue_avg_fit_0_20.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
-    h_lambda_away_integral_error_0_20 = math.sqrt(fit_function_0_20.IntegralError(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)**2 + ue_avg_fit_0_20.IntegralError(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)**2)
+    h_lambda_away_integral_0_20 = fit_function_0_20.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH - ue_avg_fit_0_20.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
+    h_lambda_away_integral_error_0_20 = 0
 
-    h_lambda_ue_integral_0_20 = ue_avg_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
-    h_lambda_ue_integral_error_0_20 = ue_avg_fit_0_20.IntegralError(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_ue_integral_0_20 = ue_avg_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
+    h_lambda_ue_integral_error_0_20 = 0
 
 elif USE_VON:
     h_lambda_dphi_subtracted_0_20_zeroed = h_lambda_dphi_subtracted_0_20.Clone("h_lambda_dphi_subtracted_0_20_zeroed")
     h_lambda_dphi_subtracted_0_20_zeroed.Add(v2_fit_0_20, -1)
-    h_lambda_total_integral_0_20 = von_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_total_integral_0_20 = von_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_lambda_total_integral_error_0_20 = 0
-    h_lambda_near_integral_0_20 = von_fit_0_20.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2) - v2_fit_0_20.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)
+    h_lambda_near_integral_0_20 = von_fit_0_20.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH - v2_fit_0_20.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH
     h_lambda_near_integral_error_0_20 = 0
-    h_lambda_away_integral_0_20 = von_fit_0_20.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2) - v2_fit_0_20.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_away_integral_0_20 = von_fit_0_20.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH - v2_fit_0_20.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_lambda_away_integral_error_0_20 = 0
-    h_lambda_ue_integral_0_20 = v2_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_ue_integral_0_20 = v2_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_lambda_ue_integral_error_0_20 = 0
 
 elif USE_V2:
@@ -592,7 +594,7 @@ elif USE_V2:
     h_lambda_total_integral_0_20 = 0
     h_lambda_near_integral_0_20 = 0
     h_lambda_away_integral_0_20 = 0
-    h_lambda_ue_integral_0_20 = v2_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_ue_integral_0_20 = v2_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
 
     h_lambda_total_integral_error_0_20 = 0
     h_lambda_near_integral_error_0_20 = 0
@@ -727,28 +729,30 @@ elif USE_FIT:
     hh_fit_function_0_20.SetNpx(1000)
 
     # setting parameters for first gaussian (centered at 0)
-    hh_fit_function_0_20.SetParLimits(0, 0, 2)
-    hh_fit_function_0_20.SetParameter(0, 0.03)
+    hh_fit_function_0_20.SetParLimits(0, 0.02, 1)
+    hh_fit_function_0_20.SetParameter(0, 0.16)
     hh_fit_function_0_20.FixParameter(1, 0)
-    hh_fit_function_0_20.SetParameter(2, 0.8)
-
+    hh_fit_function_0_20.SetParLimits(2, 0.2, 3)
+    hh_fit_function_0_20.SetParameter(2, 0.3)
     # setting parameters for second gaussian (centered at 0 + 2pi)
-    hh_fit_function_0_20.SetParLimits(3, 0, 2)
-    hh_fit_function_0_20.SetParameter(3, 0.03)
-    hh_fit_function_0_20.SetParameter(4, 2*rt.TMath.Pi())
-    hh_fit_function_0_20.SetParameter(5, 0.8)
-
+    hh_fit_function_0_20.SetParLimits(3, 0, 1)
+    hh_fit_function_0_20.SetParameter(3, 0)
+    hh_fit_function_0_20.FixParameter(4, 2*rt.TMath.Pi())
+    hh_fit_function_0_20.SetParLimits(5, 0.1, 2)
+    hh_fit_function_0_20.SetParameter(5, 0.1)
     # setting parameters for third gaussian (centered at pi)
-    hh_fit_function_0_20.SetParLimits(6, 0, 2)
-    hh_fit_function_0_20.SetParameter(6, 0.03)
+    hh_fit_function_0_20.SetParLimits(6, 0.02, 1)
+    hh_fit_function_0_20.SetParameter(6, 0.3)
     hh_fit_function_0_20.FixParameter(7, rt.TMath.Pi())
-    hh_fit_function_0_20.SetParameter(8, 1)
-
+    hh_fit_function_0_20.SetParLimits(8, 0.3, 3)
+    hh_fit_function_0_20.SetParameter(8, 0.5)
     # setting parameters for fourth gaussian (centered at pi + 2pi)
-    hh_fit_function_0_20.SetParLimits(9, 0, 2)
-    hh_fit_function_0_20.SetParameter(9, 0.03)
-    hh_fit_function_0_20.SetParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
-    hh_fit_function_0_20.SetParameter(11, 1)
+    hh_fit_function_0_20.SetParLimits(9, 0, 1)
+    hh_fit_function_0_20.SetParameter(9, 0)
+    hh_fit_function_0_20.FixParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
+    hh_fit_function_0_20.SetParLimits(11, 0.1, 3)
+    hh_fit_function_0_20.SetParameter(11, 0.1)
+
 
     # setting parameters for constant background
     hh_ue_avg_0_20 = (h_h_dphi_0_20.GetBinContent(1) 
@@ -770,6 +774,7 @@ elif USE_FIT:
 
     h_h_dphi_with_fit_0_20 = h_h_dphi_0_20.Clone("h_h_dphi_with_fit_0_20")
     h_h_dphi_with_fit_0_20.Fit(hh_fit_function_0_20, "R")
+
     hh_ue_avg_fit_0_20 = rt.TF1("hh_ue_avg_fit_0_20", "pol0", -2, 6)
     hh_ue_avg_fit_0_20.SetParameter(0, hh_ue_avg_0_20)
     hh_ue_avg_fit_0_20.SetParError(0, hh_ue_avg_error_0_20)
@@ -800,7 +805,7 @@ elif USE_VON:
     hh_von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x))"
     hh_von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()))"
     hh_von_fit_0_20 = rt.TF1("hh_von_fit_0_20", hh_von_fit_string, -2, 6)
-    hh_von_fit_0_20.FixParameter(0, hh_ue_avg_0_20)
+    hh_von_fit_0_20.SetParameter(0, hh_ue_avg_0_20)
     hh_von_fit_0_20.FixParameter(1, TRIGGER_V2_0_20)
     hh_von_fit_0_20.FixParameter(2, ASSOCIATED_V2_0_20)
     hh_von_fit_0_20.SetParLimits(3, 0, 1)
@@ -826,28 +831,28 @@ if USE_FIT:
     h_h_dphi_0_20_zeroed = h_h_dphi_0_20.Clone("h_h_dphi_0_20_zeroed")
     h_h_dphi_0_20_zeroed.Add(hh_ue_avg_fit_0_20, -1)
 
-    h_h_total_integral_0_20 = hh_fit_function_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_total_integral_0_20 = hh_fit_function_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_h_total_integral_error_0_20 = 0
 
-    h_h_near_integral_0_20 = hh_fit_function_0_20.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2) - hh_ue_avg_fit_0_20.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)
+    h_h_near_integral_0_20 = hh_fit_function_0_20.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH - hh_ue_avg_fit_0_20.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH
     h_h_near_integral_error_0_20 = 0
 
-    h_h_away_integral_0_20 = hh_fit_function_0_20.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2) - hh_ue_avg_fit_0_20.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_away_integral_0_20 = hh_fit_function_0_20.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH - hh_ue_avg_fit_0_20.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_h_away_integral_error_0_20 = 0
 
-    h_h_ue_integral_0_20 = hh_ue_avg_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_ue_integral_0_20 = hh_ue_avg_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_h_ue_integral_error_0_20 = 0
 
 elif USE_VON:
     h_h_dphi_0_20_zeroed = h_h_dphi_0_20.Clone("h_h_dphi_subtracted_0_20_zeroed")
     h_h_dphi_0_20_zeroed.Add(hh_v2_fit_0_20, -1)
-    h_h_total_integral_0_20 = hh_von_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_total_integral_0_20 = hh_von_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_h_total_integral_error_0_20 = 0
-    h_h_near_integral_0_20 = hh_von_fit_0_20.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2) - hh_v2_fit_0_20.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)
+    h_h_near_integral_0_20 = hh_von_fit_0_20.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH - hh_v2_fit_0_20.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH
     h_h_near_integral_error_0_20 = 0
-    h_h_away_integral_0_20 = hh_von_fit_0_20.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2) - hh_v2_fit_0_20.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_away_integral_0_20 = hh_von_fit_0_20.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH - hh_v2_fit_0_20.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_h_away_integral_error_0_20 = 0
-    h_h_ue_integral_0_20 = hh_v2_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_ue_integral_0_20 = hh_v2_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_h_ue_integral_error_0_20 = 0
 
 elif USE_V2:
@@ -855,7 +860,7 @@ elif USE_V2:
     h_h_total_integral_0_20 = 0
     h_h_near_integral_0_20 = 0
     h_h_away_integral_0_20 = 0
-    h_h_ue_integral_0_20 = hh_v2_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_ue_integral_0_20 = hh_v2_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
 
     h_h_total_integral_error_0_20 = 0
     h_h_near_integral_error_0_20 = 0
@@ -1284,28 +1289,29 @@ elif USE_FIT:
     fit_function_20_50.SetNpx(1000)
 
     # setting parameters for first gaussian (centered at 0)
-    fit_function_20_50.SetParLimits(0, 0, 1)
-    fit_function_20_50.SetParameter(0, 0.03)
+    fit_function_20_50.SetParLimits(0, 5e-4, 0.6)
+    fit_function_20_50.SetParameter(0, 0.009)
     fit_function_20_50.FixParameter(1, 0)
+    fit_function_20_50.SetParLimits(2, 0.1, 2)
     fit_function_20_50.SetParameter(2, 0.8)
-
     # setting parameters for second gaussian (centered at 0 + 2pi)
-    fit_function_20_50.SetParLimits(3, 0,  0.001)
-    fit_function_20_50.SetParameter(3, 0.0005)
+    fit_function_20_50.SetParLimits(3, 0,  0.6)
+    fit_function_20_50.SetParameter(3, 0)
     fit_function_20_50.FixParameter(4, 2*rt.TMath.Pi())
-    fit_function_20_50.SetParameter(5, 0.8)
-
+    fit_function_20_50.SetParLimits(5, 0.1, 2)
+    fit_function_20_50.SetParameter(5, 0.1)
     # setting parameters for third gaussian (centered at pi)
-    fit_function_20_50.SetParLimits(6, 0, 1)
-    fit_function_20_50.SetParameter(6, 0.03)
+    fit_function_20_50.SetParLimits(6, 5e-4, 0.6)
+    fit_function_20_50.SetParameter(6, 0.003)
     fit_function_20_50.FixParameter(7, rt.TMath.Pi())
+    fit_function_20_50.SetParLimits(8, 0.1, 2)
     fit_function_20_50.SetParameter(8, 1)
-
     # setting parameters for fourth gaussian (centered at pi + 2pi)
-    fit_function_20_50.SetParLimits(9, 0, 1)
-    fit_function_20_50.SetParameter(9, 0.03)
+    fit_function_20_50.SetParLimits(9, 0, 0.6)
+    fit_function_20_50.SetParameter(9, 0)
     fit_function_20_50.FixParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
-    fit_function_20_50.SetParameter(11, 1)
+    fit_function_20_50.SetParLimits(11, 0.1, 2)
+    fit_function_20_50.SetParameter(11, 0.1)
 
     # setting parameters for constant background
     ue_avg_20_50 = (h_lambda_dphi_subtracted_20_50.GetBinContent(1) 
@@ -1327,6 +1333,7 @@ elif USE_FIT:
 
     h_lambda_dphi_subtracted_with_fit_20_50 = h_lambda_dphi_subtracted_20_50.Clone("h_lambda_dphi_subtracted_with_fit_20_50")
     h_lambda_dphi_subtracted_with_fit_20_50.Fit(fit_function_20_50, "R")
+
     ue_avg_fit_20_50 = rt.TF1("ue_avg_fit_20_50", "pol0", -2, 6)
     ue_avg_fit_20_50.SetParameter(0, ue_avg_20_50)
     ue_avg_fit_20_50.SetParError(0, ue_avg_error_20_50)
@@ -1360,7 +1367,7 @@ elif USE_VON:
 
     von_fit_20_50 = rt.TF1("von_fit_20_50", von_fit_string, -2, 6)
 
-    von_fit_20_50.FixParameter(0, ue_avg_20_50)
+    von_fit_20_50.SetParameter(0, ue_avg_20_50)
     von_fit_20_50.FixParameter(1, TRIGGER_V2_20_50)
     von_fit_20_50.FixParameter(2, LAMBDA_V2_20_50)
     von_fit_20_50.SetParLimits(3, 0, 1)
@@ -1388,28 +1395,28 @@ if USE_FIT:
     h_lambda_dphi_subtracted_20_50_zeroed = h_lambda_dphi_subtracted_20_50.Clone("h_lambda_dphi_subtracted_20_50_zeroed")
     h_lambda_dphi_subtracted_20_50_zeroed.Add(ue_avg_fit_20_50, -1)
 
-    h_lambda_total_integral_20_50 = fit_function_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_total_integral_20_50 = fit_function_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_lambda_total_integral_error_20_50 = 0
 
-    h_lambda_near_integral_20_50 = fit_function_20_50.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2) - ue_avg_fit_20_50.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)
+    h_lambda_near_integral_20_50 = fit_function_20_50.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH - ue_avg_fit_20_50.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH
     h_lambda_near_integral_error_20_50 = 0
 
-    h_lambda_away_integral_20_50 = fit_function_20_50.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2) - ue_avg_fit_20_50.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_away_integral_20_50 = fit_function_20_50.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH - ue_avg_fit_20_50.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_lambda_away_integral_error_20_50 = 0
 
-    h_lambda_ue_integral_20_50 = ue_avg_fit_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_ue_integral_20_50 = ue_avg_fit_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_lambda_ue_integral_error_20_50 = 0
 
 elif USE_VON:
     h_lambda_dphi_subtracted_20_50_zeroed = h_lambda_dphi_subtracted_20_50.Clone("h_lambda_dphi_subtracted_20_50_zeroed")
     h_lambda_dphi_subtracted_20_50_zeroed.Add(v2_fit_20_50, -1)
-    h_lambda_total_integral_20_50 = von_fit_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_total_integral_20_50 = von_fit_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_lambda_total_integral_error_20_50 = 0
-    h_lambda_near_integral_20_50 = von_fit_20_50.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2) - v2_fit_20_50.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)
+    h_lambda_near_integral_20_50 = von_fit_20_50.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH - v2_fit_20_50.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH
     h_lambda_near_integral_error_20_50 = 0
-    h_lambda_away_integral_20_50 = von_fit_20_50.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2) - v2_fit_20_50.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_away_integral_20_50 = von_fit_20_50.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH - v2_fit_20_50.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_lambda_away_integral_error_20_50 = 0
-    h_lambda_ue_integral_20_50 = v2_fit_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_ue_integral_20_50 = v2_fit_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_lambda_ue_integral_error_20_50 = 0
 
 elif USE_V2:
@@ -1418,7 +1425,7 @@ elif USE_V2:
     h_lambda_total_integral_20_50 = 0
     h_lambda_near_integral_20_50 = 0
     h_lambda_away_integral_20_50 = 0
-    h_lambda_ue_integral_20_50 = v2_fit_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_ue_integral_20_50 = v2_fit_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
 
     h_lambda_total_integral_error_20_50 = 0
     h_lambda_near_integral_error_20_50 = 0
@@ -1552,29 +1559,33 @@ elif USE_FIT:
     hh_fit_function_20_50 = rt.TF1("hh_fit_function_20_50", "gaus(0) + gaus(3) + gaus(6) + gaus(9) + pol0(12)", -2, 6)
     hh_fit_function_20_50.SetNpx(1000)
 
+    # fitting is a fucking nightmare
+    GOD_PARAMETER = 1.90735e-07
+
     # setting parameters for first gaussian (centered at 0)
-    hh_fit_function_20_50.SetParLimits(0, 0, 2)
-    hh_fit_function_20_50.SetParameter(0, 0.03)
+    hh_fit_function_20_50.SetParLimits(0, 0.02, 1)
+    hh_fit_function_20_50.SetParameter(0, 0.16)
     hh_fit_function_20_50.FixParameter(1, 0)
+    hh_fit_function_20_50.SetParLimits(2, 0.2, 3)
     hh_fit_function_20_50.SetParameter(2, 0.8)
-
     # setting parameters for second gaussian (centered at 0 + 2pi)
-    hh_fit_function_20_50.SetParLimits(3, 0, 2)
-    hh_fit_function_20_50.SetParameter(3, 0.03)
-    hh_fit_function_20_50.SetParameter(4, 2*rt.TMath.Pi())
-    hh_fit_function_20_50.SetParameter(5, 0.8)
-
+    # hh_fit_function_20_50.SetParLimits(3, 0.9*GOD_PARAMETER, 1.1*GOD_PARAMETER)
+    hh_fit_function_20_50.FixParameter(3, GOD_PARAMETER)
+    hh_fit_function_20_50.FixParameter(4, 2*rt.TMath.Pi())
+    hh_fit_function_20_50.SetParLimits(5, 0.01, 3)
+    hh_fit_function_20_50.SetParameter(5, 0.1)
     # setting parameters for third gaussian (centered at pi)
-    hh_fit_function_20_50.SetParLimits(6, 0, 2)
-    hh_fit_function_20_50.SetParameter(6, 0.03)
+    hh_fit_function_20_50.SetParLimits(6, 0.02, 1)
+    hh_fit_function_20_50.SetParameter(6, 0.3)
     hh_fit_function_20_50.FixParameter(7, rt.TMath.Pi())
-    hh_fit_function_20_50.SetParameter(8, 1)
-
+    hh_fit_function_20_50.SetParLimits(8, 0.3, 3)
+    hh_fit_function_20_50.SetParameter(8, 1.5)
     # setting parameters for fourth gaussian (centered at pi + 2pi)
-    hh_fit_function_20_50.SetParLimits(9, 0, 2)
-    hh_fit_function_20_50.SetParameter(9, 0.03)
-    hh_fit_function_20_50.SetParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
-    hh_fit_function_20_50.SetParameter(11, 1)
+    # hh_fit_function_20_50.SetParLimits(9, 0.9*GOD_PARAMETER, 1.1*GOD_PARAMETER)
+    hh_fit_function_20_50.FixParameter(9, GOD_PARAMETER)
+    hh_fit_function_20_50.FixParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
+    hh_fit_function_20_50.SetParLimits(11, 0.01, 3)
+    hh_fit_function_20_50.SetParameter(11, 0.1)
 
     # setting parameters for constant background
     hh_ue_avg_20_50 = (h_h_dphi_20_50.GetBinContent(1) 
@@ -1596,6 +1607,7 @@ elif USE_FIT:
 
     h_h_dphi_with_fit_20_50 = h_h_dphi_20_50.Clone("h_h_dphi_with_fit_20_50")
     h_h_dphi_with_fit_20_50.Fit(hh_fit_function_20_50, "R")
+
     hh_ue_avg_fit_20_50 = rt.TF1("hh_ue_avg_fit_20_50", "pol0", -2, 6)
     hh_ue_avg_fit_20_50.SetParameter(0, hh_ue_avg_20_50)
     hh_ue_avg_fit_20_50.SetParError(0, hh_ue_avg_error_20_50)
@@ -1626,7 +1638,7 @@ elif USE_VON:
     hh_von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x))"
     hh_von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()))"
     hh_von_fit_20_50 = rt.TF1("hh_von_fit_20_50", hh_von_fit_string, -2, 6)
-    hh_von_fit_20_50.FixParameter(0, hh_ue_avg_20_50)
+    hh_von_fit_20_50.SetParameter(0, hh_ue_avg_20_50)
     hh_von_fit_20_50.FixParameter(1, TRIGGER_V2_20_50)
     hh_von_fit_20_50.FixParameter(2, ASSOCIATED_V2_20_50)
     hh_von_fit_20_50.SetParLimits(3, 0, 1)
@@ -1653,28 +1665,28 @@ if USE_FIT:
     h_h_dphi_20_50_zeroed = h_h_dphi_20_50.Clone("h_h_dphi_20_50_zeroed")
     h_h_dphi_20_50_zeroed.Add(hh_ue_avg_fit_20_50, -1)
 
-    h_h_total_integral_20_50 = hh_fit_function_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_total_integral_20_50 = hh_fit_function_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_h_total_integral_error_20_50 = 0
 
-    h_h_near_integral_20_50 = hh_fit_function_20_50.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2) - hh_ue_avg_fit_20_50.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)
+    h_h_near_integral_20_50 = hh_fit_function_20_50.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH - hh_ue_avg_fit_20_50.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH
     h_h_near_integral_error_20_50 = 0
 
-    h_h_away_integral_20_50 = hh_fit_function_20_50.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2) - hh_ue_avg_fit_20_50.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_away_integral_20_50 = hh_fit_function_20_50.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH - hh_ue_avg_fit_20_50.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_h_away_integral_error_20_50 = 0
 
-    h_h_ue_integral_20_50 = hh_ue_avg_fit_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_ue_integral_20_50 = hh_ue_avg_fit_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_h_ue_integral_error_20_50 = 0
 
 elif USE_VON:
     h_h_dphi_20_50_zeroed = h_h_dphi_20_50.Clone("h_h_dphi_subtracted_20_50_zeroed")
     h_h_dphi_20_50_zeroed.Add(hh_v2_fit_20_50, -1)
-    h_h_total_integral_20_50 = hh_von_fit_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_total_integral_20_50 = hh_von_fit_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_h_total_integral_error_20_50 = 0
-    h_h_near_integral_20_50 = hh_von_fit_20_50.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2) - hh_v2_fit_20_50.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)
+    h_h_near_integral_20_50 = hh_von_fit_20_50.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH - hh_v2_fit_20_50.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH
     h_h_near_integral_error_20_50 = 0
-    h_h_away_integral_20_50 = hh_von_fit_20_50.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2) - hh_v2_fit_20_50.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_away_integral_20_50 = hh_von_fit_20_50.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH - hh_v2_fit_20_50.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_h_away_integral_error_20_50 = 0
-    h_h_ue_integral_20_50 = hh_v2_fit_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_ue_integral_20_50 = hh_v2_fit_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_h_ue_integral_error_20_50 = 0
 
 elif USE_V2:
@@ -1682,7 +1694,7 @@ elif USE_V2:
     h_h_total_integral_20_50 = 0
     h_h_near_integral_20_50 = 0
     h_h_away_integral_20_50 = 0
-    h_h_ue_integral_20_50 = hh_v2_fit_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_ue_integral_20_50 = hh_v2_fit_20_50.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
 
     h_h_total_integral_error_20_50 = 0
     h_h_near_integral_error_20_50 = 0
@@ -2116,28 +2128,29 @@ elif USE_FIT:
     fit_function_50_80.SetNpx(1000)
 
     # setting parameters for first gaussian (centered at 0)
-    fit_function_50_80.SetParLimits(0, 0, 1)
-    fit_function_50_80.SetParameter(0, 0.03)
+    fit_function_50_80.SetParLimits(0, 5e-4, 0.6)
+    fit_function_50_80.SetParameter(0, 0.009)
     fit_function_50_80.FixParameter(1, 0)
+    fit_function_50_80.SetParLimits(2, 0.1, 2)
     fit_function_50_80.SetParameter(2, 0.8)
-
     # setting parameters for second gaussian (centered at 0 + 2pi)
-    fit_function_50_80.SetParLimits(3, 0,  0.001)
-    fit_function_50_80.SetParameter(3, 0.0005)
+    fit_function_50_80.SetParLimits(3, 0,  0.6)
+    fit_function_50_80.SetParameter(3, 0)
     fit_function_50_80.FixParameter(4, 2*rt.TMath.Pi())
-    fit_function_50_80.SetParameter(5, 0.8)
-
+    fit_function_50_80.SetParLimits(5, 0.1, 2)
+    fit_function_50_80.SetParameter(5, 0.1)
     # setting parameters for third gaussian (centered at pi)
-    fit_function_50_80.SetParLimits(6, 0, 1)
-    fit_function_50_80.SetParameter(6, 0.03)
+    fit_function_50_80.SetParLimits(6, 5e-4, 0.6)
+    fit_function_50_80.SetParameter(6, 0.003)
     fit_function_50_80.FixParameter(7, rt.TMath.Pi())
+    fit_function_50_80.SetParLimits(8, 0.1, 2)
     fit_function_50_80.SetParameter(8, 1)
-
     # setting parameters for fourth gaussian (centered at pi + 2pi)
-    fit_function_50_80.SetParLimits(9, 0, 1)
-    fit_function_50_80.SetParameter(9, 0.03)
+    fit_function_50_80.SetParLimits(9, 0, 0.6)
+    fit_function_50_80.SetParameter(9, 0)
     fit_function_50_80.FixParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
-    fit_function_50_80.SetParameter(11, 1)
+    fit_function_50_80.SetParLimits(11, 0.1, 2)
+    fit_function_50_80.SetParameter(11, 0.1)
 
     # setting parameters for constant background
     ue_avg_50_80 = (h_lambda_dphi_subtracted_50_80.GetBinContent(1) 
@@ -2159,6 +2172,7 @@ elif USE_FIT:
 
     h_lambda_dphi_subtracted_with_fit_50_80 = h_lambda_dphi_subtracted_50_80.Clone("h_lambda_dphi_subtracted_with_fit_50_80")
     h_lambda_dphi_subtracted_with_fit_50_80.Fit(fit_function_50_80, "R")
+
     ue_avg_fit_50_80 = rt.TF1("ue_avg_fit_50_80", "pol0", -2, 6)
     ue_avg_fit_50_80.SetParameter(0, ue_avg_50_80)
     ue_avg_fit_50_80.SetParError(0, ue_avg_error_50_80)
@@ -2192,7 +2206,7 @@ elif USE_VON:
 
     von_fit_50_80 = rt.TF1("von_fit_50_80", von_fit_string, -2, 6)
 
-    von_fit_50_80.FixParameter(0, ue_avg_50_80)
+    von_fit_50_80.SetParameter(0, ue_avg_50_80)
     von_fit_50_80.FixParameter(1, TRIGGER_V2_50_80)
     von_fit_50_80.FixParameter(2, LAMBDA_V2_50_80)
     von_fit_50_80.SetParLimits(3, 0, 1)
@@ -2208,7 +2222,7 @@ elif USE_VON:
     h_lambda_dphi_subtracted_with_fit_50_80.Fit(von_fit_50_80, "R")
 
 
-    v2_fit_50_80.SetParameter(0, von_fit_50_80.GetParameter(0))
+    v2_fit_50_80.SetParameter(0, ue_avg_50_80)
     v2_fit_50_80.SetParameter(1, TRIGGER_V2_50_80)
     v2_fit_50_80.SetParameter(2, LAMBDA_V2_50_80)
 
@@ -2220,28 +2234,28 @@ if USE_FIT:
     h_lambda_dphi_subtracted_50_80_zeroed = h_lambda_dphi_subtracted_50_80.Clone("h_lambda_dphi_subtracted_50_80_zeroed")
     h_lambda_dphi_subtracted_50_80_zeroed.Add(ue_avg_fit_50_80, -1)
 
-    h_lambda_total_integral_50_80 = fit_function_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_total_integral_50_80 = fit_function_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_lambda_total_integral_error_50_80 = 0
 
-    h_lambda_near_integral_50_80 = fit_function_50_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2) - ue_avg_fit_50_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)
+    h_lambda_near_integral_50_80 = fit_function_50_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH - ue_avg_fit_50_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH
     h_lambda_near_integral_error_50_80 = 0
 
-    h_lambda_away_integral_50_80 = fit_function_50_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2) - ue_avg_fit_50_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_away_integral_50_80 = fit_function_50_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH - ue_avg_fit_50_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_lambda_away_integral_error_50_80 = 0
 
-    h_lambda_ue_integral_50_80 = ue_avg_fit_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_ue_integral_50_80 = ue_avg_fit_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_lambda_ue_integral_error_50_80 = 0
 
 elif USE_VON:
     h_lambda_dphi_subtracted_50_80_zeroed = h_lambda_dphi_subtracted_50_80.Clone("h_lambda_dphi_subtracted_50_80_zeroed")
     h_lambda_dphi_subtracted_50_80_zeroed.Add(v2_fit_50_80, -1)
-    h_lambda_total_integral_50_80 = von_fit_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_total_integral_50_80 = von_fit_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_lambda_total_integral_error_50_80 = 0
-    h_lambda_near_integral_50_80 = von_fit_50_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2) - v2_fit_50_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)
+    h_lambda_near_integral_50_80 = von_fit_50_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH - v2_fit_50_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH
     h_lambda_near_integral_error_50_80 = 0
-    h_lambda_away_integral_50_80 = von_fit_50_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2) - v2_fit_50_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_away_integral_50_80 = von_fit_50_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH - v2_fit_50_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_lambda_away_integral_error_50_80 = 0
-    h_lambda_ue_integral_50_80 = v2_fit_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_ue_integral_50_80 = v2_fit_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_lambda_ue_integral_error_50_80 = 0
 
 elif USE_V2:
@@ -2250,7 +2264,7 @@ elif USE_V2:
     h_lambda_total_integral_50_80 = 0
     h_lambda_near_integral_50_80 = 0
     h_lambda_away_integral_50_80 = 0
-    h_lambda_ue_integral_50_80 = v2_fit_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_lambda_ue_integral_50_80 = v2_fit_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
 
     h_lambda_total_integral_error_50_80 = 0
     h_lambda_near_integral_error_50_80 = 0
@@ -2385,28 +2399,29 @@ elif USE_FIT:
     hh_fit_function_50_80.SetNpx(1000)
 
     # setting parameters for first gaussian (centered at 0)
-    hh_fit_function_50_80.SetParLimits(0, 0, 2)
-    hh_fit_function_50_80.SetParameter(0, 0.03)
+    hh_fit_function_50_80.SetParLimits(0, 0.02, 1)
+    hh_fit_function_50_80.SetParameter(0, 0.16)
     hh_fit_function_50_80.FixParameter(1, 0)
-    hh_fit_function_50_80.SetParameter(2, 0.8)
-
+    hh_fit_function_50_80.SetParLimits(2, 0.2, 3)
+    hh_fit_function_50_80.SetParameter(2, 0.3)
     # setting parameters for second gaussian (centered at 0 + 2pi)
-    hh_fit_function_50_80.SetParLimits(3, 0, 2)
-    hh_fit_function_50_80.SetParameter(3, 0.03)
-    hh_fit_function_50_80.SetParameter(4, 2*rt.TMath.Pi())
-    hh_fit_function_50_80.SetParameter(5, 0.8)
-
+    hh_fit_function_50_80.SetParLimits(3, 0, 1)
+    hh_fit_function_50_80.SetParameter(3, 0)
+    hh_fit_function_50_80.FixParameter(4, 2*rt.TMath.Pi())
+    hh_fit_function_50_80.SetParLimits(5, 0.1, 3)
+    hh_fit_function_50_80.SetParameter(5, 0.1)
     # setting parameters for third gaussian (centered at pi)
-    hh_fit_function_50_80.SetParLimits(6, 0, 2)
-    hh_fit_function_50_80.SetParameter(6, 0.03)
+    hh_fit_function_50_80.SetParLimits(6, 0.02, 1)
+    hh_fit_function_50_80.SetParameter(6, 0.3)
     hh_fit_function_50_80.FixParameter(7, rt.TMath.Pi())
-    hh_fit_function_50_80.SetParameter(8, 1)
-
+    hh_fit_function_50_80.SetParLimits(8, 0.3, 3)
+    hh_fit_function_50_80.SetParameter(8, 0.5)
     # setting parameters for fourth gaussian (centered at pi + 2pi)
-    hh_fit_function_50_80.SetParLimits(9, 0, 2)
-    hh_fit_function_50_80.SetParameter(9, 0.03)
-    hh_fit_function_50_80.SetParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
-    hh_fit_function_50_80.SetParameter(11, 1)
+    hh_fit_function_50_80.SetParLimits(9, 0, 1)
+    hh_fit_function_50_80.SetParameter(9, 0)
+    hh_fit_function_50_80.FixParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
+    hh_fit_function_50_80.SetParLimits(11, 0.1, 3)
+    hh_fit_function_50_80.SetParameter(11, 0.1)
 
     # setting parameters for constant background
     hh_ue_avg_50_80 = (h_h_dphi_50_80.GetBinContent(1) 
@@ -2458,7 +2473,7 @@ elif USE_VON:
     hh_von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x))"
     hh_von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()))"
     hh_von_fit_50_80 = rt.TF1("hh_von_fit_50_80", hh_von_fit_string, -2, 6)
-    hh_von_fit_50_80.FixParameter(0, hh_ue_avg_50_80)
+    hh_von_fit_50_80.SetParameter(0, hh_ue_avg_50_80)
     hh_von_fit_50_80.FixParameter(1, TRIGGER_V2_50_80)
     hh_von_fit_50_80.FixParameter(2, ASSOCIATED_V2_50_80)
     hh_von_fit_50_80.SetParLimits(3, 0, 1)
@@ -2485,28 +2500,28 @@ if USE_FIT:
     h_h_dphi_50_80_zeroed = h_h_dphi_50_80.Clone("h_h_dphi_50_80_zeroed")
     h_h_dphi_50_80_zeroed.Add(hh_ue_avg_fit_50_80, -1)
 
-    h_h_total_integral_50_80 = hh_fit_function_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_total_integral_50_80 = hh_fit_function_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_h_total_integral_error_50_80 = 0
 
-    h_h_near_integral_50_80 = hh_fit_function_50_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2) - hh_ue_avg_fit_50_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)
+    h_h_near_integral_50_80 = hh_fit_function_50_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH - hh_ue_avg_fit_50_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH
     h_h_near_integral_error_50_80 = 0
 
-    h_h_away_integral_50_80 = hh_fit_function_50_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2) - hh_ue_avg_fit_50_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_away_integral_50_80 = hh_fit_function_50_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH - hh_ue_avg_fit_50_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_h_away_integral_error_50_80 = 0
 
-    h_h_ue_integral_50_80 = hh_ue_avg_fit_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_ue_integral_50_80 = hh_ue_avg_fit_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_h_ue_integral_error_50_80 = 0
 
 elif USE_VON:
     h_h_dphi_50_80_zeroed = h_h_dphi_50_80.Clone("h_h_dphi_subtracted_50_80_zeroed")
     h_h_dphi_50_80_zeroed.Add(hh_v2_fit_50_80, -1)
-    h_h_total_integral_50_80 = hh_von_fit_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_total_integral_50_80 = hh_von_fit_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_h_total_integral_error_50_80 = 0
-    h_h_near_integral_50_80 = hh_von_fit_50_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2) - hh_v2_fit_50_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)
+    h_h_near_integral_50_80 = hh_von_fit_50_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH - hh_v2_fit_50_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH
     h_h_near_integral_error_50_80 = 0
-    h_h_away_integral_50_80 = hh_von_fit_50_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2) - hh_v2_fit_50_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_away_integral_50_80 = hh_von_fit_50_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH - hh_v2_fit_50_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_h_away_integral_error_50_80 = 0
-    h_h_ue_integral_50_80 = hh_v2_fit_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_ue_integral_50_80 = hh_v2_fit_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_h_ue_integral_error_50_80 = 0
 
 elif USE_V2:
@@ -2514,7 +2529,7 @@ elif USE_V2:
     h_h_total_integral_50_80 = 0
     h_h_near_integral_50_80 = 0
     h_h_away_integral_50_80 = 0
-    h_h_ue_integral_50_80 = hh_v2_fit_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+    h_h_ue_integral_50_80 = hh_v2_fit_50_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
 
     h_h_total_integral_error_50_80 = 0
     h_h_near_integral_error_50_80 = 0
