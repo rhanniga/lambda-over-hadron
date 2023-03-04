@@ -42,9 +42,10 @@ def do_barlow(yield_dict, name):
             cur_yield = yield_dict[key]
             barlow_hist = rt.TH1D("barlow_"+key,"",3, 0, 3).Clone("barlow_hist_" + key)
             for i in range(3):
-                # avg6 (non-negative) shares the same error as avg6
-                if key == "avg6 (non-negative)":
-                    cur_yield[i][1] = 0.0
+                # avg6 (non-negative) shares the same error as avg6 sometimes, as does gaus (for the UE, which is the same as our central)
+                if (key == "avg6 (non-negative)" or key == "gaus") and cur_yield[i][1] == central_yield[i][1]:
+                    cur_yield[i][1] = 0
+
                 barlow_hist.SetBinContent(i+1, (cur_yield[i][0] - central_yield[i][0])/math.sqrt(abs(cur_yield[i][1]**2 - central_yield[i][1]**2)))
             barlow_legend.AddEntry(barlow_hist.Clone(), key, "P")
             barlow_hist.SetLineColor(colors[color_index])
