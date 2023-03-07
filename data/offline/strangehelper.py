@@ -21,6 +21,36 @@ def get_straight_line(point_one, point_two):
     
     return c, m
 
+# a function to apply the two-track correction template to the input th2d
+def apply_two_track_correction(uncorrected_dist, correction_template):
+
+    # make a copy of the input distribution
+    corrected_dist = uncorrected_dist.Clone()
+
+    deta_min_bin = correction_template.GetXaxis().FindBin(-1.4)
+    deta_max_bin = correction_template.GetXaxis().FindBin(1.4 - 0.001)
+
+    # loop over all bins in the input distribution
+    for xbin in range(deta_min_bin, deta_max_bin+1):
+        for ybin in range(uncorrected_dist.GetNbinsY()):
+            # get the bin content of the input distribution
+            bin_content = uncorrected_dist.GetBinContent(xbin, ybin+1)
+            bin_error = uncorrected_dist.GetBinError(xbin, ybin+1)
+            
+            # get the correction factor from the correction template
+            correction_factor = 1/correction_template.GetBinContent(xbin, ybin+1)
+            
+            # apply the correction factor to the bin content
+            corrected_bin_content = bin_content * correction_factor
+            corrected_bin_error = bin_error * correction_factor
+            
+            # set the bin content of the output distribution
+            corrected_dist.SetBinContent(xbin, ybin+1, corrected_bin_content)
+            corrected_dist.SetBinError(xbin, ybin+1, corrected_bin_error)
+
+    return corrected_dist
+
+# a function to perform mixed event acceptance correction
 def make_mixed_corrections(same, mixed, mass_low=1.11, mass_high=1.12, is_hh=False):
     if is_hh:
         same3d = same

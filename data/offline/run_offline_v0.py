@@ -7,7 +7,7 @@ import ROOT as rt
 
 
 from sys import argv
-from strangehelper import make_mixed_corrections, get_parabola, get_straight_line
+from strangehelper import make_mixed_corrections,  get_straight_line, apply_two_track_correction
 
 # epsilon used to avoid bin edge nightmares (if you pick a value that lies on bin edge, it defaults to right bin)
 EPSILON = 0.00001
@@ -68,6 +68,11 @@ TRIGGER_V2_50_80 = 0.5*TRIGGER_V2_0_20
 ASSOCIATED_V2_50_80 = 0.5*ASSOCIATED_V2_0_20
 LAMBDA_V2_50_80 = 0.5*LAMBDA_V2_0_20
 
+TRIGGER_V2_0_80 = 0.95*TRIGGER_V2_0_20
+ASSOCIATED_V2_0_80 = 0.95*ASSOCIATED_V2_0_20
+LAMBDA_V2_0_80 = 0.95*LAMBDA_V2_0_20
+
+
 # PID CUTS (already applied online, need to correct for % loss)
 IS_NORMAL_PID = config.getboolean("PID_CUTS", "IS_NORMAL")
 IS_WIDE_PID = config.getboolean("PID_CUTS", "IS_WIDE")
@@ -101,6 +106,16 @@ FULL_REGION_MAX = 1.132 - EPSILON
 N_DPHI_BINS = 16
 BIN_WIDTH = 2*rt.TMath.Pi()/N_DPHI_BINS
 
+
+# go ahead and load the two-track correction templates
+
+if "lowpt" in argv[1]:
+    template_file = rt.TFile("templates/twotrack_template_lowpt.root")
+elif "highpt" in argv[1]:
+    template_file = rt.TFile("templates/twotrack_template_highpt.root")
+else:
+    template_file = rt.TFile("templates/twotrack_template.root")
+TWOTRACK_TEMPLATE = template_file.Get("twotrack_template")
 
 # Output file containing all of the relevant results (long name )
 if "signal" in argv[1]:
@@ -148,6 +163,7 @@ else:
     output_file_string += ".root"
 
 output_file = rt.TFile(output_file_string, "RECREATE")
+# output_file = rt.TFile("v2_investigation_highpt.root", "RECREATE")
 # output_file = rt.TFile("tmp3.root", "RECREATE")
 
 v2_baselines_file_string = "v2_baselines.txt"
@@ -387,6 +403,9 @@ else:
 h_lambda_2d_subtracted_0_20.Scale(signal_scale_0_20)
 # Correct for PID loss
 h_lambda_2d_subtracted_0_20.Scale(PID_CORRECTION)
+
+# Correct for two-track efficiency
+h_lambda_2d_subtracted_0_20 = apply_two_track_correction(h_lambda_2d_subtracted_0_20, TWOTRACK_TEMPLATE)
 
 # INTEGRAL AND RATIO SECTION
 h_lambda_dphi_subtracted_0_20 = h_lambda_2d_subtracted_0_20.ProjectionY("h_lambda_dphi_subtracted_0_20")
@@ -1285,6 +1304,11 @@ else:
 h_lambda_2d_subtracted_20_50.Scale(signal_scale_20_50)
 # Correct for PID loss
 h_lambda_2d_subtracted_20_50.Scale(PID_CORRECTION)
+
+# Correct for two-track efficiency
+
+# Correct for two-track efficiency
+h_lambda_2d_subtracted_20_50 = apply_two_track_correction(h_lambda_2d_subtracted_20_50, TWOTRACK_TEMPLATE)
 
 # INTEGRAL AND RATIO SECTION
 h_lambda_dphi_subtracted_20_50 = h_lambda_2d_subtracted_20_50.ProjectionY("h_lambda_dphi_subtracted_20_50")
@@ -2191,6 +2215,10 @@ h_lambda_2d_subtracted_50_80.Scale(signal_scale_50_80)
 # Correct for PID loss
 h_lambda_2d_subtracted_50_80.Scale(PID_CORRECTION)
 
+
+# Correct for two-track efficiency
+h_lambda_2d_subtracted_50_80 = apply_two_track_correction(h_lambda_2d_subtracted_50_80, TWOTRACK_TEMPLATE)
+
 # INTEGRAL AND RATIO SECTION
 h_lambda_dphi_subtracted_50_80 = h_lambda_2d_subtracted_50_80.ProjectionY("h_lambda_dphi_subtracted_50_80")
 
@@ -2859,6 +2887,908 @@ ue_ratio_error_50_80 = ue_ratio_50_80*math.sqrt((h_lambda_ue_integral_error_50_8
 total_ratio_error_50_80 = total_ratio_50_80*math.sqrt((h_lambda_total_integral_error_50_80/h_lambda_total_integral_50_80)**2
                                                  + (h_h_total_integral_error_50_80/h_h_total_integral_50_80)**2)
 
+############################################################################################################
+############################################################################################################
+############################################# MB CENTRALITY ################################################
+############################################################################################################
+############################################################################################################
+
+
+if IS_NORMAL_PID:
+    input_file_0_80 = rt.TFile("../online/v0_test/output/v0_normal.root")
+elif IS_WIDE_PID:
+    input_file_0_80 = rt.TFile("../online/v0_test/output/v0_wide.root")
+elif IS_NARROW_PID:
+    input_file_0_80 = rt.TFile("../online/v0_test/output/v0_narrow.root")
+elif IS_TOF_PID:
+    input_file_0_80 = rt.TFile("../online/v0_test/output/v0_tof.root")
+else:
+    print("ERROR: No PID cut specified")
+    exit(1)
+
+input_list_0_80 = input_file_0_80.Get("h-lambda")
+input_file_0_80.Close()
+
+trig_dist_0_80 = input_list_0_80.FindObject("fTriggerDistEff_highestPt") if DO_HIGHEST_PT else input_list_0_80.FindObject("fTriggerDistEff")
+lambda_dist_0_80 = input_list_0_80.FindObject("fTriggeredLambdaDist")
+
+
+h_h_0_80 = input_list_0_80.FindObject("fDphiHHEff_highestPt") if DO_HIGHEST_PT else input_list_0_80.FindObject("fDphiHHEff")
+h_h_mixed_0_80 = input_list_0_80.FindObject("fDphiHHMixed_highestPt") if DO_HIGHEST_PT else input_list_0_80.FindObject("fDphiHHMixed")
+
+h_lambda_0_80 = input_list_0_80.FindObject("fDphiHLambdaEff_highestPt") if DO_HIGHEST_PT else input_list_0_80.FindObject("fDphiHLambdaEff")
+h_lambda_mixed_0_80 = input_list_0_80.FindObject("fDphiHLambdaMixed_highestPt") if DO_HIGHEST_PT else input_list_0_80.FindObject("fDphiHLambdaMixed")
+
+
+# Setting the trigger Pt (this is never changed again)
+trig_dist_0_80.GetAxis(0).SetRangeUser(TRIG_PT_LOW, TRIG_PT_HIGH)
+h_h_0_80.GetAxis(0).SetRangeUser(TRIG_PT_LOW, TRIG_PT_HIGH)
+h_h_mixed_0_80.GetAxis(0).SetRangeUser(TRIG_PT_LOW, TRIG_PT_HIGH)
+h_lambda_0_80.GetAxis(0).SetRangeUser(TRIG_PT_LOW, TRIG_PT_HIGH)
+h_lambda_mixed_0_80.GetAxis(0).SetRangeUser(TRIG_PT_LOW, TRIG_PT_HIGH)
+
+
+# Setting the associated Pt (this is never changed again)
+lambda_dist_0_80.GetAxis(0).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
+h_h_0_80.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
+h_lambda_0_80.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
+h_lambda_mixed_0_80.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
+
+
+### TRIGGER SECTION ### 
+
+trig_dist_0_80.GetAxis(2).SetRangeUser(ETA_MIN, ETA_MAX)
+lambda_dist_0_80.GetAxis(2).SetRangeUser(ETA_MIN, ETA_MAX)
+
+
+# Getting the single-particle trigger distributions
+trig_pt_dist_0_80 = trig_dist_0_80.Projection(0).Clone("trig_pt_dist_0_80")
+trig_phi_dist_0_80 = trig_dist_0_80.Projection(1).Clone("trig_phi_dist_0_80")
+trig_eta_dist_0_80 = trig_dist_0_80.Projection(2).Clone("trig_eta_dist_0_80")
+trig_2d_dist_0_80 = trig_dist_0_80.Projection(0, 3).Clone("trig_2d_dist_0_80")
+
+# Get total number of triggers (used for per-trigger normalization)
+num_trigs_0_80 = trig_2d_dist_0_80.Integral()
+
+output_file.cd()
+trig_pt_dist_0_80.Write()
+trig_phi_dist_0_80.Write()
+trig_eta_dist_0_80.Write()
+trig_2d_dist_0_80.Write()
+
+### SIGNAL ANALYSIS SECTION ###
+
+lambda_mass_dist_0_80 = lambda_dist_0_80.Projection(3).Clone("lambda_mass_dist_0_80")
+
+bin_1 = lambda_mass_dist_0_80.FindBin(1.102)
+bin_2 = lambda_mass_dist_0_80.FindBin(1.132)
+point_one = [1.102, lambda_mass_dist_0_80.GetBinContent(bin_1)]
+point_two = [1.132, lambda_mass_dist_0_80.GetBinContent(bin_2)]
+bg_starting_params_0_80 = get_straight_line(point_one, point_two)
+lambda_mass_fit_0_80 = rt.TF1("lambda_mass_fit_0_80", "[0]*TMath::Voigt(x - [1], [2], [3], 4) + pol1(4)", 1.102, 1.127)
+lambda_mass_fit_0_80.SetNpx(1000)
+lambda_mass_fit_0_80.SetParameter(0, 1.74e03)
+lambda_mass_fit_0_80.SetParameter(1, 1.116)
+lambda_mass_fit_0_80.SetParameter(2, 1.30576e-03 )
+lambda_mass_fit_0_80.SetParameter(3, 1.804166e-03)
+lambda_mass_fit_0_80.SetParameter(4, bg_starting_params_0_80[0])
+lambda_mass_fit_0_80.SetParameter(5, bg_starting_params_0_80[1])
+lambda_mass_dist_fit_0_80 = lambda_mass_dist_0_80.Clone("lambda_mass_dist_fit_0_80")
+
+
+lambda_mass_bg_fit_0_80 = rt.TF1("bg_fit_0_80", "pol1", 1.096, 1.136)
+lambda_mass_bg_fit_0_80.SetNpx(1000)
+lambda_mass_bg_fit_0_80.SetParameter(0, bg_starting_params_0_80[0])
+lambda_mass_bg_fit_0_80.SetParameter(1, bg_starting_params_0_80[1])
+lambda_mass_dist_fit_0_80.Fit(lambda_mass_fit_0_80, "RS")
+
+voigt_fit_0_80 = rt.TF1("voigt_fit_0_80", "[0]*TMath::Voigt(x - [1], [2], [3], 4)", 1.102, 1.127)
+voigt_fit_0_80.SetNpx(1000)
+voigt_fit_0_80.SetParameter(0, lambda_mass_fit_0_80.GetParameter(0))
+voigt_fit_0_80.SetParameter(1, lambda_mass_fit_0_80.GetParameter(1))
+voigt_fit_0_80.SetParameter(2, lambda_mass_fit_0_80.GetParameter(2))
+voigt_fit_0_80.SetParameter(3, lambda_mass_fit_0_80.GetParameter(3))
+
+
+residual_0_80 = lambda_mass_dist_0_80.Clone("residual_0_80")
+residual_0_80.GetXaxis().SetRangeUser(1.094, 1.142)
+residual_0_80.Add(lambda_mass_bg_fit_0_80, -1)
+
+
+RSB_region_0_80 = rt.TBox(RSB_MIN, 0, RSB_MAX, lambda_mass_dist_0_80.GetMaximum()*1.055)
+RSB_region_0_80.SetLineColor(rt.kRed)
+RSB_region_0_80.SetFillColor(rt.kRed)
+RSB_region_0_80.SetFillStyle(3003)
+
+
+RSB_min_line_0_80 = rt.TLine(RSB_MIN, 0, RSB_MIN, lambda_mass_dist_0_80.GetMaximum()*1.05)
+RSB_min_line_0_80.SetLineColor(rt.kRed)
+RSB_min_line_0_80.SetLineWidth(2)
+RSB_min_line_0_80.SetLineStyle(2)
+
+
+RSB_max_line_0_80 = rt.TLine(RSB_MAX, 0, RSB_MAX, lambda_mass_dist_0_80.GetMaximum()*1.05)
+RSB_max_line_0_80.SetLineColor(rt.kRed)
+RSB_max_line_0_80.SetLineWidth(2)
+RSB_max_line_0_80.SetLineStyle(2)
+
+left_signal_bin_0_80 = lambda_mass_dist_0_80.FindBin(SIG_MIN)
+right_signal_bin_0_80 = lambda_mass_dist_0_80.FindBin(SIG_MAX)
+
+full_region_bin_1 = residual_0_80.FindBin(FULL_REGION_MIN)
+full_region_bin_2 = residual_0_80.FindBin(FULL_REGION_MAX)
+
+lambda_bg_0_80 = 0
+lambda_total_0_80 = 0
+for bin_num in range(left_signal_bin_0_80, right_signal_bin_0_80 + 1):
+    lambda_total_0_80 += lambda_mass_dist_0_80.GetBinContent(bin_num)
+    lambda_bg_0_80 += lambda_mass_bg_fit_0_80.Eval(lambda_mass_dist_0_80.GetBinCenter(bin_num))
+
+
+lambda_signal_0_80 = lambda_total_0_80 - lambda_bg_0_80
+lambda_signal_total_ratio_0_80 = lambda_signal_0_80/lambda_total_0_80
+
+signal_scale_0_80 = residual_0_80.Integral(full_region_bin_1, full_region_bin_2)/residual_0_80.Integral(left_signal_bin_0_80, right_signal_bin_0_80)
+
+output_file.cd()
+RSB_region_0_80.Write("RSB_region_0_80")
+RSB_min_line_0_80.Write("RSB_min_line_0_80")
+RSB_max_line_0_80.Write("RSB_max_line_0_80")
+
+lambda_mass_dist_0_80.Write()
+lambda_mass_dist_fit_0_80.Write()
+lambda_mass_fit_0_80.Write()
+lambda_mass_bg_fit_0_80.Write()
+residual_0_80.Write()
+RSB_region_0_80.Write()
+RSB_min_line_0_80.Write()
+RSB_max_line_0_80.Write()
+
+### MIXED EVENT CORRECTION SECTION ###
+
+axes = arr.array('i', [2, 3, 4, 5])
+h_lambda_0_80 = h_lambda_0_80.Projection(4, axes)
+h_lambda_mixed_0_80 = h_lambda_mixed_0_80.Projection(4, axes)
+
+h_h_0_80 = h_h_0_80.Projection(2, 3, 4)
+h_h_mixed_0_80 = h_h_mixed_0_80.Projection(2, 3, 4)
+
+
+# Setting up 2-d correlation plots before the mixed event correction
+h_lambda_2d_nomixcor_0_80 = h_lambda_0_80.Projection(0, 1).Clone("h_lambda_2d_nomixcor_0_80")
+h_lambda_mixed_2d_0_80 = h_lambda_mixed_0_80.Projection(0, 1).Clone("h_lambda_mixed_2d_0_80")
+
+h_h_2d_nomixcor_0_80 = h_h_0_80.Project3D("xye").Clone("h_h_2d_nomixcor_0_80")
+h_h_mixed_2d_0_80 = h_h_mixed_0_80.Project3D("xye").Clone("h_h_mixed_2d_0_80")
+
+h_lambda_2d_mixcor_sig_0_80 = make_mixed_corrections(h_lambda_0_80, h_lambda_mixed_0_80, SIG_MIN, SIG_MAX)
+h_lambda_2d_mixcor_rsb_0_80 = make_mixed_corrections(h_lambda_0_80, h_lambda_mixed_0_80, RSB_MIN, RSB_MAX)
+
+h_h_2d_mixcor_0_80 = make_mixed_corrections(h_h_0_80, h_h_mixed_0_80, SIG_MIN, SIG_MAX, is_hh=True)
+
+
+h_lambda_2d_mixcor_sig_0_80.GetXaxis().SetRangeUser(DELTA_ETA_MIN, DELTA_ETA_MAX)
+h_lambda_2d_mixcor_rsb_0_80.GetXaxis().SetRangeUser(DELTA_ETA_MIN, DELTA_ETA_MAX)
+h_h_2d_mixcor_0_80.GetXaxis().SetRangeUser(DELTA_ETA_MIN, DELTA_ETA_MAX)
+
+h_lambda_2d_mixcor_sig_0_80.SetName("h_lambda_2d_mixcor_sig_0_80")
+h_lambda_2d_mixcor_rsb_0_80.SetName("h_lambda_2d_mixcor_rsb_0_80")
+h_h_2d_mixcor_0_80.SetName("h_h_2d_mixcor_0_80")
+
+
+
+
+# per-trigger normalization done here
+h_lambda_2d_mixcor_sig_0_80.Scale(1.0/num_trigs_0_80)
+h_lambda_2d_mixcor_rsb_0_80.Scale(1.0/num_trigs_0_80)
+h_h_2d_mixcor_0_80.Scale(1.0/num_trigs_0_80)
+
+output_file.cd()
+h_lambda_2d_nomixcor_0_80.Write()
+h_lambda_mixed_2d_0_80.Write()
+h_h_2d_nomixcor_0_80.Write()
+h_h_mixed_2d_0_80.Write()
+h_lambda_2d_mixcor_sig_0_80.Write()
+h_lambda_2d_mixcor_rsb_0_80.Write()
+h_h_2d_mixcor_0_80.Write()
+
+# SIDEBAND SUBTRACTION SECTION
+if DO_SIDEBAND_SUBTRACTION:
+
+    # Normalize side band to 1
+    h_lambda_2d_mixcor_rsb_0_80.Scale(1/h_lambda_2d_mixcor_rsb_0_80.Integral())
+
+
+    # using RSB for sideband subtraction
+    h_lambda_2d_subtracted_0_80 = h_lambda_2d_mixcor_sig_0_80.Clone("h_lambda_2d_subtracted_0_80")
+    bg_integral_0_80 = (1 - lambda_signal_total_ratio_0_80)*h_lambda_2d_subtracted_0_80.Integral()
+    h_lambda_2d_subtracted_0_80.Add(h_lambda_2d_mixcor_rsb_0_80, -bg_integral_0_80)
+
+    # save the RSB deltaphi distribution
+    h_lambda_dphi_rsb_0_80 = h_lambda_2d_mixcor_rsb_0_80.ProjectionY("h_lambda_dphi_rsb_0_80")
+    output_file.cd()
+    h_lambda_dphi_rsb_0_80.Write()
+
+else:
+    h_lambda_2d_subtracted_0_80 = h_lambda_2d_mixcor_sig_0_80.Clone("h_lambda_2d_subtracted_0_80")
+
+
+# Correct for signal scale
+h_lambda_2d_subtracted_0_80.Scale(signal_scale_0_80)
+# Correct for PID loss
+h_lambda_2d_subtracted_0_80.Scale(PID_CORRECTION)
+
+# Correct for two-track efficiency
+h_lambda_2d_subtracted_0_80 = apply_two_track_correction(h_lambda_2d_subtracted_0_80, TWOTRACK_TEMPLATE)
+
+# INTEGRAL AND RATIO SECTION
+h_lambda_dphi_subtracted_0_80 = h_lambda_2d_subtracted_0_80.ProjectionY("h_lambda_dphi_subtracted_0_80")
+
+if USE_AVG_4:
+    ue_line_0_80 = rt.TF1("ue_line_0_80", "pol0", -2, 6)
+    ue_upper_line_0_80 = rt.TF1("ue_upper_line_0_80", "pol0", -2, 6)
+    ue_lower_line_0_80 = rt.TF1("ue_lower_line_0_80", "pol0", -2, 6)
+    zero_line_0_80 = rt.TF1("zero_line_0_80", "pol0", -2, 6)
+    zero_upper_line_0_80 = rt.TF1("zero_upper_line_0_80", "pol0", -2, 6)
+    zero_lower_line_0_80 = rt.TF1("zero_lower_line_0_80", "pol0", -2, 6)
+    ue_avg_0_80 = (h_lambda_dphi_subtracted_0_80.GetBinContent(1) 
+                   + h_lambda_dphi_subtracted_0_80.GetBinContent(8)
+                   + h_lambda_dphi_subtracted_0_80.GetBinContent(9)
+                   + h_lambda_dphi_subtracted_0_80.GetBinContent(16))/4
+
+    ue_avg_error_0_80 = (1/4)*(math.sqrt(h_lambda_dphi_subtracted_0_80.GetBinError(1)**2 
+                   + h_lambda_dphi_subtracted_0_80.GetBinError(8)**2
+                   + h_lambda_dphi_subtracted_0_80.GetBinError(9)**2
+                   + h_lambda_dphi_subtracted_0_80.GetBinError(16)**2))
+
+
+    ue_line_0_80.SetParameter(0, ue_avg_0_80)
+    ue_upper_line_0_80.SetParameter(0, ue_avg_0_80 + ue_avg_error_0_80)
+    ue_lower_line_0_80.SetParameter(0, ue_avg_0_80 - ue_avg_error_0_80)
+
+    zero_line_0_80.SetParameter(0, 0)
+    zero_upper_line_0_80.SetParameter(0, ue_avg_error_0_80)
+    zero_lower_line_0_80.SetParameter(0, -ue_avg_error_0_80)
+
+elif USE_AVG_6 or USE_AVG_6_NONNEGATIVE:
+    ue_line_0_80 = rt.TF1("ue_line_0_80", "pol0", -2, 6)
+    ue_upper_line_0_80 = rt.TF1("ue_upper_line_0_80", "pol0", -2, 6)
+    ue_lower_line_0_80 = rt.TF1("ue_lower_line_0_80", "pol0", -2, 6)
+    zero_line_0_80 = rt.TF1("zero_line_0_80", "pol0", -2, 6)
+    zero_upper_line_0_80 = rt.TF1("zero_upper_line_0_80", "pol0", -2, 6)
+    zero_lower_line_0_80 = rt.TF1("zero_lower_line_0_80", "pol0", -2, 6)
+    ue_avg_0_80 = (h_lambda_dphi_subtracted_0_80.GetBinContent(1) 
+                   + h_lambda_dphi_subtracted_0_80.GetBinContent(2)
+                   + h_lambda_dphi_subtracted_0_80.GetBinContent(7)
+                   + h_lambda_dphi_subtracted_0_80.GetBinContent(8)
+                   + h_lambda_dphi_subtracted_0_80.GetBinContent(9)
+                   + h_lambda_dphi_subtracted_0_80.GetBinContent(16))/6
+
+    ue_avg_error_0_80 = (1/6)*(math.sqrt(h_lambda_dphi_subtracted_0_80.GetBinError(1)**2 
+                   + h_lambda_dphi_subtracted_0_80.GetBinError(2)**2
+                   + h_lambda_dphi_subtracted_0_80.GetBinError(7)**2
+                   + h_lambda_dphi_subtracted_0_80.GetBinError(8)**2
+                   + h_lambda_dphi_subtracted_0_80.GetBinError(9)**2
+                   + h_lambda_dphi_subtracted_0_80.GetBinError(16)**2))
+
+
+    ue_line_0_80.SetParameter(0, ue_avg_0_80)
+    ue_upper_line_0_80.SetParameter(0, ue_avg_0_80 + ue_avg_error_0_80)
+    ue_lower_line_0_80.SetParameter(0, ue_avg_0_80 - ue_avg_error_0_80)
+
+    zero_line_0_80.SetParameter(0, 0)
+    zero_upper_line_0_80.SetParameter(0, ue_avg_error_0_80)
+    zero_lower_line_0_80.SetParameter(0, -ue_avg_error_0_80)
+
+elif USE_ZYAM:
+    ue_line_0_80 = rt.TF1("ue_line_0_80", "pol0", -2, 6)
+    ue_upper_line_0_80 = rt.TF1("ue_upper_line_0_80", "pol0", -2, 6)
+    ue_lower_line_0_80 = rt.TF1("ue_lower_line_0_80", "pol0", -2, 6)
+    zero_line_0_80 = rt.TF1("zero_line_0_80", "pol0", -2, 6)
+    zero_upper_line_0_80 = rt.TF1("zero_upper_line_0_80", "pol0", -2, 6)
+    zero_lower_line_0_80 = rt.TF1("zero_lower_line_0_80", "pol0", -2, 6)
+    min_bin = h_lambda_dphi_subtracted_0_80.GetMinimumBin()
+    ue_avg_0_80 = h_lambda_dphi_subtracted_0_80.GetBinContent(min_bin)
+    ue_avg_error_0_80 = h_lambda_dphi_subtracted_0_80.GetBinError(min_bin)
+
+
+    ue_line_0_80.SetParameter(0, ue_avg_0_80)
+    ue_upper_line_0_80.SetParameter(0, ue_avg_0_80 + ue_avg_error_0_80)
+    ue_lower_line_0_80.SetParameter(0, ue_avg_0_80 - ue_avg_error_0_80)
+
+    zero_line_0_80.SetParameter(0, 0)
+    zero_upper_line_0_80.SetParameter(0, ue_avg_error_0_80)
+    zero_lower_line_0_80.SetParameter(0, -ue_avg_error_0_80)
+
+elif USE_FIT:
+    # fitting to four gaussians + a constant background
+    fit_function_0_80 = rt.TF1("fit_function_0_80", "gaus(0) + gaus(3) + gaus(6) + gaus(9) + pol0(12)", -2, 6)
+    fit_function_0_80.SetNpx(1000)
+
+    # setting parameters for first gaussian (centered at 0)
+    fit_function_0_80.SetParLimits(0, 5e-4, 0.6)
+    fit_function_0_80.SetParameter(0, 0.009)
+    fit_function_0_80.FixParameter(1, 0)
+    fit_function_0_80.SetParLimits(2, 0.1, 2)
+    fit_function_0_80.SetParameter(2, 0.8)
+    # setting parameters for second gaussian (centered at 0 + 2pi)
+    fit_function_0_80.SetParLimits(3, 0,  0.6)
+    fit_function_0_80.SetParameter(3, 0)
+    fit_function_0_80.FixParameter(4, 2*rt.TMath.Pi())
+    fit_function_0_80.SetParLimits(5, 0.1, 2)
+    fit_function_0_80.SetParameter(5, 0.1)
+    # setting parameters for third gaussian (centered at pi)
+    fit_function_0_80.SetParLimits(6, 5e-4, 0.6)
+    fit_function_0_80.SetParameter(6, 0.003)
+    fit_function_0_80.FixParameter(7, rt.TMath.Pi())
+    fit_function_0_80.SetParLimits(8, 0.1, 2)
+    fit_function_0_80.SetParameter(8, 1)
+    # setting parameters for fourth gaussian (centered at pi + 2pi)
+    fit_function_0_80.SetParLimits(9, 0, 0.6)
+    fit_function_0_80.SetParameter(9, 0)
+    fit_function_0_80.FixParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
+    fit_function_0_80.SetParLimits(11, 0.1, 2)
+    fit_function_0_80.SetParameter(11, 0.1)
+
+    # setting parameters for constant background
+    ue_avg_0_80 = (h_lambda_dphi_subtracted_0_80.GetBinContent(1) 
+                + h_lambda_dphi_subtracted_0_80.GetBinContent(2)
+                + h_lambda_dphi_subtracted_0_80.GetBinContent(7)
+                + h_lambda_dphi_subtracted_0_80.GetBinContent(8)
+                + h_lambda_dphi_subtracted_0_80.GetBinContent(9)
+                + h_lambda_dphi_subtracted_0_80.GetBinContent(16))/6
+
+    ue_avg_error_0_80 = (1/6)*(math.sqrt(h_lambda_dphi_subtracted_0_80.GetBinError(1)**2 
+                   + h_lambda_dphi_subtracted_0_80.GetBinError(2)**2
+                   + h_lambda_dphi_subtracted_0_80.GetBinError(7)**2
+                   + h_lambda_dphi_subtracted_0_80.GetBinError(8)**2
+                   + h_lambda_dphi_subtracted_0_80.GetBinError(9)**2
+                   + h_lambda_dphi_subtracted_0_80.GetBinError(16)**2))
+
+    fit_function_0_80.SetParameter(12, ue_avg_0_80)
+
+
+    h_lambda_dphi_subtracted_with_fit_0_80 = h_lambda_dphi_subtracted_0_80.Clone("h_lambda_dphi_subtracted_with_fit_0_80")
+    fit_result_0_80 = h_lambda_dphi_subtracted_with_fit_0_80.Fit(fit_function_0_80, "RS")
+
+    ue_avg_fit_0_80 = rt.TF1("ue_avg_fit_0_80", "pol0", -2, 6)
+    ue_avg_fit_0_80.SetParameter(0, ue_avg_0_80)
+    ue_avg_fit_0_80.SetParError(0, ue_avg_error_0_80)
+
+elif USE_V2:
+    ue_avg_0_80 = (h_lambda_dphi_subtracted_0_80.GetBinContent(1) 
+                   + h_lambda_dphi_subtracted_0_80.GetBinContent(2)
+                   + h_lambda_dphi_subtracted_0_80.GetBinContent(7)
+                   + h_lambda_dphi_subtracted_0_80.GetBinContent(8)
+                   + h_lambda_dphi_subtracted_0_80.GetBinContent(9)
+                   + h_lambda_dphi_subtracted_0_80.GetBinContent(16))/6
+
+    v2_fit_0_80 = rt.TF1("v2_fit_0_80", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
+
+    if PT_MODE == 0:
+        v2_fit_0_80.SetParameter(0, v2_baseline_dict["h_lambda_central_0_80"][0])
+        v2_fit_0_80.SetParError(0, v2_baseline_dict["h_lambda_central_0_80"][1])
+    elif PT_MODE == 1:
+        v2_fit_0_80.SetParameter(0, v2_baseline_dict["h_lambda_lowpt_0_80"][0])
+        v2_fit_0_80.SetParError(0, v2_baseline_dict["h_lambda_lowpt_0_80"][1])
+    elif PT_MODE == 2:
+        v2_fit_0_80.SetParameter(0, v2_baseline_dict["h_lambda_highpt_0_80"][0])
+        v2_fit_0_80.SetParError(0, v2_baseline_dict["h_lambda_highpt_0_80"][1])
+
+    v2_fit_0_80.SetParameter(1, TRIGGER_V2_0_80)
+    v2_fit_0_80.SetParameter(2, LAMBDA_V2_0_80)
+
+elif USE_VON:
+    ue_avg_0_80 = (h_lambda_dphi_subtracted_0_80.GetBinContent(1) 
+                   + h_lambda_dphi_subtracted_0_80.GetBinContent(2)
+                   + h_lambda_dphi_subtracted_0_80.GetBinContent(7)
+                   + h_lambda_dphi_subtracted_0_80.GetBinContent(8)
+                   + h_lambda_dphi_subtracted_0_80.GetBinContent(9)
+                   + h_lambda_dphi_subtracted_0_80.GetBinContent(16))/6
+
+    v2_fit_0_80 = rt.TF1("v2_fit_0_80", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
+    von_fit_string = "[0]*(1 + 2*([1]*[2]*cos(2*x)))"
+    von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x))"
+    von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()))"
+
+    von_fit_0_80 = rt.TF1("von_fit_0_80", von_fit_string, -2, 6)
+
+    von_fit_0_80.SetParameter(0, ue_avg_0_80)
+    von_fit_0_80.FixParameter(1, TRIGGER_V2_0_80)
+    von_fit_0_80.FixParameter(2, LAMBDA_V2_0_80)
+    von_fit_0_80.SetParLimits(3, 0, 1)
+    von_fit_0_80.SetParameter(3, 0.02)
+    von_fit_0_80.SetParLimits(4, 0, 100)
+    von_fit_0_80.SetParameter(4, 1)
+    von_fit_0_80.SetParLimits(5, 0, 1)
+    von_fit_0_80.SetParameter(5, 0.01)
+    von_fit_0_80.SetParLimits(6, 0, 100)
+    von_fit_0_80.SetParameter(6, 1)
+
+    h_lambda_dphi_subtracted_with_fit_0_80 = h_lambda_dphi_subtracted_0_80.Clone("h_lambda_dphi_subtracted_with_fit_0_80")
+    fit_result_0_80 = h_lambda_dphi_subtracted_with_fit_0_80.Fit(von_fit_0_80, "R")
+
+
+    if PT_MODE == 0:
+        v2_fit_0_80.SetParameter(0, v2_baseline_dict["h_lambda_central_0_80"][0])
+        v2_fit_0_80.SetParError(0, v2_baseline_dict["h_lambda_central_0_80"][1])
+    elif PT_MODE == 1:
+        v2_fit_0_80.SetParameter(0, v2_baseline_dict["h_lambda_lowpt_0_80"][0])
+        v2_fit_0_80.SetParError(0, v2_baseline_dict["h_lambda_lowpt_0_80"][1])
+    elif PT_MODE == 2:
+        v2_fit_0_80.SetParameter(0, v2_baseline_dict["h_lambda_highpt_0_80"][0])
+        v2_fit_0_80.SetParError(0, v2_baseline_dict["h_lambda_highpt_0_80"][1])
+    v2_fit_0_80.SetParameter(1, TRIGGER_V2_0_80)
+    v2_fit_0_80.SetParameter(2, LAMBDA_V2_0_80)
+
+else:
+    raise NotImplementedError("UE line mode not supported")
+
+
+if USE_FIT:
+    h_lambda_dphi_subtracted_0_80_zeroed = h_lambda_dphi_subtracted_0_80.Clone("h_lambda_dphi_subtracted_0_80_zeroed")
+    h_lambda_dphi_subtracted_0_80_zeroed.Add(ue_avg_fit_0_80, -1)
+
+
+    # we are only allowed to call IntegralError (and have it make sense) if the most recent fit corresponds to the TF1 being integrated
+
+    h_lambda_total_integral_error_0_80 = fit_function_0_80.IntegralError(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
+    h_lambda_total_integral_0_80 = fit_function_0_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
+    h_lambda_ue_integral_0_80 = ue_avg_fit_0_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
+    h_lambda_ue_integral_error_0_80 = ue_avg_error_0_80*(2*rt.TMath.Pi())/BIN_WIDTH
+    h_lambda_ue_integral_error_0_80_halved = h_lambda_ue_integral_error_0_80/2
+    h_lambda_near_integral_error_0_80 = math.sqrt((fit_function_0_80.IntegralError(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH)**2 + h_lambda_ue_integral_error_0_80_halved**2)
+    h_lambda_near_integral_0_80 = fit_function_0_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH - ue_avg_fit_0_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH
+    h_lambda_away_integral_error_0_80 = math.sqrt((fit_function_0_80.IntegralError(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH)**2 + h_lambda_ue_integral_error_0_80_halved**2)
+    h_lambda_away_integral_0_80 = fit_function_0_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH - ue_avg_fit_0_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
+
+elif USE_VON:
+
+    h_lambda_total_integral_error_0_80 = von_fit_0_80.IntegralError(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
+    h_lambda_total_integral_0_80 = von_fit_0_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
+    h_lambda_ue_integral_0_80 = v2_fit_0_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
+    h_lambda_ue_integral_error_0_80 = v2_fit_0_80.GetParError(0)*(2*rt.TMath.Pi())/BIN_WIDTH
+    h_lambda_ue_integral_error_0_80_halved = h_lambda_ue_integral_error_0_80/2
+    h_lambda_near_integral_error_0_80 = math.sqrt((von_fit_0_80.IntegralError(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH)**2 + h_lambda_ue_integral_error_0_80_halved**2)
+    h_lambda_near_integral_0_80 = von_fit_0_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH - v2_fit_0_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH
+    h_lambda_away_integral_error_0_80 = math.sqrt((von_fit_0_80.IntegralError(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH)**2 + h_lambda_ue_integral_error_0_80_halved**2)
+    h_lambda_away_integral_0_80 = von_fit_0_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH - v2_fit_0_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
+    h_lambda_dphi_subtracted_0_80_zeroed = h_lambda_dphi_subtracted_0_80.Clone("h_lambda_dphi_subtracted_0_80_zeroed")
+    h_lambda_dphi_subtracted_0_80_zeroed.Add(v2_fit_0_80, -1)
+
+elif USE_V2:
+
+    DPHI_BINS = h_lambda_dphi_subtracted_0_80.GetNbinsX()
+    h_lambda_total_integral_0_80 = 0
+    h_lambda_near_integral_0_80 = 0
+    h_lambda_away_integral_0_80 = 0
+    h_lambda_ue_integral_0_80 = v2_fit_0_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
+
+    h_lambda_total_integral_error_0_80 = 0
+    h_lambda_near_integral_error_0_80 = 0
+    h_lambda_away_integral_error_0_80 = 0
+    h_lambda_ue_integral_error_0_80 = v2_fit_0_80.GetParError(0)*(2*rt.TMath.Pi())/BIN_WIDTH
+    h_lambda_ue_integral_error_0_80_halved = h_lambda_ue_integral_error_0_80/2
+
+    for bin_num in range(1, DPHI_BINS + 1):
+        h_lambda_total_integral_0_80 += h_lambda_dphi_subtracted_0_80.GetBinContent(bin_num)
+        h_lambda_total_integral_error_0_80 += (h_lambda_dphi_subtracted_0_80.GetBinError(bin_num))**2
+        part = h_lambda_dphi_subtracted_0_80.GetBinContent(bin_num) - v2_fit_0_80.Eval(h_lambda_dphi_subtracted_0_80.GetBinCenter(bin_num))
+        if part < 0 and USE_AVG_6_NONNEGATIVE:
+            part = 0
+            continue
+        if bin_num < 9:
+            h_lambda_near_integral_0_80 += part
+            h_lambda_near_integral_error_0_80 += (h_lambda_dphi_subtracted_0_80.GetBinError(bin_num))**2
+        else:
+            h_lambda_away_integral_0_80 += part
+            h_lambda_away_integral_error_0_80 += (h_lambda_dphi_subtracted_0_80.GetBinError(bin_num))**2
+        
+    h_lambda_total_integral_error_0_80 = math.sqrt(h_lambda_total_integral_error_0_80)
+    h_lambda_near_integral_error_0_80 = math.sqrt(h_lambda_near_integral_error_0_80)
+    h_lambda_near_integral_error_0_80 = math.sqrt(h_lambda_near_integral_error_0_80**2 + h_lambda_ue_integral_error_0_80_halved**2)
+    h_lambda_away_integral_error_0_80 = math.sqrt(h_lambda_away_integral_error_0_80)
+    h_lambda_away_integral_error_0_80 = math.sqrt(h_lambda_away_integral_error_0_80**2 + h_lambda_ue_integral_error_0_80_halved**2)
+
+else: 
+    h_lambda_dphi_subtracted_0_80_zeroed = h_lambda_dphi_subtracted_0_80.Clone("h_lambda_dphi_subtracted_0_80_zeroed")
+    h_lambda_dphi_subtracted_0_80_zeroed.Add(ue_line_0_80, -1)
+
+    DPHI_BINS = h_lambda_dphi_subtracted_0_80.GetNbinsX()
+
+    h_lambda_total_integral_0_80 = 0
+    h_lambda_near_integral_0_80 = 0
+    h_lambda_away_integral_0_80 = 0
+    h_lambda_ue_integral_0_80 = ue_avg_0_80*DPHI_BINS
+
+    h_lambda_total_integral_error_0_80 = 0
+    h_lambda_near_integral_error_0_80 = 0
+    h_lambda_away_integral_error_0_80 = 0
+    h_lambda_ue_integral_error_0_80 = ue_avg_error_0_80*(2*rt.TMath.Pi())/BIN_WIDTH
+    h_lambda_ue_integral_error_0_80_halved = h_lambda_ue_integral_error_0_80/2
+
+    for bin_num in range(1, DPHI_BINS + 1):
+        h_lambda_total_integral_0_80 += h_lambda_dphi_subtracted_0_80.GetBinContent(bin_num)
+        h_lambda_total_integral_error_0_80 += h_lambda_dphi_subtracted_0_80.GetBinError(bin_num)**2
+        part = h_lambda_dphi_subtracted_0_80.GetBinContent(bin_num) - ue_avg_0_80
+        if part < 0 and USE_AVG_6_NONNEGATIVE:
+            part = 0
+            continue
+        if bin_num < 9:
+            h_lambda_near_integral_0_80 += part
+            h_lambda_near_integral_error_0_80 += h_lambda_dphi_subtracted_0_80.GetBinError(bin_num)**2
+        else:
+            h_lambda_away_integral_0_80 += part
+            h_lambda_away_integral_error_0_80 += h_lambda_dphi_subtracted_0_80.GetBinError(bin_num)**2
+
+    h_lambda_total_integral_error_0_80 = math.sqrt(h_lambda_total_integral_error_0_80)
+    h_lambda_near_integral_error_0_80 = math.sqrt(h_lambda_near_integral_error_0_80)
+    h_lambda_near_integral_error_0_80 = math.sqrt(h_lambda_near_integral_error_0_80**2 + h_lambda_ue_integral_error_0_80_halved**2)
+    h_lambda_away_integral_error_0_80 = math.sqrt(h_lambda_away_integral_error_0_80)
+    h_lambda_away_integral_error_0_80 = math.sqrt(h_lambda_away_integral_error_0_80**2 + h_lambda_ue_integral_error_0_80_halved**2)
+
+
+h_h_dphi_0_80 = h_h_2d_mixcor_0_80.ProjectionY("h_h_dphi_0_80")
+
+if USE_AVG_4:
+    hh_ue_line_0_80 = rt.TF1("hh_ue_line_0_80", "pol0", -2, 6)
+    hh_ue_upper_line_0_80 = rt.TF1("hh_ue_upper_line_0_80", "pol0", -2, 6)
+    hh_ue_lower_line_0_80 = rt.TF1("hh_ue_lower_line_0_80", "pol0", -2, 6)
+    hh_zero_line_0_80 = rt.TF1("hh_zero_line_0_80", "pol0", -2, 6)
+    hh_zero_upper_line_0_80 = rt.TF1("hh_zero_upper_line_0_80", "pol0", -2, 6)
+    hh_zero_lower_line_0_80 = rt.TF1("hh_zero_lower_line_0_80", "pol0", -2, 6)
+    hh_ue_avg_0_80 = (h_h_dphi_0_80.GetBinContent(1) 
+                   + h_h_dphi_0_80.GetBinContent(8)
+                   + h_h_dphi_0_80.GetBinContent(9)
+                   + h_h_dphi_0_80.GetBinContent(16))/4
+
+    hh_ue_avg_error_0_80 = (1/4)*(math.sqrt(h_h_dphi_0_80.GetBinError(1)**2 
+                   + h_h_dphi_0_80.GetBinError(8)**2
+                   + h_h_dphi_0_80.GetBinError(9)**2
+                   + h_h_dphi_0_80.GetBinError(16)**2))
+
+
+    hh_ue_line_0_80.SetParameter(0, hh_ue_avg_0_80)
+    hh_ue_upper_line_0_80.SetParameter(0, hh_ue_avg_0_80 + hh_ue_avg_error_0_80)
+    hh_ue_lower_line_0_80.SetParameter(0, hh_ue_avg_0_80 - hh_ue_avg_error_0_80)
+
+    hh_zero_line_0_80.SetParameter(0, 0)
+    hh_zero_upper_line_0_80.SetParameter(0, hh_ue_avg_error_0_80)
+    hh_zero_lower_line_0_80.SetParameter(0, -hh_ue_avg_error_0_80)
+
+elif USE_AVG_6 or USE_AVG_6_NONNEGATIVE:
+    hh_ue_line_0_80 = rt.TF1("hh_ue_line_0_80", "pol0", -2, 6)
+    hh_ue_upper_line_0_80 = rt.TF1("hh_ue_upper_line_0_80", "pol0", -2, 6)
+    hh_ue_lower_line_0_80 = rt.TF1("hh_ue_lower_line_0_80", "pol0", -2, 6)
+    hh_zero_line_0_80 = rt.TF1("hh_zero_line_0_80", "pol0", -2, 6)
+    hh_zero_upper_line_0_80 = rt.TF1("hh_zero_upper_line_0_80", "pol0", -2, 6)
+    hh_zero_lower_line_0_80 = rt.TF1("hh_zero_lower_line_0_80", "pol0", -2, 6)
+    hh_ue_avg_0_80 = (h_h_dphi_0_80.GetBinContent(1) 
+                   + h_h_dphi_0_80.GetBinContent(2)
+                   + h_h_dphi_0_80.GetBinContent(7)
+                   + h_h_dphi_0_80.GetBinContent(8)
+                   + h_h_dphi_0_80.GetBinContent(9)
+                   + h_h_dphi_0_80.GetBinContent(16))/6
+
+    hh_ue_avg_error_0_80 = (1/6)*(math.sqrt(h_h_dphi_0_80.GetBinError(1)**2 
+                   + h_h_dphi_0_80.GetBinError(2)**2
+                   + h_h_dphi_0_80.GetBinError(7)**2
+                   + h_h_dphi_0_80.GetBinError(8)**2
+                   + h_h_dphi_0_80.GetBinError(9)**2
+                   + h_h_dphi_0_80.GetBinError(16)**2))
+
+    hh_ue_line_0_80.SetParameter(0, hh_ue_avg_0_80)
+    hh_ue_upper_line_0_80.SetParameter(0, hh_ue_avg_0_80 + hh_ue_avg_error_0_80)
+    hh_ue_lower_line_0_80.SetParameter(0, hh_ue_avg_0_80 - hh_ue_avg_error_0_80)
+
+    hh_zero_line_0_80.SetParameter(0, 0)
+    hh_zero_upper_line_0_80.SetParameter(0, hh_ue_avg_error_0_80)
+    hh_zero_lower_line_0_80.SetParameter(0, -hh_ue_avg_error_0_80)
+
+elif USE_ZYAM:
+    hh_ue_line_0_80 = rt.TF1("hh_ue_line_0_80", "pol0", -2, 6)
+    hh_ue_upper_line_0_80 = rt.TF1("hh_ue_upper_line_0_80", "pol0", -2, 6)
+    hh_ue_lower_line_0_80 = rt.TF1("hh_ue_lower_line_0_80", "pol0", -2, 6)
+    hh_zero_line_0_80 = rt.TF1("hh_zero_line_0_80", "pol0", -2, 6)
+    hh_zero_upper_line_0_80 = rt.TF1("hh_zero_upper_line_0_80", "pol0", -2, 6)
+    hh_zero_lower_line_0_80 = rt.TF1("hh_zero_lower_line_0_80", "pol0", -2, 6)
+    
+    min_bin = h_h_dphi_0_80.GetMinimumBin()
+    hh_ue_avg_0_80 = h_h_dphi_0_80.GetBinContent(min_bin)
+    hh_ue_avg_error_0_80 = h_h_dphi_0_80.GetBinError(min_bin)
+
+    hh_ue_line_0_80.SetParameter(0, hh_ue_avg_0_80)
+    hh_ue_upper_line_0_80.SetParameter(0, hh_ue_avg_0_80 + hh_ue_avg_error_0_80)
+    hh_ue_lower_line_0_80.SetParameter(0, hh_ue_avg_0_80 - hh_ue_avg_error_0_80)
+
+    hh_zero_line_0_80.SetParameter(0, 0)
+    hh_zero_upper_line_0_80.SetParameter(0, hh_ue_avg_error_0_80)
+    hh_zero_lower_line_0_80.SetParameter(0, -hh_ue_avg_error_0_80)
+elif USE_FIT:
+    # fitting to four gaussians + a constant background
+    hh_fit_function_0_80 = rt.TF1("hh_fit_function_0_80", "gaus(0) + gaus(3) + gaus(6) + gaus(9) + pol0(12)", -2, 6)
+    hh_fit_function_0_80.SetNpx(1000)
+
+    # setting parameters for first gaussian (centered at 0)
+    hh_fit_function_0_80.SetParLimits(0, 0.02, 1)
+    hh_fit_function_0_80.SetParameter(0, 0.16)
+    hh_fit_function_0_80.FixParameter(1, 0)
+    hh_fit_function_0_80.SetParLimits(2, 0.2, 3)
+    hh_fit_function_0_80.SetParameter(2, 0.3)
+    # setting parameters for second gaussian (centered at 0 + 2pi)
+    hh_fit_function_0_80.SetParLimits(3, 0, 1)
+    hh_fit_function_0_80.SetParameter(3, 0)
+    hh_fit_function_0_80.FixParameter(4, 2*rt.TMath.Pi())
+    hh_fit_function_0_80.SetParLimits(5, 0.1, 2)
+    hh_fit_function_0_80.SetParameter(5, 0.1)
+    # setting parameters for third gaussian (centered at pi)
+    hh_fit_function_0_80.SetParLimits(6, 0.02, 1)
+    hh_fit_function_0_80.SetParameter(6, 0.3)
+    hh_fit_function_0_80.FixParameter(7, rt.TMath.Pi())
+    hh_fit_function_0_80.SetParLimits(8, 0.3, 3)
+    hh_fit_function_0_80.SetParameter(8, 0.5)
+    # setting parameters for fourth gaussian (centered at pi + 2pi)
+    hh_fit_function_0_80.SetParLimits(9, 0, 1)
+    hh_fit_function_0_80.SetParameter(9, 0)
+    hh_fit_function_0_80.FixParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
+    hh_fit_function_0_80.SetParLimits(11, 0.1, 3)
+    hh_fit_function_0_80.SetParameter(11, 0.1)
+
+
+    # setting parameters for constant background
+    hh_ue_avg_0_80 = (h_h_dphi_0_80.GetBinContent(1) 
+                + h_h_dphi_0_80.GetBinContent(2)
+                + h_h_dphi_0_80.GetBinContent(7)
+                + h_h_dphi_0_80.GetBinContent(8)
+                + h_h_dphi_0_80.GetBinContent(9)
+                + h_h_dphi_0_80.GetBinContent(16))/6
+
+    hh_ue_avg_error_0_80 = (1/6)*(math.sqrt(h_h_dphi_0_80.GetBinError(1)**2 
+                   + h_h_dphi_0_80.GetBinError(2)**2
+                   + h_h_dphi_0_80.GetBinError(7)**2
+                   + h_h_dphi_0_80.GetBinError(8)**2
+                   + h_h_dphi_0_80.GetBinError(9)**2
+                   + h_h_dphi_0_80.GetBinError(16)**2))
+
+    hh_fit_function_0_80.SetParameter(12, hh_ue_avg_0_80)
+
+
+    h_h_dphi_with_fit_0_80 = h_h_dphi_0_80.Clone("h_h_dphi_with_fit_0_80")
+    h_h_dphi_with_fit_0_80.Fit(hh_fit_function_0_80, "R")
+
+    hh_ue_avg_fit_0_80 = rt.TF1("hh_ue_avg_fit_0_80", "pol0", -2, 6)
+    hh_ue_avg_fit_0_80.SetParameter(0, hh_ue_avg_0_80)
+    hh_ue_avg_fit_0_80.SetParError(0, hh_ue_avg_error_0_80)
+
+elif USE_V2:
+    hh_ue_avg_0_80 = (h_h_dphi_0_80.GetBinContent(1) 
+                   + h_h_dphi_0_80.GetBinContent(2)
+                   + h_h_dphi_0_80.GetBinContent(7)
+                   + h_h_dphi_0_80.GetBinContent(8)
+                   + h_h_dphi_0_80.GetBinContent(9)
+                   + h_h_dphi_0_80.GetBinContent(16))/6
+
+    hh_v2_fit_0_80 = rt.TF1("hh_v2_fit_0_80", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
+
+    if PT_MODE == 0:
+        hh_v2_fit_0_80.SetParameter(0, v2_baseline_dict["h_h_central_0_80"][0])
+        hh_v2_fit_0_80.SetParError(0, v2_baseline_dict["h_h_central_0_80"][1])
+    elif PT_MODE == 1:
+        hh_v2_fit_0_80.SetParameter(0, v2_baseline_dict["h_h_lowpt_0_80"][0])
+        hh_v2_fit_0_80.SetParError(0, v2_baseline_dict["h_h_lowpt_0_80"][1])
+    elif PT_MODE == 2:
+        hh_v2_fit_0_80.SetParameter(0, v2_baseline_dict["h_h_highpt_0_80"][0])
+        hh_v2_fit_0_80.SetParError(0, v2_baseline_dict["h_h_highpt_0_80"][1])
+
+    hh_v2_fit_0_80.SetParameter(1, TRIGGER_V2_0_80)
+    hh_v2_fit_0_80.SetParameter(2, ASSOCIATED_V2_0_80)
+
+elif USE_VON:
+    hh_ue_avg_0_80 = (h_h_dphi_0_80.GetBinContent(1) 
+                   + h_h_dphi_0_80.GetBinContent(2)
+                   + h_h_dphi_0_80.GetBinContent(7)
+                   + h_h_dphi_0_80.GetBinContent(8)
+                   + h_h_dphi_0_80.GetBinContent(9)
+                   + h_h_dphi_0_80.GetBinContent(16))/6
+
+    hh_v2_fit_0_80 = rt.TF1("hh_v2_fit_0_80", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
+    hh_von_fit_string = "[0]*(1 + 2*([1]*[2]*cos(2*x)))"
+    hh_von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x))"
+    hh_von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()))"
+
+    hh_von_fit_0_80 = rt.TF1("hh_von_fit_0_80", hh_von_fit_string, -2, 6)
+    hh_von_fit_0_80.SetParameter(0, ue_avg_0_80)
+    hh_von_fit_0_80.FixParameter(1, TRIGGER_V2_0_80)
+    hh_von_fit_0_80.FixParameter(2, ASSOCIATED_V2_0_80)
+    hh_von_fit_0_80.SetParLimits(3, 0, 1)
+    hh_von_fit_0_80.SetParameter(3, 0.02)
+    hh_von_fit_0_80.SetParLimits(4, 0, 100)
+    hh_von_fit_0_80.SetParameter(4, 1)
+    hh_von_fit_0_80.SetParLimits(5, 0, 1)
+    hh_von_fit_0_80.SetParameter(5, 0.01)
+    hh_von_fit_0_80.SetParLimits(6, 0, 100)
+    hh_von_fit_0_80.SetParameter(6, 1)
+
+    h_h_dphi_with_fit_0_80 = h_h_dphi_0_80.Clone("h_h_dphi_with_fit_0_80")
+    hh_fit_result_0_80 = h_h_dphi_with_fit_0_80.Fit(hh_von_fit_0_80, "R")
+
+
+    if PT_MODE == 0:
+        hh_v2_fit_0_80.SetParameter(0, v2_baseline_dict["h_h_central_0_80"][0])
+        hh_v2_fit_0_80.SetParError(0, v2_baseline_dict["h_h_central_0_80"][1])
+    elif PT_MODE == 1:
+        hh_v2_fit_0_80.SetParameter(0, v2_baseline_dict["h_h_lowpt_0_80"][0])
+        hh_v2_fit_0_80.SetParError(0, v2_baseline_dict["h_h_lowpt_0_80"][1])
+    elif PT_MODE == 2:
+        hh_v2_fit_0_80.SetParameter(0, v2_baseline_dict["h_h_highpt_0_80"][0])
+        hh_v2_fit_0_80.SetParError(0, v2_baseline_dict["h_h_highpt_0_80"][1])
+    hh_v2_fit_0_80.SetParameter(1, TRIGGER_V2_0_80)
+    hh_v2_fit_0_80.SetParameter(2, ASSOCIATED_V2_0_80)
+
+else:
+    raise NotImplementedError("UE line mode not supported")
+
+
+if USE_FIT:
+    h_h_dphi_0_80_zeroed = h_h_dphi_0_80.Clone("h_h_dphi_0_80_zeroed")
+    h_h_dphi_0_80_zeroed.Add(hh_ue_avg_fit_0_80, -1)
+
+
+    # we are only allowed to call IntegralError (and have it make sense) if the most recent fit corresponds to the TF1 being integrated
+
+    h_h_total_integral_error_0_80 = hh_fit_function_0_80.IntegralError(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
+    h_h_total_integral_0_80 = hh_fit_function_0_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
+    h_h_ue_integral_0_80 = hh_ue_avg_fit_0_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
+    h_h_ue_integral_error_0_80 = hh_ue_avg_error_0_80*(2*rt.TMath.Pi())/BIN_WIDTH
+    h_h_ue_integral_error_0_80_halved = h_h_ue_integral_error_0_80/2
+    h_h_near_integral_error_0_80 = math.sqrt((hh_fit_function_0_80.IntegralError(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH)**2 + h_h_ue_integral_error_0_80_halved**2)
+    h_h_near_integral_0_80 = hh_fit_function_0_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH - hh_ue_avg_fit_0_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH
+    h_h_away_integral_error_0_80 = math.sqrt((hh_fit_function_0_80.IntegralError(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH)**2 + h_h_ue_integral_error_0_80_halved**2)
+    h_h_away_integral_0_80 = hh_fit_function_0_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH - hh_ue_avg_fit_0_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
+
+elif USE_VON:
+
+    h_h_total_integral_error_0_80 = hh_von_fit_0_80.IntegralError(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
+    h_h_total_integral_0_80 = hh_von_fit_0_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
+    h_h_ue_integral_0_80 = hh_v2_fit_0_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
+    h_h_ue_integral_error_0_80 = hh_v2_fit_0_80.GetParError(0)*(2*rt.TMath.Pi())/BIN_WIDTH
+    h_h_ue_integral_error_0_80_halved = h_h_ue_integral_error_0_80/2
+    h_h_near_integral_error_0_80 = math.sqrt((hh_von_fit_0_80.IntegralError(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH)**2 + h_h_ue_integral_error_0_80_halved**2)
+    h_h_near_integral_0_80 = hh_von_fit_0_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH - hh_v2_fit_0_80.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH
+    h_h_away_integral_error_0_80 = math.sqrt((hh_von_fit_0_80.IntegralError(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH)**2 + h_h_ue_integral_error_0_80_halved**2)
+    h_h_away_integral_0_80 = hh_von_fit_0_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH - hh_v2_fit_0_80.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
+    h_h_dphi_0_80_zeroed = h_h_dphi_0_80.Clone("h_h_dphi_0_80_zeroed")
+    h_h_dphi_0_80_zeroed.Add(hh_v2_fit_0_80, -1)
+
+elif USE_V2:
+
+    DPHI_BINS = h_h_dphi_0_80.GetNbinsX()
+    h_h_total_integral_0_80 = 0
+    h_h_near_integral_0_80 = 0
+    h_h_away_integral_0_80 = 0
+    h_h_ue_integral_0_80 = hh_v2_fit_0_80.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
+    h_h_total_integral_error_0_80 = 0
+    h_h_near_integral_error_0_80 = 0
+    h_h_away_integral_error_0_80 = 0
+    h_h_ue_integral_error_0_80 = hh_v2_fit_0_80.GetParError(0)*(2*rt.TMath.Pi())/BIN_WIDTH
+    h_h_ue_integral_error_0_80_halved = h_h_ue_integral_error_0_80/2
+    for bin_num in range(1, DPHI_BINS + 1):
+        h_h_total_integral_0_80 += h_h_dphi_0_80.GetBinContent(bin_num)
+        h_h_total_integral_error_0_80 += (h_h_dphi_0_80.GetBinError(bin_num))**2
+        part = h_h_dphi_0_80.GetBinContent(bin_num) - hh_v2_fit_0_80.Eval(h_h_dphi_0_80.GetBinCenter(bin_num))
+        if part < 0 and USE_AVG_6_NONNEGATIVE:
+            part = 0
+            continue
+        if bin_num < 9:
+            h_h_near_integral_0_80 += part
+            h_h_near_integral_error_0_80 += (h_h_dphi_0_80.GetBinError(bin_num))**2
+        else:
+            h_h_away_integral_0_80 += part
+            h_h_away_integral_error_0_80 += (h_h_dphi_0_80.GetBinError(bin_num))**2
+    h_h_total_integral_error_0_80 = math.sqrt(h_h_total_integral_error_0_80)
+    h_h_near_integral_error_0_80 = math.sqrt(h_h_near_integral_error_0_80)
+    h_h_near_integral_error_0_80 = math.sqrt(h_h_near_integral_error_0_80**2 + h_h_ue_integral_error_0_80_halved**2)
+    h_h_away_integral_error_0_80 = math.sqrt(h_h_away_integral_error_0_80)
+    h_h_away_integral_error_0_80 = math.sqrt(h_h_away_integral_error_0_80**2 + h_h_ue_integral_error_0_80_halved**2)
+
+else: 
+
+    h_h_dphi_0_80_zeroed = h_h_dphi_0_80.Clone("h_h_dphi_0_80_zeroed")
+    h_h_dphi_0_80_zeroed.Add(hh_ue_line_0_80, -1)
+
+    DPHI_BINS = h_h_dphi_0_80.GetNbinsX()
+    h_h_total_integral_0_80 = 0
+    h_h_near_integral_0_80 = 0
+    h_h_away_integral_0_80 = 0
+    h_h_ue_integral_0_80 = hh_ue_avg_0_80*DPHI_BINS
+    h_h_total_integral_error_0_80 = 0
+    h_h_near_integral_error_0_80 = 0
+    h_h_away_integral_error_0_80 = 0
+    h_h_ue_integral_error_0_80 = hh_ue_avg_error_0_80*(2*rt.TMath.Pi())/BIN_WIDTH
+    h_h_ue_integral_error_0_80_halved = h_h_ue_integral_error_0_80/2
+    for bin_num in range(1, DPHI_BINS + 1):
+        h_h_total_integral_0_80 += h_h_dphi_0_80.GetBinContent(bin_num)
+        h_h_total_integral_error_0_80 += h_h_dphi_0_80.GetBinError(bin_num)**2
+        part = h_h_dphi_0_80.GetBinContent(bin_num) - hh_ue_avg_0_80
+        if part < 0 and USE_AVG_6_NONNEGATIVE:
+            part = 0
+            continue
+        if bin_num < 9:
+            h_h_near_integral_0_80 += part
+            h_h_near_integral_error_0_80 += h_h_dphi_0_80.GetBinError(bin_num)**2
+        else:
+            h_h_away_integral_0_80 += part
+            h_h_away_integral_error_0_80 += h_h_dphi_0_80.GetBinError(bin_num)**2
+    h_h_total_integral_error_0_80 = math.sqrt(h_h_total_integral_error_0_80)
+    h_h_near_integral_error_0_80 = math.sqrt(h_h_near_integral_error_0_80)
+    h_h_near_integral_error_0_80 = math.sqrt(h_h_near_integral_error_0_80**2 + h_h_ue_integral_error_0_80_halved**2)
+    h_h_away_integral_error_0_80 = math.sqrt(h_h_away_integral_error_0_80)
+    h_h_away_integral_error_0_80 = math.sqrt(h_h_away_integral_error_0_80**2 + h_h_ue_integral_error_0_80_halved**2)
+
+
+output_file.cd()
+h_lambda_2d_subtracted_0_80.Write()
+
+h_lambda_dphi_subtracted_0_80.Write()
+h_h_dphi_0_80.Write()
+
+
+
+if USE_FIT:
+    fit_function_0_80.Write()
+    ue_avg_fit_0_80.Write()
+    hh_fit_function_0_80.Write()
+    hh_ue_avg_fit_0_80.Write()
+    h_lambda_dphi_subtracted_with_fit_0_80.Write()
+    h_h_dphi_with_fit_0_80.Write()
+    h_lambda_dphi_subtracted_0_80_zeroed.Write()
+    h_h_dphi_0_80_zeroed.Write()
+elif USE_V2:
+    v2_fit_0_80.Write()
+    hh_v2_fit_0_80.Write()
+elif USE_VON:
+    von_fit_0_80.Write()
+    hh_von_fit_0_80.Write()
+    v2_fit_0_80.Write()
+    hh_v2_fit_0_80.Write()
+    h_lambda_dphi_subtracted_with_fit_0_80.Write()
+    h_h_dphi_with_fit_0_80.Write()
+    h_lambda_dphi_subtracted_0_80_zeroed.Write()
+    h_h_dphi_0_80_zeroed.Write()
+else:
+    ue_upper_line_0_80.Write()
+    ue_line_0_80.Write()
+    ue_lower_line_0_80.Write()
+    zero_upper_line_0_80.Write()
+    zero_line_0_80.Write()
+    zero_lower_line_0_80.Write()
+
+    hh_ue_upper_line_0_80.Write()
+    hh_ue_line_0_80.Write()
+    hh_ue_lower_line_0_80.Write()
+    hh_zero_upper_line_0_80.Write()
+    hh_zero_line_0_80.Write()
+    hh_zero_lower_line_0_80.Write()
+
+    h_lambda_dphi_subtracted_0_80_zeroed.Write()
+    h_h_dphi_0_80_zeroed.Write()
+
+
+near_ratio_0_80 = h_lambda_near_integral_0_80/h_h_near_integral_0_80
+away_ratio_0_80 = h_lambda_away_integral_0_80/h_h_away_integral_0_80
+ue_ratio_0_80 = h_lambda_ue_integral_0_80/h_h_ue_integral_0_80
+total_ratio_0_80 = h_lambda_total_integral_0_80/h_h_total_integral_0_80
+
+near_ratio_error_0_80 = near_ratio_0_80*math.sqrt((h_lambda_near_integral_error_0_80/h_lambda_near_integral_0_80)**2
+                                                 + (h_h_near_integral_error_0_80/h_h_near_integral_0_80)**2)
+away_ratio_error_0_80 = away_ratio_0_80*math.sqrt((h_lambda_away_integral_error_0_80/h_lambda_away_integral_0_80)**2
+                                                 + (h_h_away_integral_error_0_80/h_h_away_integral_0_80)**2)
+ue_ratio_error_0_80 = ue_ratio_0_80*math.sqrt((h_lambda_ue_integral_error_0_80/h_lambda_ue_integral_0_80)**2
+                                                 + (h_h_ue_integral_error_0_80/h_h_ue_integral_0_80)**2)
+total_ratio_error_0_80 = total_ratio_0_80*math.sqrt((h_lambda_total_integral_error_0_80/h_lambda_total_integral_0_80)**2
+                                                 + (h_h_total_integral_error_0_80/h_h_total_integral_0_80)**2)
+
+
 
 
 ############################################################################################################
@@ -2870,60 +3800,94 @@ total_ratio_error_50_80 = total_ratio_50_80*math.sqrt((h_lambda_total_integral_e
 mult_list = arr.array('d', [35, 65, 90])
 mult_error_list = arr.array('d', [15, 15, 10])
 
+mult_list_minbias = arr.array('d', [40])
+mult_error_list_minbias = arr.array('d', [40])
+
 
 h_lambda_near_list = arr.array('d', [h_lambda_near_integral_50_80, h_lambda_near_integral_20_50, h_lambda_near_integral_0_20])
 h_lambda_near_error_list = arr.array('d', [h_lambda_near_integral_error_50_80, h_lambda_near_integral_error_20_50, h_lambda_near_integral_error_0_20])
-
 h_lambda_away_list = arr.array('d', [h_lambda_away_integral_50_80, h_lambda_away_integral_20_50, h_lambda_away_integral_0_20])
 h_lambda_away_error_list = arr.array('d', [h_lambda_away_integral_error_50_80, h_lambda_away_integral_error_20_50, h_lambda_away_integral_error_0_20])
-
 h_lambda_ue_list = arr.array('d', [h_lambda_ue_integral_50_80, h_lambda_ue_integral_20_50, h_lambda_ue_integral_0_20])
 h_lambda_ue_error_list = arr.array('d', [h_lambda_ue_integral_error_50_80, h_lambda_ue_integral_error_20_50, h_lambda_ue_integral_error_0_20])
-
 h_lambda_total_list = arr.array('d', [h_lambda_total_integral_50_80, h_lambda_total_integral_20_50, h_lambda_total_integral_0_20])
 h_lambda_total_error_list = arr.array('d', [h_lambda_total_integral_error_50_80, h_lambda_total_integral_error_20_50, h_lambda_total_integral_error_0_20])
 
 h_h_near_list = arr.array('d', [h_h_near_integral_50_80, h_h_near_integral_20_50, h_h_near_integral_0_20])
 h_h_near_error_list = arr.array('d', [h_h_near_integral_error_50_80, h_h_near_integral_error_20_50, h_h_near_integral_error_0_20])
-
 h_h_away_list = arr.array('d', [h_h_away_integral_50_80, h_h_away_integral_20_50, h_h_away_integral_0_20])
 h_h_away_error_list = arr.array('d', [h_h_away_integral_error_50_80, h_h_away_integral_error_20_50, h_h_away_integral_error_0_20])
-
 h_h_ue_list = arr.array('d', [h_h_ue_integral_50_80, h_h_ue_integral_20_50, h_h_ue_integral_0_20])
 h_h_ue_error_list = arr.array('d', [h_h_ue_integral_error_50_80, h_h_ue_integral_error_20_50, h_h_ue_integral_error_0_20])
-
 h_h_total_list = arr.array('d', [h_h_total_integral_50_80, h_h_total_integral_20_50, h_h_total_integral_0_20])
 h_h_total_error_list = arr.array('d', [h_h_total_integral_error_50_80, h_h_total_integral_error_20_50, h_h_total_integral_error_0_20])
+
+h_lambda_near_list_minbias = arr.array('d', [h_lambda_near_integral_0_80])
+h_lambda_near_error_list_minbias = arr.array('d', [h_lambda_near_integral_error_0_80])
+h_lambda_away_list_minbias = arr.array('d', [h_lambda_away_integral_0_80])
+h_lambda_away_error_list_minbias = arr.array('d', [h_lambda_away_integral_error_0_80])
+h_lambda_ue_list_minbias = arr.array('d', [h_lambda_ue_integral_0_80])
+h_lambda_ue_error_list_minbias = arr.array('d', [h_lambda_ue_integral_error_0_80])
+h_lambda_total_list_minbias = arr.array('d', [h_lambda_total_integral_0_80])
+h_lambda_total_error_list_minbias = arr.array('d', [h_lambda_total_integral_error_0_80])
+
+h_h_near_list_minbias = arr.array('d', [h_h_near_integral_0_80])
+h_h_near_error_list_minbias = arr.array('d', [h_h_near_integral_error_0_80])
+h_h_away_list_minbias = arr.array('d', [h_h_away_integral_0_80])
+h_h_away_error_list_minbias = arr.array('d', [h_h_away_integral_error_0_80])
+h_h_ue_list_minbias = arr.array('d', [h_h_ue_integral_0_80])
+h_h_ue_error_list_minbias = arr.array('d', [h_h_ue_integral_error_0_80])
+h_h_total_list_minbias = arr.array('d', [h_h_total_integral_0_80])
+h_h_total_error_list_minbias = arr.array('d', [h_h_total_integral_error_0_80])
 
 
 near_ratio_list = arr.array('d', [near_ratio_50_80, near_ratio_20_50, near_ratio_0_20])
 near_ratio_error_list = arr.array('d', [near_ratio_error_0_20, near_ratio_error_20_50, near_ratio_error_50_80])
-
 away_ratio_list = arr.array('d', [away_ratio_50_80, away_ratio_20_50, away_ratio_0_20])
 away_ratio_error_list = arr.array('d', [away_ratio_error_50_80, away_ratio_error_20_50, away_ratio_error_0_20])
-
 ue_ratio_list = arr.array('d', [ue_ratio_50_80, ue_ratio_20_50, ue_ratio_0_20])
 ue_ratio_error_list = arr.array('d', [ue_ratio_error_50_80, ue_ratio_error_20_50, ue_ratio_error_0_20])
-
 total_ratio_list = arr.array('d', [total_ratio_50_80, total_ratio_20_50, total_ratio_0_20])
 total_ratio_error_list = arr.array('d', [total_ratio_error_50_80, total_ratio_error_20_50, total_ratio_error_0_20])
+
+near_ratio_list_minbias = arr.array('d', [near_ratio_0_80])
+near_ratio_error_list_minbias = arr.array('d', [near_ratio_error_0_80])
+away_ratio_list_minbias = arr.array('d', [away_ratio_0_80])
+away_ratio_error_list_minbias = arr.array('d', [away_ratio_error_0_80])
+ue_ratio_list_minbias = arr.array('d', [ue_ratio_0_80])
+ue_ratio_error_list_minbias = arr.array('d', [ue_ratio_error_0_80])
+total_ratio_list_minbias = arr.array('d', [total_ratio_0_80])
+total_ratio_error_list_minbias = arr.array('d', [total_ratio_error_0_80])
 
 
 h_lambda_near_graph = rt.TGraphErrors(3, mult_list, h_lambda_near_list, mult_error_list, h_lambda_near_error_list)
 h_lambda_away_graph = rt.TGraphErrors(3, mult_list, h_lambda_away_list, mult_error_list, h_lambda_away_error_list)
 h_lambda_ue_graph = rt.TGraphErrors(3, mult_list, h_lambda_ue_list, mult_error_list, h_lambda_ue_error_list)
 h_lambda_total_graph = rt.TGraphErrors(3, mult_list, h_lambda_total_list, mult_error_list, h_lambda_total_error_list)
-
 h_h_near_graph = rt.TGraphErrors(3, mult_list, h_h_near_list, mult_error_list, h_h_near_error_list)
 h_h_away_graph = rt.TGraphErrors(3, mult_list, h_h_away_list, mult_error_list, h_h_away_error_list)
 h_h_ue_graph = rt.TGraphErrors(3, mult_list, h_h_ue_list, mult_error_list, h_h_ue_error_list)
 h_h_total_graph = rt.TGraphErrors(3, mult_list, h_h_total_list, mult_error_list, h_h_total_error_list)
+
+h_lambda_near_graph_minbias = rt.TGraphErrors(1, mult_list_minbias, h_lambda_near_list_minbias, mult_error_list_minbias, h_lambda_near_error_list_minbias)
+h_lambda_away_graph_minbias = rt.TGraphErrors(1, mult_list_minbias, h_lambda_away_list_minbias, mult_error_list_minbias, h_lambda_away_error_list_minbias)
+h_lambda_ue_graph_minbias = rt.TGraphErrors(1, mult_list_minbias, h_lambda_ue_list_minbias, mult_error_list_minbias, h_lambda_ue_error_list_minbias)
+h_lambda_total_graph_minbias = rt.TGraphErrors(1, mult_list_minbias, h_lambda_total_list_minbias, mult_error_list_minbias, h_lambda_total_error_list_minbias)
+h_h_near_graph_minbias = rt.TGraphErrors(1, mult_list_minbias, h_h_near_list_minbias, mult_error_list_minbias, h_h_near_error_list_minbias)
+h_h_away_graph_minbias = rt.TGraphErrors(1, mult_list_minbias, h_h_away_list_minbias, mult_error_list_minbias, h_h_away_error_list_minbias)
+h_h_ue_graph_minbias = rt.TGraphErrors(1, mult_list_minbias, h_h_ue_list_minbias, mult_error_list_minbias, h_h_ue_error_list_minbias)
+h_h_total_graph_minbias = rt.TGraphErrors(1, mult_list_minbias, h_h_total_list_minbias, mult_error_list_minbias, h_h_total_error_list_minbias)
+
 
 near_ratio_graph = rt.TGraphErrors(3, mult_list, near_ratio_list, mult_error_list, near_ratio_error_list)
 away_ratio_graph = rt.TGraphErrors(3, mult_list, away_ratio_list, mult_error_list, away_ratio_error_list)
 ue_ratio_graph = rt.TGraphErrors(3, mult_list, ue_ratio_list, mult_error_list, ue_ratio_error_list)
 total_ratio_graph = rt.TGraphErrors(3, mult_list, total_ratio_list, mult_error_list, total_ratio_error_list)
 
+near_ratio_graph_minbias = rt.TGraphErrors(1, mult_list_minbias, near_ratio_list_minbias, mult_error_list_minbias, near_ratio_error_list_minbias)
+away_ratio_graph_minbias = rt.TGraphErrors(1, mult_list_minbias, away_ratio_list_minbias, mult_error_list_minbias, away_ratio_error_list_minbias)
+ue_ratio_graph_minbias = rt.TGraphErrors(1, mult_list_minbias, ue_ratio_list_minbias, mult_error_list_minbias, ue_ratio_error_list_minbias)
+total_ratio_graph_minbias = rt.TGraphErrors(1, mult_list_minbias, total_ratio_list_minbias, mult_error_list_minbias, total_ratio_error_list_minbias)
 
 mult_bin_widths = arr.array('d', [0.0, 20.0, 50.0, 80.0, 100.0])
 near_ratio_hist = rt.TH1D("near_ratio_hist", "", 4, mult_bin_widths)
@@ -2945,3 +3909,18 @@ away_ratio_graph.Write("away_ratio_graph")
 ue_ratio_graph.Write("ue_ratio_graph")
 total_ratio_graph.Write("total_ratio_graph")
 near_ratio_hist.Write("near_ratio_hist")
+
+h_lambda_near_graph_minbias.Write("h_lambda_near_graph_minbias")
+h_lambda_away_graph_minbias.Write("h_lambda_away_graph_minbias")
+h_lambda_ue_graph_minbias.Write("h_lambda_ue_graph_minbias")
+h_lambda_total_graph_minbias.Write("h_lambda_total_graph_minbias")
+h_h_near_graph_minbias.Write("h_h_near_graph_minbias")
+h_h_away_graph_minbias.Write("h_h_away_graph_minbias")
+h_h_ue_graph_minbias.Write("h_h_ue_graph_minbias")
+h_h_total_graph_minbias.Write("h_h_total_graph_minbias")
+near_ratio_graph_minbias.Write("near_ratio_graph_minbias")
+away_ratio_graph_minbias.Write("away_ratio_graph_minbias")
+ue_ratio_graph_minbias.Write("ue_ratio_graph_minbias")
+total_ratio_graph_minbias.Write("total_ratio_graph_minbias")
+
+output_file.Close()

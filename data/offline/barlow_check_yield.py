@@ -13,9 +13,8 @@ c.SetLeftMargin(0.10)
 c.SetRightMargin(0.05)
 c.SetTopMargin(0.05)
 
-colors = [rt.kGreen - 2, rt.kRed, rt.kBlue, rt.kOrange, rt.kMagenta, rt.kCyan, rt.kYellow, rt.kGray, rt.kViolet, rt.kTeal, rt.kSpring, rt.kAzure, rt.kPink, rt.kCopper, rt.kOrange+7, rt.kSpring+9, rt.kTeal-7, rt.kAzure+2, rt.kPink+10, rt.kCopper+3, rt.kOrange-3, rt.kSpring-5, rt.kTeal+3, rt.kAzure-6, rt.kPink-7, rt.kCopper-9]
+colors = [rt.kGreen + 2, rt.kRed + 2, rt.kBlue + 2,  rt.kMagenta + 2,  rt.kYellow + 2,  rt.kViolet + 2, rt.kOrange + 2]
 
-pt_mode = 0 # 0 = central, 1 = low, 2 = high 
 
 def do_barlow(yield_dict, name):
 
@@ -38,6 +37,7 @@ def do_barlow(yield_dict, name):
             base_hist.SetLineStyle(0)
             base_hist.SetLineWidth(0)
             base_hist.Draw()
+            continue
         else:
             cur_yield = yield_dict[key]
             barlow_hist = rt.TH1D("barlow_"+key,"",3, 0, 3).Clone("barlow_hist_" + key)
@@ -71,124 +71,125 @@ def do_barlow(yield_dict, name):
 
 
 
-if pt_mode == 0: # CENTRAL 2 - 4 BIN
+for pt_mode in range(3):
+    if pt_mode == 0: # CENTRAL 2 - 4 BIN
 
-    yield_central_file = rt.TFile.Open("output/central_value/v0_avg6_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
-    yield_zyam_file = rt.TFile.Open("output/yield_variation/v0_zyam_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
-    yield_avg4_file = rt.TFile.Open("output/yield_variation/v0_avg4_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
-    yield_avg6nonneg_file = rt.TFile.Open("output/yield_variation/v0_avg6nonneg_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
-    yield_gaus_file = rt.TFile.Open("output/yield_variation/v0_fullfit_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
-    yield_v2_file = rt.TFile.Open("output/yield_variation/v0_v2_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
-    yield_von_file = rt.TFile.Open("output/yield_variation/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
-
-
-elif pt_mode == 1: # LOW 1.5 - 2.5 BIN
-
-    yield_central_file = rt.TFile.Open("output/central_value/v0_avg6_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal_lowpt.root")
-    yield_zyam_file = rt.TFile.Open("output/yield_variation/v0_zyam_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal_lowpt.root")
-    yield_avg4_file = rt.TFile.Open("output/yield_variation/v0_avg4_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal_lowpt.root")
-    yield_avg6nonneg_file = rt.TFile.Open("output/yield_variation/v0_avg6nonneg_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal_lowpt.root")
-    yield_gaus_file = rt.TFile.Open("output/yield_variation/v0_fullfit_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal_lowpt.root")
-    yield_v2_file = rt.TFile.Open("output/yield_variation/v0_v2_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal_lowpt.root")
-    yield_von_file = rt.TFile.Open("output/yield_variation/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal_lowpt.root")
+        yield_central_file = rt.TFile.Open("output/central_value/v0_avg6_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
+        yield_zyam_file = rt.TFile.Open("output/yield_variation/v0_zyam_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
+        yield_avg4_file = rt.TFile.Open("output/yield_variation/v0_avg4_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
+        yield_avg6nonneg_file = rt.TFile.Open("output/yield_variation/v0_avg6nonneg_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
+        yield_gaus_file = rt.TFile.Open("output/yield_variation/v0_fullfit_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
+        yield_v2_file = rt.TFile.Open("output/yield_variation/v0_v2_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
+        yield_von_file = rt.TFile.Open("output/yield_variation/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
 
 
-elif pt_mode == 2: # HIGH 2.5 - 4 BIN
+    elif pt_mode == 1: # LOW 1.5 - 2.5 BIN
 
-    yield_central_file = rt.TFile.Open("output/central_value/v0_avg6_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal_highpt.root")
-    yield_zyam_file = rt.TFile.Open("output/yield_variation/v0_zyam_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal_highpt.root")
-    yield_avg4_file = rt.TFile.Open("output/yield_variation/v0_avg4_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal_highpt.root")
-    yield_avg6nonneg_file = rt.TFile.Open("output/yield_variation/v0_avg6nonneg_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal_highpt.root")
-    yield_gaus_file = rt.TFile.Open("output/yield_variation/v0_fullfit_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal_highpt.root")
-    yield_v2_file = rt.TFile.Open("output/yield_variation/v0_v2_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal_highpt.root")
-    yield_von_file = rt.TFile.Open("output/yield_variation/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal_highpt.root")
-
-signal_file_dict = {
-    "central value": yield_central_file,
-    "zyam": yield_zyam_file,
-    "avg4": yield_avg4_file,
-    "avg6 (non-negative)": yield_avg6nonneg_file,
-    "v2": yield_v2_file,
-    "von": yield_von_file,
-    "gaus": yield_gaus_file
-}
+        yield_central_file = rt.TFile.Open("output/central_value/v0_avg6_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_15_25_delta_eta_12_normal_lowpt.root")
+        yield_zyam_file = rt.TFile.Open("output/yield_variation/v0_zyam_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_15_25_delta_eta_12_normal_lowpt.root")
+        yield_avg4_file = rt.TFile.Open("output/yield_variation/v0_avg4_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_15_25_delta_eta_12_normal_lowpt.root")
+        yield_avg6nonneg_file = rt.TFile.Open("output/yield_variation/v0_avg6nonneg_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_15_25_delta_eta_12_normal_lowpt.root")
+        yield_gaus_file = rt.TFile.Open("output/yield_variation/v0_fullfit_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_15_25_delta_eta_12_normal_lowpt.root")
+        yield_v2_file = rt.TFile.Open("output/yield_variation/v0_v2_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_15_25_delta_eta_12_normal_lowpt.root")
+        yield_von_file = rt.TFile.Open("output/yield_variation/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_15_25_delta_eta_12_normal_lowpt.root")
 
 
-h_lambda_yield_dict_0_20 = {}
-h_lambda_yield_dict_20_50 = {}
-h_lambda_yield_dict_50_80 = {}
+    elif pt_mode == 2: # HIGH 2.5 - 4 BIN
 
-h_h_yield_dict_0_20 = {}
-h_h_yield_dict_20_50 = {}
-h_h_yield_dict_50_80 = {}
+        yield_central_file = rt.TFile.Open("output/central_value/v0_avg6_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_25_40_delta_eta_12_normal_highpt.root")
+        yield_zyam_file = rt.TFile.Open("output/yield_variation/v0_zyam_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_25_40_delta_eta_12_normal_highpt.root")
+        yield_avg4_file = rt.TFile.Open("output/yield_variation/v0_avg4_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_25_40_delta_eta_12_normal_highpt.root")
+        yield_avg6nonneg_file = rt.TFile.Open("output/yield_variation/v0_avg6nonneg_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_25_40_delta_eta_12_normal_highpt.root")
+        yield_gaus_file = rt.TFile.Open("output/yield_variation/v0_fullfit_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_25_40_delta_eta_12_normal_highpt.root")
+        yield_v2_file = rt.TFile.Open("output/yield_variation/v0_v2_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_25_40_delta_eta_12_normal_highpt.root")
+        yield_von_file = rt.TFile.Open("output/yield_variation/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_25_40_delta_eta_12_normal_highpt.root")
 
-for key, file in signal_file_dict.items():
-    # total is obviously not considered, as it is mostly the same for all variations
-    h_lambda_near_graph = file.Get("h_lambda_near_graph")
-    h_lambda_away_graph = file.Get("h_lambda_away_graph")
-    h_lambda_ue_graph = file.Get("h_lambda_ue_graph")
-
-    h_h_near_graph = file.Get("h_h_near_graph")
-    h_h_away_graph = file.Get("h_h_away_graph")
-    h_h_ue_graph = file.Get("h_h_ue_graph")
-
-    # ARRAY INDEXING: [0] = near, [1] = away, [2] = ue
-    # SUBARRAY INDEXING: [0] = yield, [1] = error
-    h_lambda_yield_dict_0_20[key] = [[h_lambda_near_graph.GetY()[2], h_lambda_near_graph.GetEY()[2]], [h_lambda_away_graph.GetY()[2], h_lambda_away_graph.GetEY()[2]], [h_lambda_ue_graph.GetY()[2], h_lambda_ue_graph.GetEY()[2]]]
-    h_lambda_yield_dict_20_50[key] = [[h_lambda_near_graph.GetY()[1], h_lambda_near_graph.GetEY()[1]], [h_lambda_away_graph.GetY()[1], h_lambda_away_graph.GetEY()[1]], [h_lambda_ue_graph.GetY()[1], h_lambda_ue_graph.GetEY()[1]]]
-    h_lambda_yield_dict_50_80[key] = [[h_lambda_near_graph.GetY()[0], h_lambda_near_graph.GetEY()[0]], [h_lambda_away_graph.GetY()[0], h_lambda_away_graph.GetEY()[0]], [h_lambda_ue_graph.GetY()[0], h_lambda_ue_graph.GetEY()[0]]]
-
-    h_h_yield_dict_0_20[key] = [[h_h_near_graph.GetY()[2], h_h_near_graph.GetEY()[2]], [h_h_away_graph.GetY()[2], h_h_away_graph.GetEY()[2]], [h_h_ue_graph.GetY()[2], h_h_ue_graph.GetEY()[2]]]
-    h_h_yield_dict_20_50[key] = [[h_h_near_graph.GetY()[1], h_h_near_graph.GetEY()[1]], [h_h_away_graph.GetY()[1], h_h_away_graph.GetEY()[1]], [h_h_ue_graph.GetY()[1], h_h_ue_graph.GetEY()[1]]]
-    h_h_yield_dict_50_80[key] = [[h_h_near_graph.GetY()[0], h_h_near_graph.GetEY()[0]], [h_h_away_graph.GetY()[0], h_h_away_graph.GetEY()[0]], [h_h_ue_graph.GetY()[0], h_h_ue_graph.GetEY()[0]]]
+    signal_file_dict = {
+        "central value": yield_central_file,
+        "zyam": yield_zyam_file,
+        "avg4": yield_avg4_file,
+        "avg6 (non-negative)": yield_avg6nonneg_file,
+        "v2": yield_v2_file,
+        "von": yield_von_file,
+        "gaus": yield_gaus_file
+    }
 
 
-if pt_mode == 0:
-    do_barlow(h_lambda_yield_dict_0_20, "figures/h_lambda_yield_barlow_0_20.pdf")
-    do_barlow(h_lambda_yield_dict_20_50, "figures/h_lambda_yield_barlow_20_50.pdf")
-    do_barlow(h_lambda_yield_dict_50_80, "figures/h_lambda_yield_barlow_50_80.pdf")
-elif pt_mode == 1:
-    do_barlow(h_lambda_yield_dict_0_20, "figures/h_lambda_yield_barlow_0_20_lowpt.pdf")
-    do_barlow(h_lambda_yield_dict_20_50, "figures/h_lambda_yield_barlow_20_50_lowpt.pdf")
-    do_barlow(h_lambda_yield_dict_50_80, "figures/h_lambda_yield_barlow_50_80_lowpt.pdf")
-elif pt_mode == 2:
-    do_barlow(h_lambda_yield_dict_0_20, "figures/h_lambda_yield_barlow_0_20_highpt.pdf")
-    do_barlow(h_lambda_yield_dict_20_50, "figures/h_lambda_yield_barlow_20_50_highpt.pdf")
-    do_barlow(h_lambda_yield_dict_50_80, "figures/h_lambda_yield_barlow_50_80_highpt.pdf")
-if pt_mode == 0:
-    do_barlow(h_lambda_yield_dict_0_20, "figures/h_lambda_yield_barlow_0_20.pdf")
-    do_barlow(h_lambda_yield_dict_20_50, "figures/h_lambda_yield_barlow_20_50.pdf")
-    do_barlow(h_lambda_yield_dict_50_80, "figures/h_lambda_yield_barlow_50_80.pdf")
-elif pt_mode == 1:
-    do_barlow(h_lambda_yield_dict_0_20, "figures/h_lambda_yield_barlow_0_20_lowpt.pdf")
-    do_barlow(h_lambda_yield_dict_20_50, "figures/h_lambda_yield_barlow_20_50_lowpt.pdf")
-    do_barlow(h_lambda_yield_dict_50_80, "figures/h_lambda_yield_barlow_50_80_lowpt.pdf")
-elif pt_mode == 2:
-    do_barlow(h_lambda_yield_dict_0_20, "figures/h_lambda_yield_barlow_0_20_highpt.pdf")
-    do_barlow(h_lambda_yield_dict_20_50, "figures/h_lambda_yield_barlow_20_50_highpt.pdf")
-    do_barlow(h_lambda_yield_dict_50_80, "figures/h_lambda_yield_barlow_50_80_highpt.pdf")
+    h_lambda_yield_dict_0_20 = {}
+    h_lambda_yield_dict_20_50 = {}
+    h_lambda_yield_dict_50_80 = {}
 
-if pt_mode == 0:
-    do_barlow(h_h_yield_dict_0_20, "figures/h_h_yield_barlow_0_20.pdf")
-    do_barlow(h_h_yield_dict_20_50, "figures/h_h_yield_barlow_20_50.pdf")
-    do_barlow(h_h_yield_dict_50_80, "figures/h_h_yield_barlow_50_80.pdf")
-elif pt_mode == 1:
-    do_barlow(h_h_yield_dict_0_20, "figures/h_h_yield_barlow_0_20_lowpt.pdf")
-    do_barlow(h_h_yield_dict_20_50, "figures/h_h_yield_barlow_20_50_lowpt.pdf")
-    do_barlow(h_h_yield_dict_50_80, "figures/h_h_yield_barlow_50_80_lowpt.pdf")
-elif pt_mode == 2:
-    do_barlow(h_h_yield_dict_0_20, "figures/h_h_yield_barlow_0_20_highpt.pdf")
-    do_barlow(h_h_yield_dict_20_50, "figures/h_h_yield_barlow_20_50_highpt.pdf")
-    do_barlow(h_h_yield_dict_50_80, "figures/h_h_yield_barlow_50_80_highpt.pdf")
-if pt_mode == 0:
-    do_barlow(h_h_yield_dict_0_20, "figures/h_h_yield_barlow_0_20.pdf")
-    do_barlow(h_h_yield_dict_20_50, "figures/h_h_yield_barlow_20_50.pdf")
-    do_barlow(h_h_yield_dict_50_80, "figures/h_h_yield_barlow_50_80.pdf")
-elif pt_mode == 1:
-    do_barlow(h_h_yield_dict_0_20, "figures/h_h_yield_barlow_0_20_lowpt.pdf")
-    do_barlow(h_h_yield_dict_20_50, "figures/h_h_yield_barlow_20_50_lowpt.pdf")
-    do_barlow(h_h_yield_dict_50_80, "figures/h_h_yield_barlow_50_80_lowpt.pdf")
-elif pt_mode == 2:
-    do_barlow(h_h_yield_dict_0_20, "figures/h_h_yield_barlow_0_20_highpt.pdf")
-    do_barlow(h_h_yield_dict_20_50, "figures/h_h_yield_barlow_20_50_highpt.pdf")
-    do_barlow(h_h_yield_dict_50_80, "figures/h_h_yield_barlow_50_80_highpt.pdf")
+    h_h_yield_dict_0_20 = {}
+    h_h_yield_dict_20_50 = {}
+    h_h_yield_dict_50_80 = {}
+
+    for key, file in signal_file_dict.items():
+        # total is obviously not considered, as it is mostly the same for all variations
+        h_lambda_near_graph = file.Get("h_lambda_near_graph")
+        h_lambda_away_graph = file.Get("h_lambda_away_graph")
+        h_lambda_ue_graph = file.Get("h_lambda_ue_graph")
+
+        h_h_near_graph = file.Get("h_h_near_graph")
+        h_h_away_graph = file.Get("h_h_away_graph")
+        h_h_ue_graph = file.Get("h_h_ue_graph")
+
+        # ARRAY INDEXING: [0] = near, [1] = away, [2] = ue
+        # SUBARRAY INDEXING: [0] = yield, [1] = error
+        h_lambda_yield_dict_0_20[key] = [[h_lambda_near_graph.GetY()[2], h_lambda_near_graph.GetEY()[2]], [h_lambda_away_graph.GetY()[2], h_lambda_away_graph.GetEY()[2]], [h_lambda_ue_graph.GetY()[2], h_lambda_ue_graph.GetEY()[2]]]
+        h_lambda_yield_dict_20_50[key] = [[h_lambda_near_graph.GetY()[1], h_lambda_near_graph.GetEY()[1]], [h_lambda_away_graph.GetY()[1], h_lambda_away_graph.GetEY()[1]], [h_lambda_ue_graph.GetY()[1], h_lambda_ue_graph.GetEY()[1]]]
+        h_lambda_yield_dict_50_80[key] = [[h_lambda_near_graph.GetY()[0], h_lambda_near_graph.GetEY()[0]], [h_lambda_away_graph.GetY()[0], h_lambda_away_graph.GetEY()[0]], [h_lambda_ue_graph.GetY()[0], h_lambda_ue_graph.GetEY()[0]]]
+
+        h_h_yield_dict_0_20[key] = [[h_h_near_graph.GetY()[2], h_h_near_graph.GetEY()[2]], [h_h_away_graph.GetY()[2], h_h_away_graph.GetEY()[2]], [h_h_ue_graph.GetY()[2], h_h_ue_graph.GetEY()[2]]]
+        h_h_yield_dict_20_50[key] = [[h_h_near_graph.GetY()[1], h_h_near_graph.GetEY()[1]], [h_h_away_graph.GetY()[1], h_h_away_graph.GetEY()[1]], [h_h_ue_graph.GetY()[1], h_h_ue_graph.GetEY()[1]]]
+        h_h_yield_dict_50_80[key] = [[h_h_near_graph.GetY()[0], h_h_near_graph.GetEY()[0]], [h_h_away_graph.GetY()[0], h_h_away_graph.GetEY()[0]], [h_h_ue_graph.GetY()[0], h_h_ue_graph.GetEY()[0]]]
+
+
+    if pt_mode == 0:
+        do_barlow(h_lambda_yield_dict_0_20, "figures/h_lambda_yield_barlow_0_20.pdf")
+        do_barlow(h_lambda_yield_dict_20_50, "figures/h_lambda_yield_barlow_20_50.pdf")
+        do_barlow(h_lambda_yield_dict_50_80, "figures/h_lambda_yield_barlow_50_80.pdf")
+    elif pt_mode == 1:
+        do_barlow(h_lambda_yield_dict_0_20, "figures/h_lambda_yield_barlow_0_20_lowpt.pdf")
+        do_barlow(h_lambda_yield_dict_20_50, "figures/h_lambda_yield_barlow_20_50_lowpt.pdf")
+        do_barlow(h_lambda_yield_dict_50_80, "figures/h_lambda_yield_barlow_50_80_lowpt.pdf")
+    elif pt_mode == 2:
+        do_barlow(h_lambda_yield_dict_0_20, "figures/h_lambda_yield_barlow_0_20_highpt.pdf")
+        do_barlow(h_lambda_yield_dict_20_50, "figures/h_lambda_yield_barlow_20_50_highpt.pdf")
+        do_barlow(h_lambda_yield_dict_50_80, "figures/h_lambda_yield_barlow_50_80_highpt.pdf")
+    if pt_mode == 0:
+        do_barlow(h_lambda_yield_dict_0_20, "figures/h_lambda_yield_barlow_0_20.pdf")
+        do_barlow(h_lambda_yield_dict_20_50, "figures/h_lambda_yield_barlow_20_50.pdf")
+        do_barlow(h_lambda_yield_dict_50_80, "figures/h_lambda_yield_barlow_50_80.pdf")
+    elif pt_mode == 1:
+        do_barlow(h_lambda_yield_dict_0_20, "figures/h_lambda_yield_barlow_0_20_lowpt.pdf")
+        do_barlow(h_lambda_yield_dict_20_50, "figures/h_lambda_yield_barlow_20_50_lowpt.pdf")
+        do_barlow(h_lambda_yield_dict_50_80, "figures/h_lambda_yield_barlow_50_80_lowpt.pdf")
+    elif pt_mode == 2:
+        do_barlow(h_lambda_yield_dict_0_20, "figures/h_lambda_yield_barlow_0_20_highpt.pdf")
+        do_barlow(h_lambda_yield_dict_20_50, "figures/h_lambda_yield_barlow_20_50_highpt.pdf")
+        do_barlow(h_lambda_yield_dict_50_80, "figures/h_lambda_yield_barlow_50_80_highpt.pdf")
+
+    if pt_mode == 0:
+        do_barlow(h_h_yield_dict_0_20, "figures/h_h_yield_barlow_0_20.pdf")
+        do_barlow(h_h_yield_dict_20_50, "figures/h_h_yield_barlow_20_50.pdf")
+        do_barlow(h_h_yield_dict_50_80, "figures/h_h_yield_barlow_50_80.pdf")
+    elif pt_mode == 1:
+        do_barlow(h_h_yield_dict_0_20, "figures/h_h_yield_barlow_0_20_lowpt.pdf")
+        do_barlow(h_h_yield_dict_20_50, "figures/h_h_yield_barlow_20_50_lowpt.pdf")
+        do_barlow(h_h_yield_dict_50_80, "figures/h_h_yield_barlow_50_80_lowpt.pdf")
+    elif pt_mode == 2:
+        do_barlow(h_h_yield_dict_0_20, "figures/h_h_yield_barlow_0_20_highpt.pdf")
+        do_barlow(h_h_yield_dict_20_50, "figures/h_h_yield_barlow_20_50_highpt.pdf")
+        do_barlow(h_h_yield_dict_50_80, "figures/h_h_yield_barlow_50_80_highpt.pdf")
+    if pt_mode == 0:
+        do_barlow(h_h_yield_dict_0_20, "figures/h_h_yield_barlow_0_20.pdf")
+        do_barlow(h_h_yield_dict_20_50, "figures/h_h_yield_barlow_20_50.pdf")
+        do_barlow(h_h_yield_dict_50_80, "figures/h_h_yield_barlow_50_80.pdf")
+    elif pt_mode == 1:
+        do_barlow(h_h_yield_dict_0_20, "figures/h_h_yield_barlow_0_20_lowpt.pdf")
+        do_barlow(h_h_yield_dict_20_50, "figures/h_h_yield_barlow_20_50_lowpt.pdf")
+        do_barlow(h_h_yield_dict_50_80, "figures/h_h_yield_barlow_50_80_lowpt.pdf")
+    elif pt_mode == 2:
+        do_barlow(h_h_yield_dict_0_20, "figures/h_h_yield_barlow_0_20_highpt.pdf")
+        do_barlow(h_h_yield_dict_20_50, "figures/h_h_yield_barlow_20_50_highpt.pdf")
+        do_barlow(h_h_yield_dict_50_80, "figures/h_h_yield_barlow_50_80_highpt.pdf")
