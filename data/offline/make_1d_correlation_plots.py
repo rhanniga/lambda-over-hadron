@@ -151,11 +151,11 @@ for PT_MODE in [0, 1, 2]:
             leg.Draw("SAME")
             c.Draw()
             if PT_MODE == 0:
-                c.SaveAs("figures/h_lambda_dphi_" + key + mult_string + ".pdf")
+                c.SaveAs("figures/h_lambda_dphi_" + key + mult_string + ".eps")
             elif PT_MODE == 1:
-                c.SaveAs("figures/h_lambda_dphi_" + key + mult_string + "_lowpt.pdf")
+                c.SaveAs("figures/h_lambda_dphi_" + key + mult_string + "_lowpt.eps")
             elif PT_MODE == 2:
-                c.SaveAs("figures/h_lambda_dphi_" + key + mult_string + "_highpt.pdf")
+                c.SaveAs("figures/h_lambda_dphi_" + key + mult_string + "_highpt.eps")
             
             h_h_dphi.Draw()
             h_h_ue_fit.Draw("same")
@@ -202,10 +202,10 @@ for PT_MODE in [0, 1, 2]:
             leg.Draw("SAME")
             c.Draw()
             if PT_MODE == 0:
-                c.SaveAs("figures/h_h_dphi_" + key + mult_string + ".pdf")
+                c.SaveAs("figures/h_h_dphi_" + key + mult_string + ".eps")
             elif PT_MODE == 1:
-                c.SaveAs("figures/h_h_dphi_" + key + mult_string + "_lowpt.pdf")
+                c.SaveAs("figures/h_h_dphi_" + key + mult_string + "_lowpt.eps")
             elif PT_MODE == 2:
-                c.SaveAs("figures/h_h_dphi_" + key + mult_string + "_highpt.pdf")
+                c.SaveAs("figures/h_h_dphi_" + key + mult_string + "_highpt.eps")
             
             color_index += 1

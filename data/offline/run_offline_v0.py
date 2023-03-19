@@ -55,23 +55,6 @@ SIG_MAX = config.getfloat("REGION_CUTS", "SIG_MAX") - EPSILON
 RSB_MIN = config.getfloat("REGION_CUTS", "RSB_MIN")
 RSB_MAX = config.getfloat("REGION_CUTS", "RSB_MAX") - EPSILON
 
-# V2 VALUES
-TRIGGER_V2_0_20 = config.getfloat("V2_VALUES", "TRIGGER_V2")
-ASSOCIATED_V2_0_20 = config.getfloat("V2_VALUES", "ASSOCIATED_V2")
-LAMBDA_V2_0_20 = config.getfloat("V2_VALUES", "LAMBDA_V2")
-
-TRIGGER_V2_20_50 = 0.85*TRIGGER_V2_0_20
-ASSOCIATED_V2_20_50 = 0.85*ASSOCIATED_V2_0_20
-LAMBDA_V2_20_50 = 0.85*LAMBDA_V2_0_20
-
-TRIGGER_V2_50_80 = 0.5*TRIGGER_V2_0_20
-ASSOCIATED_V2_50_80 = 0.5*ASSOCIATED_V2_0_20
-LAMBDA_V2_50_80 = 0.5*LAMBDA_V2_0_20
-
-TRIGGER_V2_0_80 = 0.95*TRIGGER_V2_0_20
-ASSOCIATED_V2_0_80 = 0.95*ASSOCIATED_V2_0_20
-LAMBDA_V2_0_80 = 0.95*LAMBDA_V2_0_20
-
 
 # PID CUTS (already applied online, need to correct for % loss)
 IS_NORMAL_PID = config.getboolean("PID_CUTS", "IS_NORMAL")
@@ -107,6 +90,13 @@ N_DPHI_BINS = 16
 BIN_WIDTH = 2*rt.TMath.Pi()/N_DPHI_BINS
 
 
+v2_fitpars_file_string = "v2_fitpars.txt"
+# funny and inefficienct dict comprehension to practice my python prowess
+# the exact ordering is: key: pedestal, pedestal error, trigger v2 (fixed to weighted avg), associated v2 (fixed to weighted avg)
+v2_fitpars_dict = {
+    line[0] : [float(line[1]), float(line[2]), float(line[3]), float(line[4])] for line in [line.split() for line in open(v2_fitpars_file_string).readlines()]
+}
+
 # go ahead and load the two-track correction templates
 
 if "lowpt" in argv[1]:
@@ -116,6 +106,9 @@ elif "highpt" in argv[1]:
 else:
     template_file = rt.TFile("templates/twotrack_template.root")
 TWOTRACK_TEMPLATE = template_file.Get("twotrack_template")
+
+
+BRANCHING_RATIO = 0.639 # from PDG
 
 # Output file containing all of the relevant results (long name )
 if "signal" in argv[1]:
@@ -163,15 +156,6 @@ else:
     output_file_string += ".root"
 
 output_file = rt.TFile(output_file_string, "RECREATE")
-# output_file = rt.TFile("v2_investigation_highpt.root", "RECREATE")
-# output_file = rt.TFile("tmp3.root", "RECREATE")
-
-v2_baselines_file_string = "v2_baselines.txt"
-
-# funny and inefficienct dict comprehension to practice my python prowess
-v2_baseline_dict = {
-    line[0] : [float(line[1]), float(line[2])] for line in [line.split() for line in open(v2_baselines_file_string).readlines()]
-}
 
 
 ############################################################################################################
@@ -403,9 +387,13 @@ else:
 h_lambda_2d_subtracted_0_20.Scale(signal_scale_0_20)
 # Correct for PID loss
 h_lambda_2d_subtracted_0_20.Scale(PID_CORRECTION)
+# Correct for branching ratio
+h_lambda_2d_subtracted_0_20.Scale(1/BRANCHING_RATIO)
 
 # Correct for two-track efficiency
 h_lambda_2d_subtracted_0_20 = apply_two_track_correction(h_lambda_2d_subtracted_0_20, TWOTRACK_TEMPLATE)
+
+
 
 # INTEGRAL AND RATIO SECTION
 h_lambda_dphi_subtracted_0_20 = h_lambda_2d_subtracted_0_20.ProjectionY("h_lambda_dphi_subtracted_0_20")
@@ -552,17 +540,21 @@ elif USE_V2:
     v2_fit_0_20 = rt.TF1("v2_fit_0_20", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
 
     if PT_MODE == 0:
-        v2_fit_0_20.SetParameter(0, v2_baseline_dict["h_lambda_central_0_20"][0])
-        v2_fit_0_20.SetParError(0, v2_baseline_dict["h_lambda_central_0_20"][1])
+        v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_central_0_20"][0])
+        v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_lambda_central_0_20"][1])
+        v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_lambda_central_0_20"][2])
+        v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_lambda_central_0_20"][3])
     elif PT_MODE == 1:
-        v2_fit_0_20.SetParameter(0, v2_baseline_dict["h_lambda_lowpt_0_20"][0])
-        v2_fit_0_20.SetParError(0, v2_baseline_dict["h_lambda_lowpt_0_20"][1])
+        v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_lowpt_0_20"][0])
+        v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_lambda_lowpt_0_20"][1])
+        v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_lambda_lowpt_0_20"][2])
+        v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_lambda_lowpt_0_20"][3])
     elif PT_MODE == 2:
-        v2_fit_0_20.SetParameter(0, v2_baseline_dict["h_lambda_highpt_0_20"][0])
-        v2_fit_0_20.SetParError(0, v2_baseline_dict["h_lambda_highpt_0_20"][1])
+        v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_highpt_0_20"][0])
+        v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_lambda_highpt_0_20"][1])
+        v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_lambda_highpt_0_20"][2])
+        v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_lambda_highpt_0_20"][3])
 
-    v2_fit_0_20.SetParameter(1, TRIGGER_V2_0_20)
-    v2_fit_0_20.SetParameter(2, LAMBDA_V2_0_20)
 
 elif USE_VON:
     ue_avg_0_20 = (h_lambda_dphi_subtracted_0_20.GetBinContent(1) 
@@ -579,9 +571,19 @@ elif USE_VON:
 
     von_fit_0_20 = rt.TF1("von_fit_0_20", von_fit_string, -2, 6)
 
-    von_fit_0_20.SetParameter(0, ue_avg_0_20)
-    von_fit_0_20.FixParameter(1, TRIGGER_V2_0_20)
-    von_fit_0_20.FixParameter(2, LAMBDA_V2_0_20)
+    if PT_MODE == 0:
+        von_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_central_0_20"][0])
+        von_fit_0_20.FixParameter(1, v2_fitpars_dict["h_lambda_central_0_20"][2])
+        von_fit_0_20.FixParameter(2, v2_fitpars_dict["h_lambda_central_0_20"][3])
+    elif PT_MODE == 1:
+        von_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_lowpt_0_20"][0])
+        von_fit_0_20.FixParameter(1, v2_fitpars_dict["h_lambda_lowpt_0_20"][2])
+        von_fit_0_20.FixParameter(2, v2_fitpars_dict["h_lambda_lowpt_0_20"][3])
+    elif PT_MODE == 2:
+        von_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_highpt_0_20"][0])
+        von_fit_0_20.FixParameter(1, v2_fitpars_dict["h_lambda_highpt_0_20"][2])
+        von_fit_0_20.FixParameter(2, v2_fitpars_dict["h_lambda_highpt_0_20"][3])
+
     von_fit_0_20.SetParLimits(3, 0, 1)
     von_fit_0_20.SetParameter(3, 0.02)
     von_fit_0_20.SetParLimits(4, 0, 100)
@@ -596,16 +598,20 @@ elif USE_VON:
 
 
     if PT_MODE == 0:
-        v2_fit_0_20.SetParameter(0, v2_baseline_dict["h_lambda_central_0_20"][0])
-        v2_fit_0_20.SetParError(0, v2_baseline_dict["h_lambda_central_0_20"][1])
+        v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_central_0_20"][0])
+        v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_lambda_central_0_20"][1])
+        v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_lambda_central_0_20"][2])
+        v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_lambda_central_0_20"][3])
     elif PT_MODE == 1:
-        v2_fit_0_20.SetParameter(0, v2_baseline_dict["h_lambda_lowpt_0_20"][0])
-        v2_fit_0_20.SetParError(0, v2_baseline_dict["h_lambda_lowpt_0_20"][1])
+        v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_lowpt_0_20"][0])
+        v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_lambda_lowpt_0_20"][1])
+        v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_lambda_lowpt_0_20"][2])
+        v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_lambda_lowpt_0_20"][3])
     elif PT_MODE == 2:
-        v2_fit_0_20.SetParameter(0, v2_baseline_dict["h_lambda_highpt_0_20"][0])
-        v2_fit_0_20.SetParError(0, v2_baseline_dict["h_lambda_highpt_0_20"][1])
-    v2_fit_0_20.SetParameter(1, TRIGGER_V2_0_20)
-    v2_fit_0_20.SetParameter(2, LAMBDA_V2_0_20)
+        v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_highpt_0_20"][0])
+        v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_lambda_highpt_0_20"][1])
+        v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_lambda_highpt_0_20"][2])
+        v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_lambda_highpt_0_20"][3])
 
 else:
     raise NotImplementedError("UE line mode not supported")
@@ -857,17 +863,21 @@ elif USE_V2:
     hh_v2_fit_0_20 = rt.TF1("hh_v2_fit_0_20", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
 
     if PT_MODE == 0:
-        hh_v2_fit_0_20.SetParameter(0, v2_baseline_dict["h_h_central_0_20"][0])
-        hh_v2_fit_0_20.SetParError(0, v2_baseline_dict["h_h_central_0_20"][1])
+        hh_v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_central_0_20"][0])
+        hh_v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_h_central_0_20"][1])
+        hh_v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_h_central_0_20"][2])
+        hh_v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_h_central_0_20"][3])
     elif PT_MODE == 1:
-        hh_v2_fit_0_20.SetParameter(0, v2_baseline_dict["h_h_lowpt_0_20"][0])
-        hh_v2_fit_0_20.SetParError(0, v2_baseline_dict["h_h_lowpt_0_20"][1])
+        hh_v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_lowpt_0_20"][0])
+        hh_v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_h_lowpt_0_20"][1])
+        hh_v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_h_lowpt_0_20"][2])
+        hh_v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_h_lowpt_0_20"][3])
     elif PT_MODE == 2:
-        hh_v2_fit_0_20.SetParameter(0, v2_baseline_dict["h_h_highpt_0_20"][0])
-        hh_v2_fit_0_20.SetParError(0, v2_baseline_dict["h_h_highpt_0_20"][1])
+        hh_v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_highpt_0_20"][0])
+        hh_v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_h_highpt_0_20"][1])
+        hh_v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_h_highpt_0_20"][2])
+        hh_v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_h_highpt_0_20"][3])
 
-    hh_v2_fit_0_20.SetParameter(1, TRIGGER_V2_0_20)
-    hh_v2_fit_0_20.SetParameter(2, ASSOCIATED_V2_0_20)
 
 elif USE_VON:
     hh_ue_avg_0_20 = (h_h_dphi_0_20.GetBinContent(1) 
@@ -883,9 +893,20 @@ elif USE_VON:
     hh_von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()))"
 
     hh_von_fit_0_20 = rt.TF1("hh_von_fit_0_20", hh_von_fit_string, -2, 6)
-    hh_von_fit_0_20.SetParameter(0, ue_avg_0_20)
-    hh_von_fit_0_20.FixParameter(1, TRIGGER_V2_0_20)
-    hh_von_fit_0_20.FixParameter(2, ASSOCIATED_V2_0_20)
+
+    if PT_MODE == 0:
+        hh_von_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_central_0_20"][0])
+        hh_von_fit_0_20.FixParameter(1, v2_fitpars_dict["h_h_central_0_20"][2])
+        hh_von_fit_0_20.FixParameter(2, v2_fitpars_dict["h_h_central_0_20"][3])
+    elif PT_MODE == 1:
+        hh_von_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_lowpt_0_20"][0])
+        hh_von_fit_0_20.FixParameter(1, v2_fitpars_dict["h_h_lowpt_0_20"][2])
+        hh_von_fit_0_20.FixParameter(2, v2_fitpars_dict["h_h_lowpt_0_20"][3])
+    elif PT_MODE == 2:
+        hh_von_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_highpt_0_20"][0])
+        hh_von_fit_0_20.FixParameter(1, v2_fitpars_dict["h_h_highpt_0_20"][2])
+        hh_von_fit_0_20.FixParameter(2, v2_fitpars_dict["h_h_highpt_0_20"][3])
+
     hh_von_fit_0_20.SetParLimits(3, 0, 1)
     hh_von_fit_0_20.SetParameter(3, 0.02)
     hh_von_fit_0_20.SetParLimits(4, 0, 100)
@@ -898,18 +919,21 @@ elif USE_VON:
     h_h_dphi_with_fit_0_20 = h_h_dphi_0_20.Clone("h_h_dphi_with_fit_0_20")
     hh_fit_result_0_20 = h_h_dphi_with_fit_0_20.Fit(hh_von_fit_0_20, "R")
 
-
     if PT_MODE == 0:
-        hh_v2_fit_0_20.SetParameter(0, v2_baseline_dict["h_h_central_0_20"][0])
-        hh_v2_fit_0_20.SetParError(0, v2_baseline_dict["h_h_central_0_20"][1])
+        hh_v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_central_0_20"][0])
+        hh_v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_h_central_0_20"][1])
+        hh_v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_h_central_0_20"][2])
+        hh_v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_h_central_0_20"][3])
     elif PT_MODE == 1:
-        hh_v2_fit_0_20.SetParameter(0, v2_baseline_dict["h_h_lowpt_0_20"][0])
-        hh_v2_fit_0_20.SetParError(0, v2_baseline_dict["h_h_lowpt_0_20"][1])
+        hh_v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_lowpt_0_20"][0])
+        hh_v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_h_lowpt_0_20"][1])
+        hh_v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_h_lowpt_0_20"][2])
+        hh_v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_h_lowpt_0_20"][3])
     elif PT_MODE == 2:
-        hh_v2_fit_0_20.SetParameter(0, v2_baseline_dict["h_h_highpt_0_20"][0])
-        hh_v2_fit_0_20.SetParError(0, v2_baseline_dict["h_h_highpt_0_20"][1])
-    hh_v2_fit_0_20.SetParameter(1, TRIGGER_V2_0_20)
-    hh_v2_fit_0_20.SetParameter(2, ASSOCIATED_V2_0_20)
+        hh_v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_highpt_0_20"][0])
+        hh_v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_h_highpt_0_20"][1])
+        hh_v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_h_highpt_0_20"][2])
+        hh_v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_h_highpt_0_20"][3])
 
 else:
     raise NotImplementedError("UE line mode not supported")
@@ -1304,8 +1328,9 @@ else:
 h_lambda_2d_subtracted_20_50.Scale(signal_scale_20_50)
 # Correct for PID loss
 h_lambda_2d_subtracted_20_50.Scale(PID_CORRECTION)
+# Correct for branching ratio
+h_lambda_2d_subtracted_20_50.Scale(1/BRANCHING_RATIO)
 
-# Correct for two-track efficiency
 
 # Correct for two-track efficiency
 h_lambda_2d_subtracted_20_50 = apply_two_track_correction(h_lambda_2d_subtracted_20_50, TWOTRACK_TEMPLATE)
@@ -1455,17 +1480,21 @@ elif USE_V2:
     v2_fit_20_50 = rt.TF1("v2_fit_20_50", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
 
     if PT_MODE == 0:
-        v2_fit_20_50.SetParameter(0, v2_baseline_dict["h_lambda_central_20_50"][0])
-        v2_fit_20_50.SetParError(0, v2_baseline_dict["h_lambda_central_20_50"][1])
+        v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_central_20_50"][0])
+        v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_lambda_central_20_50"][1])
+        v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_lambda_central_20_50"][2])
+        v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_lambda_central_20_50"][3])
     elif PT_MODE == 1:
-        v2_fit_20_50.SetParameter(0, v2_baseline_dict["h_lambda_lowpt_20_50"][0])
-        v2_fit_20_50.SetParError(0, v2_baseline_dict["h_lambda_lowpt_20_50"][1])
+        v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_lowpt_20_50"][0])
+        v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_lambda_lowpt_20_50"][1])
+        v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_lambda_lowpt_20_50"][2])
+        v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_lambda_lowpt_20_50"][3])
     elif PT_MODE == 2:
-        v2_fit_20_50.SetParameter(0, v2_baseline_dict["h_lambda_highpt_20_50"][0])
-        v2_fit_20_50.SetParError(0, v2_baseline_dict["h_lambda_highpt_20_50"][1])
+        v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_highpt_20_50"][0])
+        v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_lambda_highpt_20_50"][1])
+        v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_lambda_highpt_20_50"][2])
+        v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_lambda_highpt_20_50"][3])
 
-    v2_fit_20_50.SetParameter(1, TRIGGER_V2_20_50)
-    v2_fit_20_50.SetParameter(2, LAMBDA_V2_20_50)
 
 elif USE_VON:
     ue_avg_20_50 = (h_lambda_dphi_subtracted_20_50.GetBinContent(1) 
@@ -1482,9 +1511,19 @@ elif USE_VON:
 
     von_fit_20_50 = rt.TF1("von_fit_20_50", von_fit_string, -2, 6)
 
-    von_fit_20_50.SetParameter(0, ue_avg_20_50)
-    von_fit_20_50.FixParameter(1, TRIGGER_V2_20_50)
-    von_fit_20_50.FixParameter(2, LAMBDA_V2_20_50)
+    if PT_MODE == 0:
+        von_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_central_20_50"][0])
+        von_fit_20_50.FixParameter(1, v2_fitpars_dict["h_lambda_central_20_50"][2])
+        von_fit_20_50.FixParameter(2, v2_fitpars_dict["h_lambda_central_20_50"][3])
+    elif PT_MODE == 1:
+        von_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_lowpt_20_50"][0])
+        von_fit_20_50.FixParameter(1, v2_fitpars_dict["h_lambda_lowpt_20_50"][2])
+        von_fit_20_50.FixParameter(2, v2_fitpars_dict["h_lambda_lowpt_20_50"][3])
+    elif PT_MODE == 2:
+        von_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_highpt_20_50"][0])
+        von_fit_20_50.FixParameter(1, v2_fitpars_dict["h_lambda_highpt_20_50"][2])
+        von_fit_20_50.FixParameter(2, v2_fitpars_dict["h_lambda_highpt_20_50"][3])
+
     von_fit_20_50.SetParLimits(3, 0, 1)
     von_fit_20_50.SetParameter(3, 0.02)
     von_fit_20_50.SetParLimits(4, 0, 100)
@@ -1499,16 +1538,20 @@ elif USE_VON:
 
 
     if PT_MODE == 0:
-        v2_fit_20_50.SetParameter(0, v2_baseline_dict["h_lambda_central_20_50"][0])
-        v2_fit_20_50.SetParError(0, v2_baseline_dict["h_lambda_central_20_50"][1])
+        v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_central_20_50"][0])
+        v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_lambda_central_20_50"][1])
+        v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_lambda_central_20_50"][2])
+        v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_lambda_central_20_50"][3])
     elif PT_MODE == 1:
-        v2_fit_20_50.SetParameter(0, v2_baseline_dict["h_lambda_lowpt_20_50"][0])
-        v2_fit_20_50.SetParError(0, v2_baseline_dict["h_lambda_lowpt_20_50"][1])
+        v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_lowpt_20_50"][0])
+        v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_lambda_lowpt_20_50"][1])
+        v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_lambda_lowpt_20_50"][2])
+        v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_lambda_lowpt_20_50"][3])
     elif PT_MODE == 2:
-        v2_fit_20_50.SetParameter(0, v2_baseline_dict["h_lambda_highpt_20_50"][0])
-        v2_fit_20_50.SetParError(0, v2_baseline_dict["h_lambda_highpt_20_50"][1])
-    v2_fit_20_50.SetParameter(1, TRIGGER_V2_20_50)
-    v2_fit_20_50.SetParameter(2, LAMBDA_V2_20_50)
+        v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_highpt_20_50"][0])
+        v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_lambda_highpt_20_50"][1])
+        v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_lambda_highpt_20_50"][2])
+        v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_lambda_highpt_20_50"][3])
 
 else:
     raise NotImplementedError("UE line mode not supported")
@@ -1763,17 +1806,21 @@ elif USE_V2:
     hh_v2_fit_20_50 = rt.TF1("hh_v2_fit_20_50", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
 
     if PT_MODE == 0:
-        hh_v2_fit_20_50.SetParameter(0, v2_baseline_dict["h_h_central_20_50"][0])
-        hh_v2_fit_20_50.SetParError(0, v2_baseline_dict["h_h_central_20_50"][1])
+        hh_v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_h_central_20_50"][0])
+        hh_v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_h_central_20_50"][1])
+        hh_v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_h_central_20_50"][2])
+        hh_v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_h_central_20_50"][3])
     elif PT_MODE == 1:
-        hh_v2_fit_20_50.SetParameter(0, v2_baseline_dict["h_h_lowpt_20_50"][0])
-        hh_v2_fit_20_50.SetParError(0, v2_baseline_dict["h_h_lowpt_20_50"][1])
+        hh_v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_h_lowpt_20_50"][0])
+        hh_v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_h_lowpt_20_50"][1])
+        hh_v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_h_lowpt_20_50"][2])
+        hh_v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_h_lowpt_20_50"][3])
     elif PT_MODE == 2:
-        hh_v2_fit_20_50.SetParameter(0, v2_baseline_dict["h_h_highpt_20_50"][0])
-        hh_v2_fit_20_50.SetParError(0, v2_baseline_dict["h_h_highpt_20_50"][1])
+        hh_v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_h_highpt_20_50"][0])
+        hh_v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_h_highpt_20_50"][1])
+        hh_v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_h_highpt_20_50"][2])
+        hh_v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_h_highpt_20_50"][3])
 
-    hh_v2_fit_20_50.SetParameter(1, TRIGGER_V2_20_50)
-    hh_v2_fit_20_50.SetParameter(2, ASSOCIATED_V2_20_50)
 
 elif USE_VON:
     hh_ue_avg_20_50 = (h_h_dphi_20_50.GetBinContent(1) 
@@ -1789,9 +1836,20 @@ elif USE_VON:
     hh_von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()))"
 
     hh_von_fit_20_50 = rt.TF1("hh_von_fit_20_50", hh_von_fit_string, -2, 6)
-    hh_von_fit_20_50.SetParameter(0, ue_avg_20_50)
-    hh_von_fit_20_50.FixParameter(1, TRIGGER_V2_20_50)
-    hh_von_fit_20_50.FixParameter(2, ASSOCIATED_V2_20_50)
+
+    if PT_MODE == 0:
+        hh_von_fit_20_50.SetParameter(0, v2_fitpars_dict["h_h_central_20_50"][0])
+        hh_von_fit_20_50.FixParameter(1, v2_fitpars_dict["h_h_central_20_50"][2])
+        hh_von_fit_20_50.FixParameter(2, v2_fitpars_dict["h_h_central_20_50"][3])
+    elif PT_MODE == 1:
+        hh_von_fit_20_50.SetParameter(0, v2_fitpars_dict["h_h_lowpt_20_50"][0])
+        hh_von_fit_20_50.FixParameter(1, v2_fitpars_dict["h_h_lowpt_20_50"][2])
+        hh_von_fit_20_50.FixParameter(2, v2_fitpars_dict["h_h_lowpt_20_50"][3])
+    elif PT_MODE == 2:
+        hh_von_fit_20_50.SetParameter(0, v2_fitpars_dict["h_h_highpt_20_50"][0])
+        hh_von_fit_20_50.FixParameter(1, v2_fitpars_dict["h_h_highpt_20_50"][2])
+        hh_von_fit_20_50.FixParameter(2, v2_fitpars_dict["h_h_highpt_20_50"][3])
+
     hh_von_fit_20_50.SetParLimits(3, 0, 1)
     hh_von_fit_20_50.SetParameter(3, 0.02)
     hh_von_fit_20_50.SetParLimits(4, 0, 100)
@@ -1804,18 +1862,21 @@ elif USE_VON:
     h_h_dphi_with_fit_20_50 = h_h_dphi_20_50.Clone("h_h_dphi_with_fit_20_50")
     hh_fit_result_20_50 = h_h_dphi_with_fit_20_50.Fit(hh_von_fit_20_50, "R")
 
-
     if PT_MODE == 0:
-        hh_v2_fit_20_50.SetParameter(0, v2_baseline_dict["h_h_central_20_50"][0])
-        hh_v2_fit_20_50.SetParError(0, v2_baseline_dict["h_h_central_20_50"][1])
+        hh_v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_h_central_20_50"][0])
+        hh_v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_h_central_20_50"][1])
+        hh_v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_h_central_20_50"][2])
+        hh_v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_h_central_20_50"][3])
     elif PT_MODE == 1:
-        hh_v2_fit_20_50.SetParameter(0, v2_baseline_dict["h_h_lowpt_20_50"][0])
-        hh_v2_fit_20_50.SetParError(0, v2_baseline_dict["h_h_lowpt_20_50"][1])
+        hh_v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_h_lowpt_20_50"][0])
+        hh_v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_h_lowpt_20_50"][1])
+        hh_v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_h_lowpt_20_50"][2])
+        hh_v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_h_lowpt_20_50"][3])
     elif PT_MODE == 2:
-        hh_v2_fit_20_50.SetParameter(0, v2_baseline_dict["h_h_highpt_20_50"][0])
-        hh_v2_fit_20_50.SetParError(0, v2_baseline_dict["h_h_highpt_20_50"][1])
-    hh_v2_fit_20_50.SetParameter(1, TRIGGER_V2_20_50)
-    hh_v2_fit_20_50.SetParameter(2, ASSOCIATED_V2_20_50)
+        hh_v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_h_highpt_20_50"][0])
+        hh_v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_h_highpt_20_50"][1])
+        hh_v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_h_highpt_20_50"][2])
+        hh_v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_h_highpt_20_50"][3])
 
 else:
     raise NotImplementedError("UE line mode not supported")
@@ -2214,6 +2275,8 @@ else:
 h_lambda_2d_subtracted_50_80.Scale(signal_scale_50_80)
 # Correct for PID loss
 h_lambda_2d_subtracted_50_80.Scale(PID_CORRECTION)
+# Correct for branching ratio
+h_lambda_2d_subtracted_50_80.Scale(1/BRANCHING_RATIO)
 
 
 # Correct for two-track efficiency
@@ -2364,17 +2427,20 @@ elif USE_V2:
     v2_fit_50_80 = rt.TF1("v2_fit_50_80", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
 
     if PT_MODE == 0:
-        v2_fit_50_80.SetParameter(0, v2_baseline_dict["h_lambda_central_50_80"][0])
-        v2_fit_50_80.SetParError(0, v2_baseline_dict["h_lambda_central_50_80"][1])
+        v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_central_50_80"][0])
+        v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_lambda_central_50_80"][1])
+        v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_lambda_central_50_80"][2])
+        v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_lambda_central_50_80"][3])
     elif PT_MODE == 1:
-        v2_fit_50_80.SetParameter(0, v2_baseline_dict["h_lambda_lowpt_50_80"][0])
-        v2_fit_50_80.SetParError(0, v2_baseline_dict["h_lambda_lowpt_50_80"][1])
+        v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_lowpt_50_80"][0])
+        v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_lambda_lowpt_50_80"][1])
+        v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_lambda_lowpt_50_80"][2])
+        v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_lambda_lowpt_50_80"][3])
     elif PT_MODE == 2:
-        v2_fit_50_80.SetParameter(0, v2_baseline_dict["h_lambda_highpt_50_80"][0])
-        v2_fit_50_80.SetParError(0, v2_baseline_dict["h_lambda_highpt_50_80"][1])
-
-    v2_fit_50_80.SetParameter(1, TRIGGER_V2_50_80)
-    v2_fit_50_80.SetParameter(2, LAMBDA_V2_50_80)
+        v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_highpt_50_80"][0])
+        v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_lambda_highpt_50_80"][1])
+        v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_lambda_highpt_50_80"][2])
+        v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_lambda_highpt_50_80"][3])
 
 elif USE_VON:
     ue_avg_50_80 = (h_lambda_dphi_subtracted_50_80.GetBinContent(1) 
@@ -2391,9 +2457,19 @@ elif USE_VON:
 
     von_fit_50_80 = rt.TF1("von_fit_50_80", von_fit_string, -2, 6)
 
-    von_fit_50_80.SetParameter(0, ue_avg_50_80)
-    von_fit_50_80.FixParameter(1, TRIGGER_V2_50_80)
-    von_fit_50_80.FixParameter(2, LAMBDA_V2_50_80)
+    if PT_MODE == 0:
+        von_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_central_50_80"][0])
+        von_fit_50_80.FixParameter(1, v2_fitpars_dict["h_lambda_central_50_80"][2])
+        von_fit_50_80.FixParameter(2, v2_fitpars_dict["h_lambda_central_50_80"][3])
+    elif PT_MODE == 1:
+        von_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_lowpt_50_80"][0])
+        von_fit_50_80.FixParameter(1, v2_fitpars_dict["h_lambda_lowpt_50_80"][2])
+        von_fit_50_80.FixParameter(2, v2_fitpars_dict["h_lambda_lowpt_50_80"][3])
+    elif PT_MODE == 2:
+        von_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_highpt_50_80"][0])
+        von_fit_50_80.FixParameter(1, v2_fitpars_dict["h_lambda_highpt_50_80"][2])
+        von_fit_50_80.FixParameter(2, v2_fitpars_dict["h_lambda_highpt_50_80"][3])
+
     von_fit_50_80.SetParLimits(3, 0, 1)
     von_fit_50_80.SetParameter(3, 0.02)
     von_fit_50_80.SetParLimits(4, 0, 100)
@@ -2408,16 +2484,20 @@ elif USE_VON:
 
 
     if PT_MODE == 0:
-        v2_fit_50_80.SetParameter(0, v2_baseline_dict["h_lambda_central_50_80"][0])
-        v2_fit_50_80.SetParError(0, v2_baseline_dict["h_lambda_central_50_80"][1])
+        v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_central_50_80"][0])
+        v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_lambda_central_50_80"][1])
+        v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_lambda_central_50_80"][2])
+        v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_lambda_central_50_80"][3])
     elif PT_MODE == 1:
-        v2_fit_50_80.SetParameter(0, v2_baseline_dict["h_lambda_lowpt_50_80"][0])
-        v2_fit_50_80.SetParError(0, v2_baseline_dict["h_lambda_lowpt_50_80"][1])
+        v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_lowpt_50_80"][0])
+        v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_lambda_lowpt_50_80"][1])
+        v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_lambda_lowpt_50_80"][2])
+        v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_lambda_lowpt_50_80"][3])
     elif PT_MODE == 2:
-        v2_fit_50_80.SetParameter(0, v2_baseline_dict["h_lambda_highpt_50_80"][0])
-        v2_fit_50_80.SetParError(0, v2_baseline_dict["h_lambda_highpt_50_80"][1])
-    v2_fit_50_80.SetParameter(1, TRIGGER_V2_50_80)
-    v2_fit_50_80.SetParameter(2, LAMBDA_V2_50_80)
+        v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_highpt_50_80"][0])
+        v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_lambda_highpt_50_80"][1])
+        v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_lambda_highpt_50_80"][2])
+        v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_lambda_highpt_50_80"][3])
 
 else:
     raise NotImplementedError("UE line mode not supported")
@@ -2669,17 +2749,20 @@ elif USE_V2:
     hh_v2_fit_50_80 = rt.TF1("hh_v2_fit_50_80", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
 
     if PT_MODE == 0:
-        hh_v2_fit_50_80.SetParameter(0, v2_baseline_dict["h_h_central_50_80"][0])
-        hh_v2_fit_50_80.SetParError(0, v2_baseline_dict["h_h_central_50_80"][1])
+        hh_v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_h_central_50_80"][0])
+        hh_v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_h_central_50_80"][1])
+        hh_v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_h_central_50_80"][2])
+        hh_v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_h_central_50_80"][3])
     elif PT_MODE == 1:
-        hh_v2_fit_50_80.SetParameter(0, v2_baseline_dict["h_h_lowpt_50_80"][0])
-        hh_v2_fit_50_80.SetParError(0, v2_baseline_dict["h_h_lowpt_50_80"][1])
+        hh_v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_h_lowpt_50_80"][0])
+        hh_v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_h_lowpt_50_80"][1])
+        hh_v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_h_lowpt_50_80"][2])
+        hh_v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_h_lowpt_50_80"][3])
     elif PT_MODE == 2:
-        hh_v2_fit_50_80.SetParameter(0, v2_baseline_dict["h_h_highpt_50_80"][0])
-        hh_v2_fit_50_80.SetParError(0, v2_baseline_dict["h_h_highpt_50_80"][1])
-
-    hh_v2_fit_50_80.SetParameter(1, TRIGGER_V2_50_80)
-    hh_v2_fit_50_80.SetParameter(2, ASSOCIATED_V2_50_80)
+        hh_v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_h_highpt_50_80"][0])
+        hh_v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_h_highpt_50_80"][1])
+        hh_v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_h_highpt_50_80"][2])
+        hh_v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_h_highpt_50_80"][3])
 
 elif USE_VON:
 
@@ -2694,9 +2777,18 @@ elif USE_VON:
     hh_von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x))"
     hh_von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()))"
     hh_von_fit_50_80 = rt.TF1("hh_von_fit_50_80", hh_von_fit_string, -2, 6)
-    hh_von_fit_50_80.SetParameter(0, hh_ue_avg_50_80)
-    hh_von_fit_50_80.FixParameter(1, TRIGGER_V2_50_80)
-    hh_von_fit_50_80.FixParameter(2, ASSOCIATED_V2_50_80)
+    if PT_MODE == 0:
+        hh_von_fit_50_80.SetParameter(0, v2_fitpars_dict["h_h_central_50_80"][0])
+        hh_von_fit_50_80.FixParameter(1, v2_fitpars_dict["h_h_central_50_80"][2])
+        hh_von_fit_50_80.FixParameter(2, v2_fitpars_dict["h_h_central_50_80"][3])
+    elif PT_MODE == 1:
+        hh_von_fit_50_80.SetParameter(0, v2_fitpars_dict["h_h_lowpt_50_80"][0])
+        hh_von_fit_50_80.FixParameter(1, v2_fitpars_dict["h_h_lowpt_50_80"][2])
+        hh_von_fit_50_80.FixParameter(2, v2_fitpars_dict["h_h_lowpt_50_80"][3])
+    elif PT_MODE == 2:
+        hh_von_fit_50_80.SetParameter(0, v2_fitpars_dict["h_h_highpt_50_80"][0])
+        hh_von_fit_50_80.FixParameter(1, v2_fitpars_dict["h_h_highpt_50_80"][2])
+        hh_von_fit_50_80.FixParameter(2, v2_fitpars_dict["h_h_highpt_50_80"][3])
     hh_von_fit_50_80.SetParLimits(3, 0, 1)
     hh_von_fit_50_80.SetParameter(3, 0.02)
     hh_von_fit_50_80.SetParLimits(4, 0, 100)
@@ -2713,16 +2805,20 @@ elif USE_VON:
 
 
     if PT_MODE == 0:
-        hh_v2_fit_50_80.SetParameter(0, v2_baseline_dict["h_h_central_50_80"][0])
-        hh_v2_fit_50_80.SetParError(0, v2_baseline_dict["h_h_central_50_80"][1])
+        hh_v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_h_central_50_80"][0])
+        hh_v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_h_central_50_80"][1])
+        hh_v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_h_central_50_80"][2])
+        hh_v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_h_central_50_80"][3])
     elif PT_MODE == 1:
-        hh_v2_fit_50_80.SetParameter(0, v2_baseline_dict["h_h_lowpt_50_80"][0])
-        hh_v2_fit_50_80.SetParError(0, v2_baseline_dict["h_h_lowpt_50_80"][1])
+        hh_v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_h_lowpt_50_80"][0])
+        hh_v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_h_lowpt_50_80"][1])
+        hh_v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_h_lowpt_50_80"][2])
+        hh_v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_h_lowpt_50_80"][3])
     elif PT_MODE == 2:
-        hh_v2_fit_50_80.SetParameter(0, v2_baseline_dict["h_h_highpt_50_80"][0])
-        hh_v2_fit_50_80.SetParError(0, v2_baseline_dict["h_h_highpt_50_80"][1])
-    hh_v2_fit_50_80.SetParameter(1, TRIGGER_V2_50_80)
-    hh_v2_fit_50_80.SetParameter(2, ASSOCIATED_V2_50_80)
+        hh_v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_h_highpt_50_80"][0])
+        hh_v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_h_highpt_50_80"][1])
+        hh_v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_h_highpt_50_80"][2])
+        hh_v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_h_highpt_50_80"][3])
 
 else:
     raise NotImplementedError("UE line mode not supported")
@@ -3117,6 +3213,8 @@ else:
 h_lambda_2d_subtracted_0_80.Scale(signal_scale_0_80)
 # Correct for PID loss
 h_lambda_2d_subtracted_0_80.Scale(PID_CORRECTION)
+# Correct for branching ratio
+h_lambda_2d_subtracted_0_80.Scale(1/BRANCHING_RATIO)
 
 # Correct for two-track efficiency
 h_lambda_2d_subtracted_0_80 = apply_two_track_correction(h_lambda_2d_subtracted_0_80, TWOTRACK_TEMPLATE)
@@ -3266,17 +3364,21 @@ elif USE_V2:
     v2_fit_0_80 = rt.TF1("v2_fit_0_80", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
 
     if PT_MODE == 0:
-        v2_fit_0_80.SetParameter(0, v2_baseline_dict["h_lambda_central_0_80"][0])
-        v2_fit_0_80.SetParError(0, v2_baseline_dict["h_lambda_central_0_80"][1])
+        v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_central_0_80"][0])
+        v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_lambda_central_0_80"][1])
+        v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_lambda_central_0_80"][2])
+        v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_lambda_central_0_80"][3])
     elif PT_MODE == 1:
-        v2_fit_0_80.SetParameter(0, v2_baseline_dict["h_lambda_lowpt_0_80"][0])
-        v2_fit_0_80.SetParError(0, v2_baseline_dict["h_lambda_lowpt_0_80"][1])
+        v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_lowpt_0_80"][0])
+        v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_lambda_lowpt_0_80"][1])
+        v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_lambda_lowpt_0_80"][2])
+        v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_lambda_lowpt_0_80"][3])
     elif PT_MODE == 2:
-        v2_fit_0_80.SetParameter(0, v2_baseline_dict["h_lambda_highpt_0_80"][0])
-        v2_fit_0_80.SetParError(0, v2_baseline_dict["h_lambda_highpt_0_80"][1])
+        v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_highpt_0_80"][0])
+        v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_lambda_highpt_0_80"][1])
+        v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_lambda_highpt_0_80"][2])
+        v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_lambda_highpt_0_80"][3])
 
-    v2_fit_0_80.SetParameter(1, TRIGGER_V2_0_80)
-    v2_fit_0_80.SetParameter(2, LAMBDA_V2_0_80)
 
 elif USE_VON:
     ue_avg_0_80 = (h_lambda_dphi_subtracted_0_80.GetBinContent(1) 
@@ -3293,9 +3395,18 @@ elif USE_VON:
 
     von_fit_0_80 = rt.TF1("von_fit_0_80", von_fit_string, -2, 6)
 
-    von_fit_0_80.SetParameter(0, ue_avg_0_80)
-    von_fit_0_80.FixParameter(1, TRIGGER_V2_0_80)
-    von_fit_0_80.FixParameter(2, LAMBDA_V2_0_80)
+    if PT_MODE == 0:
+        von_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_central_0_80"][0])
+        von_fit_0_80.FixParameter(1, v2_fitpars_dict["h_lambda_central_0_80"][2])
+        von_fit_0_80.FixParameter(2, v2_fitpars_dict["h_lambda_central_0_80"][3])
+    elif PT_MODE == 1:
+        von_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_lowpt_0_80"][0])
+        von_fit_0_80.FixParameter(1, v2_fitpars_dict["h_lambda_lowpt_0_80"][2])
+        von_fit_0_80.FixParameter(2, v2_fitpars_dict["h_lambda_lowpt_0_80"][3])
+    elif PT_MODE == 2:
+        von_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_highpt_0_80"][0])
+        von_fit_0_80.FixParameter(1, v2_fitpars_dict["h_lambda_highpt_0_80"][2])
+        von_fit_0_80.FixParameter(2, v2_fitpars_dict["h_lambda_highpt_0_80"][3])
     von_fit_0_80.SetParLimits(3, 0, 1)
     von_fit_0_80.SetParameter(3, 0.02)
     von_fit_0_80.SetParLimits(4, 0, 100)
@@ -3310,16 +3421,20 @@ elif USE_VON:
 
 
     if PT_MODE == 0:
-        v2_fit_0_80.SetParameter(0, v2_baseline_dict["h_lambda_central_0_80"][0])
-        v2_fit_0_80.SetParError(0, v2_baseline_dict["h_lambda_central_0_80"][1])
+        v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_central_0_80"][0])
+        v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_lambda_central_0_80"][1])
+        v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_lambda_central_0_80"][2])
+        v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_lambda_central_0_80"][3])
     elif PT_MODE == 1:
-        v2_fit_0_80.SetParameter(0, v2_baseline_dict["h_lambda_lowpt_0_80"][0])
-        v2_fit_0_80.SetParError(0, v2_baseline_dict["h_lambda_lowpt_0_80"][1])
+        v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_lowpt_0_80"][0])
+        v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_lambda_lowpt_0_80"][1])
+        v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_lambda_lowpt_0_80"][2])
+        v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_lambda_lowpt_0_80"][3])
     elif PT_MODE == 2:
-        v2_fit_0_80.SetParameter(0, v2_baseline_dict["h_lambda_highpt_0_80"][0])
-        v2_fit_0_80.SetParError(0, v2_baseline_dict["h_lambda_highpt_0_80"][1])
-    v2_fit_0_80.SetParameter(1, TRIGGER_V2_0_80)
-    v2_fit_0_80.SetParameter(2, LAMBDA_V2_0_80)
+        v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_highpt_0_80"][0])
+        v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_lambda_highpt_0_80"][1])
+        v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_lambda_highpt_0_80"][2])
+        v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_lambda_highpt_0_80"][3])
 
 else:
     raise NotImplementedError("UE line mode not supported")
@@ -3571,17 +3686,21 @@ elif USE_V2:
     hh_v2_fit_0_80 = rt.TF1("hh_v2_fit_0_80", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
 
     if PT_MODE == 0:
-        hh_v2_fit_0_80.SetParameter(0, v2_baseline_dict["h_h_central_0_80"][0])
-        hh_v2_fit_0_80.SetParError(0, v2_baseline_dict["h_h_central_0_80"][1])
+        hh_v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_h_central_0_80"][0])
+        hh_v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_h_central_0_80"][1])
+        hh_v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_h_central_0_80"][2])
+        hh_v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_h_central_0_80"][3])
     elif PT_MODE == 1:
-        hh_v2_fit_0_80.SetParameter(0, v2_baseline_dict["h_h_lowpt_0_80"][0])
-        hh_v2_fit_0_80.SetParError(0, v2_baseline_dict["h_h_lowpt_0_80"][1])
+        hh_v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_h_lowpt_0_80"][0])
+        hh_v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_h_lowpt_0_80"][1])
+        hh_v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_h_lowpt_0_80"][2])
+        hh_v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_h_lowpt_0_80"][3])
     elif PT_MODE == 2:
-        hh_v2_fit_0_80.SetParameter(0, v2_baseline_dict["h_h_highpt_0_80"][0])
-        hh_v2_fit_0_80.SetParError(0, v2_baseline_dict["h_h_highpt_0_80"][1])
+        hh_v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_h_highpt_0_80"][0])
+        hh_v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_h_highpt_0_80"][1])
+        hh_v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_h_highpt_0_80"][2])
+        hh_v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_h_highpt_0_80"][3])
 
-    hh_v2_fit_0_80.SetParameter(1, TRIGGER_V2_0_80)
-    hh_v2_fit_0_80.SetParameter(2, ASSOCIATED_V2_0_80)
 
 elif USE_VON:
     hh_ue_avg_0_80 = (h_h_dphi_0_80.GetBinContent(1) 
@@ -3597,9 +3716,20 @@ elif USE_VON:
     hh_von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()))"
 
     hh_von_fit_0_80 = rt.TF1("hh_von_fit_0_80", hh_von_fit_string, -2, 6)
-    hh_von_fit_0_80.SetParameter(0, ue_avg_0_80)
-    hh_von_fit_0_80.FixParameter(1, TRIGGER_V2_0_80)
-    hh_von_fit_0_80.FixParameter(2, ASSOCIATED_V2_0_80)
+
+    if PT_MODE == 0:
+        hh_von_fit_0_80.SetParameter(0, v2_fitpars_dict["h_h_central_0_80"][0])
+        hh_von_fit_0_80.FixParameter(1, v2_fitpars_dict["h_h_central_0_80"][2])
+        hh_von_fit_0_80.FixParameter(2, v2_fitpars_dict["h_h_central_0_80"][3])
+    elif PT_MODE == 1:
+        hh_von_fit_0_80.SetParameter(0, v2_fitpars_dict["h_h_lowpt_0_80"][0])
+        hh_von_fit_0_80.FixParameter(1, v2_fitpars_dict["h_h_lowpt_0_80"][2])
+        hh_von_fit_0_80.FixParameter(2, v2_fitpars_dict["h_h_lowpt_0_80"][3])
+    elif PT_MODE == 2:
+        hh_von_fit_0_80.SetParameter(0, v2_fitpars_dict["h_h_highpt_0_80"][0])
+        hh_von_fit_0_80.FixParameter(1, v2_fitpars_dict["h_h_highpt_0_80"][2])
+        hh_von_fit_0_80.FixParameter(2, v2_fitpars_dict["h_h_highpt_0_80"][3])
+
     hh_von_fit_0_80.SetParLimits(3, 0, 1)
     hh_von_fit_0_80.SetParameter(3, 0.02)
     hh_von_fit_0_80.SetParLimits(4, 0, 100)
@@ -3612,18 +3742,21 @@ elif USE_VON:
     h_h_dphi_with_fit_0_80 = h_h_dphi_0_80.Clone("h_h_dphi_with_fit_0_80")
     hh_fit_result_0_80 = h_h_dphi_with_fit_0_80.Fit(hh_von_fit_0_80, "R")
 
-
     if PT_MODE == 0:
-        hh_v2_fit_0_80.SetParameter(0, v2_baseline_dict["h_h_central_0_80"][0])
-        hh_v2_fit_0_80.SetParError(0, v2_baseline_dict["h_h_central_0_80"][1])
+        hh_v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_h_central_0_80"][0])
+        hh_v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_h_central_0_80"][1])
+        hh_v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_h_central_0_80"][2])
+        hh_v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_h_central_0_80"][3])
     elif PT_MODE == 1:
-        hh_v2_fit_0_80.SetParameter(0, v2_baseline_dict["h_h_lowpt_0_80"][0])
-        hh_v2_fit_0_80.SetParError(0, v2_baseline_dict["h_h_lowpt_0_80"][1])
+        hh_v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_h_lowpt_0_80"][0])
+        hh_v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_h_lowpt_0_80"][1])
+        hh_v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_h_lowpt_0_80"][2])
+        hh_v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_h_lowpt_0_80"][3])
     elif PT_MODE == 2:
-        hh_v2_fit_0_80.SetParameter(0, v2_baseline_dict["h_h_highpt_0_80"][0])
-        hh_v2_fit_0_80.SetParError(0, v2_baseline_dict["h_h_highpt_0_80"][1])
-    hh_v2_fit_0_80.SetParameter(1, TRIGGER_V2_0_80)
-    hh_v2_fit_0_80.SetParameter(2, ASSOCIATED_V2_0_80)
+        hh_v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_h_highpt_0_80"][0])
+        hh_v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_h_highpt_0_80"][1])
+        hh_v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_h_highpt_0_80"][2])
+        hh_v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_h_highpt_0_80"][3])
 
 else:
     raise NotImplementedError("UE line mode not supported")
@@ -3850,6 +3983,9 @@ ue_ratio_error_list = arr.array('d', [ue_ratio_error_50_80, ue_ratio_error_20_50
 total_ratio_list = arr.array('d', [total_ratio_50_80, total_ratio_20_50, total_ratio_0_20])
 total_ratio_error_list = arr.array('d', [total_ratio_error_50_80, total_ratio_error_20_50, total_ratio_error_0_20])
 
+print(near_ratio_list, "near ratio list")
+print(away_ratio_list, "away ratio list")
+
 near_ratio_list_minbias = arr.array('d', [near_ratio_0_80])
 near_ratio_error_list_minbias = arr.array('d', [near_ratio_error_0_80])
 away_ratio_list_minbias = arr.array('d', [away_ratio_0_80])
@@ -3883,6 +4019,7 @@ near_ratio_graph = rt.TGraphErrors(3, mult_list, near_ratio_list, mult_error_lis
 away_ratio_graph = rt.TGraphErrors(3, mult_list, away_ratio_list, mult_error_list, away_ratio_error_list)
 ue_ratio_graph = rt.TGraphErrors(3, mult_list, ue_ratio_list, mult_error_list, ue_ratio_error_list)
 total_ratio_graph = rt.TGraphErrors(3, mult_list, total_ratio_list, mult_error_list, total_ratio_error_list)
+
 
 near_ratio_graph_minbias = rt.TGraphErrors(1, mult_list_minbias, near_ratio_list_minbias, mult_error_list_minbias, near_ratio_error_list_minbias)
 away_ratio_graph_minbias = rt.TGraphErrors(1, mult_list_minbias, away_ratio_list_minbias, mult_error_list_minbias, away_ratio_error_list_minbias)

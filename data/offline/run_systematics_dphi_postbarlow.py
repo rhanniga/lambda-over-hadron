@@ -362,6 +362,7 @@ for PT_MODE in range(3):
     pid_syst_hist.SetBinError(3, 0)
     pid_syst_hist.SetLineColor(rt.kAzure - 2)
     pid_syst_hist.SetLineWidth(2)
+
     # the topo syst is a LITTLE higher at low pT
     if PT_MODE == 1:
         topo_rms = 0.032
@@ -387,10 +388,37 @@ for PT_MODE in range(3):
         topo_syst_hist.SetBinError(3, 0)
         topo_syst_hist.SetLineColor(rt.kRed - 2)
         topo_syst_hist.SetLineWidth(2)
+
+    # the matbud syst is a LITTLE higher at low pT
+    if PT_MODE == 1:
+        matbud_rms = 0.011
+        matbud_nch_dep_rms = 0.0
+        matbud_syst_hist = rt.TH1D("matbud_syst_hist", "", 3, 0, 3)
+        matbud_syst_hist.SetBinContent(1, matbud_rms)
+        matbud_syst_hist.SetBinContent(2, matbud_rms)
+        matbud_syst_hist.SetBinContent(3, matbud_rms)
+        matbud_syst_hist.SetBinError(1, 0)
+        matbud_syst_hist.SetBinError(2, 0)
+        matbud_syst_hist.SetBinError(3, 0)
+        matbud_syst_hist.SetLineColor(rt.kOrange - 2)
+        matbud_syst_hist.SetLineWidth(2)
+    else:
+        matbud_rms = 0.006
+        matbud_nch_dep_rms = 0.000
+        matbud_syst_hist = rt.TH1D("matbud_syst_hist", "", 3, 0, 3)
+        matbud_syst_hist.SetBinContent(1, matbud_rms)
+        matbud_syst_hist.SetBinContent(2, matbud_rms)
+        matbud_syst_hist.SetBinContent(3, matbud_rms)
+        matbud_syst_hist.SetBinError(1, 0)
+        matbud_syst_hist.SetBinError(2, 0)
+        matbud_syst_hist.SetBinError(3, 0)
+        matbud_syst_hist.SetLineColor(rt.kOrange - 2)
+        matbud_syst_hist.SetLineWidth(2)
+
     total_syst_hist = rt.TH1D("total_syst_hist", "", 3, 0, 3)
-    total_syst_hist.SetBinContent(1, math.sqrt(sideband_rms_0_20**2 + signal_rms_0_20**2 + pid_rms_0_20**2 + topo_rms**2))
-    total_syst_hist.SetBinContent(2, math.sqrt(sideband_rms_20_50**2 + signal_rms_20_50**2 + pid_rms_20_50**2 + topo_rms**2))
-    total_syst_hist.SetBinContent(3, math.sqrt(sideband_rms_50_80**2 + signal_rms_50_80**2 + pid_rms_50_80**2 + topo_rms**2))
+    total_syst_hist.SetBinContent(1, math.sqrt(sideband_rms_0_20**2 + signal_rms_0_20**2 + pid_rms_0_20**2 + topo_rms**2 + matbud_rms**2 ))
+    total_syst_hist.SetBinContent(2, math.sqrt(sideband_rms_20_50**2 + signal_rms_20_50**2 + pid_rms_20_50**2 + topo_rms**2 + matbud_rms**2))
+    total_syst_hist.SetBinContent(3, math.sqrt(sideband_rms_50_80**2 + signal_rms_50_80**2 + pid_rms_50_80**2 + topo_rms**2 + matbud_rms**2))
     total_syst_hist.SetBinError(1, 0)
     total_syst_hist.SetBinError(2, 0)
     total_syst_hist.SetBinError(3, 0)
@@ -409,6 +437,7 @@ for PT_MODE in range(3):
     leg.AddEntry(signal_syst_hist, "Signal", "l")
     leg.AddEntry(pid_syst_hist, "PID", "l")
     leg.AddEntry(topo_syst_hist, "Topo", "l")
+    leg.AddEntry(matbud_syst_hist, "Mat. budget", "l")
     leg.AddEntry(total_syst_hist, "Total", "l")
 
     total_syst_hist.Scale(100)
@@ -416,6 +445,7 @@ for PT_MODE in range(3):
     signal_syst_hist.Scale(100)
     pid_syst_hist.Scale(100)
     topo_syst_hist.Scale(100)
+    matbud_syst_hist.Scale(100)
 
     total_syst_hist.GetYaxis().SetRangeUser(0, 9)
 
@@ -425,6 +455,7 @@ for PT_MODE in range(3):
     signal_syst_hist.Draw("hist same")
     pid_syst_hist.Draw("hist same")
     topo_syst_hist.Draw("hist same")
+    matbud_syst_hist.Draw("hist same")
     leg.Draw("SAME")
     if PT_MODE == 0:
         c.SaveAs("figures/systematics_dphi_postbarlow.pdf")
@@ -488,10 +519,36 @@ for PT_MODE in range(3):
         topo_syst_hist.SetLineColor(rt.kRed - 2)
         topo_syst_hist.SetLineWidth(2)
 
+    # the matbud syst is a LITTLE higher at low pT
+    if PT_MODE == 1:
+        matbud_rms = 0.011
+        matbud_nch_dep_rms = 0.0
+        matbud_syst_hist = rt.TH1D("matbud_syst_hist", "", 3, 0, 3)
+        matbud_syst_hist.SetBinContent(1, matbud_nch_dep_rms)
+        matbud_syst_hist.SetBinContent(2, matbud_nch_dep_rms)
+        matbud_syst_hist.SetBinContent(3, matbud_nch_dep_rms)
+        matbud_syst_hist.SetBinError(1, 0)
+        matbud_syst_hist.SetBinError(2, 0)
+        matbud_syst_hist.SetBinError(3, 0)
+        matbud_syst_hist.SetLineColor(rt.kOrange - 2)
+        matbud_syst_hist.SetLineWidth(2)
+    else:
+        matbud_rms = 0.006
+        matbud_nch_dep_rms = 0.000
+        matbud_syst_hist = rt.TH1D("matbud_syst_hist", "", 3, 0, 3)
+        matbud_syst_hist.SetBinContent(1, matbud_nch_dep_rms)
+        matbud_syst_hist.SetBinContent(2, matbud_nch_dep_rms)
+        matbud_syst_hist.SetBinContent(3, matbud_nch_dep_rms)
+        matbud_syst_hist.SetBinError(1, 0)
+        matbud_syst_hist.SetBinError(2, 0)
+        matbud_syst_hist.SetBinError(3, 0)
+        matbud_syst_hist.SetLineColor(rt.kOrange - 2)
+        matbud_syst_hist.SetLineWidth(2)
+
     total_syst_hist = rt.TH1D("total_syst_hist", "", 3, 0, 3)
-    total_syst_hist.SetBinContent(1, math.sqrt(sideband_rms_0_20**2 + signal_rms_0_20**2 + pid_rms_0_20**2 + topo_rms**2))
-    total_syst_hist.SetBinContent(2, math.sqrt(sideband_rms_20_50**2 + signal_rms_20_50**2 + pid_rms_20_50**2 + topo_rms**2))
-    total_syst_hist.SetBinContent(3, math.sqrt(sideband_rms_50_80**2 + signal_rms_50_80**2 + pid_rms_50_80**2 + topo_rms**2))
+    total_syst_hist.SetBinContent(1, math.sqrt(sideband_rms_0_20**2 + signal_rms_0_20**2 + pid_rms_0_20**2 + topo_rms**2 + matbud_rms**2))
+    total_syst_hist.SetBinContent(2, math.sqrt(sideband_rms_20_50**2 + signal_rms_20_50**2 + pid_rms_20_50**2 + topo_rms**2 + matbud_rms**2))
+    total_syst_hist.SetBinContent(3, math.sqrt(sideband_rms_50_80**2 + signal_rms_50_80**2 + pid_rms_50_80**2 + topo_rms**2 + matbud_rms**2))
     total_syst_hist.SetBinError(1, 0)
     total_syst_hist.SetBinError(2, 0)
     total_syst_hist.SetBinError(3, 0)
@@ -527,6 +584,7 @@ for PT_MODE in range(3):
     leg.AddEntry(signal_syst_hist, "Uncor Signal", "l")
     leg.AddEntry(pid_syst_hist, "Uncor PID", "l")
     leg.AddEntry(topo_syst_hist, "Uncor Topo", "l")
+    leg.AddEntry(matbud_syst_hist, "Uncor mat. budget", "l")
     leg.AddEntry(total_nch_dep_syst_hist, "Uncor Total", "l")
     leg.AddEntry(total_syst_hist, "Total", "l")
 
@@ -536,6 +594,7 @@ for PT_MODE in range(3):
     signal_syst_hist.Scale(100)
     pid_syst_hist.Scale(100)
     topo_syst_hist.Scale(100)
+    matbud_syst_hist.Scale(100)
 
     total_syst_hist.GetYaxis().SetRangeUser(0, 9)
 
@@ -545,6 +604,7 @@ for PT_MODE in range(3):
     signal_syst_hist.Draw("hist same")
     pid_syst_hist.Draw("hist same")
     topo_syst_hist.Draw("hist same")
+    matbud_syst_hist.Draw("hist same")
     leg.Draw("SAME")
     if PT_MODE == 0:
         c.SaveAs("figures/nch_dep_systematics_dphi_postbarlow.pdf")
@@ -561,11 +621,13 @@ for PT_MODE in range(3):
         print("---------------------LOW PT---------------------")
     elif PT_MODE == 2:
         print("---------------------HIGH PT---------------------")
-    print(f"0-20\% & {signal_rms_0_20*100:.2} $\pm$ {sideband_rms_0_20*100:.2} & {pid_rms_0_20*100:.2} & {topo_rms*100:.2} & {math.sqrt(sideband_rms_0_20**2 + signal_rms_0_20**2 + pid_rms_0_20**2 + topo_rms**2)*100:.2} \\\\")
-    print(f"20-50\% & {signal_rms_20_50*100:.2} $\pm$ {sideband_rms_20_50*100:.2} & {pid_rms_20_50*100:.2} & {topo_rms*100:.2} & {math.sqrt(sideband_rms_20_50**2 + signal_rms_20_50**2 + pid_rms_20_50**2 + topo_rms**2)*100:.2} \\\\")
-    print(f"50-80\% & {signal_rms_50_80*100:.2} $\pm$ {sideband_rms_50_80*100:.2} & {pid_rms_50_80*100:.2} & {topo_rms*100:.2} & {math.sqrt(sideband_rms_50_80**2 + signal_rms_50_80**2 + pid_rms_50_80**2 + topo_rms**2)*100:.2} \\\\")
+
+    print(f"0-20\% & {signal_rms_0_20*100:.2} & {sideband_rms_0_20*100:.2} & {pid_rms_0_20*100:.2} & {topo_rms*100:.2} & {matbud_rms*100:.2} & {math.sqrt(sideband_rms_0_20**2 + signal_rms_0_20**2 + pid_rms_0_20**2 + topo_rms**2)*100:.2} \\\\")
+    print(f"20-50\% & {signal_rms_20_50*100:.2} & {sideband_rms_20_50*100:.2} & {pid_rms_20_50*100:.2} & {topo_rms*100:.2}  & {matbud_rms*100:.2} & {math.sqrt(sideband_rms_20_50**2 + signal_rms_20_50**2 + pid_rms_20_50**2 + topo_rms**2)*100:.2} \\\\")
+    print(f"50-80\% & {signal_rms_50_80*100:.2} & {sideband_rms_50_80*100:.2} & {pid_rms_50_80*100:.2} & {topo_rms*100:.2}  & {matbud_rms*100:.2} & {math.sqrt(sideband_rms_50_80**2 + signal_rms_50_80**2 + pid_rms_50_80**2 + topo_rms**2)*100:.2} \\\\")
+
     # now print the nch dep rms (signal, sideband, pid, topo, total)
     print("--------------------------------------NCH DEP--------------------------------------")
-    print(f"0-20\% & {signal_nch_dep_rms_0_20*100:.2} $\pm$ {sideband_nch_dep_rms_0_20*100:.2} & {pid_nch_dep_rms_0_20*100:.2} & {topo_nch_dep_rms*100:.2} & {math.sqrt(sideband_nch_dep_rms_0_20**2 + signal_nch_dep_rms_0_20**2 + pid_nch_dep_rms_0_20**2 + topo_nch_dep_rms**2)*100:.2} \\\\")
-    print(f"20-50\% & {signal_nch_dep_rms_20_50*100:.2} $\pm$ {sideband_nch_dep_rms_20_50*100:.2} & {pid_nch_dep_rms_20_50*100:.2} & {topo_nch_dep_rms*100:.2} & {math.sqrt(sideband_nch_dep_rms_20_50**2 + signal_nch_dep_rms_20_50**2 + pid_nch_dep_rms_20_50**2 + topo_nch_dep_rms**2)*100:.2} \\\\")
-    print(f"50-80\% & {signal_nch_dep_rms_50_80*100:.2} $\pm$ {sideband_nch_dep_rms_50_80*100:.2} & {pid_nch_dep_rms_50_80*100:.2} & {topo_nch_dep_rms*100:.2} & {math.sqrt(sideband_nch_dep_rms_50_80**2 + signal_nch_dep_rms_50_80**2 + pid_nch_dep_rms_50_80**2 + topo_nch_dep_rms**2)*100:.2} \\\\")
+    print(f"0-20\% & {signal_nch_dep_rms_0_20*100:.2} $\pm$ {sideband_nch_dep_rms_0_20*100:.2} & {pid_nch_dep_rms_0_20*100:.2} & {topo_nch_dep_rms*100:.2} & {matbud_nch_dep_rms*100:.2} & {math.sqrt(sideband_nch_dep_rms_0_20**2 + signal_nch_dep_rms_0_20**2 + pid_nch_dep_rms_0_20**2 + topo_nch_dep_rms**2)*100:.2} \\\\")
+    print(f"20-50\% & {signal_nch_dep_rms_20_50*100:.2} $\pm$ {sideband_nch_dep_rms_20_50*100:.2} & {pid_nch_dep_rms_20_50*100:.2} & {topo_nch_dep_rms*100:.2} & {matbud_nch_dep_rms*100:.2} & {math.sqrt(sideband_nch_dep_rms_20_50**2 + signal_nch_dep_rms_20_50**2 + pid_nch_dep_rms_20_50**2 + topo_nch_dep_rms**2)*100:.2} \\\\")
+    print(f"50-80\% & {signal_nch_dep_rms_50_80*100:.2} $\pm$ {sideband_nch_dep_rms_50_80*100:.2} & {pid_nch_dep_rms_50_80*100:.2} & {topo_nch_dep_rms*100:.2} & {matbud_nch_dep_rms*100:.2} & {math.sqrt(sideband_nch_dep_rms_50_80**2 + signal_nch_dep_rms_50_80**2 + pid_nch_dep_rms_50_80**2 + topo_nch_dep_rms**2)*100:.2} \\\\")

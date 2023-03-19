@@ -31,7 +31,7 @@ assert sum([LOW_PT, HIGH_PT, NORMAL_PT]) == 1, "Only one of LOW_PT, HIGH_PT, NOR
 CENTRAL_TECHNIQUE = "6 bin avg"
 N_DPHI_BINS = 16
 
-PRINT_YIELDS = False
+PRINT_YIELDS = True
 PRINT_SYSTEMATICS = False
 
 total_dphi_sys_0_20 = 0.031
@@ -136,24 +136,6 @@ for key in file_dict:
     hh_away_graph = h_h_away_dict[key]
     hh_ue_graph = h_h_ue_dict[key]
     hh_total_graph = h_h_total_dict[key]
-
-    if key == "full fit" or key == "von":
-        for i in range(3):
-
-            hl_near_graph.SetPoint(i, hl_near_graph.GetX()[i], hl_near_graph.GetY()[i]/BIN_WIDTH)
-            hl_away_graph.SetPoint(i, hl_away_graph.GetX()[i], hl_away_graph.GetY()[i]/BIN_WIDTH)
-            hl_ue_graph.SetPoint(i, hl_ue_graph.GetX()[i], hl_ue_graph.GetY()[i]/BIN_WIDTH)
-            hl_total_graph.SetPoint(i, hl_total_graph.GetX()[i], hl_total_graph.GetY()[i]/BIN_WIDTH)
-
-            hh_near_graph.SetPoint(i, hh_near_graph.GetX()[i], hh_near_graph.GetY()[i]/BIN_WIDTH)
-            hh_away_graph.SetPoint(i, hh_away_graph.GetX()[i], hh_away_graph.GetY()[i]/BIN_WIDTH)
-            hh_ue_graph.SetPoint(i, hh_ue_graph.GetX()[i], hh_ue_graph.GetY()[i]/BIN_WIDTH)
-            hh_total_graph.SetPoint(i, hh_total_graph.GetX()[i], hh_total_graph.GetY()[i]/BIN_WIDTH)
-            
-    if key == "v2":
-        for i in range(3):
-            hl_ue_graph.SetPoint(i, hl_ue_graph.GetX()[i], hl_ue_graph.GetY()[i]/BIN_WIDTH)
-            hh_ue_graph.SetPoint(i, hh_ue_graph.GetX()[i], hh_ue_graph.GetY()[i]/BIN_WIDTH)
 
 
 
