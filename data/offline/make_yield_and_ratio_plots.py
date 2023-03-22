@@ -24,6 +24,9 @@ lambda_phi_ratio = False
 use_uncor_syst = True
 
 
+low_pt_slopes = []
+high_pt_slopes = []
+
 colors = [rt.kBlue + 2, rt.kMagenta + 2, rt.kGreen + 3]
 
 for PT_MODE in [0, 1, 2]:
@@ -482,7 +485,17 @@ for PT_MODE in [0, 1, 2]:
                 total_fit_slope = total_fit.GetParameter(1)
                 total_fit_slope_err = total_fit.GetParError(1)
 
-
+                if use_new_x_axis and not lambda_phi_ratio:
+                    if PT_MODE == 1:
+                        low_pt_slopes.append([near_fit_slope, near_fit_slope_err])
+                        low_pt_slopes.append([away_fit_slope, away_fit_slope_err])
+                        low_pt_slopes.append([ue_fit_slope, ue_fit_slope_err])
+                        low_pt_slopes.append([total_fit_slope, total_fit_slope_err])
+                    elif PT_MODE == 2:
+                        high_pt_slopes.append([near_fit_slope, near_fit_slope_err])
+                        high_pt_slopes.append([away_fit_slope, away_fit_slope_err])
+                        high_pt_slopes.append([ue_fit_slope, ue_fit_slope_err])
+                        high_pt_slopes.append([total_fit_slope, total_fit_slope_err])
 
                 ratio_slope_hist = rt.TH1F("ratio_slope_hist", "", 4, 0, 4)
 
@@ -980,3 +993,120 @@ for PT_MODE in [0, 1, 2]:
                     c.SaveAs("figures/pairwise_plot_increase_highpt.pdf")
                 else:
                     c.SaveAs("figures/pairwise_plot_increase.pdf")
+
+
+
+
+slope_plotting_hist = rt.TH1F("slope_plotting_hist", "", 7, 1.0, 4.5)
+
+slope_plotting_hist.SetLineWidth(0)
+slope_plotting_hist.SetMarkerSize(0)
+slope_plotting_hist.GetXaxis().SetTitle("#it{p}_{T}^{assoc.} (GeV/#it{c})")
+# slope_plotting_hist.GetYaxis().SetTitle("Yield Ratio #left(#frac{h#minus#Lambda}{h#minush}#right) vs. #LT#frac{d#it{N}_{ch}}{d#it{#eta}}#GT_{|#it{#eta}_{lab}| < 0.5} slope")
+slope_plotting_hist.GetYaxis().SetTitle("Yield ratio slope")
+slope_plotting_hist.GetXaxis().SetTitleSize(0.05)
+slope_plotting_hist.GetXaxis().SetLabelSize(0.045)
+slope_plotting_hist.GetYaxis().SetLabelSize(0.045)
+slope_plotting_hist.GetXaxis().SetTitleOffset(1.2)
+slope_plotting_hist.GetXaxis().SetRangeUser(0.0, 100.0)
+slope_plotting_hist.GetYaxis().SetRangeUser(0.0, 1.5)
+slope_plotting_hist.SetStats(0)
+slope_plotting_hist.GetYaxis().SetTitleSize(0.05)
+slope_plotting_hist.GetYaxis().SetTitleOffset(0.9)
+slope_plotting_hist.GetYaxis().SetRangeUser(0.0, 6e-3)
+slope_plotting_hist.GetYaxis().SetMaxDigits(3)
+slope_plotting_hist.GetXaxis().SetRangeUser(1.01, 4.49)
+slope_plotting_hist.SetStats(0)
+slope_plotting_hist.Draw()
+
+
+pt_bins = arr.array('d', [1.5, 2.5, 4.0])
+near_slope_hist = rt.TH1F("near_slope_hist", "", 2, pt_bins)
+away_slope_hist = rt.TH1F("away_slope_hist", "", 2, pt_bins)
+ue_slope_hist = rt.TH1F("ue_slope_hist", "", 2, pt_bins)
+total_slope_hist = rt.TH1F("total_slope_hist", "", 2, pt_bins)
+
+near_slope_hist.SetMarkerStyle(20)
+near_slope_hist.SetMarkerSize(1.5)
+near_slope_hist.SetMarkerColor(rt.kRed+1)
+near_slope_hist.SetLineColor(rt.kRed+2)
+near_slope_hist.SetLineWidth(2)
+near_slope_hist.SetFillColor(rt.kRed+1)
+near_slope_hist.SetFillStyle(3144)
+
+away_slope_hist.SetMarkerStyle(21)
+away_slope_hist.SetMarkerSize(1.5)
+away_slope_hist.SetMarkerColor(rt.kBlue+1)
+away_slope_hist.SetLineColor(rt.kBlue+2)
+away_slope_hist.SetLineWidth(2)
+away_slope_hist.SetFillColor(rt.kBlue+1)
+away_slope_hist.SetFillStyle(3144)
+
+ue_slope_hist.SetMarkerStyle(34)
+ue_slope_hist.SetMarkerSize(1.5)
+ue_slope_hist.SetMarkerColor(rt.kGreen+2)
+ue_slope_hist.SetLineColor(rt.kGreen+3)
+ue_slope_hist.SetLineWidth(2)
+ue_slope_hist.SetFillColor(rt.kGreen+1)
+ue_slope_hist.SetFillStyle(3144)
+
+total_slope_hist.SetMarkerStyle(47)
+total_slope_hist.SetMarkerSize(1.5)
+total_slope_hist.SetMarkerColor(rt.kMagenta+2)
+total_slope_hist.SetLineColor(rt.kMagenta+3)
+total_slope_hist.SetLineWidth(2)
+total_slope_hist.SetFillColor(rt.kMagenta+1)
+total_slope_hist.SetFillStyle(3144)
+
+
+near_slope_hist.SetBinContent(1, low_pt_slopes[0][0])
+near_slope_hist.SetBinError(1, low_pt_slopes[0][1])
+print(low_pt_slopes)
+near_slope_hist.SetBinContent(2, high_pt_slopes[0][0])
+near_slope_hist.SetBinError(2, high_pt_slopes[0][1])
+
+away_slope_hist.SetBinContent(1, low_pt_slopes[1][0])
+away_slope_hist.SetBinError(1, low_pt_slopes[1][1])
+away_slope_hist.SetBinContent(2, high_pt_slopes[1][0])
+away_slope_hist.SetBinError(2, high_pt_slopes[1][1])
+
+ue_slope_hist.SetBinContent(1, low_pt_slopes[2][0])
+ue_slope_hist.SetBinError(1, low_pt_slopes[2][1])
+ue_slope_hist.SetBinContent(2, high_pt_slopes[2][0])
+ue_slope_hist.SetBinError(2, high_pt_slopes[2][1])
+
+total_slope_hist.SetBinContent(1, low_pt_slopes[3][0])
+total_slope_hist.SetBinError(1, low_pt_slopes[3][1])
+total_slope_hist.SetBinContent(2, high_pt_slopes[3][0])
+total_slope_hist.SetBinError(2, high_pt_slopes[3][1])
+
+
+slopes_legend = rt.TLegend(0.58, 0.65, 0.93, 0.88)
+slopes_legend.SetMargin(0.35)
+slopes_legend.AddEntry(ue_slope_hist, "Underlying Event", "pl")
+slopes_legend.AddEntry(away_slope_hist, "Away-side (Jet)", "pl")
+slopes_legend.AddEntry(near_slope_hist, "Near-side (Jet)", "pl")
+slopes_legend.AddEntry(total_slope_hist, "Total (Jet + UE)", "pl")
+slopes_legend.SetLineWidth(0)
+
+label_x_start = 0.19
+label_y_start = 0.88
+label_text_space = 0.059
+alice_data_label = rt.TLatex()
+alice_data_label.SetNDC()
+alice_data_label.SetTextSize(0.045)
+alice_data_label.SetTextAlign(13)
+alice_data_label.DrawLatex(label_x_start, label_y_start, "ALICE Preliminary")
+alice_data_label.DrawLatex(label_x_start, label_y_start - label_text_space, "#bf{p#minusPb #sqrt{#it{s}_{NN}} = 5.02 TeV}")
+alice_data_label.DrawLatex(label_x_start, label_y_start - 2*label_text_space, "#bf{4.0 <   #it{p}_{T}^{trig.}    < 8.0 GeV/#it{c}}")
+alice_data_label.DrawLatex(label_x_start, label_y_start - 3.2*label_text_space, "#bf{|#Delta#it{#eta}| < 1.2}")
+
+slopes_legend.Draw("SAME")
+total_slope_hist.Draw("SAME E1")
+near_slope_hist.Draw("SAME E1")
+away_slope_hist.Draw("SAME E1")
+ue_slope_hist.Draw("SAME E1")
+
+c.Draw()
+c.SaveAs("figures/consolidated_slope_plot.pdf")
+c.SaveAs("figures/consolidated_slope_plot.eps")
