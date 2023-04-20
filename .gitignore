@@ -1,6 +1,7 @@
 *.o*
 *.root
 *.xml
+*.pdf
 *.png
 *.jdl
 *.gif
@@ -19,3 +20,5 @@ PhiInvMass*
 PhiPID*
 PhiEff*
 *checkpoints*
+*.env
+*.json
