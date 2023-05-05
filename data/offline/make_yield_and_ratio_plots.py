@@ -273,6 +273,7 @@ for PT_MODE in [0, 1, 2]:
                 plotting_hist.GetYaxis().SetRangeUser(0.0, 1.5)
                 plotting_hist.Draw("PE")
             else:
+
                 mult_bin_widths = arr.array('d', [0.0, 20.0, 50.0, 80.0, 100.0])
                 plotting_hist = rt.TH1D("plotting_hist", "", 4, mult_bin_widths)
                 plotting_hist.SetMarkerStyle(20)
@@ -298,7 +299,21 @@ for PT_MODE in [0, 1, 2]:
                 plotting_hist.GetYaxis().SetTitleOffset(1.3)
                 plotting_hist.GetYaxis().SetRangeUser(0.0, 1.5)
                 plotting_hist.SetStats(0)
+                plotting_hist.GetXaxis().SetLabelOffset(999)
                 plotting_hist.Draw("PE")
+                plotting_hist.GetXaxis().SetTickSize(0)
+                rt.gPad.Update()
+                new_axis = rt.TGaxis(rt.gPad.GetUxmax(),
+                        rt.gPad.GetUymin(),
+                        rt.gPad.GetUxmin(),
+                        rt.gPad.GetUymin(),
+                        plotting_hist.GetXaxis().GetXmin(),
+                        plotting_hist.GetXaxis().GetXmax(),
+                        510,"-")
+                new_axis.SetLabelSize(0.045)
+                new_axis.SetLabelFont(plotting_hist.GetXaxis().GetLabelFont())
+                new_axis.SetLabelOffset(-0.03)
+                new_axis.Draw()
             
             label_x_start = 0.19
             label_y_start = 0.88
@@ -695,7 +710,6 @@ for PT_MODE in [0, 1, 2]:
                 plotting_hist.GetXaxis().SetRangeUser(0.0, 100.0)
                 plotting_hist.GetYaxis().SetRangeUser(0.0, 1.5)
                 plotting_hist.SetStats(0)
-
                 if lambda_phi_ratio:
                     plotting_hist.GetYaxis().SetTitle("Per-trigger pairwise yield")
                 else:
@@ -703,7 +717,21 @@ for PT_MODE in [0, 1, 2]:
                 plotting_hist.GetYaxis().SetTitleSize(0.05)
                 plotting_hist.GetYaxis().SetTitleOffset(1.1)
                 plotting_hist.SetStats(0)
+                plotting_hist.GetXaxis().SetLabelOffset(999)
                 plotting_hist.Draw("PE")
+                plotting_hist.GetXaxis().SetTickSize(0)
+                rt.gPad.Update()
+                new_axis = rt.TGaxis(rt.gPad.GetUxmax(),
+                        rt.gPad.GetUymin(),
+                        rt.gPad.GetUxmin(),
+                        rt.gPad.GetUymin(),
+                        plotting_hist.GetXaxis().GetXmin(),
+                        plotting_hist.GetXaxis().GetXmax(),
+                        510,"-")
+                new_axis.SetLabelSize(0.045)
+                new_axis.SetLabelFont(plotting_hist.GetXaxis().GetLabelFont())
+                new_axis.SetLabelOffset(-0.03)
+                new_axis.Draw()
 
 
             label_x_start = 0.19

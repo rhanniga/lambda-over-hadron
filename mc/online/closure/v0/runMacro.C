@@ -14,18 +14,19 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
   //Starting and ending index of the array containing the run numbers, specifies which range to run over
   // 44 total runs in pp  set
 
-  // int startIndex = 0; 
+  int startIndex = 0; 
   // int endIndex = 17; 
 
-   int startIndex = 18; 
-   int endIndex = 28; 
+    //  int startIndex = 18; 
+  int endIndex = 28; 
 
   /* int startIndex = 22; */ 
   // int endIndex = 43; 
 
 
-  TString work_dir = "lambda_hadron_v0closure_2";
-  TString output_dir = "full_statistics_new_prod";
+
+  TString work_dir = "lambda_hadron_v0closure";
+  TString output_dir = "full_statistics_epos_prod";
   
   //If we want to download test files from grid then run in one swoop (usually just run completely locally):
   bool gridTest = false;
@@ -97,8 +98,13 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
     alienHandler->SetAPIVersion("V1.1x");
     // select the input data (these are all the runs anchored to 16q that use GP DPMJET)
     // alienHandler->SetGridDataDir("//alice/sim/2017/LHC17f2b_fast/");
-    alienHandler->SetGridDataDir("//alice/sim/2018/LHC18f3_fast_2/");
-    alienHandler->SetDataPattern("/AOD202/*/*AOD.root");
+    // alienHandler->SetGridDataDir("//alice/sim/2018/LHC18f3_fast_2/");
+    // alienHandler->SetDataPattern("/AOD202/*/*AOD.root");
+
+    // alienHandler->SetGridDataDir("//alice/sim/2018/LHC18f3_cent_woSDD_2/");
+    // sim/2020/LHC20f11c2_cent_woSDD is the EPOS data set (cent)")
+    alienHandler->SetGridDataDir("//alice/sim/2017/LHC17f2a_fast_fix/");
+    alienHandler->SetDataPattern("/AOD228/*/*AOD.root");
     // alienHandler->SetGridDataDir("//alice/sim/2018/LHC18j2_fast/");
     // alienHandler->SetDataPattern("/AOD209/*/*AOD.root");
     // MC has no prefix, data has prefix 000
