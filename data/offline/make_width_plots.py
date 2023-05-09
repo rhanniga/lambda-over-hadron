@@ -7,6 +7,11 @@ from array import array as arr
 def get_width_from_kappa(kappa):
     return rt.TMath.Sqrt(-2*rt.TMath.Log(rt.TMath.BesselI1(kappa)/rt.TMath.BesselI0(kappa)))
 
+def get_width_error_from_kappa(kappa, kappa_error):
+    deriv = (rt.TMath.BesselI0(kappa)**2 + rt.TMath.BesselI0(kappa)*rt.TMath.BesselI(2, kappa) - 2*rt.TMath.BesselI1(kappa)**2)/(2*rt.TMath.Sqrt(2)*rt.TMath.BesselI0(kappa)*rt.TMath.BesselI1(kappa)*rt.TMath.Sqrt(-rt.TMath.Log(rt.TMath.BesselI1(kappa)/rt.TMath.BesselI0(kappa))))
+    return deriv * kappa_error
+
+
 c = rt.TCanvas("c","c", 800, 600)
 c.SetLeftMargin(0.15)
 c.SetRightMargin(0.05)
@@ -204,60 +209,102 @@ for i, f in enumerate([low_pt_infile, high_pt_infile]):
     # parameter 4 == near side, parameter 6 == away side
 
     mult_array = arr('d', [35, 65, 90])
+    mult_array_err = arr('d', [15, 15, 10])
+    tmp_width_array_err = arr('d', [0, 0, 0])
 
     h_h_kappa_near_0_20 = h_h_von_fit_0_20.GetParameter(4)
     h_h_kappa_near_20_50 = h_h_von_fit_20_50.GetParameter(4)
     h_h_kappa_near_50_80 = h_h_von_fit_50_80.GetParameter(4)
+    h_h_kappa_near_error_0_20 = h_h_von_fit_0_20.GetParError(4)
+    h_h_kappa_near_error_20_50 = h_h_von_fit_20_50.GetParError(4)
+    h_h_kappa_near_error_50_80 = h_h_von_fit_50_80.GetParError(4)
     h_h_width_near_0_20 = get_width_from_kappa(h_h_kappa_near_0_20)
     h_h_width_near_20_50 = get_width_from_kappa(h_h_kappa_near_20_50)
     h_h_width_near_50_80 = get_width_from_kappa(h_h_kappa_near_50_80)
+    h_h_width_error_near_0_20 = get_width_error_from_kappa(h_h_kappa_near_0_20, h_h_kappa_near_error_0_20)
+    h_h_width_error_near_20_50 = get_width_error_from_kappa(h_h_kappa_near_20_50, h_h_kappa_near_error_20_50)
+    h_h_width_error_near_50_80 = get_width_error_from_kappa(h_h_kappa_near_50_80, h_h_kappa_near_error_50_80)
     h_h_near_width_array = arr('d', [h_h_width_near_50_80, h_h_width_near_20_50, h_h_width_near_0_20])
+    h_h_near_width_error_array = arr('d', [h_h_width_error_near_50_80, h_h_width_error_near_20_50, h_h_width_error_near_0_20])
 
     h_h_kappa_away_0_20 = h_h_von_fit_0_20.GetParameter(6)
     h_h_kappa_away_20_50 = h_h_von_fit_20_50.GetParameter(6)
     h_h_kappa_away_50_80 = h_h_von_fit_50_80.GetParameter(6)
+    h_h_kappa_away_error_0_20 = h_h_von_fit_0_20.GetParError(6)
+    h_h_kappa_away_error_20_50 = h_h_von_fit_20_50.GetParError(6)
+    h_h_kappa_away_error_50_80 = h_h_von_fit_50_80.GetParError(6)
     h_h_width_away_0_20 = get_width_from_kappa(h_h_kappa_away_0_20)
     h_h_width_away_20_50 = get_width_from_kappa(h_h_kappa_away_20_50)
     h_h_width_away_50_80 = get_width_from_kappa(h_h_kappa_away_50_80)
+    h_h_width_error_away_0_20 = get_width_error_from_kappa(h_h_kappa_away_0_20, h_h_kappa_away_error_0_20)
+    h_h_width_error_away_20_50 = get_width_error_from_kappa(h_h_kappa_away_20_50, h_h_kappa_away_error_20_50)
+    h_h_width_error_away_50_80 = get_width_error_from_kappa(h_h_kappa_away_50_80, h_h_kappa_away_error_50_80)
     h_h_away_width_array = arr('d', [h_h_width_away_50_80, h_h_width_away_20_50, h_h_width_away_0_20])
+    h_h_away_width_error_array = arr('d', [h_h_width_error_away_50_80, h_h_width_error_away_20_50, h_h_width_error_away_0_20])
 
 
     h_lambda_kappa_near_0_20 = h_lambda_von_fit_0_20.GetParameter(4)
     h_lambda_kappa_near_20_50 = h_lambda_von_fit_20_50.GetParameter(4)
     h_lambda_kappa_near_50_80 = h_lambda_von_fit_50_80.GetParameter(4)
+    h_lambda_kappa_near_error_0_20 = h_lambda_von_fit_0_20.GetParError(4)
+    h_lambda_kappa_near_error_20_50 = h_lambda_von_fit_20_50.GetParError(4)
+    h_lambda_kappa_near_error_50_80 = h_lambda_von_fit_50_80.GetParError(4)
     h_lambda_width_near_0_20 = get_width_from_kappa(h_lambda_kappa_near_0_20)
     h_lambda_width_near_20_50 = get_width_from_kappa(h_lambda_kappa_near_20_50)
     h_lambda_width_near_50_80 = get_width_from_kappa(h_lambda_kappa_near_50_80)
+    h_lambda_width_error_near_0_20 = get_width_error_from_kappa(h_lambda_kappa_near_0_20, h_lambda_kappa_near_error_0_20)
+    h_lambda_width_error_near_20_50 = get_width_error_from_kappa(h_lambda_kappa_near_20_50, h_lambda_kappa_near_error_20_50)
+    h_lambda_width_error_near_50_80 = get_width_error_from_kappa(h_lambda_kappa_near_50_80, h_lambda_kappa_near_error_50_80)
     h_lambda_near_width_array = arr('d', [h_lambda_width_near_50_80, h_lambda_width_near_20_50, h_lambda_width_near_0_20])
+    h_lambda_near_width_error_array = arr('d', [h_lambda_width_error_near_50_80, h_lambda_width_error_near_20_50, h_lambda_width_error_near_0_20])
 
 
     h_lambda_kappa_away_0_20 = h_lambda_von_fit_0_20.GetParameter(6)
     h_lambda_kappa_away_20_50 = h_lambda_von_fit_20_50.GetParameter(6)
     h_lambda_kappa_away_50_80 = h_lambda_von_fit_50_80.GetParameter(6)
+    h_lambda_kappa_away_error_0_20 = h_lambda_von_fit_0_20.GetParError(6)
+    h_lambda_kappa_away_error_20_50 = h_lambda_von_fit_20_50.GetParError(6)
+    h_lambda_kappa_away_error_50_80 = h_lambda_von_fit_50_80.GetParError(6)
     h_lambda_width_away_0_20 = get_width_from_kappa(h_lambda_kappa_away_0_20)
     h_lambda_width_away_20_50 = get_width_from_kappa(h_lambda_kappa_away_20_50)
     h_lambda_width_away_50_80 = get_width_from_kappa(h_lambda_kappa_away_50_80)
+    h_lambda_width_error_away_0_20 = get_width_error_from_kappa(h_lambda_kappa_away_0_20, h_lambda_kappa_away_error_0_20)
+    h_lambda_width_error_away_20_50 = get_width_error_from_kappa(h_lambda_kappa_away_20_50, h_lambda_kappa_away_error_20_50)
+    h_lambda_width_error_away_50_80 = get_width_error_from_kappa(h_lambda_kappa_away_50_80, h_lambda_kappa_away_error_50_80)
     h_lambda_away_width_array = arr('d', [h_lambda_width_away_50_80, h_lambda_width_away_20_50, h_lambda_width_away_0_20])
+    h_lambda_away_width_error_array = arr('d', [h_lambda_width_error_away_50_80, h_lambda_width_error_away_20_50, h_lambda_width_error_away_0_20])
 
     
-    h_h_near_width_graph = rt.TGraph(3, mult_array, h_h_near_width_array)
+    # h_h_near_width_graph = rt.TGraphErrors(3, mult_array, h_h_near_width_array, mult_array_err, tmp_width_array_err)
+    h_h_near_width_graph = rt.TGraphErrors(3, mult_array, h_h_near_width_array, mult_array_err, h_h_near_width_error_array)
+    h_h_near_width_graph.SetLineColor(rt.kRed)
+    h_h_near_width_graph.SetLineWidth(2)
     h_h_near_width_graph.SetMarkerStyle(20)
     h_h_near_width_graph.SetMarkerSize(2)
     h_h_near_width_graph.SetMarkerColor(rt.kRed)
 
-    h_h_away_width_graph = rt.TGraph(3, mult_array, h_h_away_width_array)
+    # h_h_away_width_graph = rt.TGraphErrors(3, mult_array, h_h_away_width_array, mult_array_err, tmp_width_array_err)
+    h_h_away_width_graph = rt.TGraphErrors(3, mult_array, h_h_away_width_array, mult_array_err, h_h_away_width_error_array)
+    h_h_away_width_graph.SetLineColor(rt.kBlue)
+    h_h_away_width_graph.SetLineWidth(2)
     h_h_away_width_graph.SetMarkerStyle(20)
     h_h_away_width_graph.SetMarkerSize(2)
     h_h_away_width_graph.SetMarkerColor(rt.kBlue)
     
-    h_lambda_near_width_graph = rt.TGraph(3, mult_array, h_lambda_near_width_array)
+    # h_lambda_near_width_graph = rt.TGraphErrors(3, mult_array, h_lambda_near_width_array, mult_array_err, tmp_width_array_err)
+    h_lambda_near_width_graph = rt.TGraphErrors(3, mult_array, h_lambda_near_width_array, mult_array_err, h_lambda_near_width_error_array)
+    h_lambda_near_width_graph.SetLineColor(rt.kRed)
+    h_lambda_near_width_graph.SetLineWidth(2)
     h_lambda_near_width_graph.SetMarkerStyle(43)
-    h_lambda_near_width_graph.SetMarkerSize(2)
+    h_lambda_near_width_graph.SetMarkerSize(2.5)
     h_lambda_near_width_graph.SetMarkerColor(rt.kRed)
 
-    h_lambda_away_width_graph = rt.TGraph(3, mult_array, h_lambda_away_width_array)
+    # h_lambda_away_width_graph = rt.TGraphErrors(3, mult_array, h_lambda_away_width_array, mult_array_err, tmp_width_array_err)
+    h_lambda_away_width_graph = rt.TGraphErrors(3, mult_array, h_lambda_away_width_array, mult_array_err, h_lambda_away_width_error_array)
+    h_lambda_away_width_graph.SetLineColor(rt.kBlue)
+    h_lambda_away_width_graph.SetLineWidth(2)
     h_lambda_away_width_graph.SetMarkerStyle(43)
-    h_lambda_away_width_graph.SetMarkerSize(2)
+    h_lambda_away_width_graph.SetMarkerSize(2.5)
     h_lambda_away_width_graph.SetMarkerColor(rt.kBlue)
 
 
@@ -279,8 +326,10 @@ for i, f in enumerate([low_pt_infile, high_pt_infile]):
     plotting_hist.GetXaxis().SetRangeUser(0.0, 100.0)
     plotting_hist.SetStats(0)
     plotting_hist.Draw("PE")
+
     plotting_hist.GetXaxis().SetLabelOffset(999)
     plotting_hist.GetXaxis().SetTickSize(0)
+
     if i == 0:
         plotting_hist.GetYaxis().SetRangeUser(0.1, 2.0)
     else:
