@@ -21,8 +21,9 @@ c.SetBottomMargin(0.15)
 
 low_pt_infile = rt.TFile("output/yield_variation/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_15_25_delta_eta_12_normal_lowpt.root")
 high_pt_infile = rt.TFile("output/yield_variation/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_25_40_delta_eta_12_normal_highpt.root")
+normal_pt_infile = rt.TFile("output/yield_variation/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
 
-for i, f in enumerate([low_pt_infile, high_pt_infile]):
+for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
 
     h_h_dphi_0_20 = f.Get("h_h_dphi_0_20")
     h_h_dphi_20_50 = f.Get("h_h_dphi_20_50")
@@ -124,11 +125,11 @@ for i, f in enumerate([low_pt_infile, high_pt_infile]):
     h_h_50_80_leg.AddEntry(h_h_von_fit_50_80, "Von mises fit", "l")
     h_h_50_80_leg.SetLineWidth(0)
     h_h_50_80_leg.SetBorderSize(0)
-    h_h_dphi_0_20.Draw("PE")
-    h_h_von_fit_0_20.Draw("SAME")
-    h_h_0_20_leg.Draw("SAME")
 
     if i == 0:
+        h_h_dphi_0_20.Draw("PE")
+        h_h_von_fit_0_20.Draw("SAME")
+        h_h_0_20_leg.Draw("SAME")
         c.Draw()
         c.SaveAs("figures/width_tmp/h_h_dphi_with_von_0_20_lowpt.pdf")
         h_h_dphi_20_50.Draw("PE")
@@ -141,7 +142,10 @@ for i, f in enumerate([low_pt_infile, high_pt_infile]):
         h_h_50_80_leg.Draw("SAME")
         c.Draw()
         c.SaveAs("figures/width_tmp/h_h_dphi_with_von_50_80_lowpt.pdf")
-    else:
+    elif i == 1:
+        h_h_dphi_0_20.Draw("PE")
+        h_h_von_fit_0_20.Draw("SAME")
+        h_h_0_20_leg.Draw("SAME")
         c.Draw()
         c.SaveAs("figures/width_tmp/h_h_dphi_with_von_0_20_highpt.pdf")
         h_h_dphi_20_50.Draw("PE")
@@ -154,6 +158,71 @@ for i, f in enumerate([low_pt_infile, high_pt_infile]):
         h_h_50_80_leg.Draw("SAME")
         c.Draw()
         c.SaveAs("figures/width_tmp/h_h_dphi_with_von_50_80_highpt.pdf")
+    else:
+        h_h_dphi_0_20.Draw("PE")
+        h_h_von_fit_0_20.Draw("SAME")
+        h_h_0_20_leg.Draw("SAME")
+        c.Draw()
+        c.SaveAs("figures/width_tmp/h_h_dphi_with_von_0_20_midpt.pdf")
+        h_h_dphi_20_50.Draw("PE")
+        h_h_von_fit_20_50.Draw("SAME")
+        h_h_20_50_leg.Draw("SAME")
+        c.Draw()
+        c.SaveAs("figures/width_tmp/h_h_dphi_with_von_20_50_midpt.pdf")
+        h_h_dphi_50_80.Draw("PE")
+        h_h_von_fit_50_80.Draw("SAME")
+        h_h_50_80_leg.Draw("SAME")
+        c.Draw()
+        c.SaveAs("figures/width_tmp/h_h_dphi_with_von_50_80_midpt.pdf")
+
+    if i == 0:
+        h_h_dphi_0_20.Draw("PE")
+        h_h_von_fit_0_20.Draw("SAME")
+        h_h_0_20_leg.Draw("SAME")
+        c.Draw()
+        c.SaveAs("figures/width_tmp/png/h_h_dphi_with_von_0_20_lowpt.png")
+        h_h_dphi_20_50.Draw("PE")
+        h_h_von_fit_20_50.Draw("SAME")
+        h_h_20_50_leg.Draw("SAME")
+        c.Draw()
+        c.SaveAs("figures/width_tmp/png/h_h_dphi_with_von_20_50_lowpt.png")
+        h_h_dphi_50_80.Draw("PE")
+        h_h_von_fit_50_80.Draw("SAME")
+        h_h_50_80_leg.Draw("SAME")
+        c.Draw()
+        c.SaveAs("figures/width_tmp/png/h_h_dphi_with_von_50_80_lowpt.png")
+    elif i == 1:
+        h_h_dphi_0_20.Draw("PE")
+        h_h_von_fit_0_20.Draw("SAME")
+        h_h_0_20_leg.Draw("SAME")
+        c.Draw()
+        c.SaveAs("figures/width_tmp/png/h_h_dphi_with_von_0_20_highpt.png")
+        h_h_dphi_20_50.Draw("PE")
+        h_h_von_fit_20_50.Draw("SAME")
+        h_h_20_50_leg.Draw("SAME")
+        c.Draw()
+        c.SaveAs("figures/width_tmp/png/h_h_dphi_with_von_20_50_highpt.png")
+        h_h_dphi_50_80.Draw("PE")
+        h_h_von_fit_50_80.Draw("SAME")
+        h_h_50_80_leg.Draw("SAME")
+        c.Draw()
+        c.SaveAs("figures/width_tmp/png/h_h_dphi_with_von_50_80_highpt.png")
+    else:
+        h_h_dphi_0_20.Draw("PE")
+        h_h_von_fit_0_20.Draw("SAME")
+        h_h_0_20_leg.Draw("SAME")
+        c.Draw()
+        c.SaveAs("figures/width_tmp/png/h_h_dphi_with_von_0_20_midpt.png")
+        h_h_dphi_20_50.Draw("PE")
+        h_h_von_fit_20_50.Draw("SAME")
+        h_h_20_50_leg.Draw("SAME")
+        c.Draw()
+        c.SaveAs("figures/width_tmp/png/h_h_dphi_with_von_20_50_midpt.png")
+        h_h_dphi_50_80.Draw("PE")
+        h_h_von_fit_50_80.Draw("SAME")
+        h_h_50_80_leg.Draw("SAME")
+        c.Draw()
+        c.SaveAs("figures/width_tmp/png/h_h_dphi_with_von_50_80_midpt.png")
 
 
 
@@ -173,11 +242,11 @@ for i, f in enumerate([low_pt_infile, high_pt_infile]):
     h_lambda_50_80_leg.AddEntry(h_lambda_von_fit_50_80, "Von mises fit", "l")
     h_lambda_50_80_leg.SetLineWidth(0)
     h_lambda_50_80_leg.SetBorderSize(0)
-    h_lambda_dphi_0_20.Draw("PE")
-    h_lambda_von_fit_0_20.Draw("SAME")
-    h_lambda_0_20_leg.Draw("SAME")
 
     if i == 0:
+        h_lambda_dphi_0_20.Draw("PE")
+        h_lambda_von_fit_0_20.Draw("SAME")
+        h_lambda_0_20_leg.Draw("SAME")
         c.Draw()
         c.SaveAs("figures/width_tmp/h_lambda_dphi_with_von_0_20_lowpt.pdf")
         h_lambda_dphi_20_50.Draw("PE")
@@ -190,7 +259,10 @@ for i, f in enumerate([low_pt_infile, high_pt_infile]):
         h_lambda_50_80_leg.Draw("SAME")
         c.Draw()
         c.SaveAs("figures/width_tmp/h_lambda_dphi_with_von_50_80_lowpt.pdf")
-    else:
+    elif i == 1:
+        h_lambda_dphi_0_20.Draw("PE")
+        h_lambda_von_fit_0_20.Draw("SAME")
+        h_lambda_0_20_leg.Draw("SAME")
         c.Draw()
         c.SaveAs("figures/width_tmp/h_lambda_dphi_with_von_0_20_highpt.pdf")
         h_lambda_dphi_20_50.Draw("PE")
@@ -203,10 +275,79 @@ for i, f in enumerate([low_pt_infile, high_pt_infile]):
         h_lambda_50_80_leg.Draw("SAME")
         c.Draw()
         c.SaveAs("figures/width_tmp/h_lambda_dphi_with_von_50_80_highpt.pdf")
+    else:
+        h_lambda_dphi_0_20.Draw("PE")
+        h_lambda_von_fit_0_20.Draw("SAME")
+        h_lambda_0_20_leg.Draw("SAME")
+        c.Draw()
+        c.SaveAs("figures/width_tmp/h_lambda_dphi_with_von_0_20_midpt.pdf")
+        h_lambda_dphi_20_50.Draw("PE")
+        h_lambda_von_fit_20_50.Draw("SAME")
+        h_lambda_20_50_leg.Draw("SAME")
+        c.Draw()
+        c.SaveAs("figures/width_tmp/h_lambda_dphi_with_von_20_50_midpt.pdf")
+        h_lambda_dphi_50_80.Draw("PE")
+        h_lambda_von_fit_50_80.Draw("SAME")
+        h_lambda_50_80_leg.Draw("SAME")
+        c.Draw()
+        c.SaveAs("figures/width_tmp/h_lambda_dphi_with_von_50_80_midpt.pdf")
+
+    if i == 0:
+        h_lambda_dphi_0_20.Draw("PE")
+        h_lambda_von_fit_0_20.Draw("SAME")
+        h_lambda_0_20_leg.Draw("SAME")
+        c.Draw()
+        c.SaveAs("figures/width_tmp/png/h_lambda_dphi_with_von_0_20_lowpt.png")
+        h_lambda_dphi_20_50.Draw("PE")
+        h_lambda_von_fit_20_50.Draw("SAME")
+        h_lambda_20_50_leg.Draw("SAME")
+        c.Draw()
+        c.SaveAs("figures/width_tmp/png/h_lambda_dphi_with_von_20_50_lowpt.png")
+        h_lambda_dphi_50_80.Draw("PE")
+        h_lambda_von_fit_50_80.Draw("SAME")
+        h_lambda_50_80_leg.Draw("SAME")
+        c.Draw()
+        c.SaveAs("figures/width_tmp/png/h_lambda_dphi_with_von_50_80_lowpt.png")
+    elif i == 1:
+        h_lambda_dphi_0_20.Draw("PE")
+        h_lambda_von_fit_0_20.Draw("SAME")
+        h_lambda_0_20_leg.Draw("SAME")
+        c.Draw()
+        c.SaveAs("figures/width_tmp/png/h_lambda_dphi_with_von_0_20_highpt.png")
+        h_lambda_dphi_20_50.Draw("PE")
+        h_lambda_von_fit_20_50.Draw("SAME")
+        h_lambda_20_50_leg.Draw("SAME")
+        c.Draw()
+        c.SaveAs("figures/width_tmp/png/h_lambda_dphi_with_von_20_50_highpt.png")
+        h_lambda_dphi_50_80.Draw("PE")
+        h_lambda_von_fit_50_80.Draw("SAME")
+        h_lambda_50_80_leg.Draw("SAME")
+        c.Draw()
+        c.SaveAs("figures/width_tmp/png/h_lambda_dphi_with_von_50_80_highpt.png")
+    else:
+        h_lambda_dphi_0_20.Draw("PE")
+        h_lambda_von_fit_0_20.Draw("SAME")
+        h_lambda_0_20_leg.Draw("SAME")
+        c.Draw()
+        c.SaveAs("figures/width_tmp/png/h_lambda_dphi_with_von_0_20_midpt.png")
+        h_lambda_dphi_20_50.Draw("PE")
+        h_lambda_von_fit_20_50.Draw("SAME")
+        h_lambda_20_50_leg.Draw("SAME")
+        c.Draw()
+        c.SaveAs("figures/width_tmp/png/h_lambda_dphi_with_von_20_50_midpt.png")
+        h_lambda_dphi_50_80.Draw("PE")
+        h_lambda_von_fit_50_80.Draw("SAME")
+        h_lambda_50_80_leg.Draw("SAME")
+        c.Draw()
+        c.SaveAs("figures/width_tmp/png/h_lambda_dphi_with_von_50_80_midpt.png")
 
 
 
     # parameter 4 == near side, parameter 6 == away side
+
+    # only doing width comp with phi for 2-4 GeV bin
+    if i != 2:
+        continue
 
     mult_array = arr('d', [35, 65, 90])
     mult_array_err = arr('d', [15, 15, 10])
@@ -257,8 +398,6 @@ for i, f in enumerate([low_pt_infile, high_pt_infile]):
     h_lambda_width_error_near_50_80 = get_width_error_from_kappa(h_lambda_kappa_near_50_80, h_lambda_kappa_near_error_50_80)
     h_lambda_near_width_array = arr('d', [h_lambda_width_near_50_80, h_lambda_width_near_20_50, h_lambda_width_near_0_20])
     h_lambda_near_width_error_array = arr('d', [h_lambda_width_error_near_50_80, h_lambda_width_error_near_20_50, h_lambda_width_error_near_0_20])
-
-
     h_lambda_kappa_away_0_20 = h_lambda_von_fit_0_20.GetParameter(6)
     h_lambda_kappa_away_20_50 = h_lambda_von_fit_20_50.GetParameter(6)
     h_lambda_kappa_away_50_80 = h_lambda_von_fit_50_80.GetParameter(6)
@@ -273,6 +412,43 @@ for i, f in enumerate([low_pt_infile, high_pt_infile]):
     h_lambda_width_error_away_50_80 = get_width_error_from_kappa(h_lambda_kappa_away_50_80, h_lambda_kappa_away_error_50_80)
     h_lambda_away_width_array = arr('d', [h_lambda_width_away_50_80, h_lambda_width_away_20_50, h_lambda_width_away_0_20])
     h_lambda_away_width_error_array = arr('d', [h_lambda_width_error_away_50_80, h_lambda_width_error_away_20_50, h_lambda_width_error_away_0_20])
+
+    h_phi_fit_file = rt.TFile("output/h_phi_fits.root", "READ")
+    h_phi_von_fit_0_20 = h_phi_fit_file.Get("h_phi_von_fit_0_20")
+    h_phi_von_fit_20_50 = h_phi_fit_file.Get("h_phi_von_fit_20_50")
+    h_phi_von_fit_50_80 = h_phi_fit_file.Get("h_phi_von_fit_50_80")
+    h_phi_fit_file.Close()
+
+    h_phi_kappa_near_0_20 = h_phi_von_fit_0_20.GetParameter(4)
+    h_phi_kappa_near_20_50 = h_phi_von_fit_20_50.GetParameter(4)
+    h_phi_kappa_near_50_80 = h_phi_von_fit_50_80.GetParameter(4)
+    h_phi_kappa_near_error_0_20 = h_phi_von_fit_0_20.GetParError(4)
+    h_phi_kappa_near_error_20_50 = h_phi_von_fit_20_50.GetParError(4)
+    h_phi_kappa_near_error_50_80 = h_phi_von_fit_50_80.GetParError(4)
+    h_phi_width_near_0_20 = get_width_from_kappa(h_phi_kappa_near_0_20)
+    h_phi_width_near_20_50 = get_width_from_kappa(h_phi_kappa_near_20_50)
+    h_phi_width_near_50_80 = get_width_from_kappa(h_phi_kappa_near_50_80)
+    h_phi_width_error_near_0_20 = get_width_error_from_kappa(h_phi_kappa_near_0_20, h_phi_kappa_near_error_0_20)
+    h_phi_width_error_near_20_50 = get_width_error_from_kappa(h_phi_kappa_near_20_50, h_phi_kappa_near_error_20_50)
+    h_phi_width_error_near_50_80 = get_width_error_from_kappa(h_phi_kappa_near_50_80, h_phi_kappa_near_error_50_80)
+    h_phi_near_width_array = arr('d', [h_phi_width_near_50_80, h_phi_width_near_20_50, h_phi_width_near_0_20])
+    h_phi_near_width_error_array = arr('d', [h_phi_width_error_near_50_80, h_phi_width_error_near_20_50, h_phi_width_error_near_0_20])
+
+    h_phi_kappa_away_0_20 = h_phi_von_fit_0_20.GetParameter(6)
+    h_phi_kappa_away_20_50 = h_phi_von_fit_20_50.GetParameter(6)
+    h_phi_kappa_away_50_80 = h_phi_von_fit_50_80.GetParameter(6)
+    h_phi_kappa_away_error_0_20 = h_phi_von_fit_0_20.GetParError(6)
+    h_phi_kappa_away_error_20_50 = h_phi_von_fit_20_50.GetParError(6)
+    h_phi_kappa_away_error_50_80 = h_phi_von_fit_50_80.GetParError(6)
+    h_phi_width_away_0_20 = get_width_from_kappa(h_phi_kappa_away_0_20)
+    h_phi_width_away_20_50 = get_width_from_kappa(h_phi_kappa_away_20_50)
+    h_phi_width_away_50_80 = get_width_from_kappa(h_phi_kappa_away_50_80)
+    h_phi_width_error_away_0_20 = get_width_error_from_kappa(h_phi_kappa_away_0_20, h_phi_kappa_away_error_0_20)
+    h_phi_width_error_away_20_50 = get_width_error_from_kappa(h_phi_kappa_away_20_50, h_phi_kappa_away_error_20_50)
+    h_phi_width_error_away_50_80 = get_width_error_from_kappa(h_phi_kappa_away_50_80, h_phi_kappa_away_error_50_80)
+    h_phi_away_width_array = arr('d', [h_phi_width_away_50_80, h_phi_width_away_20_50, h_phi_width_away_0_20])
+    h_phi_away_width_error_array = arr('d', [h_phi_width_error_away_50_80, h_phi_width_error_away_20_50, h_phi_width_error_away_0_20])
+
 
     
     # h_h_near_width_graph = rt.TGraphErrors(3, mult_array, h_h_near_width_array, mult_array_err, tmp_width_array_err)
@@ -291,6 +467,7 @@ for i, f in enumerate([low_pt_infile, high_pt_infile]):
     h_h_away_width_graph.SetMarkerSize(2)
     h_h_away_width_graph.SetMarkerColor(rt.kBlue)
     
+
     # h_lambda_near_width_graph = rt.TGraphErrors(3, mult_array, h_lambda_near_width_array, mult_array_err, tmp_width_array_err)
     h_lambda_near_width_graph = rt.TGraphErrors(3, mult_array, h_lambda_near_width_array, mult_array_err, h_lambda_near_width_error_array)
     h_lambda_near_width_graph.SetLineColor(rt.kRed)
@@ -298,7 +475,6 @@ for i, f in enumerate([low_pt_infile, high_pt_infile]):
     h_lambda_near_width_graph.SetMarkerStyle(43)
     h_lambda_near_width_graph.SetMarkerSize(2.5)
     h_lambda_near_width_graph.SetMarkerColor(rt.kRed)
-
     # h_lambda_away_width_graph = rt.TGraphErrors(3, mult_array, h_lambda_away_width_array, mult_array_err, tmp_width_array_err)
     h_lambda_away_width_graph = rt.TGraphErrors(3, mult_array, h_lambda_away_width_array, mult_array_err, h_lambda_away_width_error_array)
     h_lambda_away_width_graph.SetLineColor(rt.kBlue)
@@ -306,6 +482,21 @@ for i, f in enumerate([low_pt_infile, high_pt_infile]):
     h_lambda_away_width_graph.SetMarkerStyle(43)
     h_lambda_away_width_graph.SetMarkerSize(2.5)
     h_lambda_away_width_graph.SetMarkerColor(rt.kBlue)
+
+    # h_phi_near_width_graph = rt.TGraphErrors(3, mult_array, h_phi_near_width_array, mult_array_err, tmp_width_array_err)
+    h_phi_near_width_graph = rt.TGraphErrors(3, mult_array, h_phi_near_width_array, mult_array_err, h_phi_near_width_error_array)
+    h_phi_near_width_graph.SetLineColor(rt.kRed)
+    h_phi_near_width_graph.SetLineWidth(2)
+    h_phi_near_width_graph.SetMarkerStyle(23)
+    h_phi_near_width_graph.SetMarkerSize(2)
+    h_phi_near_width_graph.SetMarkerColor(rt.kRed)
+    # h_phi_away_width_graph = rt.TGraphErrors(3, mult_array, h_phi_away_width_array, mult_array_err, tmp_width_array_err)
+    h_phi_away_width_graph = rt.TGraphErrors(3, mult_array, h_phi_away_width_array, mult_array_err, h_phi_away_width_error_array)
+    h_phi_away_width_graph.SetLineColor(rt.kBlue)
+    h_phi_away_width_graph.SetLineWidth(2)
+    h_phi_away_width_graph.SetMarkerStyle(23)
+    h_phi_away_width_graph.SetMarkerSize(2)
+    h_phi_away_width_graph.SetMarkerColor(rt.kBlue)
 
 
     mult_bin_widths = arr('d', [0.0, 20.0, 50.0, 80.0, 100.0])
@@ -333,7 +524,7 @@ for i, f in enumerate([low_pt_infile, high_pt_infile]):
     if i == 0:
         plotting_hist.GetYaxis().SetRangeUser(0.1, 2.0)
     else:
-        plotting_hist.GetYaxis().SetRangeUser(0.1, 1.2)
+        plotting_hist.GetYaxis().SetRangeUser(0.1, 2.0)
     rt.gPad.Update()
     new_axis = rt.TGaxis(rt.gPad.GetUxmax(),
             rt.gPad.GetUymin(),
@@ -356,16 +547,26 @@ for i, f in enumerate([low_pt_infile, high_pt_infile]):
     h_h_away_width_graph.Draw("sameP")
 
     h_lambda_width_legend = rt.TLegend(0.35, 0.7, 0.51, 0.9)
-    h_lambda_width_legend.AddEntry(h_lambda_near_width_graph, "#Lambda-#Lambda, near-side", "p")
-    h_lambda_width_legend.AddEntry(h_lambda_away_width_graph, "#Lambda-#Lambda, away-side", "p")
+    h_lambda_width_legend.AddEntry(h_lambda_near_width_graph, "h-#Lambda, near-side", "p")
+    h_lambda_width_legend.AddEntry(h_lambda_away_width_graph, "h-#Lambda, away-side", "p")
     h_lambda_width_legend.SetBorderSize(0)
     h_lambda_width_legend.Draw()
     h_lambda_near_width_graph.Draw("sameP")
     h_lambda_away_width_graph.Draw("sameP")
 
+    h_phi_width_legend = rt.TLegend(0.51, 0.7, 0.68, 0.9)
+    h_phi_width_legend.AddEntry(h_phi_near_width_graph, "h-#phi, near-side", "p")
+    h_phi_width_legend.AddEntry(h_phi_away_width_graph, "h-#phi, away-side", "p")
+    h_phi_width_legend.SetBorderSize(0)
+    h_phi_width_legend.Draw()
+    h_phi_near_width_graph.Draw("sameP")
+    h_phi_away_width_graph.Draw("sameP")
+
     c.Draw()
     if i == 0:
         c.SaveAs("figures/width_tmp/von_mises_widths_lowpt.pdf")
-    else:
+    elif i == 1:
         c.SaveAs("figures/width_tmp/von_mises_widths_highpt.pdf")
+    else:
+        c.SaveAs("figures/width_tmp/von_mises_widths.pdf")
 
