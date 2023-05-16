@@ -16,6 +16,8 @@ c.SetBottomMargin(0.15)
 c.SetTheta(20)
 c.SetPhi(50)
 
+BRANCHING_RATIO = 0.639
+
 N_EVENTS_DATA = 248341207
 N_EVENTS_EPOS = 29179505
 N_EVENTS_DPMJET = 113981589
@@ -23,7 +25,7 @@ N_EVENTS_DPMJET = 113981589
 data_infile = rt.TFile.Open("data_infile.root")
 dpmjet_infile = rt.TFile.Open("dpmjet_0_80_2d_dists_new.root")
 epos_infile = rt.TFile.Open("epos_0_80_2d_dists_large_deta.root")
-phsd_infile = rt.TFile.Open("phsd_out_10mil.root")
+phsd_infile = rt.TFile.Open("phsd_out_60mil.root")
 phsd_mult_dist = phsd_infile.Get("mult_dist")
 N_EVENTS_PHSD = phsd_mult_dist.Integral(2, phsd_mult_dist.GetNbinsX())
 
@@ -129,7 +131,10 @@ h_h_2d_epos = epos_infile.Get("h_h_2d")
 
 h_lambda_2d_data = data_infile.Get("h_lambda_2d_subtracted_0_80")
 h_lambda_2d_dpmjet = dpmjet_infile.Get("h_lambda_2d")
+h_lambda_2d_dpmjet.Scale(1/BRANCHING_RATIO)
 h_lambda_2d_epos = epos_infile.Get("h_lambda_2d")
+h_lambda_2d_epos.Scale(1/BRANCHING_RATIO)
+
 
 h_h_2d_data.SetTitle("")
 h_h_2d_dpmjet.SetTitle("")
@@ -704,25 +709,25 @@ h_lambda_1d_epos.GetYaxis().SetRangeUser(0.8*h_lambda_1d_epos.GetMinimum(), 1.3*
 print(f"h-Lambda TOTAL INTEGRAL DATA/EPOS: {h_lambda_1d_data.Integral()/h_lambda_1d_epos.Integral()}")
 print(f"h-Lambda TOTAL INTEGRAL DATA/DPMJET: {h_lambda_1d_data.Integral()/h_lambda_1d_dpmjet.Integral()}")
 
-# h_lambda_1d_phsd.SetLineColor(rt.kRed + 2)
-# h_lambda_1d_phsd.SetLineWidth(2)
-# h_lambda_1d_phsd.SetMarkerColor(rt.kRed + 2)
-# h_lambda_1d_phsd.SetMarkerStyle(21)
-# h_lambda_1d_phsd.SetMarkerSize(1.5)
-# h_lambda_1d_phsd.GetYaxis().SetRangeUser(0.8*h_lambda_1d_phsd.GetMinimum(), 1.3*h_lambda_1d_phsd.GetMaximum())
+h_lambda_1d_phsd.SetLineColor(rt.kRed + 2)
+h_lambda_1d_phsd.SetLineWidth(2)
+h_lambda_1d_phsd.SetMarkerColor(rt.kRed + 2)
+h_lambda_1d_phsd.SetMarkerStyle(21)
+h_lambda_1d_phsd.SetMarkerSize(1.5)
+h_lambda_1d_phsd.GetYaxis().SetRangeUser(0.8*h_lambda_1d_phsd.GetMinimum(), 1.3*h_lambda_1d_phsd.GetMaximum())
 
 legend_1d = rt.TLegend(0.75, 0.75, 0.9, 0.87)
 legend_1d.AddEntry(h_lambda_1d_data, "Data")
 legend_1d.AddEntry(h_lambda_1d_dpmjet, "DPMJet")
 legend_1d.AddEntry(h_lambda_1d_epos, "EPOS-LHC")
-# legend_1d.AddEntry(h_lambda_1d_phsd, "PHSD")
+legend_1d.AddEntry(h_lambda_1d_phsd, "PHSD")
 legend_1d.SetBorderSize(0)
 legend_1d.SetFillStyle(0)
-h_lambda_1d_data.GetYaxis().SetRangeUser(0.00, 0.07)
+h_lambda_1d_data.GetYaxis().SetRangeUser(0, 0.1)
 h_lambda_1d_data.Draw()
 h_lambda_1d_epos.Draw("SAME")
 h_lambda_1d_dpmjet.Draw("SAME")
-# h_lambda_1d_phsd.Draw("SAME")
+h_lambda_1d_phsd.Draw("SAME")
 legend_1d.Draw("SAME")
 c.Draw()
 c.SaveAs("figures/h_lambda_1d_model_comp.pdf")
@@ -730,7 +735,7 @@ c.SaveAs("figures/h_lambda_1d_model_comp.pdf")
 # scale the vn fit function as the dEta bin width is different (EPOS only)
 vn_fit_scale = 2.4/0.8
 test_epos_scale = vn_fit_scale*1.33
-# phsd_fit_scale = vn_fit_scale*0.944 # not doing mixed-event correction with PHSD, dEta is NOT flat at large dEta
+phsd_fit_scale = vn_fit_scale*0.944 # not doing mixed-event correction with PHSD, dEta is NOT flat at large dEta
 
 vn_fit_epos_total.SetParameter(0, vn_fit_epos_total.GetParameter(0)*test_epos_scale)
 vn_fit_epos_total.SetParameter(1, vn_fit_epos_total.GetParameter(1)*test_epos_scale)
@@ -740,9 +745,9 @@ vn_fit_dpmjet_total.SetParameter(0, vn_fit_dpmjet_total.GetParameter(0)*vn_fit_s
 vn_fit_dpmjet_total.SetParameter(1, vn_fit_dpmjet_total.GetParameter(1)*vn_fit_scale)
 vn_fit_dpmjet_total.SetParameter(2, vn_fit_dpmjet_total.GetParameter(2)*vn_fit_scale)
 
-# vn_fit_phsd_total.SetParameter(0, vn_fit_phsd_total.GetParameter(0)*phsd_fit_scale)
-# vn_fit_phsd_total.SetParameter(1, vn_fit_phsd_total.GetParameter(1)*phsd_fit_scale)
-# vn_fit_phsd_total.SetParameter(2, vn_fit_phsd_total.GetParameter(2)*phsd_fit_scale)
+vn_fit_phsd_total.SetParameter(0, vn_fit_phsd_total.GetParameter(0)*phsd_fit_scale)
+vn_fit_phsd_total.SetParameter(1, vn_fit_phsd_total.GetParameter(1)*phsd_fit_scale)
+vn_fit_phsd_total.SetParameter(2, vn_fit_phsd_total.GetParameter(2)*phsd_fit_scale)
 
 vn_fit_data_total = rt.TF1("vn_fit_data_total", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
 vn_fit_data_total.SetParameter(0, 0.032456)
@@ -770,14 +775,14 @@ legend_1d_subtracted = rt.TLegend(0.65, 0.75, 0.9, 0.87)
 legend_1d_subtracted.AddEntry(h_lambda_1d_data, "Data (UE subtracted)")
 legend_1d_subtracted.AddEntry(h_lambda_1d_dpmjet, "DPMJet (UE subtracted)")
 legend_1d_subtracted.AddEntry(h_lambda_1d_epos, "EPOS-LHC (UE subtracted)")
-# legend_1d_subtracted.AddEntry(h_lambda_1d_phsd, "PHSD (UE subtracted)")
+legend_1d_subtracted.AddEntry(h_lambda_1d_phsd, "PHSD (UE subtracted)")
 legend_1d_subtracted.SetBorderSize(0)
 legend_1d_subtracted.SetFillStyle(0)
 h_lambda_1d_data_subtracted.GetYaxis().SetRangeUser(-0.001, 0.016)
 h_lambda_1d_data_subtracted.Draw()
 h_lambda_1d_epos_subtracted.Draw("SAME")
 h_lambda_1d_dpmjet_subtracted.Draw("SAME")
-# h_lambda_1d_phsd_subtracted.Draw("SAME")
+h_lambda_1d_phsd_subtracted.Draw("SAME")
 legend_1d_subtracted.Draw("SAME")
 c.Draw()
 c.SaveAs("figures/h_lambda_1d_model_comp_ue_subtracted.pdf")
