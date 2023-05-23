@@ -7,7 +7,7 @@ import ROOT as rt
 
 
 from sys import argv
-from strangehelper import make_mixed_corrections,  get_straight_line, apply_two_track_correction
+from strangehelper_old import make_mixed_corrections,  get_straight_line, apply_two_track_correction
 
 # epsilon used to avoid bin edge nightmares (if you pick a value that lies on bin edge, it defaults to right bin)
 EPSILON = 0.00001
@@ -165,13 +165,13 @@ output_file = rt.TFile(output_file_string, "RECREATE")
 ############################################################################################################
 
 if IS_NORMAL_PID:
-    input_file_0_20 = rt.TFile("../online/v0_test/output/v0_normal_0_20.root")
+    input_file_0_20 = rt.TFile("../online/v0/output/v0_normal_0_20.root")
 elif IS_WIDE_PID:
-    input_file_0_20 = rt.TFile("../online/v0_test/output/v0_wide_0_20.root")
+    input_file_0_20 = rt.TFile("../online/v0/output/v0_wide_0_20.root")
 elif IS_NARROW_PID:
-    input_file_0_20 = rt.TFile("../online/v0_test/output/v0_narrow_0_20.root")
+    input_file_0_20 = rt.TFile("../online/v0/output/v0_narrow_0_20.root")
 elif IS_TOF_PID:
-    input_file_0_20 = rt.TFile("../online/v0_test/output/v0_tof_0_20.root")
+    input_file_0_20 = rt.TFile("../online/v0/output/v0_tof_0_20.root")
 else:
     print("ERROR: No PID cut specified")
     exit(1)
@@ -201,6 +201,7 @@ h_lambda_mixed_0_20.GetAxis(0).SetRangeUser(TRIG_PT_LOW, TRIG_PT_HIGH)
 # Setting the associated Pt (this is never changed again)
 lambda_dist_0_20.GetAxis(0).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 h_h_0_20.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
+h_h_mixed_0_20.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 h_lambda_0_20.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 h_lambda_mixed_0_20.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 
@@ -1109,13 +1110,13 @@ total_ratio_error_0_20 = total_ratio_0_20*math.sqrt((h_lambda_total_integral_err
 
 
 if IS_NORMAL_PID:
-    input_file_20_50 = rt.TFile("../online/v0_test/output/v0_normal_20_50.root")
+    input_file_20_50 = rt.TFile("../online/v0/output/v0_normal_20_50.root")
 elif IS_WIDE_PID:
-    input_file_20_50 = rt.TFile("../online/v0_test/output/v0_wide_20_50.root")
+    input_file_20_50 = rt.TFile("../online/v0/output/v0_wide_20_50.root")
 elif IS_NARROW_PID:
-    input_file_20_50 = rt.TFile("../online/v0_test/output/v0_narrow_20_50.root")
+    input_file_20_50 = rt.TFile("../online/v0/output/v0_narrow_20_50.root")
 elif IS_TOF_PID:
-    input_file_20_50 = rt.TFile("../online/v0_test/output/v0_tof_20_50.root")
+    input_file_20_50 = rt.TFile("../online/v0/output/v0_tof_20_50.root")
 else:
     print("ERROR: No PID cut specified")
     exit(1)
@@ -1145,6 +1146,7 @@ h_lambda_mixed_20_50.GetAxis(0).SetRangeUser(TRIG_PT_LOW, TRIG_PT_HIGH)
 # Setting the associated Pt (this is never changed again)
 lambda_dist_20_50.GetAxis(0).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 h_h_20_50.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
+h_h_mixed_20_50.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 h_lambda_20_50.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 h_lambda_mixed_20_50.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 
@@ -2053,13 +2055,13 @@ total_ratio_error_20_50 = total_ratio_20_50*math.sqrt((h_lambda_total_integral_e
 ############################################################################################################
 
 if IS_NORMAL_PID:
-    input_file_50_80 = rt.TFile("../online/v0_test/output/v0_normal_50_80.root")
+    input_file_50_80 = rt.TFile("../online/v0/output/v0_normal_50_80.root")
 elif IS_WIDE_PID:
-    input_file_50_80 = rt.TFile("../online/v0_test/output/v0_wide_50_80.root")
+    input_file_50_80 = rt.TFile("../online/v0/output/v0_wide_50_80.root")
 elif IS_NARROW_PID:
-    input_file_50_80 = rt.TFile("../online/v0_test/output/v0_narrow_50_80.root")
+    input_file_50_80 = rt.TFile("../online/v0/output/v0_narrow_50_80.root")
 elif IS_TOF_PID:
-    input_file_50_80 = rt.TFile("../online/v0_test/output/v0_tof_50_80.root")
+    input_file_50_80 = rt.TFile("../online/v0/output/v0_tof_50_80.root")
 else:
     print("ERROR: No PID cut specified")
     exit(1)
@@ -2089,6 +2091,7 @@ h_lambda_mixed_50_80.GetAxis(0).SetRangeUser(TRIG_PT_LOW, TRIG_PT_HIGH)
 # Setting the associated Pt (this is never changed again)
 lambda_dist_50_80.GetAxis(0).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 h_h_50_80.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
+h_h_mixed_50_80.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 h_lambda_50_80.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 h_lambda_mixed_50_80.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 
@@ -2991,13 +2994,13 @@ total_ratio_error_50_80 = total_ratio_50_80*math.sqrt((h_lambda_total_integral_e
 
 
 if IS_NORMAL_PID:
-    input_file_0_80 = rt.TFile("../online/v0_test/output/v0_normal.root")
+    input_file_0_80 = rt.TFile("../online/v0/output/v0_normal.root")
 elif IS_WIDE_PID:
-    input_file_0_80 = rt.TFile("../online/v0_test/output/v0_wide.root")
+    input_file_0_80 = rt.TFile("../online/v0/output/v0_wide.root")
 elif IS_NARROW_PID:
-    input_file_0_80 = rt.TFile("../online/v0_test/output/v0_narrow.root")
+    input_file_0_80 = rt.TFile("../online/v0/output/v0_narrow.root")
 elif IS_TOF_PID:
-    input_file_0_80 = rt.TFile("../online/v0_test/output/v0_tof.root")
+    input_file_0_80 = rt.TFile("../online/v0/output/v0_tof.root")
 else:
     print("ERROR: No PID cut specified")
     exit(1)
@@ -3027,6 +3030,7 @@ h_lambda_mixed_0_80.GetAxis(0).SetRangeUser(TRIG_PT_LOW, TRIG_PT_HIGH)
 # Setting the associated Pt (this is never changed again)
 lambda_dist_0_80.GetAxis(0).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 h_h_0_80.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
+h_h_mixed_0_80.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 h_lambda_0_80.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 h_lambda_mixed_0_80.GetAxis(1).SetRangeUser(ASSOC_PT_LOW, ASSOC_PT_HIGH)
 

@@ -419,6 +419,8 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
     h_phi_von_fit_50_80 = h_phi_fit_file.Get("h_phi_von_fit_50_80")
     h_phi_fit_file.Close()
 
+
+
     h_phi_kappa_near_0_20 = h_phi_von_fit_0_20.GetParameter(4)
     h_phi_kappa_near_20_50 = h_phi_von_fit_20_50.GetParameter(4)
     h_phi_kappa_near_50_80 = h_phi_von_fit_50_80.GetParameter(4)
@@ -448,6 +450,14 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
     h_phi_width_error_away_50_80 = get_width_error_from_kappa(h_phi_kappa_away_50_80, h_phi_kappa_away_error_50_80)
     h_phi_away_width_array = arr('d', [h_phi_width_away_50_80, h_phi_width_away_20_50, h_phi_width_away_0_20])
     h_phi_away_width_error_array = arr('d', [h_phi_width_error_away_50_80, h_phi_width_error_away_20_50, h_phi_width_error_away_0_20])
+
+    print("THE 0-20 FIT Chi2/NDF: ", h_phi_von_fit_0_20.GetChisquare()/h_phi_von_fit_0_20.GetNDF())
+    print("THE 20-50 FIT Chi2/NDF: ", h_phi_von_fit_20_50.GetChisquare()/h_phi_von_fit_20_50.GetNDF())
+    print("THE 50-80 FIT Chi2/NDF: ", h_phi_von_fit_50_80.GetChisquare()/h_phi_von_fit_50_80.GetNDF())
+
+    print("THE 0-20 WIDTH ERROR: ", h_phi_width_error_away_0_20)
+    print("THE 20-50 WIDTH ERROR: ", h_phi_width_error_away_20_50)
+    print("THE 50-80 WIDTH ERROR: ", h_phi_width_error_away_50_80)
 
 
     

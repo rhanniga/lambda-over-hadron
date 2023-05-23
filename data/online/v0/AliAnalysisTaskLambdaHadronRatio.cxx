@@ -52,9 +52,15 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     fOutputList(0x0),
     fCorPoolMgr(0x0),
     fCorPoolMgr_highestPt(0x0),
-    fTriggerEff(0x0),
-    fAssociatedEff(0x0),
-    fLambdaEff(0x0),
+    fTriggerEff_0_20(0x0),
+    fAssociatedEff_0_20(0x0),
+    fLambdaEff_0_20(0x0),
+    fTriggerEff_20_50(0x0),
+    fAssociatedEff_20_50(0x0),
+    fLambdaEff_20_50(0x0),
+    fTriggerEff_50_80(0x0),
+    fAssociatedEff_50_80(0x0),
+    fLambdaEff_50_80(0x0),
     fTPCnSigmaProton(0x0),
     fTPCnSigmaPion(0x0),
     fTOFnSigmaProton(0x0),
@@ -85,7 +91,8 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     fTPCnSigmaProtonCut(0.0),
     fTOFnSigmaProtonCut(0.0),
     fTPCnSigmaPionCut(0.0),
-    fTOFnSigmaPionCut(0.0)
+    fTOFnSigmaPionCut(0.0),
+    fTOFVeto(0)
 {
 }
 
@@ -95,9 +102,15 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     fOutputList(0x0),
     fCorPoolMgr(0x0),
     fCorPoolMgr_highestPt(0x0),
-    fTriggerEff(0x0),
-    fAssociatedEff(0x0),
-    fLambdaEff(0x0),
+    fTriggerEff_0_20(0x0),
+    fAssociatedEff_0_20(0x0),
+    fLambdaEff_0_20(0x0),
+    fTriggerEff_20_50(0x0),
+    fAssociatedEff_20_50(0x0),
+    fLambdaEff_20_50(0x0),
+    fTriggerEff_50_80(0x0),
+    fAssociatedEff_50_80(0x0),
+    fLambdaEff_50_80(0x0),
     fTPCnSigmaProton(0x0),
     fTPCnSigmaPion(0x0),
     fTOFnSigmaProton(0x0),
@@ -128,7 +141,8 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     fTPCnSigmaProtonCut(0.0),
     fTOFnSigmaProtonCut(0.0),
     fTPCnSigmaPionCut(0.0),
-    fTOFnSigmaPionCut(0.0)
+    fTOFnSigmaPionCut(0.0),
+    fTOFVeto(0)
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -137,9 +151,15 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
 AliAnalysisTaskLambdaHadronRatio::~AliAnalysisTaskLambdaHadronRatio()
 {
     if(fOutputList) delete fOutputList;
-    if(fTriggerEff) delete fTriggerEff;
-    if(fAssociatedEff) delete fAssociatedEff;
-    if(fLambdaEff) delete fLambdaEff;
+    if(fTriggerEff_0_20) delete fTriggerEff_0_20;
+    if(fAssociatedEff_0_20) delete fAssociatedEff_0_20;
+    if(fLambdaEff_0_20) delete fLambdaEff_0_20;
+    if(fTriggerEff_20_50) delete fTriggerEff_20_50;
+    if(fAssociatedEff_20_50) delete fAssociatedEff_20_50;
+    if(fLambdaEff_20_50) delete fLambdaEff_20_50;
+    if(fTriggerEff_50_80) delete fTriggerEff_50_80;
+    if(fAssociatedEff_50_80) delete fAssociatedEff_50_80;
+    if(fLambdaEff_50_80) delete fLambdaEff_50_80;
 }
 
 void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
@@ -148,11 +168,11 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     fOutputList->SetOwner(true);
 
     //Generating the mixed event pools:
-    int poolSize = 500;
-    int trackDepth = 1000;
+    int poolSize = 250;
+    int trackDepth = 500;
 
-    int numMultBins = 1;
-    double multBins[2] = {fMultLow, fMultHigh};
+    int numMultBins = 3;
+    double multBins[4] = {0.0, 20.0, 50.0, 80.0};
 
     int numzVtxBins = 10;
     double zVtxBins[11] = {-10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10};
@@ -163,20 +183,26 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     fCorPoolMgr_highestPt = new AliEventPoolManager(poolSize, trackDepth, numMultBins, multBins, numzVtxBins, zVtxBins);
     fCorPoolMgr_highestPt->SetTargetValues(trackDepth, 0.1, 5);
 
-    //Distribution axes are: Pt, Phi, Eta, zVtx
-    int dist_bins[4] = {200, 16, 20, 10};
-    double dist_mins[4] = {0.0, 0, -1, -10};
-    double dist_maxes[4] = {20.0, 6.28, 1, 10};
+    fEventSelection = new TH2D("fEventSelection", "Event Selection", 3, 0, 3, 8, 0, 80);
+    fEventSelection->GetXaxis()->SetBinLabel(1, "All Events");
+    fEventSelection->GetXaxis()->SetBinLabel(2, "nCont >= 2");
+    fEventSelection->GetXaxis()->SetBinLabel(3, "|zVertex| < 10 cm");
+    fOutputList->Add(fEventSelection);
 
-    fTriggerDist = new THnSparseF("fTriggerDistEff", "Efficiency corrected Trigger Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
+    //Distribution axes are: Pt, Phi, Eta, zVtx, Event Multiplicity
+    int dist_bins[5] = {200, 16, 20, 10, 8};
+    double dist_mins[5] = {0.0, 0, -1, -10, 0};
+    double dist_maxes[5] = {20.0, 6.28, 1, 10, 80};
+
+    fTriggerDist = new THnSparseF("fTriggerDistEff", "Efficiency Corrected Trigger Hadron Distribution", 5, dist_bins, dist_mins, dist_maxes);
     fTriggerDist->Sumw2();
     fOutputList->Add(fTriggerDist);
 
-    fTriggerDist_highestPt = new THnSparseF("fTriggerDistEff_highestPt", "Efficiency corrected Highest p_{t} Trigger Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
+    fTriggerDist_highestPt = new THnSparseF("fTriggerDistEff_highestPt", "Efficiency Corrected Highest p_{t} Trigger Hadron Distribution", 5, dist_bins, dist_mins, dist_maxes);
     fTriggerDist_highestPt->Sumw2();
     fOutputList->Add(fTriggerDist_highestPt);
 
-    fAssociatedHDist = new THnSparseF("fAssociatedHDist", "Associated Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
+    fAssociatedHDist = new THnSparseF("fAssociatedHDist", "Associated Hadron Distribution", 5, dist_bins, dist_mins, dist_maxes);
     fAssociatedHDist->Sumw2();
     fOutputList->Add(fAssociatedHDist);
 
@@ -185,7 +211,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     double mother_dist_mins[5] = {0, -3.14, -1, 1.06, 0};
     double mother_dist_maxes[5] = {15, 3.14, 1, 1.16, 80};
 
-    fLambdaDist = new THnSparseF("fLambdaDist", "Efficiency corrected Lambda Distribution", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
+    fLambdaDist = new THnSparseF("fLambdaDist", " Efficiency corrected Lambda Distribution (with triggered event)", 5, mother_dist_bins, mother_dist_mins, mother_dist_maxes);
     fLambdaDist->Sumw2();
     fOutputList->Add(fLambdaDist);
 
@@ -193,45 +219,45 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     fTriggeredLambdaDist->Sumw2();
     fOutputList->Add(fTriggeredLambdaDist);
 
-    //Correlation axes are: Trigger Pt, Associated Pt, dPhi, dEta, Inv Mass, Zvtx
-    int hl_cor_bins[6] = {8, 10, 16, 20, 100, 10};
-    double hl_cor_mins[6] = {4.0, 1, -1.0*TMath::Pi()/2.0, -2.0, 1.06, -10};
-    double hl_cor_maxes[6] = {12.0, 6, 3.0*TMath::Pi()/2.0, 2.0, 1.16, 10};
+    //Correlation axes are: Trigger Pt, Associated Pt, dPhi, dEta, Inv Mass, Zvtx, Event Multiplicity
+    int hl_cor_bins[7] = {4, 10, 16, 20, 100, 10, 8};
+    double hl_cor_mins[7] = {4.0, 1, -1.0*TMath::Pi()/2.0, -2.0, 1.06, -10, 0};
+    double hl_cor_maxes[7] = {8.0, 6, 3.0*TMath::Pi()/2.0, 2.0, 1.16, 10, 80};
 
-    fDphiHLambda = new THnSparseF("fDphiHLambdaEff", "Efficiency corrected Hadron-Lambda Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambda = new THnSparseF("fDphiHLambdaEff", "Efficiency corrected Hadron-Lambda Correlation Histogram", 7, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambda->Sumw2();
     fOutputList->Add(fDphiHLambda);
 
-    fDphiHLambda_highestPt = new THnSparseF("fDphiHLambdaEff_highestPt", "Efficiency corrected Hadron-Lambda Correlation Histogram (highest pt trigger)", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambda_highestPt = new THnSparseF("fDphiHLambdaEff_highestPt", "Efficiency corrected Hadron-Lambda Correlation Histogram (highest pt trigger)", 7, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambda_highestPt->Sumw2();
     fOutputList->Add(fDphiHLambda_highestPt);
 
-    fDphiHLambdaMixed = new THnSparseF("fDphiHLambdaMixed", "Efficiency corrected Mixed Hadron-Lambda Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambdaMixed = new THnSparseF("fDphiHLambdaMixed", "Efficiency corrected Mixed Hadron-Lambda Correlation Histogram", 7, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambdaMixed->Sumw2();
     fOutputList->Add(fDphiHLambdaMixed);
 
-    fDphiHLambdaMixed_highestPt = new THnSparseF("fDphiHLambdaMixed_highestPt", "Efficiency corrected Mixed Hadron-Lambda Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLambdaMixed_highestPt = new THnSparseF("fDphiHLambdaMixed_highestPt", "Efficiency corrected Mixed Hadron-Lambda Correlation Histogram", 7, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fDphiHLambdaMixed_highestPt->Sumw2();
     fOutputList->Add(fDphiHLambdaMixed_highestPt);
 
-    //Correlation axes are: Trigger Pt, Associated Pt, dPhi, dEta, Zvtx
-    int hh_cor_bins[5] = {16, 10, 16, 20, 10};
-    double hh_cor_mins[5] = {4, 1, -1.0*TMath::Pi()/2.0, -2.0, -10};
-    double hh_cor_maxes[5] = {12, 6, 3.0*TMath::Pi()/2.0, 2.0, 10};
+    //Correlation axes are: Trigger Pt, Associated Pt, dPhi, dEta, Zvtx, Event Multiplicity
+    int hh_cor_bins[6] = {4, 10, 16, 20, 10, 8};
+    double hh_cor_mins[6] = {4, 1, -1.0*TMath::Pi()/2.0, -2.0, -10, 0};
+    double hh_cor_maxes[6] = {8, 6, 3.0*TMath::Pi()/2.0, 2.0, 10, 80};
 
-    fDphiHH = new THnSparseF("fDphiHHEff", "Efficiency corrected Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHH = new THnSparseF("fDphiHHEff", "Efficiency corrected Hadron-Hadron Correlation Histogram", 6, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fDphiHH->Sumw2();
     fOutputList->Add(fDphiHH);
 
-    fDphiHH_highestPt = new THnSparseF("fDphiHHEff_highestPt", "Efficiency corrected Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHH_highestPt = new THnSparseF("fDphiHHEff_highestPt", "Efficiency corrected Hadron-Hadron Correlation Histogram", 6, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fDphiHH_highestPt->Sumw2();
     fOutputList->Add(fDphiHH_highestPt);
 
-    fDphiHHMixed = new THnSparseF("fDphiHHMixed", "Efficiency corrected mixed Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHHMixed = new THnSparseF("fDphiHHMixed", "Efficiency corrected Mixed Hadron-Hadron Correlation Histogram", 6, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fDphiHHMixed->Sumw2();
     fOutputList->Add(fDphiHHMixed);
 
-    fDphiHHMixed_highestPt = new THnSparseF("fDphiHHMixed_highestPt", "Efficiency corrected mixed Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHHMixed_highestPt = new THnSparseF("fDphiHHMixed_highestPt", "Efficiency corrected Mixed Hadron-Hadron Correlation Histogram", 6, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fDphiHHMixed_highestPt->Sumw2();
     fOutputList->Add(fDphiHHMixed_highestPt);
 
@@ -266,19 +292,41 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
 
 }
 
-void AliAnalysisTaskLambdaHadronRatio::FillSingleParticleDist(std::vector<AliAODTrack*> particle_list, double zVtx, THnSparse* fDist, bool trig_eff)
+void AliAnalysisTaskLambdaHadronRatio::FillSingleParticleDist(std::vector<AliAODTrack*> particle_list, double zVtx, double multPercentile, THnSparse* fDist, bool trig_eff)
 {
-    double dist_points[4]; //Pt, Phi, Eta, zVtx
+    double dist_points[5]; //Pt, Phi, Eta, zVtx, Event Multiplicity
     for(int i = 0; i < (int)particle_list.size(); i++) {
         auto particle = particle_list[i];
         dist_points[0] = particle->Pt();
         dist_points[1] = particle->Phi();
         dist_points[2] = particle->Eta();
         dist_points[3] = zVtx;
+        dist_points[4] = multPercentile;
         bool in_pt_range = (particle->Pt() < 10 && particle->Pt() > 0.5);
         if(trig_eff && in_pt_range) {
-            int trigBin = fTriggerEff->FindBin(particle->Pt());
-            double trigEff = fTriggerEff->GetBinContent(trigBin);
+            double trigEff;
+
+            if(multPercentile >= 0 && multPercentile < 20) {
+                int trigPtBin = fTriggerEff_0_20->GetXaxis()->FindBin(particle->Pt());
+                int trigEtaBin = fTriggerEff_0_20->GetYaxis()->FindBin(particle->Eta());
+                trigEff = fTriggerEff_0_20->GetBinContent(trigPtBin, trigEtaBin);
+            }
+            else if(multPercentile >= 20 && multPercentile < 50) {
+                int trigPtBin = fTriggerEff_20_50->GetXaxis()->FindBin(particle->Pt());
+                int trigEtaBin = fTriggerEff_20_50->GetYaxis()->FindBin(particle->Eta());
+                trigEff = fTriggerEff_20_50->GetBinContent(trigPtBin, trigEtaBin);
+            }
+            else if(multPercentile >= 50 && multPercentile < 80) {
+                int trigPtBin = fTriggerEff_50_80->GetXaxis()->FindBin(particle->Pt());
+                int trigEtaBin = fTriggerEff_50_80->GetYaxis()->FindBin(particle->Eta());
+                trigEff = fTriggerEff_50_80->GetBinContent(trigPtBin, trigEtaBin);
+            }
+
+            else{
+                std::cout << "Mult Percentile: " << multPercentile << std::endl;
+                AliFatal("Trigger Efficiency not found for this multiplicity range");
+            }
+
             double triggerScale = 1.0/trigEff;
             fDist->Fill(dist_points, triggerScale);
         }
@@ -304,10 +352,31 @@ void AliAnalysisTaskLambdaHadronRatio::FillMotherDist(std::vector<AliAnalysisTas
             dist_points[3] = particle->MassLambda();
         }
         dist_points[4] = multPercentile;
-        bool in_pt_range = (particle->Pt() < 10 && particle->Pt() > 0.5);
+        bool in_pt_range = (particle->Pt() < 8 && particle->Pt() > 0.5);
         if(lambda_eff && in_pt_range) {
-            int lambdaBin = fLambdaEff->FindBin(particle->Pt());
-            double lambdaEff = fLambdaEff->GetBinContent(lambdaBin);
+
+            double lambdaEff;
+
+            if(multPercentile >= 0 && multPercentile < 20) {
+                int lambdaPtBin = fLambdaEff_0_20->GetXaxis()->FindBin(particle->Pt());
+                int lambdaEtaBin = fLambdaEff_0_20->GetYaxis()->FindBin(particle->Eta());
+                lambdaEff = fLambdaEff_0_20->GetBinContent(lambdaPtBin, lambdaEtaBin);
+            }
+            else if(multPercentile >= 20 && multPercentile < 50) {
+                int lambdaPtBin = fLambdaEff_20_50->GetXaxis()->FindBin(particle->Pt());
+                int lambdaEtaBin = fLambdaEff_20_50->GetYaxis()->FindBin(particle->Eta());
+                lambdaEff = fLambdaEff_20_50->GetBinContent(lambdaPtBin, lambdaEtaBin);
+            }
+            else if(multPercentile >= 50 && multPercentile < 80) {
+                int lambdaPtBin = fLambdaEff_50_80->GetXaxis()->FindBin(particle->Pt());
+                int lambdaEtaBin = fLambdaEff_50_80->GetYaxis()->FindBin(particle->Eta());
+                lambdaEff = fLambdaEff_50_80->GetBinContent(lambdaPtBin, lambdaEtaBin);
+            }
+            else{
+                std::cout << "Mult Percentile: " << multPercentile << std::endl;
+                AliFatal("Lambda Efficiency not found for this multiplicity range");
+            }
+
             double lambdaScale = 1.0/lambdaEff;
             fDist->Fill(dist_points, lambdaScale);
         }
@@ -334,11 +403,12 @@ void AliAnalysisTaskLambdaHadronRatio::SetCentEstimator(TString centEstimator) {
     fCentEstimator = centEstimator;
 }
 
-void AliAnalysisTaskLambdaHadronRatio::SetPIDCuts(float nSigmaTPC_proton, float nSigmaTOF_proton, float nSigmaTPC_pion, float nSigmaTOF_pion) {
+void AliAnalysisTaskLambdaHadronRatio::SetPIDCuts(float nSigmaTPC_proton, float nSigmaTOF_proton, float nSigmaTPC_pion, float nSigmaTOF_pion, bool tofVeto) {
     fTPCnSigmaProtonCut = nSigmaTPC_proton;
     fTOFnSigmaProtonCut = nSigmaTOF_proton;
     fTPCnSigmaPionCut = nSigmaTPC_pion;
     fTOFnSigmaPionCut = nSigmaTOF_pion;
+    fTOFVeto = tofVeto;
 }
 
 void AliAnalysisTaskLambdaHadronRatio::LoadEfficiencies(TString filePath) {
@@ -348,25 +418,53 @@ void AliAnalysisTaskLambdaHadronRatio::LoadEfficiencies(TString filePath) {
         AliFatal("NULL INPUT FILE WHEN LOADING EFFICIENCIES, EXITING");
     }
 
-    fLambdaEff = (TH1D*) effFile->Get("fLambdaV0Eff")->Clone("fLambdaV0EffClone");
-    if(!fLambdaEff) {
-        AliFatal("UNABLE TO FIND LAMBDA EFF, EXITING");
+    fLambdaEff_0_20 = (TH2D*) effFile->Get("fLambdaV0PtEtaEff_mult_0_20")->Clone("fLambdaV0PtEtaEff_mult_0_20_clone");
+    if(!fLambdaEff_0_20) {
+        AliFatal("UNABLE TO FIND LAMBDA EFF_0_20, EXITING");
+    }
+
+    fLambdaEff_20_50 = (TH2D*) effFile->Get("fLambdaV0PtEtaEff_mult_20_50")->Clone("fLambdaV0PtEtaEff_mult_20_50_clone");
+    if(!fLambdaEff_20_50) {
+        AliFatal("UNABLE TO FIND LAMBDA EFF_20_50, EXITING");
+    }
+
+    fLambdaEff_50_80 = (TH2D*) effFile->Get("fLambdaV0PtEtaEff_mult_50_80")->Clone("fLambdaV0PtEtaEff_mult_50_80_clone");
+    if(!fLambdaEff_50_80) {
+        AliFatal("UNABLE TO FIND LAMBDA EFF_50_80, EXITING");
     }
     
-    fAssociatedEff = (TH1D*) effFile->Get("fAssociatedEff")->Clone("fAssociatedEffClone");
-    if(!fAssociatedEff) {
-        AliFatal("UNABLE TO FIND ASSOCIATED EFF, EXITING");
+
+    fAssociatedEff_0_20 = (TH2D*) effFile->Get("fAssociatedPtEtaEff_mult_0_20")->Clone("fAssociatedPtEtaEff_mult_0_20_clone");
+    if(!fAssociatedEff_0_20) {
+        AliFatal("UNABLE TO FIND ASSOCIATED EFF_0_20, EXITING");
+    }
+    fAssociatedEff_20_50 = (TH2D*) effFile->Get("fAssociatedPtEtaEff_mult_20_50")->Clone("fAssociatedPtEtaEff_mult_20_50_clone");
+    if(!fAssociatedEff_20_50) {
+        AliFatal("UNABLE TO FIND ASSOCIATED EFF_20_50, EXITING");
+    }
+    fAssociatedEff_50_80 = (TH2D*) effFile->Get("fAssociatedPtEtaEff_mult_50_80")->Clone("fAssociatedPtEtaEff_mult_50_80_clone");
+    if(!fAssociatedEff_50_80) {
+        AliFatal("UNABLE TO FIND ASSOCIATED EFF_50_80, EXITING");
     }
 
-    fTriggerEff = (TH1D*) effFile->Get("fTriggerEff")->Clone("fTriggerEffClone");
-    if(!fTriggerEff) {
-        AliFatal("UNABLE TO FIND TRIGGER EFF, EXITING");
+    fTriggerEff_0_20 = (TH2D*) effFile->Get("fTriggerPtEtaEff_mult_0_20")->Clone("fTriggerPtEtaEff_mult_0_20_clone");
+    if(!fTriggerEff_0_20) {
+        AliFatal("UNABLE TO FIND ASSOCIATED EFF_0_20, EXITING");
     }
+    fTriggerEff_20_50 = (TH2D*) effFile->Get("fTriggerPtEtaEff_mult_20_50")->Clone("fTriggerPtEtaEff_mult_20_50_clone");
+    if(!fTriggerEff_20_50) {
+        AliFatal("UNABLE TO FIND ASSOCIATED EFF_20_50, EXITING");
+    }
+    fTriggerEff_50_80 = (TH2D*) effFile->Get("fTriggerPtEtaEff_mult_50_80")->Clone("fTriggerPtEtaEff_mult_50_80_clone");
+    if(!fTriggerEff_50_80) {
+        AliFatal("UNABLE TO FIND ASSOCIATED EFF_50_80, EXITING");
+    }
+    
 }
 
-void AliAnalysisTaskLambdaHadronRatio::MakeSameHLambdaCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx, bool eff, bool isAntiLambda)
+void AliAnalysisTaskLambdaHadronRatio::MakeSameHLambdaCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list, THnSparse* fDphi, double zVtx, double multPercentile, bool eff, bool isAntiLambda)
 {
-    double dphi_point[6];
+    double dphi_point[7];
 
     for(int j = 0; j < (int)trigger_list.size(); j++) {
         auto trigger = trigger_list[j];
@@ -392,17 +490,56 @@ void AliAnalysisTaskLambdaHadronRatio::MakeSameHLambdaCorrelations(std::vector<A
             if(isAntiLambda) dphi_point[4] = lambda.vzero->MassAntiLambda();
             else dphi_point[4] = lambda.vzero->MassLambda();
             dphi_point[5] = zVtx;
+            dphi_point[6] = multPercentile;
 
             bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0.5) 
-                               && (lambda.vzero->Pt() < 10 && lambda.vzero->Pt() > 0.5));
+                               && (lambda.vzero->Pt() < 8 && lambda.vzero->Pt() > 0.5));
 
             if(eff && in_pt_range) {
 
-                int trigBin = fTriggerEff->FindBin(trigger->Pt());
-                double trigEff = fTriggerEff->GetBinContent(trigBin);
+                double trigEff;
+                if(multPercentile >= 0 && multPercentile < 20) {
+                    int trigPtBin = fTriggerEff_0_20->GetXaxis()->FindBin(trigger->Pt());
+                    int trigEtaBin = fTriggerEff_0_20->GetYaxis()->FindBin(trigger->Eta());
+                    trigEff = fTriggerEff_0_20->GetBinContent(trigPtBin, trigEtaBin);
+                }
+                else if(multPercentile >= 20 && multPercentile < 50) {
+                    int trigPtBin = fTriggerEff_20_50->GetXaxis()->FindBin(trigger->Pt());
+                    int trigEtaBin = fTriggerEff_20_50->GetYaxis()->FindBin(trigger->Eta());
+                    trigEff = fTriggerEff_20_50->GetBinContent(trigPtBin, trigEtaBin);
+                }
+                else if(multPercentile >= 50 && multPercentile < 80) {
+                    int trigPtBin = fTriggerEff_50_80->GetXaxis()->FindBin(trigger->Pt());
+                    int trigEtaBin = fTriggerEff_50_80->GetYaxis()->FindBin(trigger->Eta());
+                    trigEff = fTriggerEff_50_80->GetBinContent(trigPtBin, trigEtaBin);
+                }
+                else{
+                    std::cout << "Mult Percentile: " << multPercentile << std::endl;
+                    AliFatal("Trigger Efficiency not found for this multiplicity range");
+                }
                 double triggerScale = 1.0/trigEff;
-                int lambdaBin = fLambdaEff->FindBin(lambda.vzero->Pt());
-                double lambdaEff = fLambdaEff->GetBinContent(lambdaBin);
+
+                double lambdaEff;
+                if(multPercentile >= 0 && multPercentile < 20) {
+                    int lambdaPtBin = fLambdaEff_0_20->GetXaxis()->FindBin(lambda.vzero->Pt());
+                    int lambdaEtaBin = fLambdaEff_0_20->GetYaxis()->FindBin(lambda.vzero->Eta());
+                    lambdaEff = fLambdaEff_0_20->GetBinContent(lambdaPtBin, lambdaEtaBin);
+                }
+                else if(multPercentile >= 20 && multPercentile < 50) {
+                    int lambdaPtBin = fLambdaEff_20_50->GetXaxis()->FindBin(lambda.vzero->Pt());
+                    int lambdaEtaBin = fLambdaEff_20_50->GetYaxis()->FindBin(lambda.vzero->Eta());
+                    lambdaEff = fLambdaEff_20_50->GetBinContent(lambdaPtBin, lambdaEtaBin);
+                }
+                else if(multPercentile >= 50 && multPercentile < 80) {
+                    int lambdaPtBin = fLambdaEff_50_80->GetXaxis()->FindBin(lambda.vzero->Pt());
+                    int lambdaEtaBin = fLambdaEff_50_80->GetYaxis()->FindBin(lambda.vzero->Eta());
+                    lambdaEff = fLambdaEff_50_80->GetBinContent(lambdaPtBin, lambdaEtaBin);
+                }
+                else{
+                    std::cout << "Mult Percentile: " << multPercentile << std::endl;
+                    AliFatal("Lambda Efficiency not found for this multiplicity range");
+                }
+
                 double lambdaScale = 1.0/lambdaEff;
                 double totalScale = triggerScale*lambdaScale;
                 fDphi->Fill(dphi_point, totalScale);
@@ -416,9 +553,9 @@ void AliAnalysisTaskLambdaHadronRatio::MakeSameHLambdaCorrelations(std::vector<A
 }
 
 
-void AliAnalysisTaskLambdaHadronRatio::MakeSameHHCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAODTrack*> associated_h_list, THnSparse* fDphi, double zVtx, bool eff)
+void AliAnalysisTaskLambdaHadronRatio::MakeSameHHCorrelations(std::vector<AliAODTrack*> trigger_list, std::vector<AliAODTrack*> associated_h_list, THnSparse* fDphi, double zVtx, double multPercentile, bool eff)
 {
-    double dphi_point[5];
+    double dphi_point[6];
 
     for(int j = 0; j < (int)trigger_list.size(); j++) {
         auto trigger = trigger_list[j];
@@ -440,19 +577,56 @@ void AliAnalysisTaskLambdaHadronRatio::MakeSameHHCorrelations(std::vector<AliAOD
 
             dphi_point[3] = trigger->Eta() - associate->Eta();
             dphi_point[4] = zVtx;
+            dphi_point[5] = multPercentile;
 
             bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0.5) 
-                               && (associate->Pt() < 10 && associate->Pt() > 0.5));
+                               && (associate->Pt() < 8 && associate->Pt() > 0.5));
 
             if(eff && in_pt_range) {
 
-                int trigBin = fTriggerEff->FindBin(trigger->Pt());
-                double trigEff = fTriggerEff->GetBinContent(trigBin);
+                double trigEff;
+                if(multPercentile >= 0 && multPercentile < 20) {
+                    int trigPtBin = fTriggerEff_0_20->GetXaxis()->FindBin(trigger->Pt());
+                    int trigEtaBin = fTriggerEff_0_20->GetYaxis()->FindBin(trigger->Eta());
+                    trigEff = fTriggerEff_0_20->GetBinContent(trigPtBin, trigEtaBin);
+                }
+                else if(multPercentile >= 20 && multPercentile < 50) {
+                    int trigPtBin = fTriggerEff_20_50->GetXaxis()->FindBin(trigger->Pt());
+                    int trigEtaBin = fTriggerEff_20_50->GetYaxis()->FindBin(trigger->Eta());
+                    trigEff = fTriggerEff_20_50->GetBinContent(trigPtBin, trigEtaBin);
+                }
+                else if(multPercentile >= 50 && multPercentile < 80) {
+                    int trigPtBin = fTriggerEff_50_80->GetXaxis()->FindBin(trigger->Pt());
+                    int trigEtaBin = fTriggerEff_50_80->GetYaxis()->FindBin(trigger->Eta());
+                    trigEff = fTriggerEff_50_80->GetBinContent(trigPtBin, trigEtaBin);
+                }
+                else{
+                    std::cout << "Mult Percentile: " << multPercentile << std::endl;
+                    AliFatal("Trigger Efficiency not found for this multiplicity range");
+                }
                 double triggerScale = 1.0/trigEff;
 
-                int associatedBin = fAssociatedEff->FindBin(associate->Pt());
-                double associatedEff = fAssociatedEff->GetBinContent(associatedBin);
-                double associatedScale = 1.0/associatedEff;
+                double asssociatedEff;
+                if(multPercentile >= 0 && multPercentile < 20) {
+                    int associatedPtBin = fAssociatedEff_0_20->GetXaxis()->FindBin(associate->Pt());
+                    int associatedEtaBin = fAssociatedEff_0_20->GetYaxis()->FindBin(associate->Eta());
+                    asssociatedEff = fAssociatedEff_0_20->GetBinContent(associatedPtBin, associatedEtaBin);
+                }
+                else if(multPercentile >= 20 && multPercentile < 50) {
+                    int associatedPtBin = fAssociatedEff_20_50->GetXaxis()->FindBin(associate->Pt());
+                    int associatedEtaBin = fAssociatedEff_20_50->GetYaxis()->FindBin(associate->Eta());
+                    asssociatedEff = fAssociatedEff_20_50->GetBinContent(associatedPtBin, associatedEtaBin);
+                }
+                else if(multPercentile >= 50 && multPercentile < 80) {
+                    int associatedPtBin = fAssociatedEff_50_80->GetXaxis()->FindBin(associate->Pt());
+                    int associatedEtaBin = fAssociatedEff_50_80->GetYaxis()->FindBin(associate->Eta());
+                    asssociatedEff = fAssociatedEff_50_80->GetBinContent(associatedPtBin, associatedEtaBin);
+                }
+                else{
+                    std::cout << "Mult Percentile: " << multPercentile << std::endl;
+                    AliFatal("asssociatedger Efficiency not found for this multiplicity range");
+                }
+                double  associatedScale = 1.0/asssociatedEff;
 
                 double totalScale = triggerScale*associatedScale;
 
@@ -466,9 +640,9 @@ void AliAnalysisTaskLambdaHadronRatio::MakeSameHHCorrelations(std::vector<AliAOD
     }
 }
 
-void AliAnalysisTaskLambdaHadronRatio::MakeMixedHLambdaCorrelations(AliEventPool* fPool, std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list , THnSparse* fDphi, double zVtx, bool eff, bool isAntiLambda)
+void AliAnalysisTaskLambdaHadronRatio::MakeMixedHLambdaCorrelations(AliEventPool* fPool, std::vector<AliAnalysisTaskLambdaHadronRatio::AliMotherContainer> lambda_list , THnSparse* fDphi, double zVtx, double multPercentile, bool eff, bool isAntiLambda)
 {
-    double dphi_point[6];
+    double dphi_point[7];
     int numEvents = fPool->GetCurrentNEvents();
     for(int iEvent = 0; iEvent < numEvents; iEvent++) {
         TObjArray *tracks = fPool->GetEvent(iEvent);
@@ -499,14 +673,53 @@ void AliAnalysisTaskLambdaHadronRatio::MakeMixedHLambdaCorrelations(AliEventPool
                 else dphi_point[4] = lambda.vzero->MassLambda();
 
                 dphi_point[5] = zVtx;
+                dphi_point[6] = multPercentile;
                 bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0.5) 
-                                && (lambda.vzero->Pt() < 10 && lambda.vzero->Pt() > 0.5));
+                                && (lambda.vzero->Pt() < 8 && lambda.vzero->Pt() > 0.5));
                 if(eff && in_pt_range) {
-                    int trigBin = fTriggerEff->FindBin(trigger->Pt());
-                    double trigEff = fTriggerEff->GetBinContent(trigBin);
+                    double trigEff;
+                    if(multPercentile >= 0 && multPercentile < 20) {
+                        int trigPtBin = fTriggerEff_0_20->GetXaxis()->FindBin(trigger->Pt());
+                        int trigEtaBin = fTriggerEff_0_20->GetYaxis()->FindBin(trigger->Eta());
+                        trigEff = fTriggerEff_0_20->GetBinContent(trigPtBin, trigEtaBin);
+                    }
+                    else if(multPercentile >= 20 && multPercentile < 50) {
+                        int trigPtBin = fTriggerEff_20_50->GetXaxis()->FindBin(trigger->Pt());
+                        int trigEtaBin = fTriggerEff_20_50->GetYaxis()->FindBin(trigger->Eta());
+                        trigEff = fTriggerEff_20_50->GetBinContent(trigPtBin, trigEtaBin);
+                    }
+                    else if(multPercentile >= 50 && multPercentile < 80) {
+                        int trigPtBin = fTriggerEff_50_80->GetXaxis()->FindBin(trigger->Pt());
+                        int trigEtaBin = fTriggerEff_50_80->GetYaxis()->FindBin(trigger->Eta());
+                        trigEff = fTriggerEff_50_80->GetBinContent(trigPtBin, trigEtaBin);
+                    }
+                    else{
+                        std::cout << "Mult Percentile: " << multPercentile << std::endl;
+                        AliFatal("Trigger Efficiency not found for this multiplicity range");
+                    }
                     double triggerScale = 1.0/trigEff;
-                    int lambdaBin = fLambdaEff->FindBin(lambda.vzero->Pt());
-                    double lambdaEff = fLambdaEff->GetBinContent(lambdaBin);
+
+                    double lambdaEff;
+                    if(multPercentile >= 0 && multPercentile < 20) {
+                        int lambdaPtBin = fLambdaEff_0_20->GetXaxis()->FindBin(lambda.vzero->Pt());
+                        int lambdaEtaBin = fLambdaEff_0_20->GetYaxis()->FindBin(lambda.vzero->Eta());
+                        lambdaEff = fLambdaEff_0_20->GetBinContent(lambdaPtBin, lambdaEtaBin);
+                    }
+                    else if(multPercentile >= 20 && multPercentile < 50) {
+                        int lambdaPtBin = fLambdaEff_20_50->GetXaxis()->FindBin(lambda.vzero->Pt());
+                        int lambdaEtaBin = fLambdaEff_20_50->GetYaxis()->FindBin(lambda.vzero->Eta());
+                        lambdaEff = fLambdaEff_20_50->GetBinContent(lambdaPtBin, lambdaEtaBin);
+                    }
+                    else if(multPercentile >= 50 && multPercentile < 80) {
+                        int lambdaPtBin = fLambdaEff_50_80->GetXaxis()->FindBin(lambda.vzero->Pt());
+                        int lambdaEtaBin = fLambdaEff_50_80->GetYaxis()->FindBin(lambda.vzero->Eta());
+                        lambdaEff = fLambdaEff_50_80->GetBinContent(lambdaPtBin, lambdaEtaBin);
+                    }
+                    else{
+                        std::cout << "Mult Percentile: " << multPercentile << std::endl;
+                        AliFatal("Lambda Efficiency not found for this multiplicity range");
+                    }
+
                     double lambdaScale = 1.0/lambdaEff;
                     double totalScale = triggerScale*lambdaScale;
                     fDphi->Fill(dphi_point, totalScale);
@@ -519,9 +732,9 @@ void AliAnalysisTaskLambdaHadronRatio::MakeMixedHLambdaCorrelations(AliEventPool
     }
 }
 
-void AliAnalysisTaskLambdaHadronRatio::MakeMixedHHCorrelations(AliEventPool* fPool, std::vector<AliAODTrack*> associated_h_list, THnSparse* fDphi, double zVtx, bool eff)
+void AliAnalysisTaskLambdaHadronRatio::MakeMixedHHCorrelations(AliEventPool* fPool, std::vector<AliAODTrack*> associated_h_list, THnSparse* fDphi, double zVtx, double multPercentile, bool eff)
 {
-    double dphi_point[5];
+    double dphi_point[6];
 
     int numEvents = fPool->GetCurrentNEvents();
 
@@ -548,18 +761,58 @@ void AliAnalysisTaskLambdaHadronRatio::MakeMixedHHCorrelations(AliEventPool* fPo
 
                 dphi_point[3] = trigger->Eta() - associate->Eta();
                 dphi_point[4] = zVtx;
+                dphi_point[5] = multPercentile;
 
                 bool in_pt_range = ((trigger->Pt() < 10 && trigger->Pt() > 0.5) 
-                                && (associate->Pt() < 10 && associate->Pt() > 0.5));
+                                && (associate->Pt() < 8 && associate->Pt() > 0.5));
 
                 if(eff && in_pt_range) {
-                    int trigBin = fTriggerEff->FindBin(trigger->Pt());
-                    double trigEff = fTriggerEff->GetBinContent(trigBin);
+                    double trigEff;
+                    if(multPercentile >= 0 && multPercentile < 20) {
+                        int trigPtBin = fTriggerEff_0_20->GetXaxis()->FindBin(trigger->Pt());
+                        int trigEtaBin = fTriggerEff_0_20->GetYaxis()->FindBin(trigger->Eta());
+                        trigEff = fTriggerEff_0_20->GetBinContent(trigPtBin, trigEtaBin);
+                    }
+                    else if(multPercentile >= 20 && multPercentile < 50) {
+                        int trigPtBin = fTriggerEff_20_50->GetXaxis()->FindBin(trigger->Pt());
+                        int trigEtaBin = fTriggerEff_20_50->GetYaxis()->FindBin(trigger->Eta());
+                        trigEff = fTriggerEff_20_50->GetBinContent(trigPtBin, trigEtaBin);
+                    }
+                    else if(multPercentile >= 50 && multPercentile < 80) {
+                        int trigPtBin = fTriggerEff_50_80->GetXaxis()->FindBin(trigger->Pt());
+                        int trigEtaBin = fTriggerEff_50_80->GetYaxis()->FindBin(trigger->Eta());
+                        trigEff = fTriggerEff_50_80->GetBinContent(trigPtBin, trigEtaBin);
+                    }
+                    else{
+                        std::cout << "Mult Percentile: " << multPercentile << std::endl;
+                        AliFatal("Trigger Efficiency not found for this multiplicity range");
+                    }
                     double triggerScale = 1.0/trigEff;
-                    int associatedBin = fAssociatedEff->FindBin(associate->Pt());
-                    double associatedEff = fAssociatedEff->GetBinContent(associatedBin);
-                    double associatedScale = 1.0/associatedEff;
+
+                    double asssociatedEff;
+                    if(multPercentile >= 0 && multPercentile < 20) {
+                        int associatedPtBin = fAssociatedEff_0_20->GetXaxis()->FindBin(associate->Pt());
+                        int associatedEtaBin = fAssociatedEff_0_20->GetYaxis()->FindBin(associate->Eta());
+                        asssociatedEff = fAssociatedEff_0_20->GetBinContent(associatedPtBin, associatedEtaBin);
+                    }
+                    else if(multPercentile >= 20 && multPercentile < 50) {
+                        int associatedPtBin = fAssociatedEff_20_50->GetXaxis()->FindBin(associate->Pt());
+                        int associatedEtaBin = fAssociatedEff_20_50->GetYaxis()->FindBin(associate->Eta());
+                        asssociatedEff = fAssociatedEff_20_50->GetBinContent(associatedPtBin, associatedEtaBin);
+                    }
+                    else if(multPercentile >= 50 && multPercentile < 80) {
+                        int associatedPtBin = fAssociatedEff_50_80->GetXaxis()->FindBin(associate->Pt());
+                        int associatedEtaBin = fAssociatedEff_50_80->GetYaxis()->FindBin(associate->Eta());
+                        asssociatedEff = fAssociatedEff_50_80->GetBinContent(associatedPtBin, associatedEtaBin);
+                    }
+                    else{
+                        std::cout << "Mult Percentile: " << multPercentile << std::endl;
+                        AliFatal("asssociatedger Efficiency not found for this multiplicity range");
+                    }
+                    double  associatedScale = 1.0/asssociatedEff;
+
                     double totalScale = triggerScale*associatedScale;
+
                     fDphi->Fill(dphi_point, totalScale);
                 }
                 else{
@@ -629,14 +882,19 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     if(fMultSelection) multPercentile = fMultSelection->GetMultiplicityPercentile(cent_estimator.Data());
     else return;
 
-    if(multPercentile < fMultLow || multPercentile > fMultHigh) return;
+
+    if(multPercentile < fMultLow || multPercentile >= fMultHigh) return;
+    fEventSelection->Fill(0.5, multPercentile);
+
 
     AliVVertex *prim = fAOD->GetPrimaryVertex();
     int NcontV = prim->GetNContributors();
     if(NcontV < 3) return;
+    fEventSelection->Fill(1.5, multPercentile);
 
     double primZ = prim->GetZ();
     if(primZ < -10 || primZ > 10) return;
+    fEventSelection->Fill(2.5, multPercentile);
 
 
     int numTracks = fAOD->GetNumberOfTracks();
@@ -733,21 +991,41 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
 
 
 
+        bool isNegTrackPion = false;
+        bool isPosTrackProton = false;
+        bool isPosTrackPion = false;
+        bool isNegTrackProton = false;
 
-        bool isNegTrackPion = TMath::Abs(neg_TPCNSigmaPion) <= fTPCnSigmaPionCut && (TMath::Abs(neg_TOFNSigmaPion) <= fTOFnSigmaPionCut || neg_TOFNSigmaPion == -999);
-        bool isPosTrackProton = TMath::Abs(pos_TPCNSigmaProton) <= fTPCnSigmaProtonCut && (TMath::Abs(pos_TOFNSigmaProton) <= fTOFnSigmaProtonCut || pos_TOFNSigmaProton == -999);
+        if(fTOFVeto) {
+            isNegTrackPion = TMath::Abs(neg_TPCNSigmaPion) <= fTPCnSigmaPionCut && (TMath::Abs(neg_TOFNSigmaPion) <= fTOFnSigmaPionCut || neg_TOFNSigmaPion == -999);
+            isPosTrackProton = TMath::Abs(pos_TPCNSigmaProton) <= fTPCnSigmaProtonCut && (TMath::Abs(pos_TOFNSigmaProton) <= fTOFnSigmaProtonCut || pos_TOFNSigmaProton == -999);
+            isPosTrackPion = TMath::Abs(pos_TPCNSigmaPion) <= fTPCnSigmaPionCut && (TMath::Abs(pos_TOFNSigmaPion) <= fTOFnSigmaPionCut || pos_TOFNSigmaPion == -999);
+            isNegTrackProton = TMath::Abs(neg_TPCNSigmaProton) <= fTPCnSigmaProtonCut && (TMath::Abs(neg_TOFNSigmaProton) <= fTOFnSigmaProtonCut || neg_TOFNSigmaProton == -999);
+        }
+        else {
+            isNegTrackPion = TMath::Abs(neg_TPCNSigmaPion) <= fTPCnSigmaPionCut && (TMath::Abs(neg_TOFNSigmaPion) <= fTOFnSigmaPionCut);
+            isPosTrackProton = TMath::Abs(pos_TPCNSigmaProton) <= fTPCnSigmaProtonCut && (TMath::Abs(pos_TOFNSigmaProton) <= fTOFnSigmaProtonCut);
+            isPosTrackPion = TMath::Abs(pos_TPCNSigmaPion) <= fTPCnSigmaPionCut && (TMath::Abs(pos_TOFNSigmaPion) <= fTOFnSigmaPionCut);
+            isNegTrackProton = TMath::Abs(neg_TPCNSigmaProton) <= fTPCnSigmaProtonCut && (TMath::Abs(neg_TOFNSigmaProton) <= fTOFnSigmaProtonCut);
+        }
 
-        bool isPosTrackPion = TMath::Abs(pos_TPCNSigmaPion) <= fTPCnSigmaPionCut && (TMath::Abs(pos_TOFNSigmaPion) <= fTOFnSigmaPionCut || pos_TOFNSigmaPion == -999);
-        bool isNegTrackProton = TMath::Abs(neg_TPCNSigmaProton) <= fTPCnSigmaProtonCut && (TMath::Abs(neg_TOFNSigmaProton) <= fTOFnSigmaProtonCut || neg_TOFNSigmaProton == -999);
+        fTOFnSigmaProton->Fill(posTrack->Pt(), pos_TOFNSigmaProton);
+        fTOFnSigmaPion->Fill(negTrack->Pt(), neg_TOFNSigmaPion);
+        fTPCnSigmaProton->Fill(posTrack->Pt(), pos_TPCNSigmaProton);
+        fTPCnSigmaPion->Fill(negTrack->Pt(), neg_TPCNSigmaPion);
+        fTOFvTPCnSigmaProton ->Fill(pos_TPCNSigmaProton, pos_TOFNSigmaProton);
+        fTOFvTPCnSigmaPion ->Fill(neg_TPCNSigmaPion, neg_TOFNSigmaPion);
+
+        fTOFnSigmaProton->Fill(negTrack->Pt(), neg_TOFNSigmaProton);
+        fTOFnSigmaPion->Fill(posTrack->Pt(), pos_TOFNSigmaPion);
+        fTPCnSigmaProton->Fill(negTrack->Pt(), neg_TPCNSigmaProton);
+        fTPCnSigmaPion->Fill(posTrack->Pt(), pos_TPCNSigmaPion);
+        fTOFvTPCnSigmaPion ->Fill(pos_TPCNSigmaPion, pos_TOFNSigmaPion);
+        fTOFvTPCnSigmaProton ->Fill(neg_TPCNSigmaProton, neg_TOFNSigmaProton);
 
 
         if((isNegTrackPion && isPosTrackProton)) {
-            fTOFnSigmaProton->Fill(posTrack->Pt(), pos_TOFNSigmaProton);
-            fTOFnSigmaPion->Fill(negTrack->Pt(), neg_TOFNSigmaPion);
-            fTPCnSigmaProton->Fill(posTrack->Pt(), pos_TPCNSigmaProton);
-            fTPCnSigmaPion->Fill(negTrack->Pt(), neg_TPCNSigmaPion);
-            fTOFvTPCnSigmaProton ->Fill(pos_TPCNSigmaProton, pos_TOFNSigmaProton);
-            fTOFvTPCnSigmaPion ->Fill(neg_TPCNSigmaPion, neg_TOFNSigmaPion);
+
             AliMotherContainer lambda;
             lambda.vzero = v0;
             lambda.daughter1ID = posTrack->GetID();
@@ -756,12 +1034,7 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
         }
 
         if((isPosTrackPion && isNegTrackProton)) {
-            fTOFnSigmaProton->Fill(negTrack->Pt(), neg_TOFNSigmaProton);
-            fTOFnSigmaPion->Fill(posTrack->Pt(), pos_TOFNSigmaPion);
-            fTPCnSigmaProton->Fill(negTrack->Pt(), neg_TPCNSigmaProton);
-            fTPCnSigmaPion->Fill(posTrack->Pt(), pos_TPCNSigmaPion);
-            fTOFvTPCnSigmaPion ->Fill(pos_TPCNSigmaPion, pos_TOFNSigmaPion);
-            fTOFvTPCnSigmaProton ->Fill(neg_TPCNSigmaProton, neg_TOFNSigmaProton);
+
             AliMotherContainer antilambda;
             antilambda.vzero = v0;
             antilambda.daughter1ID = posTrack->GetID();
@@ -773,9 +1046,9 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
 
 
     // Filling all of our single particle distribution histograms:
-    FillSingleParticleDist(trigger_list, primZ, fTriggerDist, true);
-    FillSingleParticleDist(trigger_list_highestPt, primZ, fTriggerDist_highestPt, true);
-    FillSingleParticleDist(associated_h_list, primZ, fAssociatedHDist);
+    FillSingleParticleDist(trigger_list, primZ, multPercentile, fTriggerDist, true);
+    FillSingleParticleDist(trigger_list_highestPt, primZ, multPercentile, fTriggerDist_highestPt, true);
+    FillSingleParticleDist(associated_h_list, primZ, multPercentile, fAssociatedHDist);
 
     FillMotherDist(lambda_list, multPercentile, fLambdaDist, false);
     FillMotherDist(antilambda_list, multPercentile, fLambdaDist, true);
@@ -784,15 +1057,15 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     if(is_triggered_event) FillMotherDist(lambda_list, multPercentile, fTriggeredLambdaDist, false);
     if(is_triggered_event) FillMotherDist(antilambda_list, multPercentile, fTriggeredLambdaDist, true);
 
-    MakeSameHLambdaCorrelations(trigger_list, antilambda_list, fDphiHLambda, primZ, true, true);
-    MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambda, primZ, true, false);
+    MakeSameHLambdaCorrelations(trigger_list, antilambda_list, fDphiHLambda, primZ, multPercentile, true, true);
+    MakeSameHLambdaCorrelations(trigger_list, lambda_list, fDphiHLambda, primZ, multPercentile, true, false);
 
-    MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHH, primZ, true);
+    MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHH, primZ, multPercentile, true);
 
     // Highest pt trigger correlations
-    MakeSameHLambdaCorrelations(trigger_list_highestPt, antilambda_list, fDphiHLambda_highestPt, primZ, true, true);
-    MakeSameHLambdaCorrelations(trigger_list_highestPt, lambda_list, fDphiHLambda_highestPt, primZ, true, false);
-    MakeSameHHCorrelations(trigger_list_highestPt, associated_h_list, fDphiHH_highestPt, primZ, true);
+    MakeSameHLambdaCorrelations(trigger_list_highestPt, antilambda_list, fDphiHLambda_highestPt, primZ, multPercentile, true, true);
+    MakeSameHLambdaCorrelations(trigger_list_highestPt, lambda_list, fDphiHLambda_highestPt, primZ, multPercentile, true, false);
+    MakeSameHHCorrelations(trigger_list_highestPt, associated_h_list, fDphiHH_highestPt, primZ, multPercentile, true);
 
     if(lambda_list.size() > 0 && associated_h_list.size() > 0) {
         AliEventPool *fCorPool = fCorPoolMgr->GetEventPool(multPercentile, primZ);
@@ -802,14 +1075,14 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
         }
         else {
             if(fCorPool->IsReady()) {
-                MakeMixedHLambdaCorrelations(fCorPool, antilambda_list, fDphiHLambdaMixed, primZ, true, true);
-                MakeMixedHLambdaCorrelations(fCorPool, lambda_list, fDphiHLambdaMixed, primZ, true, false);
-                MakeMixedHHCorrelations(fCorPool, associated_h_list, fDphiHHMixed, primZ);
+                MakeMixedHLambdaCorrelations(fCorPool, antilambda_list, fDphiHLambdaMixed, primZ, multPercentile, true, true);
+                MakeMixedHLambdaCorrelations(fCorPool, lambda_list, fDphiHLambdaMixed, primZ, multPercentile, true, false);
+                MakeMixedHHCorrelations(fCorPool, associated_h_list, fDphiHHMixed, primZ, multPercentile);
             }
             if(fCorPool_highestPt->IsReady()) {
-                MakeMixedHLambdaCorrelations(fCorPool_highestPt, antilambda_list, fDphiHLambdaMixed_highestPt, primZ, true, true);
-                MakeMixedHLambdaCorrelations(fCorPool_highestPt, lambda_list, fDphiHLambdaMixed_highestPt, primZ, true, false);
-                MakeMixedHHCorrelations(fCorPool_highestPt, associated_h_list, fDphiHHMixed_highestPt, primZ);
+                MakeMixedHLambdaCorrelations(fCorPool_highestPt, antilambda_list, fDphiHLambdaMixed_highestPt, primZ, multPercentile, true, true);
+                MakeMixedHLambdaCorrelations(fCorPool_highestPt, lambda_list, fDphiHLambdaMixed_highestPt, primZ, multPercentile, true, false);
+                MakeMixedHHCorrelations(fCorPool_highestPt, associated_h_list, fDphiHHMixed_highestPt, primZ, multPercentile);
             }
             if(fMixedTrackObjArray->GetEntries() > 0) {
                 fCorPool->UpdatePool(fMixedTrackObjArray);
