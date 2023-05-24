@@ -1,4 +1,5 @@
 import logging
+import math
 
 import ROOT as rt
 
@@ -28,11 +29,14 @@ def get_straight_line(point_one, point_two):
     return c, m
 
 # a function that fits the input lambda mass distribution with a voigt + pol1 background
-def fit_lambda_mass(lambda_mass_dist, 
-                    centrality_name, associated_pt_name, 
-                    signal_bin, full_region_bin, sideband_bin,
+def fit_lambda_mass(lambda_mass_dist,
+                    signal_bin,
+                    sideband_bin,
+                    full_region_bin,
+                    unique_clone_string, 
                     outfile):
 
+    logging.info("\t\tFitting lambda mass dist with voigt + pol1...")
 
     bg_fit_left_bin = lambda_mass_dist.FindBin(1.102)
     bg_fit_right_bin = lambda_mass_dist.FindBin(1.132)
@@ -40,7 +44,7 @@ def fit_lambda_mass(lambda_mass_dist,
     bg_fit_right_point = [1.132, lambda_mass_dist.GetBinContent(bg_fit_right_bin)]
     bg_starting_params = get_straight_line(bg_fit_left_point, bg_fit_right_point)
 
-    lambda_mass_fit = rt.TF1("lambda_mass_fit_" + centrality_name + "_" + associated_pt_name, 
+    lambda_mass_fit = rt.TF1("lambda_mass_fit_" + unique_clone_string,
                              "[0]*TMath::Voigt(x - [1], [2], [3], 4) + pol1(4)", 1.102, 1.127)
 
     lambda_mass_fit.SetNpx(1000)
@@ -51,25 +55,24 @@ def fit_lambda_mass(lambda_mass_dist,
     lambda_mass_fit.SetParameter(4, bg_starting_params[0])
     lambda_mass_fit.SetParameter(5, bg_starting_params[1])
 
-    logging.info("\t\t\tFitting lambda mass dist with voigt + pol1...")
-    lambda_mass_dist_fit = lambda_mass_dist.Clone("lambda_mass_dist_fit_" + centrality_name + "_" + associated_pt_name)
+    lambda_mass_dist_fit = lambda_mass_dist.Clone("lambda_mass_dist_fit_" + unique_clone_string)
     lambda_mass_fit_result = lambda_mass_dist_fit.Fit(lambda_mass_fit, "RS")
     lambda_mass_fit_status = lambda_mass_fit_result.Status()
     if lambda_mass_fit_status != 0:
-        logging.error("\t\t\tERROR: Lambda mass fit failed! Status: " + str(lambda_mass_fit_status))
+        logging.error("\t\tERROR: Lambda mass fit failed! Status: " + str(lambda_mass_fit_status))
     else:
-        logging.info("\t\t\tLambda mass fit successful!")
-        logging.info("\t\t\t\tChi2/NDF: " + str(lambda_mass_fit.GetChisquare()/lambda_mass_fit.GetNDF()))
-        logging.info("\t\t\t\tMean: " + str(lambda_mass_fit.GetParameter(1)) + " +/- " + str(lambda_mass_fit.GetParError(1)))
-        logging.info("\t\t\t\tSigma: " + str(lambda_mass_fit.GetParameter(2)) + " +/- " + str(lambda_mass_fit.GetParError(2)))
-        logging.info("\t\t\t\tGamma: " + str(lambda_mass_fit.GetParameter(3)) + " +/- " + str(lambda_mass_fit.GetParError(3)))
+        logging.info("\t\tLambda mass fit successful!")
+        logging.info("\t\t\tChi2/NDF: " + str(lambda_mass_fit.GetChisquare()/lambda_mass_fit.GetNDF()))
+        logging.info("\t\t\tMean: " + str(lambda_mass_fit.GetParameter(1)) + " +/- " + str(lambda_mass_fit.GetParError(1)))
+        logging.info("\t\t\tSigma: " + str(lambda_mass_fit.GetParameter(2)) + " +/- " + str(lambda_mass_fit.GetParError(2)))
+        logging.info("\t\t\tGamma: " + str(lambda_mass_fit.GetParameter(3)) + " +/- " + str(lambda_mass_fit.GetParError(3)))
 
-    lambda_mass_bg_fit = rt.TF1("lambda_mass_bg_fit_" + centrality_name + "_" + associated_pt_name, "pol1", 1.096, 1.136)
+    lambda_mass_bg_fit = rt.TF1("lambda_mass_bg_fit_" + unique_clone_string, "pol1", 1.096, 1.136)
     lambda_mass_bg_fit.SetNpx(1000)
     lambda_mass_bg_fit.SetParameter(0, bg_starting_params[0])
     lambda_mass_bg_fit.SetParameter(1, bg_starting_params[1])
 
-    voigt_fit = rt.TF1("lambda_mass_voigt_fit_" + centrality_name + "_" + associated_pt_name, 
+    voigt_fit = rt.TF1("lambda_mass_voigt_fit_" + unique_clone_string,
                        "[0]*TMath::Voigt(x - [1], [2], [3], 4)", 1.102, 1.127)
     voigt_fit.SetNpx(1000)
     voigt_fit.SetParameter(0, lambda_mass_fit.GetParameter(0))
@@ -78,30 +81,30 @@ def fit_lambda_mass(lambda_mass_dist,
     voigt_fit.SetParameter(3, lambda_mass_fit.GetParameter(3))
 
 
-    residual = lambda_mass_dist.Clone("lambda_mass_residual_" + centrality_name + "_" + associated_pt_name)
+    residual = lambda_mass_dist.Clone("lambda_mass_residual_" + unique_clone_string)
     residual.GetXaxis().SetRangeUser(1.094, 1.142)
     residual.Add(lambda_mass_bg_fit, -1)
 
-    RSB_region = rt.TBox(sideband_bin[0], 0, sideband_bin[1], lambda_mass_dist.GetMaximum()*1.055)
+    RSB_region = rt.TBox(sideband_bin[1], 0, sideband_bin[2], lambda_mass_dist.GetMaximum()*1.055)
     RSB_region.SetLineColor(rt.kRed)
     RSB_region.SetFillColor(rt.kRed)
     RSB_region.SetFillStyle(3003)
 
-    RSB_min_line = rt.TLine(sideband_bin[0], 0, sideband_bin[1], lambda_mass_dist.GetMaximum()*1.05)
+    RSB_min_line = rt.TLine(sideband_bin[1], 0, sideband_bin[2], lambda_mass_dist.GetMaximum()*1.05)
     RSB_min_line.SetLineColor(rt.kRed)
     RSB_min_line.SetLineWidth(2)
     RSB_min_line.SetLineStyle(2)
 
-    RSB_max_line = rt.TLine(sideband_bin[0], 0, sideband_bin[1], lambda_mass_dist.GetMaximum()*1.05)
+    RSB_max_line = rt.TLine(sideband_bin[1], 0, sideband_bin[2], lambda_mass_dist.GetMaximum()*1.05)
     RSB_max_line.SetLineColor(rt.kRed)
     RSB_max_line.SetLineWidth(2)
     RSB_max_line.SetLineStyle(2)
 
-    left_signal_bin = lambda_mass_dist.FindBin(signal_bin[0])
-    right_signal_bin = lambda_mass_dist.FindBin(signal_bin[1])
+    left_signal_bin = lambda_mass_dist.FindBin(signal_bin[1])
+    right_signal_bin = lambda_mass_dist.FindBin(signal_bin[2])
 
-    left_full_region_bin = residual.FindBin(full_region_bin[0])
-    right_full_region_bin = residual.FindBin(full_region_bin[1])
+    left_full_region_bin = residual.FindBin(full_region_bin[1])
+    right_full_region_bin = residual.FindBin(full_region_bin[2])
 
     lambda_bg = 0
     lambda_total = 0
@@ -112,7 +115,7 @@ def fit_lambda_mass(lambda_mass_dist,
     lambda_signal = lambda_total - lambda_bg
     signal_scale = residual.Integral(left_full_region_bin, right_full_region_bin)/residual.Integral(left_signal_bin, right_signal_bin)
 
-    lambda_fit_info_string = centrality_name + " " + associated_pt_name + "\n"
+    lambda_fit_info_string = unique_clone_string + "\n"
     lambda_fit_info_string += "lambda signal: " + str(lambda_signal) + "\n"
     lambda_fit_info_string += "lambda bg: " + str(lambda_bg) + "\n"
     lambda_fit_info_string += "lambda total: " + str(lambda_total) + "\n"
@@ -120,40 +123,33 @@ def fit_lambda_mass(lambda_mass_dist,
 
     lambda_fit_info_string = rt.TObjString(lambda_fit_info_string)
     
-    output_list = rt.TList()
-    output_list.Add(lambda_mass_dist)
-    output_list.Add(lambda_mass_dist_fit)
-    output_list.Add(lambda_mass_bg_fit)
-    output_list.Add(voigt_fit)
-    output_list.Add(residual)
-    output_list.Add(RSB_region)
-    output_list.Add(RSB_min_line)
-    output_list.Add(RSB_max_line)
-    output_list.Add(lambda_fit_info_string)
+    if outfile:
+        output_list = rt.TList()
+        output_list.Add(lambda_mass_dist)
+        output_list.Add(lambda_mass_dist_fit)
+        output_list.Add(lambda_mass_bg_fit)
+        output_list.Add(voigt_fit)
+        output_list.Add(residual)
+        output_list.Add(RSB_region)
+        output_list.Add(RSB_min_line)
+        output_list.Add(RSB_max_line)
+        output_list.Add(lambda_fit_info_string)
 
 
-    outfile.cd()
-    outfile.WriteObject(output_list, "lambda_mass_fit_" + centrality_name + "_" + associated_pt_name)
+        outfile.cd()
+        outfile.WriteObject(output_list, "lambda_mass_fit_" + unique_clone_string)
 
     return lambda_signal, lambda_bg, signal_scale
 
 
 # a function to perform the dihadron acceptance corrections
-def make_h_h_mixed_corrections(same3d, mixed3d,
-                               centrality_name, trigger_pt_name, associated_pt_name,
-                               outfile):
+def make_h_h_mixed_corrections(same3d, mixed3d, unique_clone_string, outfile):
 
     logging.info("\t\t\tDoing dihadron mixed event corrections...")
 
     num_zbins = same3d.GetNbinsZ()
-    same2d_uncorrected = same3d.Project3D("xye").Clone("h_h_2d_nomixcor_" +
-                                                       centrality_name + "_" +
-                                                       trigger_pt_name + "_" +
-                                                       associated_pt_name)
-    mixed2d_uncorrected = mixed3d.Project3D("xye").Clone("h_h_2d_mixed_" +
-                                                         centrality_name + "_" +
-                                                         trigger_pt_name + "_" +
-                                                         associated_pt_name)
+    same2d_uncorrected = same3d.Project3D("xye").Clone("h_h_2d_nomixcor_" + unique_clone_string)
+    mixed2d_uncorrected = mixed3d.Project3D("xye").Clone("h_h_2d_mixed_" + unique_clone_string)
 
     for zbin in range(num_zbins):
 
@@ -173,23 +169,18 @@ def make_h_h_mixed_corrections(same3d, mixed3d,
         same2d.Scale(scale)
         
         if zbin == 0:
-            same2d_total = same2d.Clone("h_h_2d_mixcor_" +"_" +
-                                        centrality_name + "_" +
-                                        trigger_pt_name + "_" +
-                                        associated_pt_name)
+            same2d_total = same2d.Clone("h_h_2d_mixcor_" + unique_clone_string)
         else:
             same2d_total.Add(same2d)
 
-    output_list = rt.TList()
-    output_list.Add(same2d_uncorrected)
-    output_list.Add(mixed2d_uncorrected)
-    output_list.Add(same2d_total)
+    if outfile:
+        output_list = rt.TList()
+        output_list.Add(same2d_uncorrected)
+        output_list.Add(mixed2d_uncorrected)
+        output_list.Add(same2d_total)
 
-    outfile.cd()
-    outfile.WriteObject(output_list, "h_h_mixed_corrections_" + 
-                        centrality_name + "_" +
-                        trigger_pt_name + "_" +
-                        associated_pt_name)
+        outfile.cd()
+        outfile.WriteObject(output_list, "h_h_mixed_corrections_" + unique_clone_string)
     
     logging.info("\t\t\tDone with dihadron mixed event corrections.")
 
@@ -197,48 +188,27 @@ def make_h_h_mixed_corrections(same3d, mixed3d,
 
 
 # a function to perform h-lambda mixed event acceptance corrections
-def make_h_lambda_mixed_corrections(same, mixed,
-                           centrality_name, trigger_pt_name, associated_pt_name, 
-                           signal_name, sideband_name,
-                           signal_bin, sideband_bin,
-                           outfile):
+def make_h_lambda_mixed_corrections(same, mixed, signal_bin, sideband_bin, unique_clone_string, outfile):
 
     logging.info("\t\t\tDoing h-lambda mixed event corrections...")
 
-    same.GetAxis(2).SetRangeUser(signal_bin[0], signal_bin[1])
-    mixed.GetAxis(2).SetRangeUser(signal_bin[0], signal_bin[1])
+    same.GetAxis(2).SetRangeUser(signal_bin[1], signal_bin[2])
+    mixed.GetAxis(2).SetRangeUser(signal_bin[1], signal_bin[2])
     same3d_signal = same.Projection(0, 1, 3).Clone("same3d_signal")
     mixed3d_signal = mixed.Projection(0, 1, 3).Clone("mixed3d_signal")
 
-    same.GetAxis(2).SetRangeUser(sideband_bin[0], sideband_bin[1])
-    mixed.GetAxis(2).SetRangeUser(sideband_bin[0], sideband_bin[1])
+    same.GetAxis(2).SetRangeUser(sideband_bin[1], sideband_bin[2])
+    mixed.GetAxis(2).SetRangeUser(sideband_bin[1], sideband_bin[2])
     same3d_sideband = same.Projection(0, 1, 3).Clone("same3d_sideband")
     mixed3d_sideband = mixed.Projection(0, 1, 3).Clone("mixed3d_sideband")
 
     num_zbins = same3d_signal.GetNbinsZ()
 
-    same2d_signal_uncorrected = same3d_signal.Project3D("xye").Clone("h_lambda_2d_nomixcor_" + 
-                                                        centrality_name + "_" + 
-                                                        trigger_pt_name + "_" + 
-                                                        associated_pt_name + "_" +
-                                                        signal_name)
-    mixed2d_signal_uncorrected = mixed3d_signal.Project3D("xye").Clone("h_lambda_2d_mixed_" + 
-                                                            centrality_name + "_" + 
-                                                            trigger_pt_name + "_" + 
-                                                            associated_pt_name + "_" +
-                                                            signal_name)
+    same2d_signal_uncorrected = same3d_signal.Project3D("xye").Clone("h_lambda_2d_nomixcor_" + unique_clone_string)
+    mixed2d_signal_uncorrected = mixed3d_signal.Project3D("xye").Clone("h_lambda_2d_mixed_" + unique_clone_string)
 
-    same2d_sideband_uncorrected = same3d_sideband.Project3D("xye").Clone("h_lambda_2d_nomixcor_" + 
-                                                        centrality_name + "_" + 
-                                                        trigger_pt_name + "_" + 
-                                                        associated_pt_name + "_" +
-                                                        sideband_name)
-    mixed2d_sideband_uncorrected = mixed3d_sideband.Project3D("xye").Clone("h_lambda_2d_mixed_" + 
-                                                            centrality_name + "_" + 
-                                                            trigger_pt_name + "_" + 
-                                                            associated_pt_name + "_" +
-                                                            sideband_name)
-        
+    same2d_sideband_uncorrected = same3d_sideband.Project3D("xye").Clone("h_lambda_2d_nomixcor_" + unique_clone_string)
+    mixed2d_sideband_uncorrected = mixed3d_sideband.Project3D("xye").Clone("h_lambda_2d_mixed_" + unique_clone_string)
     
     for zbin in range(num_zbins):
 
@@ -269,52 +239,50 @@ def make_h_lambda_mixed_corrections(same, mixed,
         same2d_sideband.Scale(scale_sideband)
         
         if zbin == 0:
-            same2d_signal_total = same2d_signal.Clone("h_lambda_2d_mixcor_" +"_" +
-                                        centrality_name + "_" +
-                                        trigger_pt_name + "_" +
-                                        associated_pt_name + "_" +
-                                        signal_name)
-            same2d_sideband_total = same2d_sideband.Clone("h_lambda_2d_mixcor_" +"_" +
-                                        centrality_name + "_" +
-                                        trigger_pt_name + "_" +
-                                        associated_pt_name + "_" +
-                                        sideband_name)
+            same2d_signal_total = same2d_signal.Clone("h_lambda_2d_mixcor_" + unique_clone_string)
+            same2d_sideband_total = same2d_sideband.Clone("h_lambda_2d_mixcor_"  + unique_clone_string)
 
         else:
             same2d_signal_total.Add(same2d_signal)
             same2d_sideband_total.Add(same2d_sideband)
     
-    output_list = rt.TList()
-    output_list.Add(same2d_signal_uncorrected)
-    output_list.Add(mixed2d_signal_uncorrected)
-    output_list.Add(same2d_signal_total)
-    output_list.Add(same2d_sideband_uncorrected)
-    output_list.Add(mixed2d_sideband_uncorrected)
-    output_list.Add(same2d_sideband_total)
+    if outfile:
+        output_list = rt.TList()
+        output_list.Add(same2d_signal_uncorrected)
+        output_list.Add(mixed2d_signal_uncorrected)
+        output_list.Add(same2d_signal_total)
+        output_list.Add(same2d_sideband_uncorrected)
+        output_list.Add(mixed2d_sideband_uncorrected)
+        output_list.Add(same2d_sideband_total)
 
-    outfile.cd()
-    outfile.WriteObject(output_list, "h_lambda_mixed_corrections_" + 
-                        centrality_name + "_" + 
-                        trigger_pt_name + "_" + 
-                        associated_pt_name)
-
+        outfile.cd()
+        outfile.WriteObject(output_list, "h_lambda_mixed_corrections_" + unique_clone_string)
     logging.info("\t\t\tDone with h-lambda mixed event corrections.")
 
     return same2d_signal_total, same2d_sideband_total
 
 # a function that uses sideband distribution to subtract background from signal distribution
-def apply_sideband_subtraction(signal_dist, sideband_dist, ratio, name):
+def apply_sideband_subtraction(signal_dist, sideband_dist, ratio, unique_clone_string, outfile):
 
     logging.info("\t\t\tApplying sideband subtraction...")
 
-    signal_dist = signal_dist.Clone(name)
+    subtracted_dist = signal_dist.Clone("h_lambda_2d_subtracted_" + unique_clone_string)
     sideband_dist.Scale(1/sideband_dist.Integral())
-    bg_integral = (1 - ratio)*signal_dist.Integral()
-    signal_dist.Add(sideband_dist, -bg_integral)
+    bg_integral = (1 - ratio)*subtracted_dist.Integral()
+    subtracted_dist.Add(sideband_dist, -bg_integral)
 
     logging.info("\t\t\tDone with sideband subtraction.")
 
-    return signal_dist
+    if outfile:
+        output_list = rt.TList()
+        output_list.Add(signal_dist)
+        output_list.Add(sideband_dist)
+        output_list.Add(subtracted_dist)
+
+        outfile.cd()
+        outfile.WriteObject(output_list, "h_lambda_sideband_subtraction_" + unique_clone_string)
+
+    return subtracted_dist
 
 # a function that applies two-track efficiency correction using MC generated templates
 def apply_two_track_correction(uncorrected_dist, associated_pt_name):
@@ -362,3 +330,17 @@ def apply_two_track_correction(uncorrected_dist, associated_pt_name):
     logging.info("\t\t\tDone with two-track efficiency correction.")
 
     return corrected_dist
+
+def get_systematic_uncertainty_dphi(variations, default, outfile):
+
+    rms = 0
+    n = 0
+    for name, variation in variations.items():
+
+        ratio = variation/default
+
+        for i in range(1, ratio.GetNbinsX() + 1):
+            rms += (ratio.GetBinContent(i) - 1)**2
+            n += 1
+
+    return math.sqrt(rms/n)

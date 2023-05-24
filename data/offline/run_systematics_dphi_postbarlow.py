@@ -206,6 +206,7 @@ for PT_MODE in range(3):
         signal_dphi_dict_0_80[key] = file.Get("h_lambda_dphi_subtracted_0_80")
     if PT_MODE == 0:
         signal_rms_0_20 = get_rms(signal_dphi_dict_0_20, "figures/signal_variations_dphi_0_20")
+        print("THE SIGNAL RMS IS: " + str(signal_rms_0_20) + "asdlkfjhasdlfkjhasdflkjasdhdfalskdjfhaslkdfjhasdlkfjah")
         signal_rms_20_50 = get_rms(signal_dphi_dict_20_50, "figures/signal_variations_dphi_20_50")
         signal_rms_50_80 = get_rms(signal_dphi_dict_50_80, "figures/signal_variations_dphi_50_80")
         signal_nch_dep_rms_0_20 = get_nch_dep_rms(signal_dphi_dict_0_20, signal_dphi_dict_0_80, "figures/signal_nch_dep_rms_dphi_0_20")
