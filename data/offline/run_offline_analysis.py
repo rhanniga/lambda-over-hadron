@@ -255,7 +255,7 @@ if __name__ == "__main__":
                 default_dphi_list.Add(h_lambda_dphi_default)
                 default_dphi_list.Add(h_h_dphi_default)
 
-                fit_list = sh.fit_and_extract_yields(h_lambda_dphi_default, h_h_dphi_default, trigger_pt_bin.name, associated_pt_bin.name, centrality_bin.name)
+                fit_list = sh.do_all_fits(h_lambda_dphi_default, h_h_dphi_default, trigger_pt_bin.name, associated_pt_bin.name, centrality_bin.name)
 
                 default_dphi_list.Add(fit_list)
 

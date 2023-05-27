@@ -347,6 +347,7 @@ def get_systematic_uncertainty_dphi(variations, default, outfile):
     return math.sqrt(rms/n)
 
 def fit_and_extract_yields(dphi_dist, fit_type, starting_params):
+
     if fit_type == fh.FitType.AVG_SIX:
         fit_dist = fh.fit_avg_six(dphi_dist, starting_params)
     elif fit_type == fh.FitType.AVG_FOUR:
@@ -362,4 +363,9 @@ def fit_and_extract_yields(dphi_dist, fit_type, starting_params):
     else:
         logging.error("Invalid fit type: " + fit_type)
         return None
+
     return fit_dist
+
+def do_all_fits(dphi_dist, trigger_pt_bin, associated_pt_bin, centrality_bin):
+
+    return True
