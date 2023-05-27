@@ -2,6 +2,7 @@ import logging
 import math
 
 import ROOT as rt
+import fit_helper as fh
 
 
 # a function to calculate parabola that passes through all three input points
@@ -85,26 +86,26 @@ def fit_lambda_mass(lambda_mass_dist,
     residual.GetXaxis().SetRangeUser(1.094, 1.142)
     residual.Add(lambda_mass_bg_fit, -1)
 
-    RSB_region = rt.TBox(sideband_bin[1], 0, sideband_bin[2], lambda_mass_dist.GetMaximum()*1.055)
+    RSB_region = rt.TBox(sideband_bin.lower_bound, 0, sideband_bin.upper_bound, lambda_mass_dist.GetMaximum()*1.055)
     RSB_region.SetLineColor(rt.kRed)
     RSB_region.SetFillColor(rt.kRed)
     RSB_region.SetFillStyle(3003)
 
-    RSB_min_line = rt.TLine(sideband_bin[1], 0, sideband_bin[2], lambda_mass_dist.GetMaximum()*1.05)
+    RSB_min_line = rt.TLine(sideband_bin.lower_bound, 0, sideband_bin.upper_bound, lambda_mass_dist.GetMaximum()*1.05)
     RSB_min_line.SetLineColor(rt.kRed)
     RSB_min_line.SetLineWidth(2)
     RSB_min_line.SetLineStyle(2)
 
-    RSB_max_line = rt.TLine(sideband_bin[1], 0, sideband_bin[2], lambda_mass_dist.GetMaximum()*1.05)
+    RSB_max_line = rt.TLine(sideband_bin.lower_bound, 0, sideband_bin.upper_bound, lambda_mass_dist.GetMaximum()*1.05)
     RSB_max_line.SetLineColor(rt.kRed)
     RSB_max_line.SetLineWidth(2)
     RSB_max_line.SetLineStyle(2)
 
-    left_signal_bin = lambda_mass_dist.FindBin(signal_bin[1])
-    right_signal_bin = lambda_mass_dist.FindBin(signal_bin[2])
+    left_signal_bin = lambda_mass_dist.FindBin(signal_bin.lower_bound)
+    right_signal_bin = lambda_mass_dist.FindBin(signal_bin.upper_bound)
 
-    left_full_region_bin = residual.FindBin(full_region_bin[1])
-    right_full_region_bin = residual.FindBin(full_region_bin[2])
+    left_full_region_bin = residual.FindBin(full_region_bin.lower_bound)
+    right_full_region_bin = residual.FindBin(full_region_bin.upper_bound)
 
     lambda_bg = 0
     lambda_total = 0
@@ -192,13 +193,13 @@ def make_h_lambda_mixed_corrections(same, mixed, signal_bin, sideband_bin, uniqu
 
     logging.info("\t\t\tDoing h-lambda mixed event corrections...")
 
-    same.GetAxis(2).SetRangeUser(signal_bin[1], signal_bin[2])
-    mixed.GetAxis(2).SetRangeUser(signal_bin[1], signal_bin[2])
+    same.GetAxis(2).SetRangeUser(signal_bin.lower_bound, signal_bin.upper_bound)
+    mixed.GetAxis(2).SetRangeUser(signal_bin.lower_bound, signal_bin.upper_bound)
     same3d_signal = same.Projection(0, 1, 3).Clone("same3d_signal")
     mixed3d_signal = mixed.Projection(0, 1, 3).Clone("mixed3d_signal")
 
-    same.GetAxis(2).SetRangeUser(sideband_bin[1], sideband_bin[2])
-    mixed.GetAxis(2).SetRangeUser(sideband_bin[1], sideband_bin[2])
+    same.GetAxis(2).SetRangeUser(sideband_bin.lower_bound, sideband_bin.upper_bound)
+    mixed.GetAxis(2).SetRangeUser(sideband_bin.lower_bound, sideband_bin.upper_bound)
     same3d_sideband = same.Projection(0, 1, 3).Clone("same3d_sideband")
     mixed3d_sideband = mixed.Projection(0, 1, 3).Clone("mixed3d_sideband")
 
@@ -344,3 +345,21 @@ def get_systematic_uncertainty_dphi(variations, default, outfile):
             n += 1
 
     return math.sqrt(rms/n)
+
+def fit_and_extract_yields(dphi_dist, fit_type, starting_params):
+    if fit_type == fh.FitType.AVG_SIX:
+        fit_dist = fh.fit_avg_six(dphi_dist, starting_params)
+    elif fit_type == fh.FitType.AVG_FOUR:
+        fit_dist = fh.fit_avg_four(dphi_dist, starting_params)
+    elif fit_type == fh.FitType.ZYAM:
+        fit_dist = fh.fit_avg_zyam(dphi_dist, starting_params)
+    elif fit_type == fh.FitType.V2:
+        fit_dist = fh.fit_v2(dphi_dist, starting_params)
+    elif fit_type == fh.FitType.DOUBLE_GAUS:
+        fit_dist = fh.fit_double_gaus(dphi_dist, starting_params)
+    elif fit_type == fh.FitType.VON_MISES:
+        fit_dist = fh.fit_von_mises(dphi_dist, starting_params)
+    else:
+        logging.error("Invalid fit type: " + fit_type)
+        return None
+    return fit_dist

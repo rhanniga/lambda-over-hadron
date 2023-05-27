@@ -8,6 +8,7 @@ import array as arr
 import ROOT as rt
 
 import strangehelper as sh
+import fit_helper as fh
 from systematics_helper import AnalysisBin, AnalysisBins
 
 # define an epsilon to avoid bin edge effects
@@ -60,9 +61,6 @@ PID_BINS = AnalysisBins("pid_bins",
                         AnalysisBin("pid_wide", 1.4, 1.4, "../online/output/v0_pid_wide.root")])
 
 ALL_VARIATIONS = [SIGNAL_BINS, SIDEBAND_BINS, ETA_BINS, FULL_REGION_BINS, PID_BINS]
-
-def fit_and_extract_yields(h_lambda_dphi, h_h_dphi=None):
-    return True
 
 def get_dphi_dists(input_list,
                    input_name,
@@ -257,7 +255,7 @@ if __name__ == "__main__":
                 default_dphi_list.Add(h_lambda_dphi_default)
                 default_dphi_list.Add(h_h_dphi_default)
 
-                fit_list = fit_and_extract_yields(h_lambda_dphi_default, h_h_dphi_default, trigger_pt_bin.name, associated_pt_bin.name, centrality_bin.name)
+                fit_list = sh.fit_and_extract_yields(h_lambda_dphi_default, h_h_dphi_default, trigger_pt_bin.name, associated_pt_bin.name, centrality_bin.name)
 
                 default_dphi_list.Add(fit_list)
 

@@ -1,0 +1,193 @@
+Starting the offline analysis...
+Initializing the output file under the name: offline_analysis_test.root
+Getting dphi distributions for...
+	Input file: default
+	Centrality: cent_0_20
+	Trigger pt: trig_4_8
+	Associated pt: assoc_2_4
+	Delta eta: delta_eta_12
+	Eta: eta_default
+	Signal bin: signal_default
+	Sideband bin: sideband_default
+	Full region bin: full_region_default
+	Output file: offline_analysis_test.root
+		Number of triggers: 5227867.705649376
+		Fitting lambda mass dist with voigt + pol1...
+		Lambda mass fit successful!
+			Chi2/NDF: 7.28998266640059
+			Mean: 1.116081743974441 +/- 2.6775218700954523e-06
+			Sigma: 0.0009040824680948332 +/- 9.62651268068323e-06
+			Gamma: 0.002493619186753564 +/- 1.741619715747059e-05
+		Lambda signal: 1506944.4439557157
+		Lambda background: 225537.5862589517
+		Lambda signal scale: 0.9994512309797026
+			Doing dihadron mixed event corrections...
+			Done with dihadron mixed event corrections.
+			Doing h-lambda mixed event corrections...
+			Done with h-lambda mixed event corrections.
+			Applying sideband subtraction...
+			Done with sideband subtraction.
+			Applying two-track efficiency correction...
+			Done with two-track efficiency correction.
+Getting dphi distributions for...
+	Input file: default
+	Centrality: cent_0_20
+	Trigger pt: trig_4_8
+	Associated pt: assoc_2_4
+	Delta eta: delta_eta_12
+	Eta: eta_default
+	Signal bin: signal_narrow
+	Sideband bin: sideband_default
+	Full region bin: full_region_default
+None
+		Number of triggers: 5227867.705649376
+		Fitting lambda mass dist with voigt + pol1...
+		Lambda mass fit successful!
+			Chi2/NDF: 7.28998266640059
+			Mean: 1.116081743974441 +/- 2.6775218700954523e-06
+			Sigma: 0.0009040824680948332 +/- 9.62651268068323e-06
+			Gamma: 0.002493619186753564 +/- 1.741619715747059e-05
+		Lambda signal: 1495707.4798603377
+		Lambda background: 128878.62071940096
+		Lambda signal scale: 1.0069599168349401
+			Doing h-lambda mixed event corrections...
+			Done with h-lambda mixed event corrections.
+			Applying sideband subtraction...
+			Done with sideband subtraction.
+			Applying two-track efficiency correction...
+			Done with two-track efficiency correction.
+Getting dphi distributions for...
+	Input file: default
+	Centrality: cent_0_20
+	Trigger pt: trig_4_8
+	Associated pt: assoc_2_4
+	Delta eta: delta_eta_12
+	Eta: eta_default
+	Signal bin: signal_narrower
+	Sideband bin: sideband_default
+	Full region bin: full_region_default
+None
+		Number of triggers: 5227867.705649376
+		Fitting lambda mass dist with voigt + pol1...
+		Lambda mass fit successful!
+			Chi2/NDF: 7.28998266640059
+			Mean: 1.116081743974441 +/- 2.6775218700954523e-06
+			Sigma: 0.0009040824680948332 +/- 9.62651268068323e-06
+			Gamma: 0.002493619186753564 +/- 1.741619715747059e-05
+		Lambda signal: 1363405.3181178728
+		Lambda background: 64439.31035970048
+		Lambda signal scale: 1.104673320189699
+			Doing h-lambda mixed event corrections...
+			Done with h-lambda mixed event corrections.
+			Applying sideband subtraction...
+			Done with sideband subtraction.
+			Applying two-track efficiency correction...
+			Done with two-track efficiency correction.
+Getting dphi distributions for...
+	Input file: default
+	Centrality: cent_0_20
+	Trigger pt: trig_4_8
+	Associated pt: assoc_2_4
+	Delta eta: delta_eta_12
+	Eta: eta_default
+	Signal bin: signal_default
+	Sideband bin: sideband_narrow
+	Full region bin: full_region_default
+None
+		Number of triggers: 5227867.705649376
+		Fitting lambda mass dist with voigt + pol1...
+		Lambda mass fit successful!
+			Chi2/NDF: 7.28998266640059
+			Mean: 1.116081743974441 +/- 2.6775218700954523e-06
+			Sigma: 0.0009040824680948332 +/- 9.62651268068323e-06
+			Gamma: 0.002493619186753564 +/- 1.741619715747059e-05
+		Lambda signal: 1506944.4439557157
+		Lambda background: 225537.5862589517
+		Lambda signal scale: 0.9994512309797026
+			Doing h-lambda mixed event corrections...
+			Done with h-lambda mixed event corrections.
+			Applying sideband subtraction...
+			Done with sideband subtraction.
+			Applying two-track efficiency correction...
+			Done with two-track efficiency correction.
+Getting dphi distributions for...
+	Input file: default
+	Centrality: cent_0_20
+	Trigger pt: trig_4_8
+	Associated pt: assoc_2_4
+	Delta eta: delta_eta_12
+	Eta: eta_default
+	Signal bin: signal_default
+	Sideband bin: sideband_wide
+	Full region bin: full_region_default
+None
+		Number of triggers: 5227867.705649376
+		Fitting lambda mass dist with voigt + pol1...
+		Lambda mass fit successful!
+			Chi2/NDF: 7.28998266640059
+			Mean: 1.116081743974441 +/- 2.6775218700954523e-06
+			Sigma: 0.0009040824680948332 +/- 9.62651268068323e-06
+			Gamma: 0.002493619186753564 +/- 1.741619715747059e-05
+		Lambda signal: 1506944.4439557157
+		Lambda background: 225537.5862589517
+		Lambda signal scale: 0.9994512309797026
+			Doing h-lambda mixed event corrections...
+			Done with h-lambda mixed event corrections.
+			Applying sideband subtraction...
+			Done with sideband subtraction.
+			Applying two-track efficiency correction...
+			Done with two-track efficiency correction.
+Getting dphi distributions for...
+	Input file: default
+	Centrality: cent_0_20
+	Trigger pt: trig_4_8
+	Associated pt: assoc_2_4
+	Delta eta: delta_eta_12
+	Eta: eta_default
+	Signal bin: signal_default
+	Sideband bin: sideband_leftshift
+	Full region bin: full_region_default
+None
+		Number of triggers: 5227867.705649376
+		Fitting lambda mass dist with voigt + pol1...
+		Lambda mass fit successful!
+			Chi2/NDF: 7.28998266640059
+			Mean: 1.116081743974441 +/- 2.6775218700954523e-06
+			Sigma: 0.0009040824680948332 +/- 9.62651268068323e-06
+			Gamma: 0.002493619186753564 +/- 1.741619715747059e-05
+		Lambda signal: 1506944.4439557157
+		Lambda background: 225537.5862589517
+		Lambda signal scale: 0.9994512309797026
+			Doing h-lambda mixed event corrections...
+			Done with h-lambda mixed event corrections.
+			Applying sideband subtraction...
+			Done with sideband subtraction.
+			Applying two-track efficiency correction...
+			Done with two-track efficiency correction.
+Getting dphi distributions for...
+	Input file: default
+	Centrality: cent_0_20
+	Trigger pt: trig_4_8
+	Associated pt: assoc_2_4
+	Delta eta: delta_eta_12
+	Eta: eta_default
+	Signal bin: signal_default
+	Sideband bin: sideband_rightshift
+	Full region bin: full_region_default
+None
+		Number of triggers: 5227867.705649376
+		Fitting lambda mass dist with voigt + pol1...
+		Lambda mass fit successful!
+			Chi2/NDF: 7.28998266640059
+			Mean: 1.116081743974441 +/- 2.6775218700954523e-06
+			Sigma: 0.0009040824680948332 +/- 9.62651268068323e-06
+			Gamma: 0.002493619186753564 +/- 1.741619715747059e-05
+		Lambda signal: 1506944.4439557157
+		Lambda background: 225537.5862589517
+		Lambda signal scale: 0.9994512309797026
+			Doing h-lambda mixed event corrections...
+			Done with h-lambda mixed event corrections.
+			Applying sideband subtraction...
+			Done with sideband subtraction.
+			Applying two-track efficiency correction...
+			Done with two-track efficiency correction.
