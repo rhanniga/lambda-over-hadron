@@ -353,7 +353,7 @@ def fit_and_extract_yields(dphi_dist, fit_type, starting_params):
     elif fit_type == fh.FitType.AVG_FOUR:
         fit_dist = fh.fit_avg_four(dphi_dist, starting_params)
     elif fit_type == fh.FitType.ZYAM:
-        fit_dist = fh.fit_avg_zyam(dphi_dist, starting_params)
+        fit_dist = fh.fit_zyam(dphi_dist, starting_params)
     elif fit_type == fh.FitType.V2:
         fit_dist = fh.fit_v2(dphi_dist, starting_params)
     elif fit_type == fh.FitType.DOUBLE_GAUS:

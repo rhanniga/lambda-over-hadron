@@ -18,6 +18,9 @@ for pt_bin in ["central", "low", "high"]:
             v0_input_file = rt.TFile("output/central_value/v0_avg6_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_15_25_delta_eta_12_normal_lowpt.root")
         elif pt_bin == "high":
             v0_input_file = rt.TFile("output/central_value/v0_avg6_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_25_40_delta_eta_12_normal_highpt.root")
+        else:
+            print("Invalid pt bin")
+            quit()
 
         if cent_bin == 0:
             lambda_mass_dist = v0_input_file.Get("lambda_mass_dist_0_20").Clone("tmp")
@@ -28,11 +31,13 @@ for pt_bin in ["central", "low", "high"]:
             lambda_mass_fit = v0_input_file.Get("lambda_mass_fit_20_50")
             lambda_mass_bg_fit = v0_input_file.Get("bg_fit_20_50")
         elif cent_bin == 50:
+
             lambda_mass_dist = v0_input_file.Get("lambda_mass_dist_50_80").Clone("tmp")
             lambda_mass_fit = v0_input_file.Get("lambda_mass_fit_50_80")
             lambda_mass_bg_fit = v0_input_file.Get("bg_fit_50_80")
         else:
             print("Invalid centrality bin")
+            quit()
 
         lambda_mass_dist.SetTitle("")
         lambda_mass_dist.GetXaxis().SetTitle("M_{p#pi} (GeV/#it{c}^{2})")

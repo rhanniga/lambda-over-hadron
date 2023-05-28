@@ -1,5 +1,4 @@
-#! /usr/bin/env python
-import math
+#!/usr/bin/env python
 import logging
 
 from sys import argv
@@ -8,7 +7,6 @@ import array as arr
 import ROOT as rt
 
 import strangehelper as sh
-import fit_helper as fh
 from systematics_helper import AnalysisBin, AnalysisBins
 
 # define an epsilon to avoid bin edge effects
