@@ -400,17 +400,18 @@ h_lambda_2d_subtracted_0_20 = apply_two_track_correction(h_lambda_2d_subtracted_
 h_lambda_dphi_subtracted_0_20 = h_lambda_2d_subtracted_0_20.ProjectionY("h_lambda_dphi_subtracted_0_20")
 
 if USE_AVG_4:
+
     ue_line_0_20 = rt.TF1("ue_line_0_20", "pol0", -2, 6)
     ue_upper_line_0_20 = rt.TF1("ue_upper_line_0_20", "pol0", -2, 6)
     ue_lower_line_0_20 = rt.TF1("ue_lower_line_0_20", "pol0", -2, 6)
     zero_line_0_20 = rt.TF1("zero_line_0_20", "pol0", -2, 6)
     zero_upper_line_0_20 = rt.TF1("zero_upper_line_0_20", "pol0", -2, 6)
     zero_lower_line_0_20 = rt.TF1("zero_lower_line_0_20", "pol0", -2, 6)
+
     ue_avg_0_20 = (h_lambda_dphi_subtracted_0_20.GetBinContent(1) 
                    + h_lambda_dphi_subtracted_0_20.GetBinContent(8)
                    + h_lambda_dphi_subtracted_0_20.GetBinContent(9)
                    + h_lambda_dphi_subtracted_0_20.GetBinContent(16))/4
-
     ue_avg_error_0_20 = (1/4)*(math.sqrt(h_lambda_dphi_subtracted_0_20.GetBinError(1)**2 
                    + h_lambda_dphi_subtracted_0_20.GetBinError(8)**2
                    + h_lambda_dphi_subtracted_0_20.GetBinError(9)**2
@@ -684,6 +685,7 @@ elif USE_V2:
     h_lambda_away_integral_error_0_20 = math.sqrt(h_lambda_away_integral_error_0_20**2 + h_lambda_ue_integral_error_0_20_halved**2)
 
 else: 
+
     h_lambda_dphi_subtracted_0_20_zeroed = h_lambda_dphi_subtracted_0_20.Clone("h_lambda_dphi_subtracted_0_20_zeroed")
     h_lambda_dphi_subtracted_0_20_zeroed.Add(ue_line_0_20, -1)
 
@@ -4065,3 +4067,41 @@ ue_ratio_graph_minbias.Write("ue_ratio_graph_minbias")
 total_ratio_graph_minbias.Write("total_ratio_graph_minbias")
 
 output_file.Close()
+
+
+print("______________FITTING PARAMETERS______________")
+
+if USE_VON:
+
+    print("h_lambda 0-20")
+    print([von_fit_0_20.GetParameter(i) for i in range(von_fit_0_20.GetNpar())])
+    print("h_h 0-20")
+    print([hh_von_fit_0_20.GetParameter(i) for i in range(hh_von_fit_0_20.GetNpar())])
+
+    print("h_lambda 20-50")
+    print([von_fit_20_50.GetParameter(i) for i in range(von_fit_20_50.GetNpar())])
+    print("h_h 20-50")
+    print([hh_von_fit_20_50.GetParameter(i) for i in range(hh_von_fit_20_50.GetNpar())])
+
+    print("h_lambda 50-80")
+    print([von_fit_50_80.GetParameter(i) for i in range(von_fit_50_80.GetNpar())])
+    print("h_h 50-80")
+    print([hh_von_fit_50_80.GetParameter(i) for i in range(hh_von_fit_50_80.GetNpar())])
+
+
+elif USE_FIT:
+
+    print("h_lambda 0-20")
+    print([fit_function_0_20.GetParameter(i) for i in range(fit_function_0_20.GetNpar())])
+    print("h_h 0-20")
+    print([hh_fit_function_0_20.GetParameter(i) for i in range(hh_fit_function_0_20.GetNpar())])
+
+    print("h_lambda 20-50")
+    print([fit_function_20_50.GetParameter(i) for i in range(fit_function_20_50.GetNpar())])
+    print("h_h 20-50")
+    print([hh_fit_function_20_50.GetParameter(i) for i in range(hh_fit_function_20_50.GetNpar())])
+
+    print("h_lambda 50-80")
+    print([fit_function_50_80.GetParameter(i) for i in range(fit_function_50_80.GetNpar())])
+    print("h_h 50-80")
+    print([hh_fit_function_50_80.GetParameter(i) for i in range(hh_fit_function_50_80.GetNpar())])

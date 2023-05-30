@@ -366,6 +366,8 @@ def fit_and_extract_yields(dphi_dist, fit_type, starting_params):
 
     return fit_dist
 
-def do_all_fits(dphi_dist, trigger_pt_bin, associated_pt_bin, centrality_bin):
+def do_all_fits(dphi_dist, trigger_pt_bin, associated_pt_bin, centrality_bin, is_dihadron=False):
+
+    
 
     return True

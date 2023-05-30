@@ -8,6 +8,7 @@ import ROOT as rt
 
 import strangehelper as sh
 from systematics_helper import AnalysisBin, AnalysisBins
+from yield_extractor import YieldExtractor, FitType
 
 # define an epsilon to avoid bin edge effects
 EPSILON = 0.0001
@@ -84,7 +85,7 @@ def get_dphi_dists(input_list,
     logging.info("\tSignal bin: " + signal_bin.name)
     logging.info("\tSideband bin: " + sideband_bin.name)
     logging.info("\tFull region bin: " + full_region_bin.name)
-    logging.info("\tOutput file: " + output_file.GetName() if output_file else "None")
+    logging.info("\tOutput file: " + output_file.GetName() if output_file else "\tNone")
 
     # get unique string for cloning to avoid name conflicts
     unique_clone_string = input_name + "_" + \
@@ -96,7 +97,6 @@ def get_dphi_dists(input_list,
                         signal_bin.name + "_" + \
                         sideband_bin.name + "_" + \
                         full_region_bin.name
-
 
     # projecting trigger distribution within the specified centrality and trigger pt bins down to 1d (pt)
     trigger_dist = input_list.FindObject("fTriggerDistEff")
@@ -115,7 +115,6 @@ def get_dphi_dists(input_list,
     lambda_dist.GetAxis(2).SetRangeUser(eta_bin.lower_bound, eta_bin.upper_bound)
     lambda_dist.GetAxis(4).SetRangeUser(centrality_bin.lower_bound, centrality_bin.upper_bound)
     lambda_mass_dist = lambda_dist.Projection(3).Clone("lambda_mass_dist_" + unique_clone_string)
-
 
     # do lambda fitting to extract signal and background
     lambda_signal, lambda_background, signal_scale = sh.fit_lambda_mass(lambda_mass_dist,
@@ -236,7 +235,6 @@ if __name__ == "__main__":
             for centrality_bin in CENTRALITY_BINS.analysis_bins:
 
                 # first run the default to get things that can be plotted
-
                 h_lambda_dphi_default, h_h_dphi_default = get_dphi_dists(default_list,
                                                     "default",
                                                     centrality_bin,
@@ -253,9 +251,16 @@ if __name__ == "__main__":
                 default_dphi_list.Add(h_lambda_dphi_default)
                 default_dphi_list.Add(h_h_dphi_default)
 
-                fit_list = sh.do_all_fits(h_lambda_dphi_default, h_h_dphi_default, trigger_pt_bin.name, associated_pt_bin.name, centrality_bin.name)
+                h_lambda_dphi_yield_extractor = YieldExtractor(h_lambda_dphi_default, centrality_bin.name, trigger_pt_bin.name, associated_pt_bin.name)
+                h_lambda_dphi_yield_extractor.extract_yield(fit_type=FitType.AVG_SIX)
+                h_lambda_dphi_yield_extractor.save_fits("h_lambda_dphi_yield_extractor_" + centrality_bin.name + "_" + trigger_pt_bin.name + "_" + associated_pt_bin.name, output_file)
+                print(h_lambda_dphi_yield_extractor.yields[FitType.AVG_SIX])
+                quit()
+                # handle yield systematics with yield extractor (can be done for each variation as well)
+                # handle dphi systematics using dphi dists 
+                # handle width systematics with ??? (TODO)
+                
 
-                default_dphi_list.Add(fit_list)
 
                 output_file.WriteObject(default_dphi_list, "default_dphi_list_" + centrality_bin.name + "_" + trigger_pt_bin.name + "_" + associated_pt_bin.name)
 
@@ -322,4 +327,4 @@ if __name__ == "__main__":
 
     # close all files corresponding to variations that had separate files
     for variation in PID_BINS.analysis_bins:
-        variation.file.Close()
+        variation.input_file.Close()
