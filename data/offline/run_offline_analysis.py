@@ -7,7 +7,7 @@ import array as arr
 import ROOT as rt
 
 import strangehelper as sh
-from systematics_helper import AnalysisBin, AnalysisBins
+from systematics_helper import AnalysisBin, AnalysisBins, DphiSystematicHelper, WidthSystematicHelper
 from yield_extractor import YieldExtractor, FitType
 
 # define an epsilon to avoid bin edge effects
@@ -36,16 +36,16 @@ DELTA_ETA_BINS = AnalysisBins("delta_eta_bins",
 SIGNAL_BINS = AnalysisBins("signal_bins",
                             [AnalysisBin("signal_default", 1.102, 1.130 - EPSILON),
                             AnalysisBin("signal_narrow", 1.108, 1.124 - EPSILON),
-                            AnalysisBin("signal_narrower", 1.112, 1.120 - EPSILON),
-                            AnalysisBin("signal_wide", 1.100, 1.132 - EPSILON),
-                            AnalysisBin("signal_wider", 1.098, 1.134 - EPSILON)])
+                            AnalysisBin("signal_narrower", 1.112, 1.120 - EPSILON)])
+                            # AnalysisBin("signal_wide", 1.100, 1.132 - EPSILON),
+                            # AnalysisBin("signal_wider", 1.098, 1.134 - EPSILON)])
 
 SIDEBAND_BINS = AnalysisBins("sideband_bins",
                             [AnalysisBin("sideband_default", 1.135, 1.15 - EPSILON),
                             AnalysisBin("sideband_narrow", 1.135, 1.145 - EPSILON),
-                            AnalysisBin("sideband_wide", 1.135, 1.16 - EPSILON),
-                            AnalysisBin("sideband_leftshift", 1.084, 1.096 - EPSILON),
-                            AnalysisBin("sideband_rightshift", 1.14, 1.155 - EPSILON)])
+                            AnalysisBin("sideband_wide", 1.135, 1.16 - EPSILON)])
+                            # AnalysisBin("sideband_leftshift", 1.084, 1.096 - EPSILON),
+                            # AnalysisBin("sideband_rightshift", 1.14, 1.155 - EPSILON)])
 
 ETA_BINS = AnalysisBins("eta_bins",
                         [AnalysisBin("eta_default", -0.8, 0.8 - EPSILON)])
@@ -55,9 +55,9 @@ FULL_REGION_BINS = AnalysisBins("full_region_bins",
 
 
 PID_BINS = AnalysisBins("pid_bins",
-                        [AnalysisBin("pid_default", 1, 1, "../online/output/v0_central.root"),
-                        AnalysisBin("pid_narrow", 0.6, 0.6, "../online/output/v0_pid_narrow.root"),
-                        AnalysisBin("pid_wide", 1.4, 1.4, "../online/output/v0_pid_wide.root")])
+                        [AnalysisBin("pid_default", 1, 1, "../online/output/v0_central.root")])
+                        # AnalysisBin("pid_narrow", 0.6, 0.6, "../online/output/v0_pid_narrow.root"),
+                        # AnalysisBin("pid_wide", 1.4, 1.4, "../online/output/v0_pid_wide.root")])
 
 ALL_VARIATIONS = [SIGNAL_BINS, SIDEBAND_BINS, ETA_BINS, FULL_REGION_BINS, PID_BINS]
 
@@ -255,7 +255,6 @@ if __name__ == "__main__":
                 h_lambda_dphi_yield_extractor.extract_yield(fit_type=FitType.AVG_SIX)
                 h_lambda_dphi_yield_extractor.save_fits("h_lambda_dphi_yield_extractor_" + centrality_bin.name + "_" + trigger_pt_bin.name + "_" + associated_pt_bin.name, output_file)
                 print(h_lambda_dphi_yield_extractor.yields[FitType.AVG_SIX])
-                quit()
                 # handle yield systematics with yield extractor (can be done for each variation as well)
                 # handle dphi systematics using dphi dists 
                 # handle width systematics with ??? (TODO)
@@ -264,11 +263,13 @@ if __name__ == "__main__":
 
                 output_file.WriteObject(default_dphi_list, "default_dphi_list_" + centrality_bin.name + "_" + trigger_pt_bin.name + "_" + associated_pt_bin.name)
 
+                h_lambda_variations = {}
+
                 for index, VARIATIONS in enumerate(ALL_VARIATIONS):
-                    variation_list = rt.TList()
+                    h_lambda_variations[VARIATIONS.name] = []
                     for variation in VARIATIONS.analysis_bins[1:]:
                         if VARIATIONS.name == "signal_bins":
-                            variation_list.Add(get_dphi_dists(default_list,
+                            h_lambda_variations[VARIATIONS.name].append(get_dphi_dists(default_list,
                                                              VARIATIONS.name,
                                                              centrality_bin,
                                                              trigger_pt_bin,
@@ -281,7 +282,7 @@ if __name__ == "__main__":
                                                              None,
                                                              False)[0])
                         elif VARIATIONS.name == "sideband_bins":
-                            variation_list.Add(get_dphi_dists(default_list,
+                            h_lambda_variations[VARIATIONS.name].append(get_dphi_dists(default_list,
                                                              VARIATIONS.name,
                                                              centrality_bin,
                                                              trigger_pt_bin,
@@ -294,7 +295,7 @@ if __name__ == "__main__":
                                                              None,
                                                              False)[0])
                         elif VARIATIONS.name == "full_region_bins":
-                            variation_list.Add(get_dphi_dists(default_list,
+                            h_lambda_variations[VARIATIONS.name].append(get_dphi_dists(default_list,
                                                              VARIATIONS.name,
                                                              centrality_bin,
                                                              trigger_pt_bin,
@@ -307,7 +308,7 @@ if __name__ == "__main__":
                                                              None,
                                                              False)[0])
                         elif VARIATIONS.name == "pid_bins":
-                            variation_list.Add(get_dphi_dists(variation.object_list,
+                            h_lambda_variations[VARIATIONS.name].append(get_dphi_dists(variation.object_list,
                                                              variation.name,
                                                              centrality_bin,
                                                              trigger_pt_bin,
@@ -319,8 +320,15 @@ if __name__ == "__main__":
                                                              FULL_REGION_BINS.analysis_bins[0],
                                                              None,
                                                              False)[0])
-                        
-                    output_file.WriteObject(variation_list, VARIATIONS.name + "_dphi_list_" + centrality_bin.name + "_" + trigger_pt_bin.name + "_" + associated_pt_bin.name)
+
+                h_lambda_dphi_systematics = DphiSystematicHelper(h_lambda_dphi_default, h_lambda_variations)                     
+                h_lambda_dphi_systematics.calculate_systematics()
+                print(h_lambda_dphi_systematics.contributions)
+                h_lambda_width_systematics = WidthSystematicHelper(h_lambda_dphi_default, h_lambda_variations, 
+                                                                   centrality_bin.name, trigger_pt_bin.name, associated_pt_bin.name)
+                h_lambda_width_systematics.extract_all_widths()
+                quit()
+    
         
     # close the output file
     output_file.Close()

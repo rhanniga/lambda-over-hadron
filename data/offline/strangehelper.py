@@ -333,17 +333,13 @@ def apply_two_track_correction(uncorrected_dist, associated_pt_name):
     return corrected_dist
 
 def get_systematic_uncertainty_dphi(variations, default, outfile):
-
     rms = 0
     n = 0
     for name, variation in variations.items():
-
         ratio = variation/default
-
         for i in range(1, ratio.GetNbinsX() + 1):
             rms += (ratio.GetBinContent(i) - 1)**2
             n += 1
-
     return math.sqrt(rms/n)
 
 def fit_and_extract_yields(dphi_dist, fit_type, starting_params):

@@ -27,118 +27,118 @@ def find_v2_baseline(h, name, outfile):
     total_v2_fit = rt.TF1("v2_fit", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
 
     if "h_h_" in name:
-        if "_0_20" in name:
+        if "cent_0_20" in name:
             left_v2_fit.FixParameter(1, TRIGGER_V2)
             right_v2_fit.FixParameter(1, TRIGGER_V2)
 
-            if "lowpt" in name:
+            if "assoc_15_25" in name:
                 left_v2_fit.FixParameter(2, ASSOCIATED_V2_LOWPT)
                 right_v2_fit.FixParameter(2, ASSOCIATED_V2_LOWPT)
-            elif "highpt" in name:
+            elif "assoc_25_4" in name:
                 left_v2_fit.FixParameter(2, ASSOCIATED_V2_HIGHPT)
                 right_v2_fit.FixParameter(2, ASSOCIATED_V2_HIGHPT)
-            elif "central" in name:
+            elif "assoc_2_4" in name:
                 left_v2_fit.FixParameter(2, ASSOCIATED_V2)
                 right_v2_fit.FixParameter(2, ASSOCIATED_V2)
             
-        elif "_20_50" in name:
+        elif "cent_20_50" in name:
             left_v2_fit.FixParameter(1, 0.85*TRIGGER_V2)
             right_v2_fit.FixParameter(1, 0.85*TRIGGER_V2)
 
-            if "lowpt" in name:
+            if "assoc_15_25" in name:
                 left_v2_fit.FixParameter(2, 0.85*ASSOCIATED_V2_LOWPT)
                 right_v2_fit.FixParameter(2, 0.85*ASSOCIATED_V2_LOWPT)
-            elif "highpt" in name:
+            elif "assoc_25_4" in name:
                 left_v2_fit.FixParameter(2, 0.85*ASSOCIATED_V2_HIGHPT)
                 right_v2_fit.FixParameter(2, 0.85*ASSOCIATED_V2_HIGHPT)
-            elif "central" in name:
+            elif "assoc_2_4" in name:
                 left_v2_fit.FixParameter(2, 0.85*ASSOCIATED_V2)
                 right_v2_fit.FixParameter(2, 0.85*ASSOCIATED_V2)
 
-        elif "_50_80" in name:
+        elif "cent_50_80" in name:
             left_v2_fit.FixParameter(1, 0.5*TRIGGER_V2)
             right_v2_fit.FixParameter(1, 0.5*TRIGGER_V2)
 
-            if "lowpt" in name:
+            if "assoc_15_25" in name:
                 left_v2_fit.FixParameter(2, 0.5*ASSOCIATED_V2_LOWPT)
                 right_v2_fit.FixParameter(2, 0.5*ASSOCIATED_V2_LOWPT)
-            elif "highpt" in name:
+            elif "assoc_25_4" in name:
                 left_v2_fit.FixParameter(2, 0.5*ASSOCIATED_V2_HIGHPT)
                 right_v2_fit.FixParameter(2, 0.5*ASSOCIATED_V2_HIGHPT)
-            elif "central" in name:
+            elif "assoc_2_4" in name:
                 left_v2_fit.FixParameter(2, 0.5*ASSOCIATED_V2)
                 right_v2_fit.FixParameter(2, 0.5*ASSOCIATED_V2)
 
-        elif "_0_80" in name:
+        elif "cent_0_80" in name:
             left_v2_fit.FixParameter(1, 0.95*TRIGGER_V2)
             right_v2_fit.FixParameter(1, 0.95*TRIGGER_V2)
 
-            if "lowpt" in name:
+            if "assoc_15_25" in name:
                 left_v2_fit.FixParameter(2, 0.95*ASSOCIATED_V2_LOWPT)
                 right_v2_fit.FixParameter(2, 0.95*ASSOCIATED_V2_LOWPT)
-            elif "highpt" in name:
+            elif "assoc_25_4" in name:
                 left_v2_fit.FixParameter(2, 0.95*ASSOCIATED_V2_HIGHPT)
                 right_v2_fit.FixParameter(2, 0.95*ASSOCIATED_V2_HIGHPT)
-            elif "central" in name:
+            elif "assoc_2_4" in name:
                 left_v2_fit.FixParameter(2, 0.95*ASSOCIATED_V2)
                 right_v2_fit.FixParameter(2, 0.95*ASSOCIATED_V2)
 
     elif "h_lambda_" in name:
 
-        if "_0_20" in name:
+        if "cent_0_20" in name:
             left_v2_fit.FixParameter(1, TRIGGER_V2)
             right_v2_fit.FixParameter(1, TRIGGER_V2)
 
-            if "lowpt" in name:
+            if "assoc_15_25" in name:
                 left_v2_fit.FixParameter(2, LAMBDA_V2_LOWPT)
                 right_v2_fit.FixParameter(2, LAMBDA_V2_LOWPT)
-            elif "highpt" in name:
+            elif "assoc_25_4" in name:
                 left_v2_fit.FixParameter(2, LAMBDA_V2_HIGHPT)
                 right_v2_fit.FixParameter(2, LAMBDA_V2_HIGHPT)
-            elif "central" in name:
+            elif "assoc_2_4" in name:
                 left_v2_fit.FixParameter(2, LAMBDA_V2)
                 right_v2_fit.FixParameter(2, LAMBDA_V2)
 
 
-        elif "_20_50" in name:
+        elif "cent_20_50" in name:
             left_v2_fit.FixParameter(1, 0.85*TRIGGER_V2)
             right_v2_fit.FixParameter(1, 0.85*TRIGGER_V2)
 
-            if "lowpt" in name:
+            if "assoc_15_25" in name:
                 left_v2_fit.FixParameter(2, 0.85*LAMBDA_V2_LOWPT)
                 right_v2_fit.FixParameter(2, 0.85*LAMBDA_V2_LOWPT)
-            elif "highpt" in name:
+            elif "assoc_25_4" in name:
                 left_v2_fit.FixParameter(2, 0.85*LAMBDA_V2_HIGHPT)
                 right_v2_fit.FixParameter(2, 0.85*LAMBDA_V2_HIGHPT)
-            elif "central" in name:
+            elif "assoc_2_4" in name:
                 left_v2_fit.FixParameter(2, 0.85*LAMBDA_V2)
                 right_v2_fit.FixParameter(2, 0.85*LAMBDA_V2)
 
-        elif "_50_80" in name:
+        elif "cent_50_80" in name:
             left_v2_fit.FixParameter(1, 0.5*TRIGGER_V2)
             right_v2_fit.FixParameter(1, 0.5*TRIGGER_V2)
 
-            if "lowpt" in name:
+            if "assoc_15_25" in name:
                 left_v2_fit.FixParameter(2, 0.5*LAMBDA_V2_LOWPT)
                 right_v2_fit.FixParameter(2, 0.5*LAMBDA_V2_LOWPT)
-            elif "highpt" in name:
+            elif "assoc_25_4" in name:
                 left_v2_fit.FixParameter(2, 0.5*LAMBDA_V2_HIGHPT)
                 right_v2_fit.FixParameter(2, 0.5*LAMBDA_V2_HIGHPT)
-            elif "central" in name:
+            elif "assoc_2_4" in name:
                 left_v2_fit.FixParameter(2, 0.5*LAMBDA_V2)
                 right_v2_fit.FixParameter(2, 0.5*LAMBDA_V2)
 
-        elif "_0_80" in name:
+        elif "cent_0_80" in name:
             left_v2_fit.FixParameter(1, 0.95*TRIGGER_V2)
             right_v2_fit.FixParameter(1, 0.95*TRIGGER_V2)
 
-            if "lowpt" in name:
+            if "assoc_15_25" in name:
                 left_v2_fit.FixParameter(2, 0.95*LAMBDA_V2_LOWPT)
                 right_v2_fit.FixParameter(2, 0.95*LAMBDA_V2_LOWPT)
-            elif "highpt" in name:
+            elif "assoc_25_4" in name:
                 left_v2_fit.FixParameter(2, 0.95*LAMBDA_V2_HIGHPT)
                 right_v2_fit.FixParameter(2, 0.95*LAMBDA_V2_HIGHPT)
-            elif "central" in name:
+            elif "assoc_2_4" in name:
                 left_v2_fit.FixParameter(2, 0.95*LAMBDA_V2)
                 right_v2_fit.FixParameter(2, 0.95*LAMBDA_V2)
 
@@ -187,9 +187,9 @@ infile_lowpt = rt.TFile("output/central_value/v0_avg6_sideband_subtraction_rsb_1
 infile_highpt = rt.TFile("output/central_value/v0_avg6_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_25_40_delta_eta_12_normal_highpt.root")
 
 file_dict = {
-    "central": infile,
-    "lowpt": infile_lowpt,
-    "highpt": infile_highpt,
+    "trigger_4_8_assoc_2_4": infile,
+    "trigger_4_8_assoc_15_25": infile_lowpt,
+    "trigger_4_8_assoc_25_4": infile_highpt,
 }
 
 h_lambda_base_hist_name = "h_lambda_2d_subtracted"
@@ -201,5 +201,5 @@ with open("v2_fitpars.txt", "w") as outfile:
         for mult_string in mult_strings:
             h_lambda = f.Get(h_lambda_base_hist_name + mult_string)
             h_h = f.Get(h_h_base_hist_name + mult_string)
-            find_v2_baseline(h_h, "h_h_" + key + mult_string, outfile)
-            find_v2_baseline(h_lambda,"h_lambda_" + key + mult_string, outfile)
+            find_v2_baseline(h_h, "h_h_cent" + mult_string + "_" + key , outfile)
+            find_v2_baseline(h_lambda,"h_lambda_cent" +  mult_string + "_" + key, outfile)

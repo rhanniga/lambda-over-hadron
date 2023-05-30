@@ -800,10 +800,10 @@ elif USE_ZYAM:
     hh_zero_upper_line_0_20.SetParameter(0, hh_ue_avg_error_0_20)
     hh_zero_lower_line_0_20.SetParameter(0, -hh_ue_avg_error_0_20)
 elif USE_FIT:
+
     # fitting to four gaussians + a constant background
     hh_fit_function_0_20 = rt.TF1("hh_fit_function_0_20", "gaus(0) + gaus(3) + gaus(6) + gaus(9) + pol0(12)", -2, 6)
     hh_fit_function_0_20.SetNpx(1000)
-
     # setting parameters for first gaussian (centered at 0)
     hh_fit_function_0_20.SetParLimits(0, 0.02, 1)
     hh_fit_function_0_20.SetParameter(0, 0.16)
@@ -894,7 +894,6 @@ elif USE_VON:
     hh_von_fit_string = "[0]*(1 + 2*([1]*[2]*cos(2*x)))"
     hh_von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x))"
     hh_von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()))"
-
     hh_von_fit_0_20 = rt.TF1("hh_von_fit_0_20", hh_von_fit_string, -2, 6)
 
     if PT_MODE == 0:
