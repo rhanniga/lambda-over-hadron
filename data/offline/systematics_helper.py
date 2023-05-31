@@ -98,6 +98,14 @@ class WidthSystematicHelper:
         self.width_variations = {}
         self.contributions = {}
 
+    def get_total_systematic(self):
+        total = 0
+        for variation_name, contribution in self.contributions.items():
+            total += contribution**2
+        total = math.sqrt(total)
+        self.total_systematic = total
+        return total    
+
     def extract_all_widths(self):
         for variation_name, variation in self.variations.items():
             self.width_variations[variation_name] = []
