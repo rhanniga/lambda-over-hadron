@@ -14,9 +14,9 @@ class FitType(Enum):
 class YieldExtractor:
 
     def __init__(self, dphi_dist, 
-                        centrality_string, 
-                        trigger_pt_string, 
-                        associated_pt_string, 
+                        centrality_string=None, 
+                        trigger_pt_string=None, 
+                        associated_pt_string=None, 
                         is_dihadron=False):
 
         self.dphi_dist = dphi_dist

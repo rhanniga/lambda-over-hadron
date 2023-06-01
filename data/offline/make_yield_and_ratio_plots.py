@@ -182,17 +182,22 @@ for PT_MODE in [0, 1, 2]:
             away_ratio_graph_final_syst.SetLineWidth(2)
             away_ratio_graph_final_syst.SetFillStyle(0)
 
-            ue_ratio_graph.SetMarkerStyle(34)
-            ue_ratio_graph.SetMarkerSize(2)
+            for i in range(ue_ratio_graph.GetN()):
+                ue_ratio_graph.SetPointError(i, ue_ratio_graph.GetErrorX(i), ue_ratio_graph_final_syst.GetErrorY(i))
+            ue_ratio_graph.SetMarkerStyle(0)
+            ue_ratio_graph.SetMarkerSize(0)
             ue_ratio_graph.SetMarkerColor(rt.kGreen+2)
             ue_ratio_graph.SetLineColor(rt.kGreen+3)
-            ue_ratio_graph.SetLineWidth(2)
+            ue_ratio_graph.SetLineWidth(0)
+            ue_ratio_graph.SetFillStyle(3002)
+            ue_ratio_graph.SetFillColor(rt.kGreen+1)
 
             ue_ratio_graph_final_syst.SetMarkerSize(0)
             ue_ratio_graph_final_syst.SetMarkerColor(rt.kGreen+2)
             ue_ratio_graph_final_syst.SetLineColor(rt.kGreen+3)
-            ue_ratio_graph_final_syst.SetLineWidth(2)
-            ue_ratio_graph_final_syst.SetFillStyle(0)
+            ue_ratio_graph_final_syst.SetLineWidth(0)
+            ue_ratio_graph_final_syst.SetFillStyle(3002)
+            ue_ratio_graph_final_syst.SetFillColor(rt.kGreen+1)
 
             total_ratio_graph.SetMarkerStyle(47)
             total_ratio_graph.SetMarkerSize(2)
@@ -244,10 +249,10 @@ for PT_MODE in [0, 1, 2]:
 
             ratios_legend = rt.TLegend(0.58, 0.65, 0.93, 0.88)
             ratios_legend.SetMargin(0.35)
-            ratios_legend.AddEntry(ue_ratio_graph, "Underlying Event", "pl")
-            ratios_legend.AddEntry(away_ratio_graph, "Away-side (Jet)", "pl")
             ratios_legend.AddEntry(near_ratio_graph, "Near-side (Jet)", "pl")
-            ratios_legend.AddEntry(total_ratio_graph, "Total (Jet + UE)", "pl")
+            ratios_legend.AddEntry(away_ratio_graph, "Away-side (Jet)", "pl")
+            ratios_legend.AddEntry(ue_ratio_graph, "Underlying Event", "f")
+            # ratios_legend.AddEntry(total_ratio_graph, "Total (Jet + UE)", "pl")
             ratios_legend.SetLineWidth(0)
 
             if use_new_x_axis:
@@ -264,8 +269,10 @@ for PT_MODE in [0, 1, 2]:
                 plotting_hist.GetXaxis().SetTitleOffset(1.35)
                 plotting_hist.GetXaxis().SetRangeUser(5, 55)
                 if lambda_phi_ratio:
+                    plotting_hist.GetYaxis().SetRangeUser(4, 26)
                     plotting_hist.GetYaxis().SetTitle("Yield Ratio #left(#frac{h#minus#Lambda}{h#minus#phi}#right)")
                 else:
+                    plotting_hist.GetYaxis().SetRangeUser(0.0, 0.40)
                     plotting_hist.GetYaxis().SetTitle("Yield Ratio #left(#frac{h#minus#Lambda}{h#minush}#right)")
 
                 plotting_hist.GetYaxis().SetTitleSize(0.05)
@@ -292,12 +299,12 @@ for PT_MODE in [0, 1, 2]:
 
                 if lambda_phi_ratio:
                     plotting_hist.GetYaxis().SetTitle("Yield Ratio #left(#frac{h#minus#Lambda}{h#minus#phi}#right)")
+                    plotting_hist.GetYaxis().SetRangeUser(4, 26)
                 else:
+                    plotting_hist.GetYaxis().SetRangeUser(0.0, 0.40)
                     plotting_hist.GetYaxis().SetTitle("Yield Ratio #left(#frac{h#minus#Lambda}{h#minush}#right)")
-
                 plotting_hist.GetYaxis().SetTitleSize(0.05)
                 plotting_hist.GetYaxis().SetTitleOffset(1.3)
-                plotting_hist.GetYaxis().SetRangeUser(0.0, 1.5)
                 plotting_hist.SetStats(0)
                 plotting_hist.GetXaxis().SetLabelOffset(999)
                 plotting_hist.Draw("PE")
@@ -333,21 +340,17 @@ for PT_MODE in [0, 1, 2]:
                 alice_data_label.DrawLatex(label_x_start, label_y_start - 3*label_text_space, "#bf{2.5 <   #it{p}_{T,assoc} < 4.0 GeV/#it{c}}")
             alice_data_label.DrawLatex(label_x_start, label_y_start - 4*label_text_space, "#bf{|#Delta#it{#eta}| < 1.2}")
 
-            if lambda_phi_ratio:
-                plotting_hist.GetYaxis().SetRangeUser(0.0, 30)
-            else:
-                plotting_hist.GetYaxis().SetRangeUser(0.0, 0.40)
 
             plotting_hist.SetStats(0)
 
             near_ratio_graph.Draw("PE SAME")
             near_ratio_graph_final_syst.Draw("E2 SAME")
-            away_ratio_graph_final_syst.Draw("E2 SAME")
             away_ratio_graph.Draw("PE SAME")
-            ue_ratio_graph_final_syst.Draw("E2 SAME")
-            ue_ratio_graph.Draw("PE SAME")
-            total_ratio_graph_final_syst.Draw("E2 SAME")
-            total_ratio_graph.Draw("PE SAME")
+            away_ratio_graph_final_syst.Draw("E2 SAME")
+            ue_ratio_graph.Draw("E2 SAME")
+            # ue_ratio_graph_final_syst.Draw("E2 SAME")
+            # total_ratio_graph_final_syst.Draw("E2 SAME")
+            # total_ratio_graph.Draw("PE SAME")
             ratios_legend.Draw()
             c.Draw()
 

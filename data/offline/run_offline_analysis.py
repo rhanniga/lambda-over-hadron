@@ -16,19 +16,15 @@ EPSILON = 0.0001
 # define the bins that will *likely* never change
 TRIGGER_PT_BINS = AnalysisBins("trigger_pt_bins", 
                                [AnalysisBin("trigger_4_8", 4.0, 8.0 - EPSILON)])
-
 ASSOCIATED_PT_BINS = AnalysisBins("associated_pt_bins",
                                 [AnalysisBin("assoc_2_4", 2.0, 4.0 - EPSILON),
                                 AnalysisBin("assoc_15_25", 1.5, 2.5 - EPSILON),
                                 AnalysisBin("assoc_25_4", 2.5, 4.0 - EPSILON)])
-
 CENTRALITY_BINS = AnalysisBins("centrality_bins",
                                 [AnalysisBin("cent_0_20", 0.0, 20.0 - EPSILON),
                                 AnalysisBin("cent_20_50", 20.0, 50.0 - EPSILON),
                                 AnalysisBin("cent_50_80", 50.0, 80.0 - EPSILON),
                                 AnalysisBin("cent_0_80", 0.0, 80.0 - EPSILON)])
-
-
 DELTA_ETA_BINS = AnalysisBins("delta_eta_bins",
                                 [AnalysisBin("delta_eta_12", -1.2, 1.2 - EPSILON)])
 
@@ -42,10 +38,10 @@ SIGNAL_BINS = AnalysisBins("signal_bins",
 
 SIDEBAND_BINS = AnalysisBins("sideband_bins",
                             [AnalysisBin("sideband_default", 1.135, 1.15 - EPSILON),
-                            AnalysisBin("sideband_narrow", 1.135, 1.145 - EPSILON),
-                            AnalysisBin("sideband_wide", 1.135, 1.16 - EPSILON)])
-                            # AnalysisBin("sideband_leftshift", 1.084, 1.096 - EPSILON),
-                            # AnalysisBin("sideband_rightshift", 1.14, 1.155 - EPSILON)])
+                            # AnalysisBin("sideband_narrow", 1.135, 1.145 - EPSILON),
+                            # AnalysisBin("sideband_wide", 1.135, 1.16 - EPSILON)])
+                            AnalysisBin("sideband_leftshift", 1.084, 1.096 - EPSILON),
+                            AnalysisBin("sideband_rightshift", 1.14, 1.155 - EPSILON)])
 
 ETA_BINS = AnalysisBins("eta_bins",
                         [AnalysisBin("eta_default", -0.8, 0.8 - EPSILON)])
@@ -55,9 +51,9 @@ FULL_REGION_BINS = AnalysisBins("full_region_bins",
 
 
 PID_BINS = AnalysisBins("pid_bins",
-                        [AnalysisBin("pid_default", 1, 1, "../online/output/v0_central.root")])
-                        # AnalysisBin("pid_narrow", 0.6, 0.6, "../online/output/v0_pid_narrow.root"),
-                        # AnalysisBin("pid_wide", 1.4, 1.4, "../online/output/v0_pid_wide.root")])
+                        [AnalysisBin("pid_default", 1, 1, "../online/output/v0_central.root"),
+                        AnalysisBin("pid_narrow", 0.6, 0.6, "../online/output/v0_pid_narrow.root"),
+                        AnalysisBin("pid_wide", 1.4, 1.4, "../online/output/v0_pid_wide.root")])
 
 ALL_VARIATIONS = [SIGNAL_BINS, SIDEBAND_BINS, ETA_BINS, FULL_REGION_BINS, PID_BINS]
 
@@ -308,7 +304,7 @@ if __name__ == "__main__":
                                                              None,
                                                              False)[0])
                         elif VARIATIONS.name == "pid_bins":
-                            h_lambda_variations[VARIATIONS.name].append(get_dphi_dists(variation.object_list,
+                            tmp_dist = get_dphi_dists(variation.object_list,
                                                              variation.name,
                                                              centrality_bin,
                                                              trigger_pt_bin,
@@ -319,7 +315,10 @@ if __name__ == "__main__":
                                                              SIDEBAND_BINS.analysis_bins[0],
                                                              FULL_REGION_BINS.analysis_bins[0],
                                                              None,
-                                                             False)[0])
+                                                             False)[0]
+
+
+                            h_lambda_variations[VARIATIONS.name].append(tmp_dist)
 
                 h_lambda_dphi_systematics = DphiSystematicHelper(h_lambda_dphi_default, h_lambda_variations)                     
                 h_lambda_dphi_systematics.calculate_systematics()

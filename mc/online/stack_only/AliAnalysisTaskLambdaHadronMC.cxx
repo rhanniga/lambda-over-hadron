@@ -54,6 +54,13 @@ AliAnalysisTaskLambdaHadronMC::AliAnalysisTaskLambdaHadronMC() :
     fDphiHH_MC(0x0),
     fDphiHLambda_MC(0x0),
     fDphiHPhi_MC(0x0),
+    fTriggerDist_MC_no_eta_cut(0x0),
+    fAssociatedDist_MC_no_eta_cut(0x0),
+    fLambdaDist_MC_no_eta_cut(0x0),
+    fPhiDist_MC_no_eta_cut(0x0),
+    fDphiHH_MC_no_eta_cut(0x0),
+    fDphiHLambda_MC_no_eta_cut(0x0),
+    fDphiHPhi_MC_no_eta_cut(0x0),
     fDphiHHMixed_MC(0x0),
     fDphiHLambdaMixed_MC(0x0),
     fDphiHPhiMixed_MC(0x0)
@@ -76,6 +83,13 @@ AliAnalysisTaskLambdaHadronMC::AliAnalysisTaskLambdaHadronMC(const char *name) :
     fDphiHH_MC(0x0),
     fDphiHLambda_MC(0x0),
     fDphiHPhi_MC(0x0),
+    fTriggerDist_MC_no_eta_cut(0x0),
+    fAssociatedDist_MC_no_eta_cut(0x0),
+    fLambdaDist_MC_no_eta_cut(0x0),
+    fPhiDist_MC_no_eta_cut(0x0),
+    fDphiHH_MC_no_eta_cut(0x0),
+    fDphiHLambda_MC_no_eta_cut(0x0),
+    fDphiHPhi_MC_no_eta_cut(0x0),
     fDphiHHMixed_MC(0x0),
     fDphiHLambdaMixed_MC(0x0),
     fDphiHPhiMixed_MC(0x0)
@@ -172,14 +186,24 @@ void AliAnalysisTaskLambdaHadronMC::UserCreateOutputObjects()
     fDphiHH_MC = new THnSparseF("fDphiHH_MC", "Hadron-Hadron Correlation Histogram (MC truth)", 5, cor_bins, cor_mins, cor_maxes);
     fDphiHH_MC->Sumw2();
     fOutputList->Add(fDphiHH_MC);
-
     fDphiHLambda_MC = new THnSparseF("fDphiHLambda_MC", "Hadron-Lambda Correlation Histogram (MC truth)", 5, cor_bins, cor_mins, cor_maxes);
     fDphiHLambda_MC->Sumw2();
     fOutputList->Add(fDphiHLambda_MC);
-
     fDphiHPhi_MC = new THnSparseF("fDphiHPhi_MC", "Hadron-Phi Correlation Histogram (MC truth)", 5, cor_bins, cor_mins, cor_maxes);
     fDphiHPhi_MC->Sumw2();
     fOutputList->Add(fDphiHPhi_MC);
+
+    fDphiHH_MC_no_eta_cut = new THnSparseF("fDphiHH_MC_no_eta_cut", "Hadron-Hadron Correlation Histogram (MC truth)", 5, cor_bins, cor_mins, cor_maxes);
+    fDphiHH_MC_no_eta_cut->Sumw2();
+    fOutputList->Add(fDphiHH_MC_no_eta_cut);
+    fDphiHLambda_MC_no_eta_cut = new THnSparseF("fDphiHLambda_MC_no_eta_cut", "Hadron-Lambda Correlation Histogram (MC truth)", 5, cor_bins, cor_mins, cor_maxes);
+
+    fDphiHLambda_MC_no_eta_cut->Sumw2();
+    fOutputList->Add(fDphiHLambda_MC_no_eta_cut);
+    fDphiHPhi_MC_no_eta_cut = new THnSparseF("fDphiHPhi_MC_no_eta_cut", "Hadron-Phi Correlation Histogram (MC truth)", 5, cor_bins, cor_mins, cor_maxes);
+
+    fDphiHPhi_MC_no_eta_cut->Sumw2();
+    fOutputList->Add(fDphiHPhi_MC_no_eta_cut);
 
     fDphiHHMixed_MC = new THnSparseF("fDphiHHMixed_MC", "Mixed Hadron-H Correlation Histogram (MC truth)", 5, cor_bins, cor_mins, cor_maxes);
     fDphiHHMixed_MC->Sumw2();
@@ -448,6 +472,11 @@ void AliAnalysisTaskLambdaHadronMC::UserExec(Option_t*)
     MakeSameMCCorrelations(real_trigger_list, real_associated_list, fDphiHH_MC, primZ);
     MakeSameMCCorrelations(real_trigger_list, real_lambda_list, fDphiHLambda_MC, primZ);
     MakeSameMCCorrelations(real_trigger_list, real_phi_list, fDphiHPhi_MC, primZ);
+
+    MakeSameMCCorrelations(real_trigger_list, real_associated_list_no_eta_cut, fDphiHH_MC_no_eta_cut, primZ);
+    MakeSameMCCorrelations(real_trigger_list, real_lambda_list_no_eta_cut, fDphiHLambda_MC_no_eta_cut, primZ);
+    MakeSameMCCorrelations(real_trigger_list, real_phi_list_no_eta_cut, fDphiHPhi_MC_no_eta_cut, primZ);
+
 
 
     if(real_associated_list.size() > 0 || real_lambda_list.size() > 0) {

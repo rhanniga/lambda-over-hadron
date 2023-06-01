@@ -56,10 +56,8 @@ class DphiSystematicHelper:
         return self.contributions[variation_name]
 
     def get_rms(self, variation_name):
-
         if not self.variations[variation_name]:
             return 0
-
         rms = 0
         n = 0
         for variation in self.variations[variation_name]:
@@ -89,6 +87,7 @@ class DphiSystematicHelper:
 class WidthSystematicHelper:
     def __init__(self, default_dist, variations, cent_name, trig_pt_name, assoc_pt_name, is_dihadron=False):
         self.default_dist = default_dist
+        self.default_width = self.extract_widths(default_dist)
         self.variations = variations
         self.cent_name = cent_name
         self.trig_pt_name = trig_pt_name
@@ -105,6 +104,25 @@ class WidthSystematicHelper:
         total = math.sqrt(total)
         self.total_systematic = total
         return total    
+
+    def get_rms(self, variation_name):
+        if not self.width_variations[variation_name]:
+            return 0
+        rms = 0
+        n = 0
+        for variation in self.width_variations[variation_name]:
+            ratio = variation/self.default_width
+            for i in range(1, ratio.GetNbinsX() + 1):
+                rms += (ratio.GetBinContent(i) - 1)**2
+                n += 1
+        rms = math.sqrt(rms/n)
+        self.contributions[variation_name] = rms
+        return rms
+
+    def calculate_systematics(self):
+        for variation_name in self.variations:
+            self.get_rms
+    
 
     def extract_all_widths(self):
         for variation_name, variation in self.variations.items():

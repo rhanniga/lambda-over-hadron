@@ -66,6 +66,10 @@ private:
   THnSparse* fDphiHLambda_MC;  //!>! hadron-lambda correlation hist (MC truth)
   THnSparse* fDphiHPhi_MC;  //!>! hadron-phi correlation hist (MC truth)
 
+  THnSparse* fDphiHH_MC_no_eta_cut;   //!>! hadron-hadron correlation hist (MC truth)
+  THnSparse* fDphiHLambda_MC_no_eta_cut;  //!>! hadron-lambda correlation hist (MC truth)
+  THnSparse* fDphiHPhi_MC_no_eta_cut;  //!>! hadron-phi correlation hist (MC truth)
+
   THnSparse* fDphiHHMixed_MC; //!>! hadron-hadron mixed correlation hist (MC truth)
   THnSparse* fDphiHLambdaMixed_MC; //!>! hadron-lambda mixed correlation hist (MC truth)
   THnSparse* fDphiHPhiMixed_MC; //!>! hadron-phi mixed correlation hist (MC truth)
