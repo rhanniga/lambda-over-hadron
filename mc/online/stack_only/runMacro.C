@@ -11,7 +11,7 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
 
   TString work_dir = "lambda_hadron_mc";
-  TString output_dir = "epos";
+  TString output_dir = "dmpjet";
   
   //If we want to download test files from grid then run in one swoop (usually just run completely locally):
   bool gridTest = false;
@@ -68,12 +68,12 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
     // select the input data (these are all the runs anchored to 16q
 
     // EPOS-LHC set:
-    alienHandler->SetGridDataDir("//alice/sim/2017/LHC17f2a_fast_fix/");
-    alienHandler->SetDataPattern("/AOD228/*/*AOD.root");
+    //alienHandler->SetGridDataDir("//alice/sim/2017/LHC17f2a_fast_fix/");
+    //alienHandler->SetDataPattern("/AOD228/*/*AOD.root");
 
     // DPMJet set: (small)
-    // alienHandler->SetGridDataDir("//alice/sim/2017/LHC17f2b_fast/");
-    // alienHandler->SetDataPattern("/AOD202/*/*AOD.root");
+     alienHandler->SetGridDataDir("//alice/sim/2017/LHC17f2b_fast/");
+     alienHandler->SetDataPattern("/AOD202/*/*AOD.root");
 
     // alienHandler->SetGridDataDir("//alice/sim/2017/LHC17f2b_cent_woSDD/");
     /* alienHandler->SetGridDataDir("//alice/sim/2018/LHC18f3_fast_2/"); */
