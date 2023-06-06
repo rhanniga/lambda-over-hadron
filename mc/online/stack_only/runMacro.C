@@ -4,14 +4,17 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
 
 
   int startIndex = 0; 
-  int endIndex = 28; 
+  int endIndex = 14; 
+
+  // int startIndex = 15; 
+  // int endIndex = 28; 
 
    /* int startIndex = 18; */ 
    /* int endIndex = 28; */ 
 
 
-  TString work_dir = "lambda_hadron_mc";
-  TString output_dir = "dmpjet";
+  TString work_dir = "lambda_hadron_mc_fullstats";
+  TString output_dir = "dmpjet_fast_2";
   
   //If we want to download test files from grid then run in one swoop (usually just run completely locally):
   bool gridTest = false;
@@ -72,14 +75,13 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
     //alienHandler->SetDataPattern("/AOD228/*/*AOD.root");
 
     // DPMJet set: (small)
-     alienHandler->SetGridDataDir("//alice/sim/2017/LHC17f2b_fast/");
-     alienHandler->SetDataPattern("/AOD202/*/*AOD.root");
+    //  alienHandler->SetGridDataDir("//alice/sim/2017/LHC17f2b_fast/");
+    //  alienHandler->SetDataPattern("/AOD202/*/*AOD.root");
 
-    // alienHandler->SetGridDataDir("//alice/sim/2017/LHC17f2b_cent_woSDD/");
-    /* alienHandler->SetGridDataDir("//alice/sim/2018/LHC18f3_fast_2/"); */
+    // DPMJet set: (large)
+    alienHandler->SetGridDataDir("//alice/sim/2018/LHC18f3_fast_2/");
     // alienHandler->SetGridDataDir("//alice/sim/2018/LHC18f3_cent_woSDD_2/");
-    // alienHandler->SetGridDataDir("//alice/sim/2018/LHC18j2_fast/");
-    // alienHandler->SetDataPattern("/AOD209/*/*AOD.root");
+    alienHandler->SetDataPattern("/AOD202/*/*AOD.root");
 
     // MC has no prefix, data has prefix 000
     alienHandler->SetRunPrefix("");

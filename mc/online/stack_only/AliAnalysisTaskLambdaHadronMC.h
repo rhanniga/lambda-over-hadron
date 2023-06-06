@@ -75,15 +75,17 @@ private:
   THnSparse* fDphiHPhiMixed_MC; //!>! hadron-phi mixed correlation hist (MC truth)
 
 
-  void FillSingleMCParticleDist(std::vector<AliAODMCParticle*> particle_list, double zVtx, THnSparse* fDist);
-  void MakeSameMCCorrelations(std::vector<AliAODMCParticle*> trigger_list, std::vector<AliAODMCParticle*> associated_list, THnSparse* fDphi, double zVtx);
-  void MakeMixedMCCorrelations(AliEventPool *fPool, std::vector<AliAODMCParticle*> associated_list, THnSparse* fDphi, double zVtx);
+  void FillSingleMCParticleDist(std::vector<AliAODMCParticle*> particle_list, double zVtx, THnSparse* fDist, int multBin);
+  void MakeSameMCCorrelations(std::vector<AliAODMCParticle*> trigger_list, std::vector<AliAODMCParticle*> associated_list, THnSparse* fDphi, double zVtx, int multBin);
+  void MakeMixedMCCorrelations(AliEventPool *fPool, std::vector<AliAODMCParticle*> associated_list, THnSparse* fDphi, double zVtx, int multBin);
 
   bool PassMCTriggerCuts(AliAODMCParticle *mc_track, bool etaCut = true); // check if the MC particle passes the trigger cuts
   bool PassMCAssociatedCuts(AliAODMCParticle *mc_track, bool etaCut = true); // check if the MC particle passes the associated cuts
   bool PassMCLambdaCuts(AliAODMCParticle *mc_track, bool checkPhysicalPrimary = false, bool etaCut = true); // check if the MC particle passes the lambda cuts 
   bool PassMCPhiCuts(AliAODMCParticle *mc_track, bool etaCut = true); // check if the MC particle passes the phi cuts
   bool IsMCChargedHadron(int pdg_code); // check if the MC particle is a charged hadron
+
+  int GetMultBin(int numTracksInV0A);
 
   ClassDef(AliAnalysisTaskLambdaHadronMC, 3);
 
