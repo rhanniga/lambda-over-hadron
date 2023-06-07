@@ -87,42 +87,51 @@ class DphiSystematicHelper:
 class WidthSystematicHelper:
     def __init__(self, default_dist, variations, cent_name, trig_pt_name, assoc_pt_name, is_dihadron=False):
         self.default_dist = default_dist
-        self.default_width = self.extract_widths(default_dist)
         self.variations = variations
         self.cent_name = cent_name
         self.trig_pt_name = trig_pt_name
         self.assoc_pt_name = assoc_pt_name
         self.is_dihadron = is_dihadron
 
+        self.default_width = self.extract_widths(default_dist)
+
         self.width_variations = {}
         self.contributions = {}
+        self.total_systematic = {"ns_width": 0, "as_width": 0}
 
     def get_total_systematic(self):
-        total = 0
+        ns_total, as_total = 0, 0
         for variation_name, contribution in self.contributions.items():
-            total += contribution**2
-        total = math.sqrt(total)
-        self.total_systematic = total
-        return total    
+            ns_total += contribution["ns_width"]**2
+            as_total += contribution["as_width"]**2
+        ns_total = math.sqrt(ns_total)
+        as_total = math.sqrt(as_total)
+        self.total_systematic["ns_width"] = ns_total
+        self.total_systematic["as_width"] = as_total
+        return ns_total, as_total    
 
     def get_rms(self, variation_name):
+        self.contributions[variation_name] = {}
         if not self.width_variations[variation_name]:
-            return 0
-        rms = 0
+            return 0, 0
+        ns_rms, as_rms = 0, 0
         n = 0
         for variation in self.width_variations[variation_name]:
-            ratio = variation/self.default_width
-            for i in range(1, ratio.GetNbinsX() + 1):
-                rms += (ratio.GetBinContent(i) - 1)**2
-                n += 1
-        rms = math.sqrt(rms/n)
-        self.contributions[variation_name] = rms
-        return rms
+            ns_ratio = variation["ns_width"][0]/self.default_width["ns_width"][0]
+            as_ratio = variation["as_width"][0]/self.default_width["as_width"][0]
+            ns_rms += (ns_ratio - 1)**2
+            as_rms += (as_ratio - 1)**2
+            n += 1
+        ns_rms = math.sqrt(ns_rms/n)
+        as_rms = math.sqrt(as_rms/n)
+        self.contributions[variation_name]["ns_width"] = ns_rms
+        self.contributions[variation_name]["as_width"] = as_rms
+        return ns_rms, as_rms
 
     def calculate_systematics(self):
-        for variation_name in self.variations:
-            self.get_rms
-    
+        for variation_name in self.width_variations:
+            self.get_rms(variation_name)
+        self.get_total_systematic()
 
     def extract_all_widths(self):
         for variation_name, variation in self.variations.items():

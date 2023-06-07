@@ -326,6 +326,8 @@ if __name__ == "__main__":
                 h_lambda_width_systematics = WidthSystematicHelper(h_lambda_dphi_default, h_lambda_variations, 
                                                                    centrality_bin.name, trigger_pt_bin.name, associated_pt_bin.name)
                 h_lambda_width_systematics.extract_all_widths()
+                h_lambda_width_systematics.calculate_systematics()
+                print(h_lambda_width_systematics.contributions)
                 quit()
     
         
