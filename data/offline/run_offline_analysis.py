@@ -55,7 +55,7 @@ PID_BINS = AnalysisBins("pid_bins",
                         AnalysisBin("pid_narrow", 0.6, 0.6, "../online/output/v0_pid_narrow.root"),
                         AnalysisBin("pid_wide", 1.4, 1.4, "../online/output/v0_pid_wide.root")])
 
-ALL_VARIATIONS = [SIGNAL_BINS, SIDEBAND_BINS, ETA_BINS, FULL_REGION_BINS, PID_BINS]
+ALL_VARIATIONS = [SIGNAL_BINS, SIDEBAND_BINS, PID_BINS]
 
 def get_dphi_dists(input_list,
                    input_name,
@@ -264,6 +264,7 @@ if __name__ == "__main__":
                 for index, VARIATIONS in enumerate(ALL_VARIATIONS):
                     h_lambda_variations[VARIATIONS.name] = []
                     for variation in VARIATIONS.analysis_bins[1:]:
+
                         if VARIATIONS.name == "signal_bins":
                             h_lambda_variations[VARIATIONS.name].append(get_dphi_dists(default_list,
                                                              VARIATIONS.name,
@@ -277,6 +278,7 @@ if __name__ == "__main__":
                                                              FULL_REGION_BINS.analysis_bins[0],
                                                              None,
                                                              False)[0])
+
                         elif VARIATIONS.name == "sideband_bins":
                             h_lambda_variations[VARIATIONS.name].append(get_dphi_dists(default_list,
                                                              VARIATIONS.name,
@@ -290,6 +292,7 @@ if __name__ == "__main__":
                                                              FULL_REGION_BINS.analysis_bins[0],
                                                              None,
                                                              False)[0])
+
                         elif VARIATIONS.name == "full_region_bins":
                             h_lambda_variations[VARIATIONS.name].append(get_dphi_dists(default_list,
                                                              VARIATIONS.name,
@@ -303,6 +306,7 @@ if __name__ == "__main__":
                                                              variation,
                                                              None,
                                                              False)[0])
+
                         elif VARIATIONS.name == "pid_bins":
                             tmp_dist = get_dphi_dists(variation.object_list,
                                                              variation.name,
@@ -316,8 +320,8 @@ if __name__ == "__main__":
                                                              FULL_REGION_BINS.analysis_bins[0],
                                                              None,
                                                              False)[0]
-
-
+                            # scale PID dists to match default integral
+                            tmp_dist.Scale(h_lambda_dphi_default.Integral() / tmp_dist.Integral())
                             h_lambda_variations[VARIATIONS.name].append(tmp_dist)
 
                 h_lambda_dphi_systematics = DphiSystematicHelper(h_lambda_dphi_default, h_lambda_variations)                     

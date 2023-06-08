@@ -542,20 +542,20 @@ elif USE_V2:
     v2_fit_0_20 = rt.TF1("v2_fit_0_20", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
 
     if PT_MODE == 0:
-        v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_central_0_20"][0])
-        v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_lambda_central_0_20"][1])
-        v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_lambda_central_0_20"][2])
-        v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_lambda_central_0_20"][3])
+        v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_2_4"][0])
+        v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_2_4"][1])
+        v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_2_4"][2])
+        v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_2_4"][3])
     elif PT_MODE == 1:
-        v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_lowpt_0_20"][0])
-        v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_lambda_lowpt_0_20"][1])
-        v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_lambda_lowpt_0_20"][2])
-        v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_lambda_lowpt_0_20"][3])
+        v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_15_25"][0])
+        v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_15_25"][1])
+        v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_15_25"][2])
+        v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_15_25"][3])
     elif PT_MODE == 2:
-        v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_highpt_0_20"][0])
-        v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_lambda_highpt_0_20"][1])
-        v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_lambda_highpt_0_20"][2])
-        v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_lambda_highpt_0_20"][3])
+        v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_25_4"][0])
+        v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_25_4"][1])
+        v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_25_4"][2])
+        v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_25_4"][3])
 
 
 elif USE_VON:
@@ -574,17 +574,17 @@ elif USE_VON:
     von_fit_0_20 = rt.TF1("von_fit_0_20", von_fit_string, -2, 6)
 
     if PT_MODE == 0:
-        von_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_central_0_20"][0])
-        von_fit_0_20.FixParameter(1, v2_fitpars_dict["h_lambda_central_0_20"][2])
-        von_fit_0_20.FixParameter(2, v2_fitpars_dict["h_lambda_central_0_20"][3])
+        von_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_2_4"][0])
+        von_fit_0_20.FixParameter(1, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_2_4"][2])
+        von_fit_0_20.FixParameter(2, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_2_4"][3])
     elif PT_MODE == 1:
-        von_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_lowpt_0_20"][0])
-        von_fit_0_20.FixParameter(1, v2_fitpars_dict["h_lambda_lowpt_0_20"][2])
-        von_fit_0_20.FixParameter(2, v2_fitpars_dict["h_lambda_lowpt_0_20"][3])
+        von_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_15_25"][0])
+        von_fit_0_20.FixParameter(1, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_15_25"][2])
+        von_fit_0_20.FixParameter(2, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_15_25"][3])
     elif PT_MODE == 2:
-        von_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_highpt_0_20"][0])
-        von_fit_0_20.FixParameter(1, v2_fitpars_dict["h_lambda_highpt_0_20"][2])
-        von_fit_0_20.FixParameter(2, v2_fitpars_dict["h_lambda_highpt_0_20"][3])
+        von_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_25_4"][0])
+        von_fit_0_20.FixParameter(1, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_25_4"][2])
+        von_fit_0_20.FixParameter(2, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_25_4"][3])
 
     von_fit_0_20.SetParLimits(3, 0, 1)
     von_fit_0_20.SetParameter(3, 0.02)
@@ -600,20 +600,21 @@ elif USE_VON:
 
 
     if PT_MODE == 0:
-        v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_central_0_20"][0])
-        v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_lambda_central_0_20"][1])
-        v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_lambda_central_0_20"][2])
-        v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_lambda_central_0_20"][3])
+        v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_2_4"][0])
+        v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_2_4"][1])
+        v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_2_4"][2])
+        v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_2_4"][3])
     elif PT_MODE == 1:
-        v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_lowpt_0_20"][0])
-        v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_lambda_lowpt_0_20"][1])
-        v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_lambda_lowpt_0_20"][2])
-        v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_lambda_lowpt_0_20"][3])
+        v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_15_25"][0])
+        v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_15_25"][1])
+        v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_15_25"][2])
+        v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_15_25"][3])
     elif PT_MODE == 2:
-        v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_highpt_0_20"][0])
-        v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_lambda_highpt_0_20"][1])
-        v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_lambda_highpt_0_20"][2])
-        v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_lambda_highpt_0_20"][3])
+        v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_25_4"][0])
+        v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_25_4"][1])
+        v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_25_4"][2])
+        v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_25_4"][3])
+
 
 else:
     raise NotImplementedError("UE line mode not supported")
@@ -866,20 +867,20 @@ elif USE_V2:
     hh_v2_fit_0_20 = rt.TF1("hh_v2_fit_0_20", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
 
     if PT_MODE == 0:
-        hh_v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_central_0_20"][0])
-        hh_v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_h_central_0_20"][1])
-        hh_v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_h_central_0_20"][2])
-        hh_v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_h_central_0_20"][3])
+        hh_v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_2_4"][0])
+        hh_v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_2_4"][1])
+        hh_v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_2_4"][2])
+        hh_v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_2_4"][3])
     elif PT_MODE == 1:
-        hh_v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_lowpt_0_20"][0])
-        hh_v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_h_lowpt_0_20"][1])
-        hh_v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_h_lowpt_0_20"][2])
-        hh_v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_h_lowpt_0_20"][3])
+        hh_v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_15_25"][0])
+        hh_v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_15_25"][1])
+        hh_v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_15_25"][2])
+        hh_v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_15_25"][3])
     elif PT_MODE == 2:
-        hh_v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_highpt_0_20"][0])
-        hh_v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_h_highpt_0_20"][1])
-        hh_v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_h_highpt_0_20"][2])
-        hh_v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_h_highpt_0_20"][3])
+        hh_v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_25_4"][0])
+        hh_v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_25_4"][1])
+        hh_v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_25_4"][2])
+        hh_v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_25_4"][3])
 
 
 elif USE_VON:
@@ -897,17 +898,17 @@ elif USE_VON:
     hh_von_fit_0_20 = rt.TF1("hh_von_fit_0_20", hh_von_fit_string, -2, 6)
 
     if PT_MODE == 0:
-        hh_von_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_central_0_20"][0])
-        hh_von_fit_0_20.FixParameter(1, v2_fitpars_dict["h_h_central_0_20"][2])
-        hh_von_fit_0_20.FixParameter(2, v2_fitpars_dict["h_h_central_0_20"][3])
+        hh_von_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_2_4"][0])
+        hh_von_fit_0_20.FixParameter(1, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_2_4"][2])
+        hh_von_fit_0_20.FixParameter(2, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_2_4"][3])
     elif PT_MODE == 1:
-        hh_von_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_lowpt_0_20"][0])
-        hh_von_fit_0_20.FixParameter(1, v2_fitpars_dict["h_h_lowpt_0_20"][2])
-        hh_von_fit_0_20.FixParameter(2, v2_fitpars_dict["h_h_lowpt_0_20"][3])
+        hh_von_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_15_25"][0])
+        hh_von_fit_0_20.FixParameter(1, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_15_25"][2])
+        hh_von_fit_0_20.FixParameter(2, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_15_25"][3])
     elif PT_MODE == 2:
-        hh_von_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_highpt_0_20"][0])
-        hh_von_fit_0_20.FixParameter(1, v2_fitpars_dict["h_h_highpt_0_20"][2])
-        hh_von_fit_0_20.FixParameter(2, v2_fitpars_dict["h_h_highpt_0_20"][3])
+        hh_von_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_25_4"][0])
+        hh_von_fit_0_20.FixParameter(1, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_25_4"][2])
+        hh_von_fit_0_20.FixParameter(2, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_25_4"][3])
 
     hh_von_fit_0_20.SetParLimits(3, 0, 1)
     hh_von_fit_0_20.SetParameter(3, 0.02)
@@ -922,20 +923,20 @@ elif USE_VON:
     hh_fit_result_0_20 = h_h_dphi_with_fit_0_20.Fit(hh_von_fit_0_20, "R")
 
     if PT_MODE == 0:
-        hh_v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_central_0_20"][0])
-        hh_v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_h_central_0_20"][1])
-        hh_v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_h_central_0_20"][2])
-        hh_v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_h_central_0_20"][3])
+        hh_v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_2_4"][0])
+        hh_v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_2_4"][1])
+        hh_v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_2_4"][2])
+        hh_v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_2_4"][3])
     elif PT_MODE == 1:
-        hh_v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_lowpt_0_20"][0])
-        hh_v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_h_lowpt_0_20"][1])
-        hh_v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_h_lowpt_0_20"][2])
-        hh_v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_h_lowpt_0_20"][3])
+        hh_v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_15_25"][0])
+        hh_v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_15_25"][1])
+        hh_v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_15_25"][2])
+        hh_v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_15_25"][3])
     elif PT_MODE == 2:
-        hh_v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_highpt_0_20"][0])
-        hh_v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_h_highpt_0_20"][1])
-        hh_v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_h_highpt_0_20"][2])
-        hh_v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_h_highpt_0_20"][3])
+        hh_v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_25_4"][0])
+        hh_v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_25_4"][1])
+        hh_v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_25_4"][2])
+        hh_v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_25_4"][3])
 
 else:
     raise NotImplementedError("UE line mode not supported")
@@ -1102,13 +1103,11 @@ total_ratio_error_0_20 = total_ratio_0_20*math.sqrt((h_lambda_total_integral_err
 
 
 
-
 ############################################################################################################
 ############################################################################################################
 ############################################# 20-50 CENTRALITY ##############################################
 ############################################################################################################
 ############################################################################################################
-
 
 if IS_NORMAL_PID:
     input_file_20_50 = rt.TFile("../online/v0/output/v0_normal_20_50.root")
@@ -1184,18 +1183,20 @@ point_two = [1.132, lambda_mass_dist_20_50.GetBinContent(bin_2)]
 bg_starting_params_20_50 = get_straight_line(point_one, point_two)
 lambda_mass_fit_20_50 = rt.TF1("lambda_mass_fit_20_50", "[0]*TMath::Voigt(x - [1], [2], [3], 4) + pol1(4)", 1.102, 1.127)
 lambda_mass_fit_20_50.SetNpx(1000)
-lambda_mass_fit_20_50.SetParameter(0, 7.8e+02)
+lambda_mass_fit_20_50.SetParameter(0, 1.74e03)
 lambda_mass_fit_20_50.SetParameter(1, 1.116)
-lambda_mass_fit_20_50.SetParameter(2, 1.50576e-03 )
+lambda_mass_fit_20_50.SetParameter(2, 1.30576e-03 )
 lambda_mass_fit_20_50.SetParameter(3, 1.804166e-03)
 lambda_mass_fit_20_50.SetParameter(4, bg_starting_params_20_50[0])
 lambda_mass_fit_20_50.SetParameter(5, bg_starting_params_20_50[1])
 lambda_mass_dist_fit_20_50 = lambda_mass_dist_20_50.Clone("lambda_mass_dist_fit_20_50")
-lambda_mass_dist_fit_20_50.Fit(lambda_mass_fit_20_50, "RS")
+
+
 lambda_mass_bg_fit_20_50 = rt.TF1("bg_fit_20_50", "pol1", 1.096, 1.136)
 lambda_mass_bg_fit_20_50.SetNpx(1000)
 lambda_mass_bg_fit_20_50.SetParameter(0, bg_starting_params_20_50[0])
 lambda_mass_bg_fit_20_50.SetParameter(1, bg_starting_params_20_50[1])
+lambda_mass_dist_fit_20_50.Fit(lambda_mass_fit_20_50, "RS")
 
 voigt_fit_20_50 = rt.TF1("voigt_fit_20_50", "[0]*TMath::Voigt(x - [1], [2], [3], 4)", 1.102, 1.127)
 voigt_fit_20_50.SetNpx(1000)
@@ -1208,6 +1209,7 @@ voigt_fit_20_50.SetParameter(3, lambda_mass_fit_20_50.GetParameter(3))
 residual_20_50 = lambda_mass_dist_20_50.Clone("residual_20_50")
 residual_20_50.GetXaxis().SetRangeUser(1.094, 1.142)
 residual_20_50.Add(lambda_mass_bg_fit_20_50, -1)
+
 
 RSB_region_20_50 = rt.TBox(RSB_MIN, 0, RSB_MAX, lambda_mass_dist_20_50.GetMaximum()*1.055)
 RSB_region_20_50.SetLineColor(rt.kRed)
@@ -1334,25 +1336,27 @@ h_lambda_2d_subtracted_20_50.Scale(PID_CORRECTION)
 # Correct for branching ratio
 h_lambda_2d_subtracted_20_50.Scale(1/BRANCHING_RATIO)
 
-
 # Correct for two-track efficiency
 h_lambda_2d_subtracted_20_50 = apply_two_track_correction(h_lambda_2d_subtracted_20_50, TWOTRACK_TEMPLATE)
+
+
 
 # INTEGRAL AND RATIO SECTION
 h_lambda_dphi_subtracted_20_50 = h_lambda_2d_subtracted_20_50.ProjectionY("h_lambda_dphi_subtracted_20_50")
 
 if USE_AVG_4:
+
     ue_line_20_50 = rt.TF1("ue_line_20_50", "pol0", -2, 6)
     ue_upper_line_20_50 = rt.TF1("ue_upper_line_20_50", "pol0", -2, 6)
     ue_lower_line_20_50 = rt.TF1("ue_lower_line_20_50", "pol0", -2, 6)
     zero_line_20_50 = rt.TF1("zero_line_20_50", "pol0", -2, 6)
     zero_upper_line_20_50 = rt.TF1("zero_upper_line_20_50", "pol0", -2, 6)
     zero_lower_line_20_50 = rt.TF1("zero_lower_line_20_50", "pol0", -2, 6)
+
     ue_avg_20_50 = (h_lambda_dphi_subtracted_20_50.GetBinContent(1) 
                    + h_lambda_dphi_subtracted_20_50.GetBinContent(8)
                    + h_lambda_dphi_subtracted_20_50.GetBinContent(9)
                    + h_lambda_dphi_subtracted_20_50.GetBinContent(16))/4
-
     ue_avg_error_20_50 = (1/4)*(math.sqrt(h_lambda_dphi_subtracted_20_50.GetBinError(1)**2 
                    + h_lambda_dphi_subtracted_20_50.GetBinError(8)**2
                    + h_lambda_dphi_subtracted_20_50.GetBinError(9)**2
@@ -1483,20 +1487,20 @@ elif USE_V2:
     v2_fit_20_50 = rt.TF1("v2_fit_20_50", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
 
     if PT_MODE == 0:
-        v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_central_20_50"][0])
-        v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_lambda_central_20_50"][1])
-        v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_lambda_central_20_50"][2])
-        v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_lambda_central_20_50"][3])
+        v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_2_4"][0])
+        v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_2_4"][1])
+        v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_2_4"][2])
+        v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_2_4"][3])
     elif PT_MODE == 1:
-        v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_lowpt_20_50"][0])
-        v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_lambda_lowpt_20_50"][1])
-        v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_lambda_lowpt_20_50"][2])
-        v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_lambda_lowpt_20_50"][3])
+        v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_15_25"][0])
+        v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_15_25"][1])
+        v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_15_25"][2])
+        v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_15_25"][3])
     elif PT_MODE == 2:
-        v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_highpt_20_50"][0])
-        v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_lambda_highpt_20_50"][1])
-        v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_lambda_highpt_20_50"][2])
-        v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_lambda_highpt_20_50"][3])
+        v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_25_4"][0])
+        v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_25_4"][1])
+        v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_25_4"][2])
+        v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_25_4"][3])
 
 
 elif USE_VON:
@@ -1515,46 +1519,68 @@ elif USE_VON:
     von_fit_20_50 = rt.TF1("von_fit_20_50", von_fit_string, -2, 6)
 
     if PT_MODE == 0:
-        von_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_central_20_50"][0])
-        von_fit_20_50.FixParameter(1, v2_fitpars_dict["h_lambda_central_20_50"][2])
-        von_fit_20_50.FixParameter(2, v2_fitpars_dict["h_lambda_central_20_50"][3])
-    elif PT_MODE == 1:
-        von_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_lowpt_20_50"][0])
-        von_fit_20_50.FixParameter(1, v2_fitpars_dict["h_lambda_lowpt_20_50"][2])
-        von_fit_20_50.FixParameter(2, v2_fitpars_dict["h_lambda_lowpt_20_50"][3])
-    elif PT_MODE == 2:
-        von_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_highpt_20_50"][0])
-        von_fit_20_50.FixParameter(1, v2_fitpars_dict["h_lambda_highpt_20_50"][2])
-        von_fit_20_50.FixParameter(2, v2_fitpars_dict["h_lambda_highpt_20_50"][3])
+        von_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_2_4"][0])
+        von_fit_20_50.FixParameter(1, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_2_4"][2])
+        von_fit_20_50.FixParameter(2, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_2_4"][3])
 
-    von_fit_20_50.SetParLimits(3, 0, 1)
-    von_fit_20_50.SetParameter(3, 0.02)
-    von_fit_20_50.SetParLimits(4, 0, 100)
-    von_fit_20_50.SetParameter(4, 1)
-    von_fit_20_50.SetParLimits(5, 0, 1)
-    von_fit_20_50.SetParameter(5, 0.01)
-    von_fit_20_50.SetParLimits(6, 0, 100)
-    von_fit_20_50.SetParameter(6, 1)
+        von_fit_20_50.SetParLimits(3, 0, 1)
+        von_fit_20_50.SetParameter(3, 0.05)
+        von_fit_20_50.SetParLimits(4, 0, 100)
+        von_fit_20_50.SetParameter(4, 20)
+        von_fit_20_50.SetParLimits(5, 0, 1)
+        von_fit_20_50.SetParameter(5, 0.05)
+        von_fit_20_50.SetParLimits(6, 0, 100)
+        von_fit_20_50.SetParameter(6, 10)
+
+    elif PT_MODE == 1:
+        von_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_15_25"][0])
+        von_fit_20_50.FixParameter(1, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_15_25"][2])
+        von_fit_20_50.FixParameter(2, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_15_25"][3])
+
+        von_fit_20_50.SetParLimits(3, 0, 1)
+        von_fit_20_50.SetParameter(3, 0.05)
+        von_fit_20_50.SetParLimits(4, 0, 100)
+        von_fit_20_50.SetParameter(4, 15)
+        von_fit_20_50.SetParLimits(5, 0, 1)
+        von_fit_20_50.SetParameter(5, 0.05)
+        von_fit_20_50.SetParLimits(6, 0, 100)
+        von_fit_20_50.SetParameter(6, 5)
+
+    elif PT_MODE == 2:
+        von_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_25_4"][0])
+        von_fit_20_50.FixParameter(1, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_25_4"][2])
+        von_fit_20_50.FixParameter(2, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_25_4"][3])
+
+        von_fit_20_50.SetParLimits(3, 0, 1)
+        von_fit_20_50.SetParameter(3, 0.05)
+        von_fit_20_50.SetParLimits(4, 0, 100)
+        von_fit_20_50.SetParameter(4, 25)
+        von_fit_20_50.SetParLimits(5, 0, 1)
+        von_fit_20_50.SetParameter(5, 0.05)
+        von_fit_20_50.SetParLimits(6, 0, 100)
+        von_fit_20_50.SetParameter(6, 15)
+
 
     h_lambda_dphi_subtracted_with_fit_20_50 = h_lambda_dphi_subtracted_20_50.Clone("h_lambda_dphi_subtracted_with_fit_20_50")
     fit_result_20_50 = h_lambda_dphi_subtracted_with_fit_20_50.Fit(von_fit_20_50, "R")
 
 
     if PT_MODE == 0:
-        v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_central_20_50"][0])
-        v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_lambda_central_20_50"][1])
-        v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_lambda_central_20_50"][2])
-        v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_lambda_central_20_50"][3])
+        v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_2_4"][0])
+        v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_2_4"][1])
+        v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_2_4"][2])
+        v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_2_4"][3])
     elif PT_MODE == 1:
-        v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_lowpt_20_50"][0])
-        v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_lambda_lowpt_20_50"][1])
-        v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_lambda_lowpt_20_50"][2])
-        v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_lambda_lowpt_20_50"][3])
+        v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_15_25"][0])
+        v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_15_25"][1])
+        v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_15_25"][2])
+        v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_15_25"][3])
     elif PT_MODE == 2:
-        v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_highpt_20_50"][0])
-        v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_lambda_highpt_20_50"][1])
-        v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_lambda_highpt_20_50"][2])
-        v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_lambda_highpt_20_50"][3])
+        v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_25_4"][0])
+        v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_25_4"][1])
+        v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_25_4"][2])
+        v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_25_4"][3])
+
 
 else:
     raise NotImplementedError("UE line mode not supported")
@@ -1626,6 +1652,7 @@ elif USE_V2:
     h_lambda_away_integral_error_20_50 = math.sqrt(h_lambda_away_integral_error_20_50**2 + h_lambda_ue_integral_error_20_50_halved**2)
 
 else: 
+
     h_lambda_dphi_subtracted_20_50_zeroed = h_lambda_dphi_subtracted_20_50.Clone("h_lambda_dphi_subtracted_20_50_zeroed")
     h_lambda_dphi_subtracted_20_50_zeroed.Add(ue_line_20_50, -1)
 
@@ -1740,36 +1767,33 @@ elif USE_ZYAM:
     hh_zero_upper_line_20_50.SetParameter(0, hh_ue_avg_error_20_50)
     hh_zero_lower_line_20_50.SetParameter(0, -hh_ue_avg_error_20_50)
 elif USE_FIT:
+
     # fitting to four gaussians + a constant background
     hh_fit_function_20_50 = rt.TF1("hh_fit_function_20_50", "gaus(0) + gaus(3) + gaus(6) + gaus(9) + pol0(12)", -2, 6)
     hh_fit_function_20_50.SetNpx(1000)
-
-    # fitting is a fucking nightmare
-    GOD_PARAMETER = 1.90735e-07
-
     # setting parameters for first gaussian (centered at 0)
     hh_fit_function_20_50.SetParLimits(0, 0.02, 1)
     hh_fit_function_20_50.SetParameter(0, 0.16)
     hh_fit_function_20_50.FixParameter(1, 0)
     hh_fit_function_20_50.SetParLimits(2, 0.2, 3)
-    hh_fit_function_20_50.SetParameter(2, 0.8)
+    hh_fit_function_20_50.SetParameter(2, 0.3)
     # setting parameters for second gaussian (centered at 0 + 2pi)
-    # hh_fit_function_20_50.SetParLimits(3, 0.9*GOD_PARAMETER, 1.1*GOD_PARAMETER)
-    hh_fit_function_20_50.FixParameter(3, GOD_PARAMETER)
+    hh_fit_function_20_50.SetParLimits(3, 0, 1)
+    hh_fit_function_20_50.SetParameter(3, 0)
     hh_fit_function_20_50.FixParameter(4, 2*rt.TMath.Pi())
-    hh_fit_function_20_50.SetParLimits(5, 0.01, 3)
+    hh_fit_function_20_50.SetParLimits(5, 0.1, 2)
     hh_fit_function_20_50.SetParameter(5, 0.1)
     # setting parameters for third gaussian (centered at pi)
     hh_fit_function_20_50.SetParLimits(6, 0.02, 1)
     hh_fit_function_20_50.SetParameter(6, 0.3)
     hh_fit_function_20_50.FixParameter(7, rt.TMath.Pi())
     hh_fit_function_20_50.SetParLimits(8, 0.3, 3)
-    hh_fit_function_20_50.SetParameter(8, 1.5)
+    hh_fit_function_20_50.SetParameter(8, 0.5)
     # setting parameters for fourth gaussian (centered at pi + 2pi)
-    # hh_fit_function_20_50.SetParLimits(9, 0.9*GOD_PARAMETER, 1.1*GOD_PARAMETER)
-    hh_fit_function_20_50.FixParameter(9, GOD_PARAMETER)
+    hh_fit_function_20_50.SetParLimits(9, 0, 1)
+    hh_fit_function_20_50.SetParameter(9, 0)
     hh_fit_function_20_50.FixParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
-    hh_fit_function_20_50.SetParLimits(11, 0.01, 3)
+    hh_fit_function_20_50.SetParLimits(11, 0.1, 3)
     hh_fit_function_20_50.SetParameter(11, 0.1)
 
 
@@ -1809,20 +1833,20 @@ elif USE_V2:
     hh_v2_fit_20_50 = rt.TF1("hh_v2_fit_20_50", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
 
     if PT_MODE == 0:
-        hh_v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_h_central_20_50"][0])
-        hh_v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_h_central_20_50"][1])
-        hh_v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_h_central_20_50"][2])
-        hh_v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_h_central_20_50"][3])
+        hh_v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_2_4"][0])
+        hh_v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_2_4"][1])
+        hh_v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_2_4"][2])
+        hh_v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_2_4"][3])
     elif PT_MODE == 1:
-        hh_v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_h_lowpt_20_50"][0])
-        hh_v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_h_lowpt_20_50"][1])
-        hh_v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_h_lowpt_20_50"][2])
-        hh_v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_h_lowpt_20_50"][3])
+        hh_v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_15_25"][0])
+        hh_v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_15_25"][1])
+        hh_v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_15_25"][2])
+        hh_v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_15_25"][3])
     elif PT_MODE == 2:
-        hh_v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_h_highpt_20_50"][0])
-        hh_v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_h_highpt_20_50"][1])
-        hh_v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_h_highpt_20_50"][2])
-        hh_v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_h_highpt_20_50"][3])
+        hh_v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_25_4"][0])
+        hh_v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_25_4"][1])
+        hh_v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_25_4"][2])
+        hh_v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_25_4"][3])
 
 
 elif USE_VON:
@@ -1837,21 +1861,20 @@ elif USE_VON:
     hh_von_fit_string = "[0]*(1 + 2*([1]*[2]*cos(2*x)))"
     hh_von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x))"
     hh_von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()))"
-
     hh_von_fit_20_50 = rt.TF1("hh_von_fit_20_50", hh_von_fit_string, -2, 6)
 
     if PT_MODE == 0:
-        hh_von_fit_20_50.SetParameter(0, v2_fitpars_dict["h_h_central_20_50"][0])
-        hh_von_fit_20_50.FixParameter(1, v2_fitpars_dict["h_h_central_20_50"][2])
-        hh_von_fit_20_50.FixParameter(2, v2_fitpars_dict["h_h_central_20_50"][3])
+        hh_von_fit_20_50.SetParameter(0, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_2_4"][0])
+        hh_von_fit_20_50.FixParameter(1, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_2_4"][2])
+        hh_von_fit_20_50.FixParameter(2, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_2_4"][3])
     elif PT_MODE == 1:
-        hh_von_fit_20_50.SetParameter(0, v2_fitpars_dict["h_h_lowpt_20_50"][0])
-        hh_von_fit_20_50.FixParameter(1, v2_fitpars_dict["h_h_lowpt_20_50"][2])
-        hh_von_fit_20_50.FixParameter(2, v2_fitpars_dict["h_h_lowpt_20_50"][3])
+        hh_von_fit_20_50.SetParameter(0, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_15_25"][0])
+        hh_von_fit_20_50.FixParameter(1, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_15_25"][2])
+        hh_von_fit_20_50.FixParameter(2, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_15_25"][3])
     elif PT_MODE == 2:
-        hh_von_fit_20_50.SetParameter(0, v2_fitpars_dict["h_h_highpt_20_50"][0])
-        hh_von_fit_20_50.FixParameter(1, v2_fitpars_dict["h_h_highpt_20_50"][2])
-        hh_von_fit_20_50.FixParameter(2, v2_fitpars_dict["h_h_highpt_20_50"][3])
+        hh_von_fit_20_50.SetParameter(0, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_25_4"][0])
+        hh_von_fit_20_50.FixParameter(1, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_25_4"][2])
+        hh_von_fit_20_50.FixParameter(2, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_25_4"][3])
 
     hh_von_fit_20_50.SetParLimits(3, 0, 1)
     hh_von_fit_20_50.SetParameter(3, 0.02)
@@ -1866,20 +1889,20 @@ elif USE_VON:
     hh_fit_result_20_50 = h_h_dphi_with_fit_20_50.Fit(hh_von_fit_20_50, "R")
 
     if PT_MODE == 0:
-        hh_v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_h_central_20_50"][0])
-        hh_v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_h_central_20_50"][1])
-        hh_v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_h_central_20_50"][2])
-        hh_v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_h_central_20_50"][3])
+        hh_v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_2_4"][0])
+        hh_v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_2_4"][1])
+        hh_v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_2_4"][2])
+        hh_v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_2_4"][3])
     elif PT_MODE == 1:
-        hh_v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_h_lowpt_20_50"][0])
-        hh_v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_h_lowpt_20_50"][1])
-        hh_v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_h_lowpt_20_50"][2])
-        hh_v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_h_lowpt_20_50"][3])
+        hh_v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_15_25"][0])
+        hh_v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_15_25"][1])
+        hh_v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_15_25"][2])
+        hh_v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_15_25"][3])
     elif PT_MODE == 2:
-        hh_v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_h_highpt_20_50"][0])
-        hh_v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_h_highpt_20_50"][1])
-        hh_v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_h_highpt_20_50"][2])
-        hh_v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_h_highpt_20_50"][3])
+        hh_v2_fit_20_50.SetParameter(0, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_25_4"][0])
+        hh_v2_fit_20_50.SetParError(0, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_25_4"][1])
+        hh_v2_fit_20_50.SetParameter(1, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_25_4"][2])
+        hh_v2_fit_20_50.SetParameter(2, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_25_4"][3])
 
 else:
     raise NotImplementedError("UE line mode not supported")
@@ -2045,10 +2068,6 @@ total_ratio_error_20_50 = total_ratio_20_50*math.sqrt((h_lambda_total_integral_e
                                                  + (h_h_total_integral_error_20_50/h_h_total_integral_20_50)**2)
 
 
-
-
-
-
 ############################################################################################################
 ############################################################################################################
 ############################################# 50-80 CENTRALITY ##############################################
@@ -2129,18 +2148,20 @@ point_two = [1.132, lambda_mass_dist_50_80.GetBinContent(bin_2)]
 bg_starting_params_50_80 = get_straight_line(point_one, point_two)
 lambda_mass_fit_50_80 = rt.TF1("lambda_mass_fit_50_80", "[0]*TMath::Voigt(x - [1], [2], [3], 4) + pol1(4)", 1.102, 1.127)
 lambda_mass_fit_50_80.SetNpx(1000)
-lambda_mass_fit_50_80.SetParameter(0, 1.745e+02)
+lambda_mass_fit_50_80.SetParameter(0, 1.74e03)
 lambda_mass_fit_50_80.SetParameter(1, 1.116)
 lambda_mass_fit_50_80.SetParameter(2, 1.30576e-03 )
-lambda_mass_fit_50_80.SetParameter(3, 1.504166e-03)
+lambda_mass_fit_50_80.SetParameter(3, 1.804166e-03)
 lambda_mass_fit_50_80.SetParameter(4, bg_starting_params_50_80[0])
 lambda_mass_fit_50_80.SetParameter(5, bg_starting_params_50_80[1])
 lambda_mass_dist_fit_50_80 = lambda_mass_dist_50_80.Clone("lambda_mass_dist_fit_50_80")
-lambda_mass_dist_fit_50_80.Fit(lambda_mass_fit_50_80, "RS")
+
+
 lambda_mass_bg_fit_50_80 = rt.TF1("bg_fit_50_80", "pol1", 1.096, 1.136)
 lambda_mass_bg_fit_50_80.SetNpx(1000)
 lambda_mass_bg_fit_50_80.SetParameter(0, bg_starting_params_50_80[0])
 lambda_mass_bg_fit_50_80.SetParameter(1, bg_starting_params_50_80[1])
+lambda_mass_dist_fit_50_80.Fit(lambda_mass_fit_50_80, "RS")
 
 voigt_fit_50_80 = rt.TF1("voigt_fit_50_80", "[0]*TMath::Voigt(x - [1], [2], [3], 4)", 1.102, 1.127)
 voigt_fit_50_80.SetNpx(1000)
@@ -2148,8 +2169,6 @@ voigt_fit_50_80.SetParameter(0, lambda_mass_fit_50_80.GetParameter(0))
 voigt_fit_50_80.SetParameter(1, lambda_mass_fit_50_80.GetParameter(1))
 voigt_fit_50_80.SetParameter(2, lambda_mass_fit_50_80.GetParameter(2))
 voigt_fit_50_80.SetParameter(3, lambda_mass_fit_50_80.GetParameter(3))
-
-
 
 
 residual_50_80 = lambda_mass_dist_50_80.Clone("residual_50_80")
@@ -2282,25 +2301,27 @@ h_lambda_2d_subtracted_50_80.Scale(PID_CORRECTION)
 # Correct for branching ratio
 h_lambda_2d_subtracted_50_80.Scale(1/BRANCHING_RATIO)
 
-
 # Correct for two-track efficiency
 h_lambda_2d_subtracted_50_80 = apply_two_track_correction(h_lambda_2d_subtracted_50_80, TWOTRACK_TEMPLATE)
+
+
 
 # INTEGRAL AND RATIO SECTION
 h_lambda_dphi_subtracted_50_80 = h_lambda_2d_subtracted_50_80.ProjectionY("h_lambda_dphi_subtracted_50_80")
 
 if USE_AVG_4:
+
     ue_line_50_80 = rt.TF1("ue_line_50_80", "pol0", -2, 6)
     ue_upper_line_50_80 = rt.TF1("ue_upper_line_50_80", "pol0", -2, 6)
     ue_lower_line_50_80 = rt.TF1("ue_lower_line_50_80", "pol0", -2, 6)
     zero_line_50_80 = rt.TF1("zero_line_50_80", "pol0", -2, 6)
     zero_upper_line_50_80 = rt.TF1("zero_upper_line_50_80", "pol0", -2, 6)
     zero_lower_line_50_80 = rt.TF1("zero_lower_line_50_80", "pol0", -2, 6)
+
     ue_avg_50_80 = (h_lambda_dphi_subtracted_50_80.GetBinContent(1) 
                    + h_lambda_dphi_subtracted_50_80.GetBinContent(8)
                    + h_lambda_dphi_subtracted_50_80.GetBinContent(9)
                    + h_lambda_dphi_subtracted_50_80.GetBinContent(16))/4
-
     ue_avg_error_50_80 = (1/4)*(math.sqrt(h_lambda_dphi_subtracted_50_80.GetBinError(1)**2 
                    + h_lambda_dphi_subtracted_50_80.GetBinError(8)**2
                    + h_lambda_dphi_subtracted_50_80.GetBinError(9)**2
@@ -2431,20 +2452,21 @@ elif USE_V2:
     v2_fit_50_80 = rt.TF1("v2_fit_50_80", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
 
     if PT_MODE == 0:
-        v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_central_50_80"][0])
-        v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_lambda_central_50_80"][1])
-        v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_lambda_central_50_80"][2])
-        v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_lambda_central_50_80"][3])
+        v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_2_4"][0])
+        v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_2_4"][1])
+        v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_2_4"][2])
+        v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_2_4"][3])
     elif PT_MODE == 1:
-        v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_lowpt_50_80"][0])
-        v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_lambda_lowpt_50_80"][1])
-        v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_lambda_lowpt_50_80"][2])
-        v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_lambda_lowpt_50_80"][3])
+        v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_15_25"][0])
+        v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_15_25"][1])
+        v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_15_25"][2])
+        v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_15_25"][3])
     elif PT_MODE == 2:
-        v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_highpt_50_80"][0])
-        v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_lambda_highpt_50_80"][1])
-        v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_lambda_highpt_50_80"][2])
-        v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_lambda_highpt_50_80"][3])
+        v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_25_4"][0])
+        v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_25_4"][1])
+        v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_25_4"][2])
+        v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_25_4"][3])
+
 
 elif USE_VON:
     ue_avg_50_80 = (h_lambda_dphi_subtracted_50_80.GetBinContent(1) 
@@ -2462,17 +2484,17 @@ elif USE_VON:
     von_fit_50_80 = rt.TF1("von_fit_50_80", von_fit_string, -2, 6)
 
     if PT_MODE == 0:
-        von_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_central_50_80"][0])
-        von_fit_50_80.FixParameter(1, v2_fitpars_dict["h_lambda_central_50_80"][2])
-        von_fit_50_80.FixParameter(2, v2_fitpars_dict["h_lambda_central_50_80"][3])
+        von_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_2_4"][0])
+        von_fit_50_80.FixParameter(1, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_2_4"][2])
+        von_fit_50_80.FixParameter(2, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_2_4"][3])
     elif PT_MODE == 1:
-        von_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_lowpt_50_80"][0])
-        von_fit_50_80.FixParameter(1, v2_fitpars_dict["h_lambda_lowpt_50_80"][2])
-        von_fit_50_80.FixParameter(2, v2_fitpars_dict["h_lambda_lowpt_50_80"][3])
+        von_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_15_25"][0])
+        von_fit_50_80.FixParameter(1, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_15_25"][2])
+        von_fit_50_80.FixParameter(2, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_15_25"][3])
     elif PT_MODE == 2:
-        von_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_highpt_50_80"][0])
-        von_fit_50_80.FixParameter(1, v2_fitpars_dict["h_lambda_highpt_50_80"][2])
-        von_fit_50_80.FixParameter(2, v2_fitpars_dict["h_lambda_highpt_50_80"][3])
+        von_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_25_4"][0])
+        von_fit_50_80.FixParameter(1, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_25_4"][2])
+        von_fit_50_80.FixParameter(2, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_25_4"][3])
 
     von_fit_50_80.SetParLimits(3, 0, 1)
     von_fit_50_80.SetParameter(3, 0.02)
@@ -2488,20 +2510,21 @@ elif USE_VON:
 
 
     if PT_MODE == 0:
-        v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_central_50_80"][0])
-        v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_lambda_central_50_80"][1])
-        v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_lambda_central_50_80"][2])
-        v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_lambda_central_50_80"][3])
+        v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_2_4"][0])
+        v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_2_4"][1])
+        v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_2_4"][2])
+        v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_2_4"][3])
     elif PT_MODE == 1:
-        v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_lowpt_50_80"][0])
-        v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_lambda_lowpt_50_80"][1])
-        v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_lambda_lowpt_50_80"][2])
-        v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_lambda_lowpt_50_80"][3])
+        v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_15_25"][0])
+        v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_15_25"][1])
+        v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_15_25"][2])
+        v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_15_25"][3])
     elif PT_MODE == 2:
-        v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_highpt_50_80"][0])
-        v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_lambda_highpt_50_80"][1])
-        v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_lambda_highpt_50_80"][2])
-        v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_lambda_highpt_50_80"][3])
+        v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_25_4"][0])
+        v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_25_4"][1])
+        v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_25_4"][2])
+        v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_25_4"][3])
+
 
 else:
     raise NotImplementedError("UE line mode not supported")
@@ -2573,6 +2596,7 @@ elif USE_V2:
     h_lambda_away_integral_error_50_80 = math.sqrt(h_lambda_away_integral_error_50_80**2 + h_lambda_ue_integral_error_50_80_halved**2)
 
 else: 
+
     h_lambda_dphi_subtracted_50_80_zeroed = h_lambda_dphi_subtracted_50_80.Clone("h_lambda_dphi_subtracted_50_80_zeroed")
     h_lambda_dphi_subtracted_50_80_zeroed.Add(ue_line_50_80, -1)
 
@@ -2687,10 +2711,10 @@ elif USE_ZYAM:
     hh_zero_upper_line_50_80.SetParameter(0, hh_ue_avg_error_50_80)
     hh_zero_lower_line_50_80.SetParameter(0, -hh_ue_avg_error_50_80)
 elif USE_FIT:
+
     # fitting to four gaussians + a constant background
     hh_fit_function_50_80 = rt.TF1("hh_fit_function_50_80", "gaus(0) + gaus(3) + gaus(6) + gaus(9) + pol0(12)", -2, 6)
     hh_fit_function_50_80.SetNpx(1000)
-
     # setting parameters for first gaussian (centered at 0)
     hh_fit_function_50_80.SetParLimits(0, 0.02, 1)
     hh_fit_function_50_80.SetParameter(0, 0.16)
@@ -2701,7 +2725,7 @@ elif USE_FIT:
     hh_fit_function_50_80.SetParLimits(3, 0, 1)
     hh_fit_function_50_80.SetParameter(3, 0)
     hh_fit_function_50_80.FixParameter(4, 2*rt.TMath.Pi())
-    hh_fit_function_50_80.SetParLimits(5, 0.1, 3)
+    hh_fit_function_50_80.SetParLimits(5, 0.1, 2)
     hh_fit_function_50_80.SetParameter(5, 0.1)
     # setting parameters for third gaussian (centered at pi)
     hh_fit_function_50_80.SetParLimits(6, 0.02, 1)
@@ -2753,76 +2777,76 @@ elif USE_V2:
     hh_v2_fit_50_80 = rt.TF1("hh_v2_fit_50_80", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
 
     if PT_MODE == 0:
-        hh_v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_h_central_50_80"][0])
-        hh_v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_h_central_50_80"][1])
-        hh_v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_h_central_50_80"][2])
-        hh_v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_h_central_50_80"][3])
+        hh_v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_2_4"][0])
+        hh_v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_2_4"][1])
+        hh_v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_2_4"][2])
+        hh_v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_2_4"][3])
     elif PT_MODE == 1:
-        hh_v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_h_lowpt_50_80"][0])
-        hh_v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_h_lowpt_50_80"][1])
-        hh_v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_h_lowpt_50_80"][2])
-        hh_v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_h_lowpt_50_80"][3])
+        hh_v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_15_25"][0])
+        hh_v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_15_25"][1])
+        hh_v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_15_25"][2])
+        hh_v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_15_25"][3])
     elif PT_MODE == 2:
-        hh_v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_h_highpt_50_80"][0])
-        hh_v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_h_highpt_50_80"][1])
-        hh_v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_h_highpt_50_80"][2])
-        hh_v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_h_highpt_50_80"][3])
+        hh_v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_25_4"][0])
+        hh_v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_25_4"][1])
+        hh_v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_25_4"][2])
+        hh_v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_25_4"][3])
+
 
 elif USE_VON:
-
     hh_ue_avg_50_80 = (h_h_dphi_50_80.GetBinContent(1) 
                    + h_h_dphi_50_80.GetBinContent(2)
                    + h_h_dphi_50_80.GetBinContent(7)
                    + h_h_dphi_50_80.GetBinContent(8)
                    + h_h_dphi_50_80.GetBinContent(9)
                    + h_h_dphi_50_80.GetBinContent(16))/6
+
     hh_v2_fit_50_80 = rt.TF1("hh_v2_fit_50_80", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
     hh_von_fit_string = "[0]*(1 + 2*([1]*[2]*cos(2*x)))"
     hh_von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x))"
     hh_von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()))"
     hh_von_fit_50_80 = rt.TF1("hh_von_fit_50_80", hh_von_fit_string, -2, 6)
+
     if PT_MODE == 0:
-        hh_von_fit_50_80.SetParameter(0, v2_fitpars_dict["h_h_central_50_80"][0])
-        hh_von_fit_50_80.FixParameter(1, v2_fitpars_dict["h_h_central_50_80"][2])
-        hh_von_fit_50_80.FixParameter(2, v2_fitpars_dict["h_h_central_50_80"][3])
+        hh_von_fit_50_80.SetParameter(0, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_2_4"][0])
+        hh_von_fit_50_80.FixParameter(1, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_2_4"][2])
+        hh_von_fit_50_80.FixParameter(2, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_2_4"][3])
     elif PT_MODE == 1:
-        hh_von_fit_50_80.SetParameter(0, v2_fitpars_dict["h_h_lowpt_50_80"][0])
-        hh_von_fit_50_80.FixParameter(1, v2_fitpars_dict["h_h_lowpt_50_80"][2])
-        hh_von_fit_50_80.FixParameter(2, v2_fitpars_dict["h_h_lowpt_50_80"][3])
+        hh_von_fit_50_80.SetParameter(0, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_15_25"][0])
+        hh_von_fit_50_80.FixParameter(1, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_15_25"][2])
+        hh_von_fit_50_80.FixParameter(2, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_15_25"][3])
     elif PT_MODE == 2:
-        hh_von_fit_50_80.SetParameter(0, v2_fitpars_dict["h_h_highpt_50_80"][0])
-        hh_von_fit_50_80.FixParameter(1, v2_fitpars_dict["h_h_highpt_50_80"][2])
-        hh_von_fit_50_80.FixParameter(2, v2_fitpars_dict["h_h_highpt_50_80"][3])
+        hh_von_fit_50_80.SetParameter(0, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_25_4"][0])
+        hh_von_fit_50_80.FixParameter(1, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_25_4"][2])
+        hh_von_fit_50_80.FixParameter(2, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_25_4"][3])
+
     hh_von_fit_50_80.SetParLimits(3, 0, 1)
     hh_von_fit_50_80.SetParameter(3, 0.02)
     hh_von_fit_50_80.SetParLimits(4, 0, 100)
     hh_von_fit_50_80.SetParameter(4, 1)
-    hh_von_fit_50_80.SetParLimits(5, 0, 4)
+    hh_von_fit_50_80.SetParLimits(5, 0, 1)
     hh_von_fit_50_80.SetParameter(5, 0.01)
     hh_von_fit_50_80.SetParLimits(6, 0, 100)
     hh_von_fit_50_80.SetParameter(6, 1)
-    h_h_dphi_with_fit_50_80 = h_h_dphi_50_80.Clone("h_h_dphi_with_fit_50_80")
-    h_h_dphi_with_fit_50_80.Fit(hh_von_fit_50_80, "R")
 
     h_h_dphi_with_fit_50_80 = h_h_dphi_50_80.Clone("h_h_dphi_with_fit_50_80")
     hh_fit_result_50_80 = h_h_dphi_with_fit_50_80.Fit(hh_von_fit_50_80, "R")
 
-
     if PT_MODE == 0:
-        hh_v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_h_central_50_80"][0])
-        hh_v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_h_central_50_80"][1])
-        hh_v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_h_central_50_80"][2])
-        hh_v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_h_central_50_80"][3])
+        hh_v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_2_4"][0])
+        hh_v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_2_4"][1])
+        hh_v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_2_4"][2])
+        hh_v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_2_4"][3])
     elif PT_MODE == 1:
-        hh_v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_h_lowpt_50_80"][0])
-        hh_v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_h_lowpt_50_80"][1])
-        hh_v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_h_lowpt_50_80"][2])
-        hh_v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_h_lowpt_50_80"][3])
+        hh_v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_15_25"][0])
+        hh_v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_15_25"][1])
+        hh_v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_15_25"][2])
+        hh_v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_15_25"][3])
     elif PT_MODE == 2:
-        hh_v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_h_highpt_50_80"][0])
-        hh_v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_h_highpt_50_80"][1])
-        hh_v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_h_highpt_50_80"][2])
-        hh_v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_h_highpt_50_80"][3])
+        hh_v2_fit_50_80.SetParameter(0, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_25_4"][0])
+        hh_v2_fit_50_80.SetParError(0, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_25_4"][1])
+        hh_v2_fit_50_80.SetParameter(1, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_25_4"][2])
+        hh_v2_fit_50_80.SetParameter(2, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_25_4"][3])
 
 else:
     raise NotImplementedError("UE line mode not supported")
@@ -2987,12 +3011,12 @@ ue_ratio_error_50_80 = ue_ratio_50_80*math.sqrt((h_lambda_ue_integral_error_50_8
 total_ratio_error_50_80 = total_ratio_50_80*math.sqrt((h_lambda_total_integral_error_50_80/h_lambda_total_integral_50_80)**2
                                                  + (h_h_total_integral_error_50_80/h_h_total_integral_50_80)**2)
 
+
 ############################################################################################################
 ############################################################################################################
 ############################################# MB CENTRALITY ################################################
 ############################################################################################################
 ############################################################################################################
-
 
 if IS_NORMAL_PID:
     input_file_0_80 = rt.TFile("../online/v0/output/v0_normal.root")
@@ -3224,21 +3248,24 @@ h_lambda_2d_subtracted_0_80.Scale(1/BRANCHING_RATIO)
 # Correct for two-track efficiency
 h_lambda_2d_subtracted_0_80 = apply_two_track_correction(h_lambda_2d_subtracted_0_80, TWOTRACK_TEMPLATE)
 
+
+
 # INTEGRAL AND RATIO SECTION
 h_lambda_dphi_subtracted_0_80 = h_lambda_2d_subtracted_0_80.ProjectionY("h_lambda_dphi_subtracted_0_80")
 
 if USE_AVG_4:
+
     ue_line_0_80 = rt.TF1("ue_line_0_80", "pol0", -2, 6)
     ue_upper_line_0_80 = rt.TF1("ue_upper_line_0_80", "pol0", -2, 6)
     ue_lower_line_0_80 = rt.TF1("ue_lower_line_0_80", "pol0", -2, 6)
     zero_line_0_80 = rt.TF1("zero_line_0_80", "pol0", -2, 6)
     zero_upper_line_0_80 = rt.TF1("zero_upper_line_0_80", "pol0", -2, 6)
     zero_lower_line_0_80 = rt.TF1("zero_lower_line_0_80", "pol0", -2, 6)
+
     ue_avg_0_80 = (h_lambda_dphi_subtracted_0_80.GetBinContent(1) 
                    + h_lambda_dphi_subtracted_0_80.GetBinContent(8)
                    + h_lambda_dphi_subtracted_0_80.GetBinContent(9)
                    + h_lambda_dphi_subtracted_0_80.GetBinContent(16))/4
-
     ue_avg_error_0_80 = (1/4)*(math.sqrt(h_lambda_dphi_subtracted_0_80.GetBinError(1)**2 
                    + h_lambda_dphi_subtracted_0_80.GetBinError(8)**2
                    + h_lambda_dphi_subtracted_0_80.GetBinError(9)**2
@@ -3369,20 +3396,20 @@ elif USE_V2:
     v2_fit_0_80 = rt.TF1("v2_fit_0_80", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
 
     if PT_MODE == 0:
-        v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_central_0_80"][0])
-        v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_lambda_central_0_80"][1])
-        v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_lambda_central_0_80"][2])
-        v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_lambda_central_0_80"][3])
+        v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_2_4"][0])
+        v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_2_4"][1])
+        v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_2_4"][2])
+        v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_2_4"][3])
     elif PT_MODE == 1:
-        v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_lowpt_0_80"][0])
-        v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_lambda_lowpt_0_80"][1])
-        v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_lambda_lowpt_0_80"][2])
-        v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_lambda_lowpt_0_80"][3])
+        v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_15_25"][0])
+        v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_15_25"][1])
+        v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_15_25"][2])
+        v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_15_25"][3])
     elif PT_MODE == 2:
-        v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_highpt_0_80"][0])
-        v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_lambda_highpt_0_80"][1])
-        v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_lambda_highpt_0_80"][2])
-        v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_lambda_highpt_0_80"][3])
+        v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_25_4"][0])
+        v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_25_4"][1])
+        v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_25_4"][2])
+        v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_25_4"][3])
 
 
 elif USE_VON:
@@ -3401,17 +3428,18 @@ elif USE_VON:
     von_fit_0_80 = rt.TF1("von_fit_0_80", von_fit_string, -2, 6)
 
     if PT_MODE == 0:
-        von_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_central_0_80"][0])
-        von_fit_0_80.FixParameter(1, v2_fitpars_dict["h_lambda_central_0_80"][2])
-        von_fit_0_80.FixParameter(2, v2_fitpars_dict["h_lambda_central_0_80"][3])
+        von_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_2_4"][0])
+        von_fit_0_80.FixParameter(1, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_2_4"][2])
+        von_fit_0_80.FixParameter(2, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_2_4"][3])
     elif PT_MODE == 1:
-        von_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_lowpt_0_80"][0])
-        von_fit_0_80.FixParameter(1, v2_fitpars_dict["h_lambda_lowpt_0_80"][2])
-        von_fit_0_80.FixParameter(2, v2_fitpars_dict["h_lambda_lowpt_0_80"][3])
+        von_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_15_25"][0])
+        von_fit_0_80.FixParameter(1, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_15_25"][2])
+        von_fit_0_80.FixParameter(2, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_15_25"][3])
     elif PT_MODE == 2:
-        von_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_highpt_0_80"][0])
-        von_fit_0_80.FixParameter(1, v2_fitpars_dict["h_lambda_highpt_0_80"][2])
-        von_fit_0_80.FixParameter(2, v2_fitpars_dict["h_lambda_highpt_0_80"][3])
+        von_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_25_4"][0])
+        von_fit_0_80.FixParameter(1, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_25_4"][2])
+        von_fit_0_80.FixParameter(2, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_25_4"][3])
+
     von_fit_0_80.SetParLimits(3, 0, 1)
     von_fit_0_80.SetParameter(3, 0.02)
     von_fit_0_80.SetParLimits(4, 0, 100)
@@ -3426,20 +3454,21 @@ elif USE_VON:
 
 
     if PT_MODE == 0:
-        v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_central_0_80"][0])
-        v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_lambda_central_0_80"][1])
-        v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_lambda_central_0_80"][2])
-        v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_lambda_central_0_80"][3])
+        v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_2_4"][0])
+        v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_2_4"][1])
+        v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_2_4"][2])
+        v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_2_4"][3])
     elif PT_MODE == 1:
-        v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_lowpt_0_80"][0])
-        v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_lambda_lowpt_0_80"][1])
-        v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_lambda_lowpt_0_80"][2])
-        v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_lambda_lowpt_0_80"][3])
+        v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_15_25"][0])
+        v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_15_25"][1])
+        v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_15_25"][2])
+        v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_15_25"][3])
     elif PT_MODE == 2:
-        v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_highpt_0_80"][0])
-        v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_lambda_highpt_0_80"][1])
-        v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_lambda_highpt_0_80"][2])
-        v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_lambda_highpt_0_80"][3])
+        v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_25_4"][0])
+        v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_25_4"][1])
+        v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_25_4"][2])
+        v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_25_4"][3])
+
 
 else:
     raise NotImplementedError("UE line mode not supported")
@@ -3511,6 +3540,7 @@ elif USE_V2:
     h_lambda_away_integral_error_0_80 = math.sqrt(h_lambda_away_integral_error_0_80**2 + h_lambda_ue_integral_error_0_80_halved**2)
 
 else: 
+
     h_lambda_dphi_subtracted_0_80_zeroed = h_lambda_dphi_subtracted_0_80.Clone("h_lambda_dphi_subtracted_0_80_zeroed")
     h_lambda_dphi_subtracted_0_80_zeroed.Add(ue_line_0_80, -1)
 
@@ -3625,10 +3655,10 @@ elif USE_ZYAM:
     hh_zero_upper_line_0_80.SetParameter(0, hh_ue_avg_error_0_80)
     hh_zero_lower_line_0_80.SetParameter(0, -hh_ue_avg_error_0_80)
 elif USE_FIT:
+
     # fitting to four gaussians + a constant background
     hh_fit_function_0_80 = rt.TF1("hh_fit_function_0_80", "gaus(0) + gaus(3) + gaus(6) + gaus(9) + pol0(12)", -2, 6)
     hh_fit_function_0_80.SetNpx(1000)
-
     # setting parameters for first gaussian (centered at 0)
     hh_fit_function_0_80.SetParLimits(0, 0.02, 1)
     hh_fit_function_0_80.SetParameter(0, 0.16)
@@ -3691,20 +3721,20 @@ elif USE_V2:
     hh_v2_fit_0_80 = rt.TF1("hh_v2_fit_0_80", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
 
     if PT_MODE == 0:
-        hh_v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_h_central_0_80"][0])
-        hh_v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_h_central_0_80"][1])
-        hh_v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_h_central_0_80"][2])
-        hh_v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_h_central_0_80"][3])
+        hh_v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_2_4"][0])
+        hh_v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_2_4"][1])
+        hh_v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_2_4"][2])
+        hh_v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_2_4"][3])
     elif PT_MODE == 1:
-        hh_v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_h_lowpt_0_80"][0])
-        hh_v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_h_lowpt_0_80"][1])
-        hh_v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_h_lowpt_0_80"][2])
-        hh_v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_h_lowpt_0_80"][3])
+        hh_v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_15_25"][0])
+        hh_v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_15_25"][1])
+        hh_v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_15_25"][2])
+        hh_v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_15_25"][3])
     elif PT_MODE == 2:
-        hh_v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_h_highpt_0_80"][0])
-        hh_v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_h_highpt_0_80"][1])
-        hh_v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_h_highpt_0_80"][2])
-        hh_v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_h_highpt_0_80"][3])
+        hh_v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_25_4"][0])
+        hh_v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_25_4"][1])
+        hh_v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_25_4"][2])
+        hh_v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_25_4"][3])
 
 
 elif USE_VON:
@@ -3719,21 +3749,20 @@ elif USE_VON:
     hh_von_fit_string = "[0]*(1 + 2*([1]*[2]*cos(2*x)))"
     hh_von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x))"
     hh_von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()))"
-
     hh_von_fit_0_80 = rt.TF1("hh_von_fit_0_80", hh_von_fit_string, -2, 6)
 
     if PT_MODE == 0:
-        hh_von_fit_0_80.SetParameter(0, v2_fitpars_dict["h_h_central_0_80"][0])
-        hh_von_fit_0_80.FixParameter(1, v2_fitpars_dict["h_h_central_0_80"][2])
-        hh_von_fit_0_80.FixParameter(2, v2_fitpars_dict["h_h_central_0_80"][3])
+        hh_von_fit_0_80.SetParameter(0, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_2_4"][0])
+        hh_von_fit_0_80.FixParameter(1, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_2_4"][2])
+        hh_von_fit_0_80.FixParameter(2, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_2_4"][3])
     elif PT_MODE == 1:
-        hh_von_fit_0_80.SetParameter(0, v2_fitpars_dict["h_h_lowpt_0_80"][0])
-        hh_von_fit_0_80.FixParameter(1, v2_fitpars_dict["h_h_lowpt_0_80"][2])
-        hh_von_fit_0_80.FixParameter(2, v2_fitpars_dict["h_h_lowpt_0_80"][3])
+        hh_von_fit_0_80.SetParameter(0, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_15_25"][0])
+        hh_von_fit_0_80.FixParameter(1, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_15_25"][2])
+        hh_von_fit_0_80.FixParameter(2, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_15_25"][3])
     elif PT_MODE == 2:
-        hh_von_fit_0_80.SetParameter(0, v2_fitpars_dict["h_h_highpt_0_80"][0])
-        hh_von_fit_0_80.FixParameter(1, v2_fitpars_dict["h_h_highpt_0_80"][2])
-        hh_von_fit_0_80.FixParameter(2, v2_fitpars_dict["h_h_highpt_0_80"][3])
+        hh_von_fit_0_80.SetParameter(0, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_25_4"][0])
+        hh_von_fit_0_80.FixParameter(1, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_25_4"][2])
+        hh_von_fit_0_80.FixParameter(2, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_25_4"][3])
 
     hh_von_fit_0_80.SetParLimits(3, 0, 1)
     hh_von_fit_0_80.SetParameter(3, 0.02)
@@ -3748,20 +3777,20 @@ elif USE_VON:
     hh_fit_result_0_80 = h_h_dphi_with_fit_0_80.Fit(hh_von_fit_0_80, "R")
 
     if PT_MODE == 0:
-        hh_v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_h_central_0_80"][0])
-        hh_v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_h_central_0_80"][1])
-        hh_v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_h_central_0_80"][2])
-        hh_v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_h_central_0_80"][3])
+        hh_v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_2_4"][0])
+        hh_v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_2_4"][1])
+        hh_v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_2_4"][2])
+        hh_v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_2_4"][3])
     elif PT_MODE == 1:
-        hh_v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_h_lowpt_0_80"][0])
-        hh_v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_h_lowpt_0_80"][1])
-        hh_v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_h_lowpt_0_80"][2])
-        hh_v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_h_lowpt_0_80"][3])
+        hh_v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_15_25"][0])
+        hh_v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_15_25"][1])
+        hh_v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_15_25"][2])
+        hh_v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_15_25"][3])
     elif PT_MODE == 2:
-        hh_v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_h_highpt_0_80"][0])
-        hh_v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_h_highpt_0_80"][1])
-        hh_v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_h_highpt_0_80"][2])
-        hh_v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_h_highpt_0_80"][3])
+        hh_v2_fit_0_80.SetParameter(0, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_25_4"][0])
+        hh_v2_fit_0_80.SetParError(0, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_25_4"][1])
+        hh_v2_fit_0_80.SetParameter(1, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_25_4"][2])
+        hh_v2_fit_0_80.SetParameter(2, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_25_4"][3])
 
 else:
     raise NotImplementedError("UE line mode not supported")
@@ -3926,9 +3955,6 @@ ue_ratio_error_0_80 = ue_ratio_0_80*math.sqrt((h_lambda_ue_integral_error_0_80/h
 total_ratio_error_0_80 = total_ratio_0_80*math.sqrt((h_lambda_total_integral_error_0_80/h_lambda_total_integral_0_80)**2
                                                  + (h_h_total_integral_error_0_80/h_h_total_integral_0_80)**2)
 
-
-
-
 ############################################################################################################
 ############################################################################################################
 ############################################ FINAL RATIOS ##################################################
@@ -4066,41 +4092,3 @@ ue_ratio_graph_minbias.Write("ue_ratio_graph_minbias")
 total_ratio_graph_minbias.Write("total_ratio_graph_minbias")
 
 output_file.Close()
-
-
-print("______________FITTING PARAMETERS______________")
-
-if USE_VON:
-
-    print("h_lambda 0-20")
-    print([von_fit_0_20.GetParameter(i) for i in range(von_fit_0_20.GetNpar())])
-    print("h_h 0-20")
-    print([hh_von_fit_0_20.GetParameter(i) for i in range(hh_von_fit_0_20.GetNpar())])
-
-    print("h_lambda 20-50")
-    print([von_fit_20_50.GetParameter(i) for i in range(von_fit_20_50.GetNpar())])
-    print("h_h 20-50")
-    print([hh_von_fit_20_50.GetParameter(i) for i in range(hh_von_fit_20_50.GetNpar())])
-
-    print("h_lambda 50-80")
-    print([von_fit_50_80.GetParameter(i) for i in range(von_fit_50_80.GetNpar())])
-    print("h_h 50-80")
-    print([hh_von_fit_50_80.GetParameter(i) for i in range(hh_von_fit_50_80.GetNpar())])
-
-
-elif USE_FIT:
-
-    print("h_lambda 0-20")
-    print([fit_function_0_20.GetParameter(i) for i in range(fit_function_0_20.GetNpar())])
-    print("h_h 0-20")
-    print([hh_fit_function_0_20.GetParameter(i) for i in range(hh_fit_function_0_20.GetNpar())])
-
-    print("h_lambda 20-50")
-    print([fit_function_20_50.GetParameter(i) for i in range(fit_function_20_50.GetNpar())])
-    print("h_h 20-50")
-    print([hh_fit_function_20_50.GetParameter(i) for i in range(hh_fit_function_20_50.GetNpar())])
-
-    print("h_lambda 50-80")
-    print([fit_function_50_80.GetParameter(i) for i in range(fit_function_50_80.GetNpar())])
-    print("h_h 50-80")
-    print([hh_fit_function_50_80.GetParameter(i) for i in range(hh_fit_function_50_80.GetNpar())])

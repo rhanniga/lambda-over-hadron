@@ -93,11 +93,14 @@ class WidthSystematicHelper:
         self.assoc_pt_name = assoc_pt_name
         self.is_dihadron = is_dihadron
 
+        self.index = 0
+
         self.default_width = self.extract_widths(default_dist)
 
         self.width_variations = {}
         self.contributions = {}
         self.total_systematic = {"ns_width": 0, "as_width": 0}
+
 
     def get_total_systematic(self):
         ns_total, as_total = 0, 0
@@ -121,6 +124,7 @@ class WidthSystematicHelper:
             as_ratio = variation["as_width"][0]/self.default_width["as_width"][0]
             ns_rms += (ns_ratio - 1)**2
             as_rms += (as_ratio - 1)**2
+            print(f"variation name: {variation_name}, ns_ratio: {ns_ratio}, as_ratio: {as_ratio}")
             n += 1
         ns_rms = math.sqrt(ns_rms/n)
         as_rms = math.sqrt(as_rms/n)
@@ -138,7 +142,7 @@ class WidthSystematicHelper:
             self.width_variations[variation_name] = []
             for dist in variation:
                 self.width_variations[variation_name].append(self.extract_widths(dist))
-        print(self.width_variations)
+        # print(self.width_variations)
 
     def get_v2_parameters(self):
         if self.is_dihadron:
@@ -209,11 +213,13 @@ class WidthSystematicHelper:
         v2_comp.SetParameter(2, fit_function.GetParameter(2))
 
         dist.GetYaxis().SetRangeUser(0.8*dist.GetMinimum(), 1.2*dist.GetMaximum())
-        test_c = rt.TCanvas("test_c", "test_c", 800, 600)
+        test_c = rt.TCanvas(f"test_c_{self.index}", "", 800, 600)
+        self.index += 1
         dist.Draw()
         v2_comp.SetLineColor(rt.kBlue + 2)
         v2_comp.Draw("same")
-        test_c.SaveAs("test.png")
+        test_c.SaveAs(f"test_{self.index}.png")
+
 
         return_dict = {}
         if use_gaus:
