@@ -716,21 +716,25 @@ h_lambda_1d_phsd.SetMarkerStyle(21)
 h_lambda_1d_phsd.SetMarkerSize(1.5)
 h_lambda_1d_phsd.GetYaxis().SetRangeUser(0.8*h_lambda_1d_phsd.GetMinimum(), 1.3*h_lambda_1d_phsd.GetMaximum())
 
+# normalize data and phsd for quick comparison
+h_lambda_1d_data.Scale(1/h_lambda_1d_data.Integral())
+h_lambda_1d_phsd.Scale(1/h_lambda_1d_phsd.Integral())
+
 legend_1d = rt.TLegend(0.75, 0.75, 0.9, 0.87)
 legend_1d.AddEntry(h_lambda_1d_data, "Data")
-legend_1d.AddEntry(h_lambda_1d_dpmjet, "DPMJet")
-legend_1d.AddEntry(h_lambda_1d_epos, "EPOS-LHC")
+# legend_1d.AddEntry(h_lambda_1d_dpmjet, "DPMJet")
+# legend_1d.AddEntry(h_lambda_1d_epos, "EPOS-LHC")
 legend_1d.AddEntry(h_lambda_1d_phsd, "PHSD")
 legend_1d.SetBorderSize(0)
 legend_1d.SetFillStyle(0)
-h_lambda_1d_data.GetYaxis().SetRangeUser(0, 0.1)
+h_lambda_1d_data.GetYaxis().SetRangeUser(0.03, 0.1)
 h_lambda_1d_data.Draw()
-h_lambda_1d_epos.Draw("SAME")
-h_lambda_1d_dpmjet.Draw("SAME")
+# h_lambda_1d_epos.Draw("SAME")
+# h_lambda_1d_dpmjet.Draw("SAME")
 h_lambda_1d_phsd.Draw("SAME")
 legend_1d.Draw("SAME")
 c.Draw()
-c.SaveAs("figures/h_lambda_1d_model_comp.pdf")
+c.SaveAs("figures/h_lambda_1d_model_comp_phsd_normalized.pdf")
 
 # scale the vn fit function as the dEta bin width is different (EPOS only)
 vn_fit_scale = 2.4/0.8
@@ -753,7 +757,6 @@ vn_fit_data_total = rt.TF1("vn_fit_data_total", "[0]*(1 + 2*([1]*[2]*cos(2*x)))"
 vn_fit_data_total.SetParameter(0, 0.032456)
 vn_fit_data_total.SetParameter(1, 0.0874)
 vn_fit_data_total.SetParameter(2, 0.10545)
-# h_lambda_central_0_80 0.032456288800187034 0.0 0.08739999999999999 0.10545
 
 h_lambda_1d_data_subtracted = h_lambda_1d_data.Clone("h_lambda_1d_data_subtracted")
 h_lambda_1d_data.Draw()

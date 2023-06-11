@@ -13,7 +13,10 @@ EPSILON = 0.0001
 # define the bins that will *likely* never change
 
 CENTRALITY_BINS = AnalysisBins("centrality_bins",
-                                [AnalysisBin("cent_0_80", 0.0, 80.0 - EPSILON)])
+                                [AnalysisBin("cent_50_80", 1.0, 2 - EPSILON), 
+                                AnalysisBin("cent_20_50", 2.0, 3.0 - EPSILON),
+                                AnalysisBin("cent_0_20", 3.0, 4.0 - EPSILON)
+                                ])
 
 TRIGGER_PT_BINS = AnalysisBins("trigger_pt_bins", 
                                [AnalysisBin("trigger_4_8", 4.0, 8.0 - EPSILON)])
@@ -30,10 +33,10 @@ ETA_BINS = AnalysisBins("eta_bins",
                         [AnalysisBin("eta_08", -0.8, 0.8 - EPSILON)])
     
 MODEL_BINS = AnalysisBins("model_bins",
-                        [AnalysisBin("dpmjet", 1, 1, "output/dpmjet_17f2b_fast.root"),
-                        AnalysisBin("dpmjet_noeta", 1, 1, "output/dpmjet_17f2b_fast_noeta.root"),
+                        [AnalysisBin("dpmjet", 1, 1, "output/AnalysisResults.root")])
+                        # AnalysisBin("dpmjet_noeta", 1, 1, "output/dpmjet_17f2b_fast_noeta.root"),
                         # AnalysisBin("epos", 2, 2, "output/epos_17f2a_fast.root"),
-                        AnalysisBin("phsd", 3, 3, "output/phsd_out_50mil_betterdists.root")])
+                        # AnalysisBin("phsd", 3, 3, "output/phsd_out_50mil_betterdists.root")])
 
 def get_dphi_dists(model, 
                    centrality_bin,
@@ -80,6 +83,7 @@ def get_dphi_dists(model,
 
     trigger_dist.GetAxis(0).SetRangeUser(trigger_pt_bin.lower_bound, trigger_pt_bin.upper_bound)
     trigger_dist.GetAxis(2).SetRangeUser(eta_bin.lower_bound, eta_bin.upper_bound)
+    trigger_dist.GetAxis(3).SetRangeUser(centrality_bin.lower_bound, centrality_bin.upper_bound)
     trigger_pt_dist = trigger_dist.Projection(0).Clone("trigger_pt_dist_" + unique_clone_string)
 
     # get the number of triggers
@@ -88,6 +92,7 @@ def get_dphi_dists(model,
 
     h_h_dist.GetAxis(0).SetRangeUser(trigger_pt_bin.lower_bound, trigger_pt_bin.upper_bound)
     h_h_dist.GetAxis(1).SetRangeUser(associated_pt_bin.lower_bound, associated_pt_bin.upper_bound)
+    h_h_dist.GetAxis(5).SetRangeUser(centrality_bin.lower_bound, centrality_bin.upper_bound)
     h_h_dist = h_h_dist.Projection(2, 3, 4).Clone("h_h_dist_" + unique_clone_string)
 
     # if model.name != "phsd":
@@ -110,6 +115,7 @@ def get_dphi_dists(model,
 
     h_lambda_dist.GetAxis(0).SetRangeUser(trigger_pt_bin.lower_bound, trigger_pt_bin.upper_bound)
     h_lambda_dist.GetAxis(1).SetRangeUser(associated_pt_bin.lower_bound, associated_pt_bin.upper_bound)
+    h_lambda_dist.GetAxis(5).SetRangeUser(centrality_bin.lower_bound, centrality_bin.upper_bound)
     h_lambda_dist = h_lambda_dist.Projection(2, 3, 4).Clone("h_lambda_dist_" + unique_clone_string)
 
     # if model.name != "phsd":
@@ -135,6 +141,7 @@ def get_dphi_dists(model,
 
     h_phi_dist.GetAxis(0).SetRangeUser(trigger_pt_bin.lower_bound, trigger_pt_bin.upper_bound)
     h_phi_dist.GetAxis(1).SetRangeUser(associated_pt_bin.lower_bound, associated_pt_bin.upper_bound)
+    h_phi_dist.GetAxis(5).SetRangeUser(centrality_bin.lower_bound, centrality_bin.upper_bound)
     h_phi_dist = h_phi_dist.Projection(2, 3, 4).Clone("h_phi_dist_" + unique_clone_string)
 
     # if model.name != "phsd":
@@ -165,144 +172,252 @@ c.SetLeftMargin(0.15)
 c.SetRightMargin(0.05)
 c.SetBottomMargin(0.12)
 
+
 for model in MODEL_BINS.analysis_bins:
     for trigger_pt_bin in TRIGGER_PT_BINS.analysis_bins:
         for assoc_pt_bin in ASSOCIATED_PT_BINS.analysis_bins:
+            outfile = rt.TFile(f"dpmjet_graphs_{assoc_pt_bin.name}.root", "recreate")
             for delta_eta_bin in DELTA_ETA_BINS.analysis_bins:
-                h_lambda_dphi, h_phi_dphi, h_h_dphi = get_dphi_dists(model, CENTRALITY_BINS.analysis_bins[0], trigger_pt_bin, assoc_pt_bin, delta_eta_bin, ETA_BINS.analysis_bins[0], None)
 
-                if model.name == "phsd":
-                    h_phi_dphi.Draw()
-                    c.SaveAs("test.png")
-                    quit()
+                lambda_hadron_near_ratio_cent = []
+                lambda_hadron_near_ratio_cent_err = []
+                lambda_hadron_away_ratio_cent = []
+                lambda_hadron_away_ratio_cent_err = []
+                lambda_hadron_ue_ratio_cent = []
+                lambda_hadron_ue_ratio_cent_err = []
+                lambda_hadron_total_ratio_cent = []
+                lambda_hadron_total_ratio_cent_err = []
 
-                h_lambda_yield_extractor = YieldExtractor(h_lambda_dphi)
-                h_phi_yield_extractor = YieldExtractor(h_phi_dphi)
-                h_h_yield_extractor = YieldExtractor(h_h_dphi)
+                phi_hadron_near_ratio_cent = []
+                phi_hadron_near_ratio_cent_err = []
+                phi_hadron_away_ratio_cent = []
+                phi_hadron_away_ratio_cent_err = []
+                phi_hadron_ue_ratio_cent = []
+                phi_hadron_ue_ratio_cent_err = []
+                phi_hadron_total_ratio_cent = []
+                phi_hadron_total_ratio_cent_err = []
 
-                h_lambda_yield_extractor.extract_all_yields()
-                h_phi_yield_extractor.extract_all_yields()
-                h_h_yield_extractor.extract_all_yields()
+                lambda_phi_near_ratio_cent = []
+                lambda_phi_near_ratio_cent_err = []
+                lambda_phi_away_ratio_cent = []
+                lambda_phi_away_ratio_cent_err = []
+                lambda_phi_ue_ratio_cent = []
+                lambda_phi_ue_ratio_cent_err = []
+                lambda_phi_total_ratio_cent = []
+                lambda_phi_total_ratio_cent_err = []
 
-                lambda_near_yield = h_lambda_yield_extractor.yields[FitType.AVG_SIX]["ns"][0]
-                lambda_near_yield_err = h_lambda_yield_extractor.yields[FitType.AVG_SIX]["ns"][1]
-                lambda_away_yield = h_lambda_yield_extractor.yields[FitType.AVG_SIX]["as"][0]
-                lambda_away_yield_err = h_lambda_yield_extractor.yields[FitType.AVG_SIX]["as"][1]
-                lambda_ue_yield = h_lambda_yield_extractor.yields[FitType.AVG_SIX]["ue"][0]
-                lambda_ue_yield_err = h_lambda_yield_extractor.yields[FitType.AVG_SIX]["ue"][1]
-                lambda_total_yield = h_lambda_yield_extractor.yields[FitType.AVG_SIX]["total"][0]
-                lambda_total_yield_err = h_lambda_yield_extractor.yields[FitType.AVG_SIX]["total"][1]
+                for centrality_bin in CENTRALITY_BINS.analysis_bins:
+                    h_lambda_dphi, h_phi_dphi, h_h_dphi = get_dphi_dists(model, centrality_bin, trigger_pt_bin, assoc_pt_bin, delta_eta_bin, ETA_BINS.analysis_bins[0], None)
 
-                phi_near_yield = h_phi_yield_extractor.yields[FitType.AVG_SIX]["ns"][0]
-                phi_near_yield_err = h_phi_yield_extractor.yields[FitType.AVG_SIX]["ns"][1]
-                phi_away_yield = h_phi_yield_extractor.yields[FitType.AVG_SIX]["as"][0]
-                phi_away_yield_err = h_phi_yield_extractor.yields[FitType.AVG_SIX]["as"][1]
-                phi_ue_yield = h_phi_yield_extractor.yields[FitType.AVG_SIX]["ue"][0]
-                phi_ue_yield_err = h_phi_yield_extractor.yields[FitType.AVG_SIX]["ue"][1]
-                phi_total_yield = h_phi_yield_extractor.yields[FitType.AVG_SIX]["total"][0]
-                phi_total_yield_err = h_phi_yield_extractor.yields[FitType.AVG_SIX]["total"][1]
+                    h_lambda_yield_extractor = YieldExtractor(h_lambda_dphi)
+                    h_phi_yield_extractor = YieldExtractor(h_phi_dphi)
+                    h_h_yield_extractor = YieldExtractor(h_h_dphi)
 
-                h_near_yield = h_h_yield_extractor.yields[FitType.AVG_SIX]["ns"][0]
-                h_near_yield_err = h_h_yield_extractor.yields[FitType.AVG_SIX]["ns"][1]
-                h_away_yield = h_h_yield_extractor.yields[FitType.AVG_SIX]["as"][0]
-                h_away_yield_err = h_h_yield_extractor.yields[FitType.AVG_SIX]["as"][1]
-                h_ue_yield = h_h_yield_extractor.yields[FitType.AVG_SIX]["ue"][0]
-                h_ue_yield_err = h_h_yield_extractor.yields[FitType.AVG_SIX]["ue"][1]
-                h_total_yield = h_h_yield_extractor.yields[FitType.AVG_SIX]["total"][0]
-                h_total_yield_err = h_h_yield_extractor.yields[FitType.AVG_SIX]["total"][1]
+                    h_lambda_yield_extractor.extract_all_yields()
+                    h_phi_yield_extractor.extract_all_yields()
+                    h_h_yield_extractor.extract_all_yields()
 
-                mult_list = arr.array('d', [60])
-                mult_error_list = arr.array('d', [40])
+                    lambda_near_yield = h_lambda_yield_extractor.yields[FitType.AVG_SIX]["ns"][0]
+                    lambda_near_yield_err = h_lambda_yield_extractor.yields[FitType.AVG_SIX]["ns"][1]
+                    lambda_away_yield = h_lambda_yield_extractor.yields[FitType.AVG_SIX]["as"][0]
+                    lambda_away_yield_err = h_lambda_yield_extractor.yields[FitType.AVG_SIX]["as"][1]
+                    lambda_ue_yield = h_lambda_yield_extractor.yields[FitType.AVG_SIX]["ue"][0]
+                    lambda_ue_yield_err = h_lambda_yield_extractor.yields[FitType.AVG_SIX]["ue"][1]
+                    lambda_total_yield = h_lambda_yield_extractor.yields[FitType.AVG_SIX]["total"][0]
+                    lambda_total_yield_err = h_lambda_yield_extractor.yields[FitType.AVG_SIX]["total"][1]
 
-                lambda_hadron_near_ratio = lambda_near_yield/h_near_yield
-                lambda_hadron_near_ratio_err = lambda_hadron_near_ratio * math.sqrt((lambda_near_yield_err/lambda_near_yield)**2 + (h_near_yield_err/h_near_yield)**2)
-                lambda_hadron_near_ratio = arr.array('d', [lambda_hadron_near_ratio])
-                lambda_hadron_near_ratio_err = arr.array('d', [lambda_hadron_near_ratio_err])
+                    phi_near_yield = h_phi_yield_extractor.yields[FitType.AVG_SIX]["ns"][0]
+                    phi_near_yield_err = h_phi_yield_extractor.yields[FitType.AVG_SIX]["ns"][1]
+                    phi_away_yield = h_phi_yield_extractor.yields[FitType.AVG_SIX]["as"][0]
+                    phi_away_yield_err = h_phi_yield_extractor.yields[FitType.AVG_SIX]["as"][1]
+                    phi_ue_yield = h_phi_yield_extractor.yields[FitType.AVG_SIX]["ue"][0]
+                    phi_ue_yield_err = h_phi_yield_extractor.yields[FitType.AVG_SIX]["ue"][1]
+                    phi_total_yield = h_phi_yield_extractor.yields[FitType.AVG_SIX]["total"][0]
+                    phi_total_yield_err = h_phi_yield_extractor.yields[FitType.AVG_SIX]["total"][1]
 
-                lambda_hadron_away_ratio = lambda_away_yield/h_away_yield
-                lambda_hadron_away_ratio_err = lambda_hadron_away_ratio * math.sqrt((lambda_away_yield_err/lambda_away_yield)**2 + (h_away_yield_err/h_away_yield)**2)
-                lambda_hadron_away_ratio = arr.array('d', [lambda_hadron_away_ratio])
-                lambda_hadron_away_ratio_err = arr.array('d', [lambda_hadron_away_ratio_err])
+                    h_near_yield = h_h_yield_extractor.yields[FitType.AVG_SIX]["ns"][0]
+                    h_near_yield_err = h_h_yield_extractor.yields[FitType.AVG_SIX]["ns"][1]
+                    h_away_yield = h_h_yield_extractor.yields[FitType.AVG_SIX]["as"][0]
+                    h_away_yield_err = h_h_yield_extractor.yields[FitType.AVG_SIX]["as"][1]
+                    h_ue_yield = h_h_yield_extractor.yields[FitType.AVG_SIX]["ue"][0]
+                    h_ue_yield_err = h_h_yield_extractor.yields[FitType.AVG_SIX]["ue"][1]
+                    h_total_yield = h_h_yield_extractor.yields[FitType.AVG_SIX]["total"][0]
+                    h_total_yield_err = h_h_yield_extractor.yields[FitType.AVG_SIX]["total"][1]
 
-                lambda_hadron_ue_ratio = lambda_ue_yield/h_ue_yield
-                lambda_hadron_ue_ratio_err = lambda_hadron_ue_ratio * math.sqrt((lambda_ue_yield_err/lambda_ue_yield)**2 + (h_ue_yield_err/h_ue_yield)**2)
-                lambda_hadron_ue_ratio = arr.array('d', [lambda_hadron_ue_ratio])
-                lambda_hadron_ue_ratio_err = arr.array('d', [lambda_hadron_ue_ratio_err])
+                    lambda_hadron_near_ratio = lambda_near_yield/h_near_yield
+                    lambda_hadron_near_ratio_err = lambda_hadron_near_ratio * math.sqrt((lambda_near_yield_err/lambda_near_yield)**2 + (h_near_yield_err/h_near_yield)**2)
+                    lambda_hadron_near_ratio_cent.append(lambda_hadron_near_ratio)
+                    lambda_hadron_near_ratio_cent_err.append(lambda_hadron_near_ratio_err)
+                    lambda_hadron_away_ratio = lambda_away_yield/h_away_yield
+                    lambda_hadron_away_ratio_err = lambda_hadron_away_ratio * math.sqrt((lambda_away_yield_err/lambda_away_yield)**2 + (h_away_yield_err/h_away_yield)**2)
+                    lambda_hadron_away_ratio_cent.append(lambda_hadron_away_ratio)
+                    lambda_hadron_away_ratio_cent_err.append(lambda_hadron_away_ratio_err)
+                    lambda_hadron_ue_ratio = lambda_ue_yield/h_ue_yield
+                    lambda_hadron_ue_ratio_err = lambda_hadron_ue_ratio * math.sqrt((lambda_ue_yield_err/lambda_ue_yield)**2 + (h_ue_yield_err/h_ue_yield)**2)
+                    lambda_hadron_ue_ratio_cent.append(lambda_hadron_ue_ratio)
+                    lambda_hadron_ue_ratio_cent_err.append(lambda_hadron_ue_ratio_err)
+                    lambda_hadron_total_ratio = lambda_total_yield/h_total_yield
+                    lambda_hadron_total_ratio_err = lambda_hadron_total_ratio * math.sqrt((lambda_total_yield_err/lambda_total_yield)**2 + (h_total_yield_err/h_total_yield)**2)
+                    lambda_hadron_total_ratio_cent.append(lambda_hadron_total_ratio)
+                    lambda_hadron_total_ratio_cent_err.append(lambda_hadron_total_ratio_err)
 
-                lambda_hadron_total_ratio = lambda_total_yield/h_total_yield
-                lambda_hadron_total_ratio_err = lambda_hadron_total_ratio * math.sqrt((lambda_total_yield_err/lambda_total_yield)**2 + (h_total_yield_err/h_total_yield)**2)
-                lambda_hadron_total_ratio = arr.array('d', [lambda_hadron_total_ratio])
-                lambda_hadron_total_ratio_err = arr.array('d', [lambda_hadron_total_ratio_err])
+                    phi_hadron_near_ratio = phi_near_yield/h_near_yield
+                    phi_hadron_near_ratio_err = phi_hadron_near_ratio * math.sqrt((phi_near_yield_err/phi_near_yield)**2 + (h_near_yield_err/h_near_yield)**2)
+                    phi_hadron_near_ratio_cent.append(phi_hadron_near_ratio)
+                    phi_hadron_near_ratio_cent_err.append(phi_hadron_near_ratio_err)
+                    phi_hadron_away_ratio = phi_away_yield/h_away_yield
+                    phi_hadron_away_ratio_err = phi_hadron_away_ratio * math.sqrt((phi_away_yield_err/phi_away_yield)**2 + (h_away_yield_err/h_away_yield)**2)
+                    phi_hadron_away_ratio_cent.append(phi_hadron_away_ratio)
+                    phi_hadron_away_ratio_cent_err.append(phi_hadron_away_ratio_err)
+                    phi_hadron_ue_ratio = phi_ue_yield/h_ue_yield
+                    phi_hadron_ue_ratio_err = phi_hadron_ue_ratio * math.sqrt((phi_ue_yield_err/phi_ue_yield)**2 + (h_ue_yield_err/h_ue_yield)**2)
+                    phi_hadron_ue_ratio_cent.append(phi_hadron_ue_ratio)
+                    phi_hadron_ue_ratio_cent_err.append(phi_hadron_ue_ratio_err)
+                    phi_hadron_total_ratio = phi_total_yield/h_total_yield
+                    phi_hadron_total_ratio_err = phi_hadron_total_ratio * math.sqrt((phi_total_yield_err/phi_total_yield)**2 + (h_total_yield_err/h_total_yield)**2)
+                    phi_hadron_total_ratio_cent.append(phi_hadron_total_ratio)
+                    phi_hadron_total_ratio_cent_err.append(phi_hadron_total_ratio_err)
 
-                lambda_phi_near_ratio = lambda_near_yield/phi_near_yield
-                lambda_phi_near_ratio_err = lambda_phi_near_ratio * math.sqrt((lambda_near_yield_err/lambda_near_yield)**2 + (phi_near_yield_err/phi_near_yield)**2)
-                lambda_phi_near_ratio = arr.array('d', [lambda_phi_near_ratio])
-                lambda_phi_near_ratio_err = arr.array('d', [lambda_phi_near_ratio_err])
+                    lambda_phi_near_ratio = lambda_near_yield/phi_near_yield
+                    lambda_phi_near_ratio_err = lambda_phi_near_ratio * math.sqrt((lambda_near_yield_err/lambda_near_yield)**2 + (phi_near_yield_err/phi_near_yield)**2)
+                    lambda_phi_near_ratio_cent.append(lambda_phi_near_ratio)
+                    lambda_phi_near_ratio_cent_err.append(lambda_phi_near_ratio_err)
+                    lambda_phi_away_ratio = lambda_away_yield/phi_away_yield
+                    lambda_phi_away_ratio_err = lambda_phi_away_ratio * math.sqrt((lambda_away_yield_err/lambda_away_yield)**2 + (phi_away_yield_err/phi_away_yield)**2)
+                    lambda_phi_away_ratio_cent.append(lambda_phi_away_ratio)
+                    lambda_phi_away_ratio_cent_err.append(lambda_phi_away_ratio_err)
+                    lambda_phi_ue_ratio = lambda_ue_yield/phi_ue_yield
+                    lambda_phi_ue_ratio_err = lambda_phi_ue_ratio * math.sqrt((lambda_ue_yield_err/lambda_ue_yield)**2 + (phi_ue_yield_err/phi_ue_yield)**2)
+                    lambda_phi_ue_ratio_cent.append(lambda_phi_ue_ratio)
+                    lambda_phi_ue_ratio_cent_err.append(lambda_phi_ue_ratio_err)
+                    lambda_phi_total_ratio = lambda_total_yield/phi_total_yield
+                    lambda_phi_total_ratio_err = lambda_phi_total_ratio * math.sqrt((lambda_total_yield_err/lambda_total_yield)**2 + (phi_total_yield_err/phi_total_yield)**2)
+                    lambda_phi_total_ratio_cent.append(lambda_phi_total_ratio)
+                    lambda_phi_total_ratio_cent_err.append(lambda_phi_total_ratio_err)
 
-                lambda_phi_away_ratio = lambda_away_yield/phi_away_yield
-                lambda_phi_away_ratio_err = lambda_phi_away_ratio * math.sqrt((lambda_away_yield_err/lambda_away_yield)**2 + (phi_away_yield_err/phi_away_yield)**2)
-                lambda_phi_away_ratio = arr.array('d', [lambda_phi_away_ratio])
-                lambda_phi_away_ratio_err = arr.array('d', [lambda_phi_away_ratio_err])
 
-                lambda_phi_ue_ratio = lambda_ue_yield/phi_ue_yield
-                lambda_phi_ue_ratio_err = lambda_phi_ue_ratio * math.sqrt((lambda_ue_yield_err/lambda_ue_yield)**2 + (phi_ue_yield_err/phi_ue_yield)**2)
-                lambda_phi_ue_ratio = arr.array('d', [lambda_phi_ue_ratio])
-                lambda_phi_ue_ratio_err = arr.array('d', [lambda_phi_ue_ratio_err])
 
-                lambda_phi_total_ratio = lambda_total_yield/phi_total_yield
-                lambda_phi_total_ratio_err = lambda_phi_total_ratio * math.sqrt((lambda_total_yield_err/lambda_total_yield)**2 + (phi_total_yield_err/phi_total_yield)**2)
-                lambda_phi_total_ratio = arr.array('d', [lambda_phi_total_ratio])
-                lambda_phi_total_ratio_err = arr.array('d', [lambda_phi_total_ratio_err])
+                mult_list = arr.array('d', [35, 65, 90])
+                mult_error_list = arr.array('d', [15, 15, 10])
 
-                lambda_hadron_near_ratio_graph = rt.TGraphErrors(1, mult_list, lambda_hadron_near_ratio, mult_error_list, lambda_hadron_near_ratio_err)
+                lambda_hadron_near_ratio_cent = arr.array('d', lambda_hadron_near_ratio_cent)
+                lambda_hadron_near_ratio_cent_err = arr.array('d', lambda_hadron_near_ratio_cent_err)
+                lambda_hadron_away_ratio_cent = arr.array('d', lambda_hadron_away_ratio_cent)
+                lambda_hadron_away_ratio_cent_err = arr.array('d', lambda_hadron_away_ratio_cent_err)
+                lambda_hadron_ue_ratio_cent = arr.array('d', lambda_hadron_ue_ratio_cent)
+                lambda_hadron_ue_ratio_cent_err = arr.array('d', lambda_hadron_ue_ratio_cent_err)
+                lambda_hadron_total_ratio_cent = arr.array('d', lambda_hadron_total_ratio_cent)
+                lambda_hadron_total_ratio_cent_err = arr.array('d', lambda_hadron_total_ratio_cent_err)
+
+                phi_hadron_near_ratio_cent = arr.array('d', phi_hadron_near_ratio_cent)
+                phi_hadron_near_ratio_cent_err = arr.array('d', phi_hadron_near_ratio_cent_err)
+                phi_hadron_away_ratio_cent = arr.array('d', phi_hadron_away_ratio_cent)
+                phi_hadron_away_ratio_cent_err = arr.array('d', phi_hadron_away_ratio_cent_err)
+                phi_hadron_ue_ratio_cent = arr.array('d', phi_hadron_ue_ratio_cent)
+                phi_hadron_ue_ratio_cent_err = arr.array('d', phi_hadron_ue_ratio_cent_err)
+                phi_hadron_total_ratio_cent = arr.array('d', phi_hadron_total_ratio_cent)
+                phi_hadron_total_ratio_cent_err = arr.array('d', phi_hadron_total_ratio_cent_err)
+
+                lambda_phi_near_ratio_cent = arr.array('d', lambda_phi_near_ratio_cent)
+                lambda_phi_near_ratio_cent_err = arr.array('d', lambda_phi_near_ratio_cent_err)
+                lambda_phi_away_ratio_cent = arr.array('d', lambda_phi_away_ratio_cent)
+                lambda_phi_away_ratio_cent_err = arr.array('d', lambda_phi_away_ratio_cent_err)
+                lambda_phi_ue_ratio_cent = arr.array('d', lambda_phi_ue_ratio_cent)
+                lambda_phi_ue_ratio_cent_err = arr.array('d', lambda_phi_ue_ratio_cent_err)
+                lambda_phi_total_ratio_cent = arr.array('d', lambda_phi_total_ratio_cent)
+                lambda_phi_total_ratio_cent_err = arr.array('d', lambda_phi_total_ratio_cent_err)
+
+                lambda_hadron_near_ratio_graph = rt.TGraphErrors(3, mult_list, lambda_hadron_near_ratio_cent, mult_error_list, lambda_hadron_near_ratio_cent_err)
                 lambda_hadron_near_ratio_graph.SetMarkerStyle(20)
                 lambda_hadron_near_ratio_graph.SetMarkerSize(1)
                 lambda_hadron_near_ratio_graph.SetMarkerColor(rt.kRed+1)
                 lambda_hadron_near_ratio_graph.SetLineColor(rt.kRed+2)
                 lambda_hadron_near_ratio_graph.SetLineWidth(2)
-                lambda_hadron_away_ratio_graph = rt.TGraphErrors(1, mult_list, lambda_hadron_away_ratio, mult_error_list, lambda_hadron_away_ratio_err)
+                lambda_hadron_away_ratio_graph = rt.TGraphErrors(3, mult_list, lambda_hadron_away_ratio_cent, mult_error_list, lambda_hadron_away_ratio_cent_err)
                 lambda_hadron_away_ratio_graph.SetMarkerStyle(20)
                 lambda_hadron_away_ratio_graph.SetMarkerSize(1)
                 lambda_hadron_away_ratio_graph.SetMarkerColor(rt.kBlue+1)
                 lambda_hadron_away_ratio_graph.SetLineColor(rt.kBlue+2)
                 lambda_hadron_away_ratio_graph.SetLineWidth(2)
-                lambda_hadron_ue_ratio_graph = rt.TGraphErrors(1, mult_list, lambda_hadron_ue_ratio, mult_error_list, lambda_hadron_ue_ratio_err)
+                lambda_hadron_ue_ratio_graph = rt.TGraphErrors(3, mult_list, lambda_hadron_ue_ratio_cent, mult_error_list, lambda_hadron_ue_ratio_cent_err)
                 lambda_hadron_ue_ratio_graph.SetMarkerStyle(20)
                 lambda_hadron_ue_ratio_graph.SetMarkerSize(1)
                 lambda_hadron_ue_ratio_graph.SetMarkerColor(rt.kGreen+1)
                 lambda_hadron_ue_ratio_graph.SetLineColor(rt.kGreen+2)
                 lambda_hadron_ue_ratio_graph.SetLineWidth(2)
-                lambda_hadron_total_ratio_graph = rt.TGraphErrors(1, mult_list, lambda_hadron_total_ratio, mult_error_list, lambda_hadron_total_ratio_err)
+                lambda_hadron_total_ratio_graph = rt.TGraphErrors(3, mult_list, lambda_hadron_total_ratio_cent, mult_error_list, lambda_hadron_total_ratio_cent_err)
                 lambda_hadron_total_ratio_graph.SetMarkerStyle(20)
                 lambda_hadron_total_ratio_graph.SetMarkerSize(1)
                 lambda_hadron_total_ratio_graph.SetMarkerColor(rt.kMagenta+1)
                 lambda_hadron_total_ratio_graph.SetLineColor(rt.kMagenta+2)
                 lambda_hadron_total_ratio_graph.SetLineWidth(2)
 
-                lambda_phi_near_ratio_graph = rt.TGraphErrors(1, mult_list, lambda_phi_near_ratio, mult_error_list, lambda_phi_near_ratio_err)
+                phi_hadron_near_ratio_graph = rt.TGraphErrors(3, mult_list, phi_hadron_near_ratio_cent, mult_error_list, phi_hadron_near_ratio_cent_err)
+                phi_hadron_near_ratio_graph.SetMarkerStyle(20)
+                phi_hadron_near_ratio_graph.SetMarkerSize(1)
+                phi_hadron_near_ratio_graph.SetMarkerColor(rt.kRed+1)
+                phi_hadron_near_ratio_graph.SetLineColor(rt.kRed+2)
+                phi_hadron_near_ratio_graph.SetLineWidth(2)
+                phi_hadron_away_ratio_graph = rt.TGraphErrors(3, mult_list, phi_hadron_away_ratio_cent, mult_error_list, phi_hadron_away_ratio_cent_err)
+                phi_hadron_away_ratio_graph.SetMarkerStyle(20)
+                phi_hadron_away_ratio_graph.SetMarkerSize(1)
+                phi_hadron_away_ratio_graph.SetMarkerColor(rt.kBlue+1)
+                phi_hadron_away_ratio_graph.SetLineColor(rt.kBlue+2)
+                phi_hadron_away_ratio_graph.SetLineWidth(2)
+                phi_hadron_ue_ratio_graph = rt.TGraphErrors(3, mult_list, phi_hadron_ue_ratio_cent, mult_error_list, phi_hadron_ue_ratio_cent_err)
+                phi_hadron_ue_ratio_graph.SetMarkerStyle(20)
+                phi_hadron_ue_ratio_graph.SetMarkerSize(1)
+                phi_hadron_ue_ratio_graph.SetMarkerColor(rt.kGreen+1)
+                phi_hadron_ue_ratio_graph.SetLineColor(rt.kGreen+2)
+                phi_hadron_ue_ratio_graph.SetLineWidth(2)
+                phi_hadron_total_ratio_graph = rt.TGraphErrors(3, mult_list, phi_hadron_total_ratio_cent, mult_error_list, phi_hadron_total_ratio_cent_err)
+                phi_hadron_total_ratio_graph.SetMarkerStyle(20)
+                phi_hadron_total_ratio_graph.SetMarkerSize(1)
+                phi_hadron_total_ratio_graph.SetMarkerColor(rt.kMagenta+1)
+                phi_hadron_total_ratio_graph.SetLineColor(rt.kMagenta+2)
+                phi_hadron_total_ratio_graph.SetLineWidth(2)
+
+                lambda_phi_near_ratio_graph = rt.TGraphErrors(3, mult_list, lambda_phi_near_ratio_cent, mult_error_list, lambda_phi_near_ratio_cent_err)
                 lambda_phi_near_ratio_graph.SetMarkerStyle(20)
                 lambda_phi_near_ratio_graph.SetMarkerSize(1)
                 lambda_phi_near_ratio_graph.SetMarkerColor(rt.kRed+1)
                 lambda_phi_near_ratio_graph.SetLineColor(rt.kRed+2)
                 lambda_phi_near_ratio_graph.SetLineWidth(2)
-                lambda_phi_away_ratio_graph = rt.TGraphErrors(1, mult_list, lambda_phi_away_ratio, mult_error_list, lambda_phi_away_ratio_err)
+                lambda_phi_away_ratio_graph = rt.TGraphErrors(3, mult_list, lambda_phi_away_ratio_cent, mult_error_list, lambda_phi_away_ratio_cent_err)
                 lambda_phi_away_ratio_graph.SetMarkerStyle(20)
                 lambda_phi_away_ratio_graph.SetMarkerSize(1)
                 lambda_phi_away_ratio_graph.SetMarkerColor(rt.kBlue+1)
                 lambda_phi_away_ratio_graph.SetLineColor(rt.kBlue+2)
                 lambda_phi_away_ratio_graph.SetLineWidth(2)
-                lambda_phi_ue_ratio_graph = rt.TGraphErrors(1, mult_list, lambda_phi_ue_ratio, mult_error_list, lambda_phi_ue_ratio_err)
+                lambda_phi_ue_ratio_graph = rt.TGraphErrors(3, mult_list, lambda_phi_ue_ratio_cent, mult_error_list, lambda_phi_ue_ratio_cent_err)
                 lambda_phi_ue_ratio_graph.SetMarkerStyle(20)
                 lambda_phi_ue_ratio_graph.SetMarkerSize(1)
                 lambda_phi_ue_ratio_graph.SetMarkerColor(rt.kGreen+1)
                 lambda_phi_ue_ratio_graph.SetLineColor(rt.kGreen+2)
                 lambda_phi_ue_ratio_graph.SetLineWidth(2)
-                lambda_phi_total_ratio_graph = rt.TGraphErrors(1, mult_list, lambda_phi_total_ratio, mult_error_list, lambda_phi_total_ratio_err)
+                lambda_phi_total_ratio_graph = rt.TGraphErrors(3, mult_list, lambda_phi_total_ratio_cent, mult_error_list, lambda_phi_total_ratio_cent_err)
                 lambda_phi_total_ratio_graph.SetMarkerStyle(20)
                 lambda_phi_total_ratio_graph.SetMarkerSize(1)
                 lambda_phi_total_ratio_graph.SetMarkerColor(rt.kMagenta+1)
                 lambda_phi_total_ratio_graph.SetLineColor(rt.kMagenta+2)
                 lambda_phi_total_ratio_graph.SetLineWidth(2)
+
+                outfile.cd()
+
+                lambda_hadron_near_ratio_graph.Write(f"lambda_hadron_near_ratio_graph")
+                lambda_hadron_away_ratio_graph.Write(f"lambda_hadron_away_ratio_graph")
+                lambda_hadron_ue_ratio_graph.Write(f"lambda_hadron_ue_ratio_graph")
+                lambda_hadron_total_ratio_graph.Write(f"lambda_hadron_total_ratio_graph")
+            
+                phi_hadron_near_ratio_graph.Write(f"phi_hadron_near_ratio_graph")
+                phi_hadron_away_ratio_graph.Write(f"phi_hadron_away_ratio_graph")
+                phi_hadron_ue_ratio_graph.Write(f"phi_hadron_ue_ratio_graph")
+                phi_hadron_total_ratio_graph.Write(f"phi_hadron_total_ratio_graph")
+
+                lambda_phi_near_ratio_graph.Write(f"lambda_phi_near_ratio_graph")
+                lambda_phi_away_ratio_graph.Write(f"lambda_phi_away_ratio_graph")
+                lambda_phi_ue_ratio_graph.Write(f"lambda_phi_ue_ratio_graph")
+                lambda_phi_total_ratio_graph.Write(f"lambda_phi_total_ratio_graph")
 
                 legend = rt.TLegend(0.65, 0.65, 0.85, 0.85)
                 legend.SetBorderSize(0)
@@ -330,10 +445,10 @@ for model in MODEL_BINS.analysis_bins:
                     plotting_hist.SetStats(0)
                     if lambda_phi_ratio:
                         plotting_hist.GetYaxis().SetTitle("Yield Ratio #left(#frac{h#minus#Lambda}{h#minus#phi}#right)")
-                        plotting_hist.GetYaxis().SetRangeUser(0, 1000)
+                        plotting_hist.GetYaxis().SetRangeUser(0, 100)
                     else:
-                        plotting_hist.GetYaxis().SetRangeUser(0.03, 0.1)
-                        plotting_hist.GetYaxis().SetTitle("Yield Ratio #left(#frac{h#minus#Lambda}{h#minush}#right)")
+                        plotting_hist.GetYaxis().SetRangeUser(0.0, 0.05)
+                        plotting_hist.GetYaxis().SetTitle("Yield Ratio #left(#frac{h#minus#phi}{h#minush}#right)")
                     plotting_hist.GetYaxis().SetTitleSize(0.05)
                     plotting_hist.GetYaxis().SetTitleOffset(1.3)
                     plotting_hist.SetStats(0)
@@ -360,8 +475,19 @@ for model in MODEL_BINS.analysis_bins:
                         legend.Draw("SAME")
                         c.SaveAs("figures/lambda_phi_ratio_" + model.name + "_" + assoc_pt_bin.name + ".pdf")
                     else:
+                        plotting_hist.GetYaxis().SetRangeUser(0.0, 0.08)
+                        plotting_hist.GetYaxis().SetTitle("Yield Ratio #left(#frac{h#minus#phi}{h#minush}#right)")
+                        phi_hadron_near_ratio_graph.Draw("PZ SAME")
+                        phi_hadron_away_ratio_graph.Draw("PZ SAME")
+                        phi_hadron_ue_ratio_graph.Draw("PZ SAME")
+                        legend.Draw("SAME")
+                        c.SaveAs("figures/phi_hadron_ratio_" + model.name + "_" + assoc_pt_bin.name + ".pdf")
+
+                        plotting_hist.GetYaxis().SetRangeUser(0.0, 0.1)
+                        plotting_hist.GetYaxis().SetTitle("Yield Ratio #left(#frac{h#minus#Lambda}{h#minush}#right)")
                         lambda_hadron_near_ratio_graph.Draw("PZ SAME")
                         lambda_hadron_away_ratio_graph.Draw("PZ SAME")
                         lambda_hadron_ue_ratio_graph.Draw("PZ SAME")
                         legend.Draw("SAME")
                         c.SaveAs("figures/lambda_hadron_ratio_" + model.name + "_" + assoc_pt_bin.name + ".pdf")
+            outfile.Close()

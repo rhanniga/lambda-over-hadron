@@ -3,7 +3,7 @@ import math
 import ROOT as rt
 import array as arr
 
-from strangehelper import get_parabola
+# from strangehelper import get_parabola
 
 rt.gStyle.SetOptStat(0)
 
@@ -33,12 +33,14 @@ for PT_MODE in [0, 1, 2]:
     for use_new_x_axis in [True, False]:
         for lambda_phi_ratio in [True, False]:
             if PT_MODE == 0:
-                graph_infile = rt.TFile("output/systematics/final_yield_ratio_syst_newnch.root")
+                graph_infile = rt.TFile("../output/systematics/final_yield_ratio_syst_newnch.root")
+                dpmjet_graph_infile = rt.TFile("../output/dpmjet_graphs_assoc_2_4.root")
             elif PT_MODE == 1:
-                graph_infile = rt.TFile("output/systematics/final_yield_ratio_syst_newnch_lowpt.root")
+                graph_infile = rt.TFile("../output/systematics/final_yield_ratio_syst_newnch_lowpt.root")
+                dpmjet_graph_infile = rt.TFile("../output/dpmjet_graphs_assoc_15_25.root")
             elif PT_MODE == 2:
-                graph_infile = rt.TFile("output/systematics/final_yield_ratio_syst_newnch_highpt.root")
-
+                graph_infile = rt.TFile("../output/systematics/final_yield_ratio_syst_newnch_highpt.root")
+                dpmjet_graph_infile = rt.TFile("../output/dpmjet_graphs_assoc_25_4.root")
             if use_new_x_axis:
 
                 near_graph = graph_infile.Get("near_yield_graph_new_x_axis")
@@ -131,24 +133,39 @@ for PT_MODE in [0, 1, 2]:
                 hh_total_graph_final_syst = graph_infile.Get("hh_total_yield_graph_final_syst")
 
                 if lambda_phi_ratio:
+
                     near_ratio_graph = graph_infile.Get("lambda_phi_near_ratio_graph")
                     away_ratio_graph = graph_infile.Get("lambda_phi_away_ratio_graph")
                     ue_ratio_graph = graph_infile.Get("lambda_phi_ue_ratio_graph")
                     total_ratio_graph = graph_infile.Get("lambda_phi_total_ratio_graph")
+
+                    dpmjet_near_ratio_graph = dpmjet_graph_infile.Get("lambda_phi_near_ratio_graph")
+                    dpmjet_away_ratio_graph = dpmjet_graph_infile.Get("lambda_phi_away_ratio_graph")
+                    dpmjet_ue_ratio_graph = dpmjet_graph_infile.Get("lambda_phi_ue_ratio_graph")
+                    dpmjet_total_ratio_graph = dpmjet_graph_infile.Get("lambda_phi_total_ratio_graph")
+
                     near_ratio_graph_final_syst = graph_infile.Get("lambda_phi_near_ratio_graph_final_syst")
                     away_ratio_graph_final_syst = graph_infile.Get("lambda_phi_away_ratio_graph_final_syst")
                     ue_ratio_graph_final_syst = graph_infile.Get("lambda_phi_ue_ratio_graph_final_syst")
                     total_ratio_graph_final_syst = graph_infile.Get("lambda_phi_total_ratio_graph_final_syst")
 
                 else:
+
                     near_ratio_graph = graph_infile.Get("near_ratio_graph")
                     away_ratio_graph = graph_infile.Get("away_ratio_graph")
                     ue_ratio_graph = graph_infile.Get("ue_ratio_graph")
                     total_ratio_graph = graph_infile.Get("total_ratio_graph")
+
+                    dpmjet_near_ratio_graph = dpmjet_graph_infile.Get("lambda_hadron_near_ratio_graph")
+                    dpmjet_away_ratio_graph = dpmjet_graph_infile.Get("lambda_hadron_away_ratio_graph")
+                    dpmjet_ue_ratio_graph = dpmjet_graph_infile.Get("lambda_hadron_ue_ratio_graph")
+                    dpmjet_total_ratio_graph = dpmjet_graph_infile.Get("lambda_hadron_total_ratio_graph")
+
                     near_ratio_graph_final_syst = graph_infile.Get("near_ratio_graph_final_syst")
                     away_ratio_graph_final_syst = graph_infile.Get("away_ratio_graph_final_syst")
                     ue_ratio_graph_final_syst = graph_infile.Get("ue_ratio_graph_final_syst")
                     total_ratio_graph_final_syst = graph_infile.Get("total_ratio_graph_final_syst")
+
                     near_ue_ratio_graph = graph_infile.Get("near_ue_ratio_graph")
                     away_ue_ratio_graph = graph_infile.Get("away_ue_ratio_graph")
                     near_ue_ratio_graph_final_syst = graph_infile.Get("near_ue_ratio_graph_final_syst")
@@ -182,22 +199,23 @@ for PT_MODE in [0, 1, 2]:
             away_ratio_graph_final_syst.SetLineWidth(2)
             away_ratio_graph_final_syst.SetFillStyle(0)
 
-            for i in range(ue_ratio_graph.GetN()):
-                ue_ratio_graph.SetPointError(i, ue_ratio_graph.GetErrorX(i), ue_ratio_graph_final_syst.GetErrorY(i))
-            ue_ratio_graph.SetMarkerStyle(0)
-            ue_ratio_graph.SetMarkerSize(0)
+            # for i in range(ue_ratio_graph.GetN()):
+            #     ue_ratio_graph.SetPointError(i, ue_ratio_graph.GetErrorX(i), ue_ratio_graph_final_syst.GetErrorY(i))
+            ue_ratio_graph.SetMarkerStyle(43)
+            ue_ratio_graph.SetMarkerSize(2)
             ue_ratio_graph.SetMarkerColor(rt.kGreen+2)
             ue_ratio_graph.SetLineColor(rt.kGreen+3)
-            ue_ratio_graph.SetLineWidth(0)
+            ue_ratio_graph.SetLineWidth(2)
             ue_ratio_graph.SetFillStyle(3002)
             ue_ratio_graph.SetFillColor(rt.kGreen+1)
 
+            ue_ratio_graph_final_syst.SetMarkerStyle(43)
             ue_ratio_graph_final_syst.SetMarkerSize(0)
             ue_ratio_graph_final_syst.SetMarkerColor(rt.kGreen+2)
             ue_ratio_graph_final_syst.SetLineColor(rt.kGreen+3)
-            ue_ratio_graph_final_syst.SetLineWidth(0)
-            ue_ratio_graph_final_syst.SetFillStyle(3002)
-            ue_ratio_graph_final_syst.SetFillColor(rt.kGreen+1)
+            ue_ratio_graph_final_syst.SetLineWidth(2)
+            ue_ratio_graph_final_syst.SetFillStyle(0)
+            # ue_ratio_graph_final_syst.SetFillColor(rt.kGreen+1)
 
             total_ratio_graph.SetMarkerStyle(47)
             total_ratio_graph.SetMarkerSize(2)
@@ -249,9 +267,9 @@ for PT_MODE in [0, 1, 2]:
 
             ratios_legend = rt.TLegend(0.58, 0.65, 0.93, 0.88)
             ratios_legend.SetMargin(0.35)
-            ratios_legend.AddEntry(near_ratio_graph, "Near-side (Jet)", "pl")
-            ratios_legend.AddEntry(away_ratio_graph, "Away-side (Jet)", "pl")
-            ratios_legend.AddEntry(ue_ratio_graph, "Underlying Event", "f")
+            ratios_legend.AddEntry(near_ratio_graph, "Near-side (Jet)", "lp")
+            ratios_legend.AddEntry(away_ratio_graph, "Away-side (Jet)", "lp")
+            ratios_legend.AddEntry(ue_ratio_graph, "Underlying Event", "lp")
             # ratios_legend.AddEntry(total_ratio_graph, "Total (Jet + UE)", "pl")
             ratios_legend.SetLineWidth(0)
 
@@ -347,7 +365,22 @@ for PT_MODE in [0, 1, 2]:
             near_ratio_graph_final_syst.Draw("E2 SAME")
             away_ratio_graph.Draw("PE SAME")
             away_ratio_graph_final_syst.Draw("E2 SAME")
-            ue_ratio_graph.Draw("E2 SAME")
+            ue_ratio_graph.Draw("PE SAME")
+            ue_ratio_graph_final_syst.Draw("E2 SAME")
+            if not use_new_x_axis:
+                dpmjet_near_ratio_graph.SetFillColor(rt.kRed+1)
+                dpmjet_near_ratio_graph.SetFillStyle(3001)
+                dpmjet_away_ratio_graph.SetFillColor(rt.kBlue+1)
+                dpmjet_away_ratio_graph.SetFillStyle(3001)
+                dpmjet_ue_ratio_graph.SetFillColor(rt.kGreen+2)
+                dpmjet_ue_ratio_graph.SetFillStyle(3001)
+                tmp = dpmjet_near_ratio_graph.Clone("tmp")
+                tmp.SetFillColor(rt.kBlack)
+                tmp.SetLineColor(rt.kBlack)
+                ratios_legend.AddEntry(tmp, "DPMJet", "f")
+                dpmjet_near_ratio_graph.Draw("E2 SAME")
+                dpmjet_away_ratio_graph.Draw("E2 SAME")
+                dpmjet_ue_ratio_graph.Draw("E2 SAME")
             # ue_ratio_graph_final_syst.Draw("E2 SAME")
             # total_ratio_graph_final_syst.Draw("E2 SAME")
             # total_ratio_graph.Draw("PE SAME")
