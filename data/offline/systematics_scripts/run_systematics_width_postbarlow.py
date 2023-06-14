@@ -2,6 +2,13 @@ import ROOT as rt
 
 colors = [rt.kGreen + 2, rt.kRed + 2, rt.kBlue + 2,  rt.kMagenta + 2,  rt.kYellow + 2,  rt.kViolet + 2, rt.kOrange + 2]
 
+def get_width_from_kappa(kappa):
+    return rt.TMath.Sqrt(-2*rt.TMath.Log(rt.TMath.BesselI1(kappa)/rt.TMath.BesselI0(kappa)))
+
+def get_width_error_from_kappa(kappa, kappa_error):
+    deriv = (rt.TMath.BesselI0(kappa)**2 + rt.TMath.BesselI0(kappa)*rt.TMath.BesselI(2, kappa) - 2*rt.TMath.BesselI1(kappa)**2)/(2*rt.TMath.Sqrt(2)*rt.TMath.BesselI0(kappa)*rt.TMath.BesselI1(kappa)*rt.TMath.Sqrt(-rt.TMath.Log(rt.TMath.BesselI1(kappa)/rt.TMath.BesselI0(kappa))))
+    return deriv * kappa_error
+
 def get_rms(von_dict, dphi_dict, output_name, pid=False):
 
     c1 = rt.TCanvas("c1", "c1", 800, 600)
@@ -24,6 +31,11 @@ def get_rms(von_dict, dphi_dict, output_name, pid=False):
             central_fit.GetXaxis().SetTitle("#Delta#varphi")
             central_fit.Draw()
 
+            central_ns_width = get_width_from_kappa(central_fit.GetParameter(4))
+            centra_ns_width_error = get_width_error_from_kappa(central_fit.GetParameter(4), central_fit.GetParError(4))
+            central_as_width = get_width_from_kappa(central_fit.GetParameter(5))
+            central_as_width_error = get_width_error_from_kappa(central_fit.GetParameter(5), central_fit.GetParError(5))
+
             central_plot = dphi_dict[key]
             central_plot.GetXaxis().SetRangeUser(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
             central_plot.SetLineColor(rt.kBlack)
@@ -42,6 +54,11 @@ def get_rms(von_dict, dphi_dict, output_name, pid=False):
             varied_fit.SetLineColor(colors[color_index])
             varied_fit.SetLineWidth(2)
             varied_fit.Draw("same")
+
+            varied_ns_width = get_width_from_kappa(varied_fit.GetParameter(4))
+            varied_ns_width_error = get_width_error_from_kappa(varied_fit.GetParameter(4), varied_fit.GetParError(4))
+            varied_as_width = get_width_from_kappa(varied_fit.GetParameter(5))
+            varied_as_width_error = get_width_error_from_kappa(varied_fit.GetParameter(5), varied_fit.GetParError(5))
 
             varied_plot = dphi_dict[key]
             if pid:
