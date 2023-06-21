@@ -1,4 +1,7 @@
 import ROOT as rt
+rt.gStyle.SetOptStat(0)
+
+import math
 
 colors = [rt.kGreen + 2, rt.kRed + 2, rt.kBlue + 2,  rt.kMagenta + 2,  rt.kYellow + 2,  rt.kViolet + 2, rt.kOrange + 2]
 
@@ -14,12 +17,27 @@ def get_rms(von_dict, dphi_dict, output_name, pid=False):
     c1 = rt.TCanvas("c1", "c1", 800, 600)
     c1.SetLeftMargin(0.15)
 
+    c2 = rt.TCanvas("c2", "c2", 800, 600)
+    c2.SetLeftMargin(0.15)
+
     color_index = 0
-    leg = rt.TLegend(0.67, 0.67, 0.8, 0.8)
+
+    leg = rt.TLegend(0.6, 0.67, 0.8, 0.8)
     leg.SetBorderSize(0)
+
+    width_leg = rt.TLegend(0.2, 0.67, 0.45, 0.8)
+    width_leg.SetBorderSize(0)
+
+    ns_rms = 0
+    as_rms = 0
+    ns_n = 0
+    as_n = 0
+
+
     for key in von_dict:
         if key == "central value":
 
+            c1.cd()
             central_fit = von_dict[key]
             central_fit.SetNpx(1000)
             central_fit.GetXaxis().SetRangeUser(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
@@ -31,10 +49,12 @@ def get_rms(von_dict, dphi_dict, output_name, pid=False):
             central_fit.GetXaxis().SetTitle("#Delta#varphi")
             central_fit.Draw()
 
-            central_ns_width = get_width_from_kappa(central_fit.GetParameter(4))
-            centra_ns_width_error = get_width_error_from_kappa(central_fit.GetParameter(4), central_fit.GetParError(4))
-            central_as_width = get_width_from_kappa(central_fit.GetParameter(5))
-            central_as_width_error = get_width_error_from_kappa(central_fit.GetParameter(5), central_fit.GetParError(5))
+            print("--------------------FIT PARAMETERS----------------------")
+            print("p3: ", central_fit.GetParameter(3))
+            print("p4: ", central_fit.GetParameter(4))
+            print("p5: ", central_fit.GetParameter(5))
+            print("p6: ", central_fit.GetParameter(6))
+
 
             central_plot = dphi_dict[key]
             central_plot.GetXaxis().SetRangeUser(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
@@ -46,19 +66,45 @@ def get_rms(von_dict, dphi_dict, output_name, pid=False):
             central_plot.Draw("SAME")
 
             leg.AddEntry(central_plot, key, "l")
+
+            c2.cd()
+            central_ns_width = get_width_from_kappa(central_fit.GetParameter(4))
+            central_ns_width_error = get_width_error_from_kappa(central_fit.GetParameter(4), central_fit.GetParError(4))
+            central_as_width = get_width_from_kappa(central_fit.GetParameter(6))
+            central_as_width_error = get_width_error_from_kappa(central_fit.GetParameter(6), central_fit.GetParError(6))
+            central_width_plot = rt.TH1D("central_width_plot", "", 2, 0, 2)
+            central_width_plot.SetBinContent(1, central_ns_width)
+            central_width_plot.SetBinError(1, central_ns_width_error)
+            central_width_plot.SetBinContent(2, central_as_width)
+            central_width_plot.SetBinError(2, central_as_width_error)
+            central_width_plot.SetMarkerStyle(20)
+            central_width_plot.SetMarkerSize(2)
+            central_width_plot.SetMarkerColor(rt.kBlack)
+            central_width_plot.SetLineColor(rt.kBlack)
+            central_width_plot.SetLineWidth(2)
+            central_width_plot.GetYaxis().SetRangeUser(0.7*central_width_plot.GetMinimum(), 1.3*central_width_plot.GetMaximum())
+            central_width_plot.GetYaxis().SetTitle("Width")
+            central_width_plot.GetXaxis().SetTitle("Region")
+            central_width_plot.GetXaxis().SetBinLabel(1, "NS")
+            central_width_plot.GetXaxis().SetBinLabel(2, "AS")
+            central_width_plot.Draw("P")
+
+            width_leg.AddEntry(central_width_plot, key, "l")
+
         else:
+            c1.cd()
             varied_fit = von_dict[key]
             varied_fit.SetNpx(1000)
             if pid:
-                varied_fit.Scale(central_fit.Integral()/varied_fit.Integral())
+                l = -rt.TMath.Pi()/2
+                r = 3*rt.TMath.Pi()/2
+                scale_factor = central_fit.Integral(l, r)/varied_fit.Integral(l, r)
+                varied_fit.SetParameter(0, varied_fit.GetParameter(0)*scale_factor)
+                varied_fit.SetParameter(3, varied_fit.GetParameter(3)*scale_factor)
+                varied_fit.SetParameter(5, varied_fit.GetParameter(5)*scale_factor)
             varied_fit.SetLineColor(colors[color_index])
             varied_fit.SetLineWidth(2)
             varied_fit.Draw("same")
-
-            varied_ns_width = get_width_from_kappa(varied_fit.GetParameter(4))
-            varied_ns_width_error = get_width_error_from_kappa(varied_fit.GetParameter(4), varied_fit.GetParError(4))
-            varied_as_width = get_width_from_kappa(varied_fit.GetParameter(5))
-            varied_as_width_error = get_width_error_from_kappa(varied_fit.GetParameter(5), varied_fit.GetParError(5))
 
             varied_plot = dphi_dict[key]
             if pid:
@@ -68,17 +114,59 @@ def get_rms(von_dict, dphi_dict, output_name, pid=False):
             varied_plot.Draw("same")
 
             leg.AddEntry(varied_plot, key, "l")
+
+            c2.cd()
+            if key == "gaus":
+                varied_ns_width = varied_fit.GetParameter(5)
+                varied_ns_width_error = varied_fit.GetParError(5)
+                varied_as_width = varied_fit.GetParameter(11)
+                varied_as_width_error = varied_fit.GetParError(11)
+            else:
+                varied_ns_width = get_width_from_kappa(varied_fit.GetParameter(4))
+                varied_ns_width_error = get_width_error_from_kappa(varied_fit.GetParameter(4), varied_fit.GetParError(4))
+                varied_as_width = get_width_from_kappa(varied_fit.GetParameter(6))
+                varied_as_width_error = get_width_error_from_kappa(varied_fit.GetParameter(6), varied_fit.GetParError(6))
+            varied_width_plot = rt.TH1D("varied_width_plot", "varied_width_plot", 2, 0, 2)
+            varied_width_plot.SetBinContent(1, varied_ns_width)
+            varied_width_plot.SetBinError(1, varied_ns_width_error)
+            varied_width_plot.SetBinContent(2, varied_as_width)
+            varied_width_plot.SetBinError(2, varied_as_width_error)
+            varied_width_plot.SetMarkerStyle(20)
+            varied_width_plot.SetMarkerSize(2)
+            varied_width_plot.SetMarkerColor(colors[color_index])
+            varied_width_plot.SetLineColor(colors[color_index])
+            varied_width_plot.SetLineWidth(2)
+            varied_width_plot.GetYaxis().SetRangeUser(0.7*varied_width_plot.GetMinimum(), 1.3*varied_width_plot.GetMaximum())
+            varied_width_plot.GetYaxis().SetTitle("Width")
+            varied_width_plot.GetXaxis().SetTitle("Region")
+            varied_width_plot.GetXaxis().SetBinLabel(1, "NS")
+            varied_width_plot.GetXaxis().SetBinLabel(2, "AS")
+            width_leg.AddEntry(varied_width_plot.Clone(), key, "l")
+            varied_width_plot.DrawCopy("P SAME")
+
+            ns_rms += (1 - (varied_ns_width/central_ns_width))**2
+            as_rms += (1 - (varied_as_width/central_as_width))**2
+
+            ns_n += 1
+            as_n += 1
+
         color_index += 1
     
+    c1.cd()
     leg.Draw("SAME")
     c1.SaveAs(output_name + ".pdf")
 
-    return 1, 1
+    c2.cd()
+    width_leg.Draw()
+    c2.SaveAs(output_name + "_widths.pdf")
+
+    return math.sqrt(ns_rms/ns_n), math.sqrt(as_rms/as_n)
 
 
 
 for PT_MODE in range(3):
 
+    print("PT MODE: " + str(PT_MODE))
     # SIGNAL VARIATIONS
     if PT_MODE == 0: # CENTRAL 2 - 4 BIN
         signal_central_file = rt.TFile.Open("../output/central_value/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
@@ -133,3 +221,186 @@ for PT_MODE in range(3):
         ns_signal_rms_0_20, as_signal_rms_0_20 = get_rms(signal_von_dict_0_20, signal_dphi_dict_0_20, "../figures/signal_variations_width_0_20_highpt")
         ns_signal_rms_20_50, as_signal_rms_20_50 = get_rms(signal_von_dict_20_50, signal_dphi_dict_20_50, "../figures/signal_variations_width_20_50_highpt")
         ns_signal_rms_50_80, as_signal_rms_50_80 = get_rms(signal_von_dict_50_80, signal_dphi_dict_50_80, "../figures/signal_variations_width_50_80_highpt")
+    
+
+
+    if PT_MODE == 0:
+        sideband_central_file = rt.TFile.Open("../output/central_value/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
+        sideband_shifted_right_file = rt.TFile.Open("../output/sideband_variation/v0_von_sideband_subtraction_rsb_114_1155_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
+        sideband_shifted_left_file = rt.TFile.Open("../output/sideband_variation/v0_von_sideband_subtraction_rsb_1084_1096_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
+    elif PT_MODE == 1:
+        sideband_central_file = rt.TFile.Open("../output/central_value/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_15_25_delta_eta_12_normal_lowpt.root")
+        sideband_shifted_right_file = rt.TFile.Open("../output/sideband_variation/v0_von_sideband_subtraction_rsb_114_1155_sig_1102_113_trig_40_80_assoc_15_25_delta_eta_12_normal_lowpt.root")
+        sideband_shifted_left_file = rt.TFile.Open("../output/sideband_variation/v0_von_sideband_subtraction_rsb_1084_1096_sig_1102_113_trig_40_80_assoc_15_25_delta_eta_12_normal_lowpt.root")
+    elif PT_MODE == 2:
+        sideband_central_file = rt.TFile.Open("../output/central_value/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_25_40_delta_eta_12_normal_highpt.root")
+        sideband_shifted_right_file = rt.TFile.Open("../output/sideband_variation/v0_von_sideband_subtraction_rsb_114_1155_sig_1102_113_trig_40_80_assoc_25_40_delta_eta_12_normal_highpt.root")
+        sideband_shifted_left_file = rt.TFile.Open("../output/sideband_variation/v0_von_sideband_subtraction_rsb_1084_1096_sig_1102_113_trig_40_80_assoc_25_40_delta_eta_12_normal_highpt.root")
+
+    sideband_file_dict = {
+        "central value": sideband_central_file,
+        "shifted right": sideband_shifted_right_file,
+        "shifted left": sideband_shifted_left_file
+    }
+
+    sideband_von_dict_0_20 = {}
+    sideband_von_dict_20_50 = {}
+    sideband_von_dict_50_80 = {}
+    sideband_von_dict_0_80 = {}
+
+    sideband_dphi_dict_0_20 = {}
+    sideband_dphi_dict_20_50 = {}
+    sideband_dphi_dict_50_80 = {}
+    sideband_dphi_dict_0_80 = {}
+
+    for key, file in sideband_file_dict.items():
+
+        sideband_von_dict_0_20[key] = file.Get("von_fit_0_20")
+        sideband_von_dict_20_50[key] = file.Get("von_fit_20_50")
+        sideband_von_dict_50_80[key] = file.Get("von_fit_50_80")
+        sideband_von_dict_0_80[key] = file.Get("von_fit_0_80")
+
+        sideband_dphi_dict_0_20[key] = file.Get("h_lambda_dphi_subtracted_0_20")
+        sideband_dphi_dict_20_50[key] = file.Get("h_lambda_dphi_subtracted_20_50")
+        sideband_dphi_dict_50_80[key] = file.Get("h_lambda_dphi_subtracted_50_80")
+        sideband_dphi_dict_0_80[key] = file.Get("h_lambda_dphi_subtracted_0_80")
+
+    if PT_MODE == 0:
+        ns_sideband_rms_0_20, as_sideband_rms_0_20 = get_rms(sideband_von_dict_0_20, sideband_dphi_dict_0_20, "../figures/sideband_variations_width_0_20")
+        ns_sideband_rms_20_50, as_sideband_rms_20_50 = get_rms(sideband_von_dict_20_50, sideband_dphi_dict_20_50, "../figures/sideband_variations_width_20_50")
+        ns_sideband_rms_50_80, as_sideband_rms_50_80 = get_rms(sideband_von_dict_50_80, sideband_dphi_dict_50_80, "../figures/sideband_variations_width_50_80")
+    elif PT_MODE == 1:
+        ns_sideband_rms_0_20, as_sideband_rms_0_20 = get_rms(sideband_von_dict_0_20, sideband_dphi_dict_0_20, "../figures/sideband_variations_width_0_20_lowpt")
+        ns_sideband_rms_20_50, as_sideband_rms_20_50 = get_rms(sideband_von_dict_20_50, sideband_dphi_dict_20_50, "../figures/sideband_variations_width_20_50_lowpt")
+        ns_sideband_rms_50_80, as_sideband_rms_50_80 = get_rms(sideband_von_dict_50_80, sideband_dphi_dict_50_80, "../figures/sideband_variations_width_50_80_lowpt")
+    elif PT_MODE == 2:
+        ns_sideband_rms_0_20, as_sideband_rms_0_20 = get_rms(sideband_von_dict_0_20, sideband_dphi_dict_0_20, "../figures/sideband_variations_width_0_20_highpt")
+        ns_sideband_rms_20_50, as_sideband_rms_20_50 = get_rms(sideband_von_dict_20_50, sideband_dphi_dict_20_50, "../figures/sideband_variations_width_20_50_highpt")
+        ns_sideband_rms_50_80, as_sideband_rms_50_80 = get_rms(sideband_von_dict_50_80, sideband_dphi_dict_50_80, "../figures/sideband_variations_width_50_80_highpt")
+    
+
+
+    if PT_MODE == 0:
+        pid_central_file = rt.TFile.Open("../output/central_value/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
+        pid_narrow_file = rt.TFile.Open("../output/pid_variation/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_narrow.root")
+        pid_wide_file = rt.TFile.Open("../output/pid_variation/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_wide.root")
+    elif PT_MODE == 1:
+        pid_central_file = rt.TFile.Open("../output/central_value/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_15_25_delta_eta_12_normal_lowpt.root")
+        pid_narrow_file = rt.TFile.Open("../output/pid_variation/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_15_25_delta_eta_12_narrow_lowpt.root")
+        pid_wide_file = rt.TFile.Open("../output/pid_variation/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_15_25_delta_eta_12_wide_lowpt.root")
+    elif PT_MODE == 2:
+        pid_central_file = rt.TFile.Open("../output/central_value/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_25_40_delta_eta_12_normal_highpt.root")
+        pid_narrow_file = rt.TFile.Open("../output/pid_variation/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_25_40_delta_eta_12_narrow_highpt.root")
+        pid_wide_file = rt.TFile.Open("../output/pid_variation/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_25_40_delta_eta_12_wide_highpt.root")
+
+
+    pid_file_dict = {
+        "central value": pid_central_file,
+        "narrow": pid_narrow_file,
+        "wide": pid_wide_file
+    }
+
+    pid_von_dict_0_20 = {}
+    pid_von_dict_20_50 = {}
+    pid_von_dict_50_80 = {}
+    pid_von_dict_0_80 = {}
+
+    pid_dphi_dict_0_20 = {}
+    pid_dphi_dict_20_50 = {}
+    pid_dphi_dict_50_80 = {}
+    pid_dphi_dict_0_80 = {}
+
+    for key, file in pid_file_dict.items():
+
+        pid_von_dict_0_20[key] = file.Get("von_fit_0_20")
+        pid_von_dict_20_50[key] = file.Get("von_fit_20_50")
+        pid_von_dict_50_80[key] = file.Get("von_fit_50_80")
+        pid_von_dict_0_80[key] = file.Get("von_fit_0_80")
+
+        pid_dphi_dict_0_20[key] = file.Get("h_lambda_dphi_subtracted_0_20")
+        pid_dphi_dict_20_50[key] = file.Get("h_lambda_dphi_subtracted_20_50")
+        pid_dphi_dict_50_80[key] = file.Get("h_lambda_dphi_subtracted_50_80")
+        pid_dphi_dict_0_80[key] = file.Get("h_lambda_dphi_subtracted_0_80")
+
+    if PT_MODE == 0:
+        ns_pid_rms_0_20, as_pid_rms_0_20 = get_rms(pid_von_dict_0_20, pid_dphi_dict_0_20, "../figures/pid_variations_width_0_20", True)
+        ns_pid_rms_20_50, as_pid_rms_20_50 = get_rms(pid_von_dict_20_50, pid_dphi_dict_20_50, "../figures/pid_variations_width_20_50", True)
+        ns_pid_rms_50_80, as_pid_rms_50_80 = get_rms(pid_von_dict_50_80, pid_dphi_dict_50_80, "../figures/pid_variations_width_50_80", True)
+    elif PT_MODE == 1:
+        ns_pid_rms_0_20, as_pid_rms_0_20 = get_rms(pid_von_dict_0_20, pid_dphi_dict_0_20, "../figures/pid_variations_width_0_20_lowpt", True)
+        ns_pid_rms_20_50, as_pid_rms_20_50 = get_rms(pid_von_dict_20_50, pid_dphi_dict_20_50, "../figures/pid_variations_width_20_50_lowpt", True)
+        ns_pid_rms_50_80, as_pid_rms_50_80 = get_rms(pid_von_dict_50_80, pid_dphi_dict_50_80, "../figures/pid_variations_width_50_80_lowpt", True)
+    elif PT_MODE == 2:
+        ns_pid_rms_0_20, as_pid_rms_0_20 = get_rms(pid_von_dict_0_20, pid_dphi_dict_0_20, "../figures/pid_variations_width_0_20_highpt", True)
+        ns_pid_rms_20_50, as_pid_rms_20_50 = get_rms(pid_von_dict_20_50, pid_dphi_dict_20_50, "../figures/pid_variations_width_20_50_highpt", True)
+        ns_pid_rms_50_80, as_pid_rms_50_80 = get_rms(pid_von_dict_50_80, pid_dphi_dict_50_80, "../figures/pid_variations_width_50_80_highpt", True)
+
+    
+    print("NS 0-20% total systematic: {}".format(math.sqrt(ns_pid_rms_0_20**2 + ns_signal_rms_0_20**2 + ns_sideband_rms_0_20**2)))
+    print("AS 0-20% total systematic: {}".format(math.sqrt(as_pid_rms_0_20**2 + as_signal_rms_0_20**2 + as_sideband_rms_0_20**2)))
+
+    print("NS 20-50% total systematic: {}".format(math.sqrt(ns_pid_rms_20_50**2 + ns_signal_rms_20_50**2 + ns_sideband_rms_20_50**2)))
+    print("AS 20-50% total systematic: {}".format(math.sqrt(as_pid_rms_20_50**2 + as_signal_rms_20_50**2 + as_sideband_rms_20_50**2)))
+
+    print("NS 50-80% total systematic: {}".format(math.sqrt(ns_pid_rms_50_80**2 + ns_signal_rms_50_80**2 + ns_sideband_rms_50_80**2)))
+    print("AS 50-80% total systematic: {}".format(math.sqrt(as_pid_rms_50_80**2 + as_signal_rms_50_80**2 + as_sideband_rms_50_80**2)))
+
+
+    if PT_MODE == 0:
+        technique_central_file = rt.TFile.Open("../output/central_value/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
+        technique_gaus_file = rt.TFile.Open("../output/technique_variation/v0_fullfit_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
+    elif PT_MODE == 1:
+        technique_central_file = rt.TFile.Open("../output/central_value/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_15_25_delta_eta_12_normal_lowpt.root")
+        technique_gaus_file = rt.TFile.Open("../output/technique_variation/v0_fullfit_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_15_25_delta_eta_12_normal_lowpt.root")
+    elif PT_MODE == 2:
+        technique_central_file = rt.TFile.Open("../output/central_value/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_25_40_delta_eta_12_normal_highpt.root")
+        technique_gaus_file = rt.TFile.Open("../output/technique_variation/v0_fullfit_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_25_40_delta_eta_12_normal_highpt.root")
+
+
+    technique_file_dict = {
+        "central value": technique_central_file,
+        "gaus": technique_gaus_file
+    }
+
+    technique_von_dict_0_20 = {}
+    technique_von_dict_20_50 = {}
+    technique_von_dict_50_80 = {}
+    technique_von_dict_0_80 = {}
+
+    technique_dphi_dict_0_20 = {}
+    technique_dphi_dict_20_50 = {}
+    technique_dphi_dict_50_80 = {}
+    technique_dphi_dict_0_80 = {}
+
+    for key, file in technique_file_dict.items():
+
+        if key == "gaus":
+            technique_von_dict_0_20[key] = file.Get("fit_function_0_20")
+            technique_von_dict_20_50[key] = file.Get("fit_function_20_50")
+            technique_von_dict_50_80[key] = file.Get("fit_function_50_80")
+            technique_von_dict_0_80[key] = file.Get("fit_function_0_80")
+        else:
+            technique_von_dict_0_20[key] = file.Get("von_fit_0_20")
+            technique_von_dict_20_50[key] = file.Get("von_fit_20_50")
+            technique_von_dict_50_80[key] = file.Get("von_fit_50_80")
+            technique_von_dict_0_80[key] = file.Get("von_fit_0_80")
+
+        technique_dphi_dict_0_20[key] = file.Get("h_lambda_dphi_subtracted_0_20")
+        technique_dphi_dict_20_50[key] = file.Get("h_lambda_dphi_subtracted_20_50")
+        technique_dphi_dict_50_80[key] = file.Get("h_lambda_dphi_subtracted_50_80")
+        technique_dphi_dict_0_80[key] = file.Get("h_lambda_dphi_subtracted_0_80")
+
+    if PT_MODE == 0:
+        ns_technique_rms_0_20, as_technique_rms_0_20 = get_rms(technique_von_dict_0_20, technique_dphi_dict_0_20, "../figures/technique_variations_width_0_20")
+        ns_technique_rms_20_50, as_technique_rms_20_50 = get_rms(technique_von_dict_20_50, technique_dphi_dict_20_50, "../figures/technique_variations_width_20_50")
+        ns_technique_rms_50_80, as_technique_rms_50_80 = get_rms(technique_von_dict_50_80, technique_dphi_dict_50_80, "../figures/technique_variations_width_50_80")
+    elif PT_MODE == 1:
+        ns_technique_rms_0_20, as_technique_rms_0_20 = get_rms(technique_von_dict_0_20, technique_dphi_dict_0_20, "../figures/technique_variations_width_0_20_lowpt")
+        ns_technique_rms_20_50, as_technique_rms_20_50 = get_rms(technique_von_dict_20_50, technique_dphi_dict_20_50, "../figures/technique_variations_width_20_50_lowpt")
+        ns_technique_rms_50_80, as_technique_rms_50_80 = get_rms(technique_von_dict_50_80, technique_dphi_dict_50_80, "../figures/technique_variations_width_50_80_lowpt")
+    elif PT_MODE == 2:
+        ns_technique_rms_0_20, as_technique_rms_0_20 = get_rms(technique_von_dict_0_20, technique_dphi_dict_0_20, "../figures/technique_variations_width_0_20_highpt")
+        ns_technique_rms_20_50, as_technique_rms_20_50 = get_rms(technique_von_dict_20_50, technique_dphi_dict_20_50, "../figures/technique_variations_width_20_50_highpt")
+        ns_technique_rms_50_80, as_technique_rms_50_80 = get_rms(technique_von_dict_50_80, technique_dphi_dict_50_80, "../figures/technique_variations_width_50_80_highpt")
+    
+    print(ns_technique_rms_0_20, as_technique_rms_0_20)

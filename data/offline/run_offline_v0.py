@@ -477,61 +477,74 @@ elif USE_ZYAM:
     zero_lower_line_0_20.SetParameter(0, -ue_avg_error_0_20)
 
 elif USE_FIT:
-    # fitting to four gaussians + a constant background
-    fit_function_0_20 = rt.TF1("fit_function_0_20", "gaus(0) + gaus(3) + gaus(6) + gaus(9) + pol0(12)", -2, 6)
+
+    # fitting to v2 component + four gaussians
+    fit_string_0_20 = "[0]*(1 + 2*([1]*[2]*cos(2*x)))"
+    fit_string_0_20 += " + gaus(3) + gaus(6) + gaus(9) + gaus(12)"
+    fit_function_0_20 = rt.TF1("fit_function_0_20", fit_string_0_20, -2, 6)
     fit_function_0_20.SetNpx(1000)
+    if PT_MODE == 0:
+        fit_function_0_20.FixParameter(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_2_4"][0])
+        fit_function_0_20.FixParameter(1, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_2_4"][2])
+        fit_function_0_20.FixParameter(2, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_2_4"][3])
+    elif PT_MODE == 1:
+        fit_function_0_20.FixParameter(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_15_25"][0])
+        fit_function_0_20.FixParameter(1, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_15_25"][2])
+        fit_function_0_20.FixParameter(2, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_15_25"][3])
+    elif PT_MODE == 2:
+        fit_function_0_20.FixParameter(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_25_4"][0])
+        fit_function_0_20.FixParameter(1, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_25_4"][2])
+        fit_function_0_20.FixParameter(2, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_25_4"][3])
 
     # setting parameters for first gaussian (centered at 0)
-    fit_function_0_20.SetParLimits(0, 5e-4, 0.6)
-    fit_function_0_20.SetParameter(0, 0.009)
-    fit_function_0_20.FixParameter(1, 0)
-    fit_function_0_20.SetParLimits(2, 0.1, 2)
-    fit_function_0_20.SetParameter(2, 0.8)
-    # setting parameters for second gaussian (centered at 0 + 2pi)
-    fit_function_0_20.SetParLimits(3, 0,  0.6)
-    fit_function_0_20.SetParameter(3, 0)
-    fit_function_0_20.FixParameter(4, 2*rt.TMath.Pi())
+    fit_function_0_20.SetParLimits(3, 5e-4, 0.6)
+    fit_function_0_20.SetParameter(3, 0.009)
+    fit_function_0_20.FixParameter(4, 0)
     fit_function_0_20.SetParLimits(5, 0.1, 2)
-    fit_function_0_20.SetParameter(5, 0.1)
-    # setting parameters for third gaussian (centered at pi)
-    fit_function_0_20.SetParLimits(6, 5e-4, 0.6)
-    fit_function_0_20.SetParameter(6, 0.003)
-    fit_function_0_20.FixParameter(7, rt.TMath.Pi())
+    fit_function_0_20.SetParameter(5, 0.8)
+    # setting parameters for second gaussian (centered at 0 + 2pi)
+    fit_function_0_20.SetParLimits(6, 0,  0.6)
+    fit_function_0_20.SetParameter(6, 0)
+    fit_function_0_20.FixParameter(7, 2*rt.TMath.Pi())
     fit_function_0_20.SetParLimits(8, 0.1, 2)
-    fit_function_0_20.SetParameter(8, 1)
-    # setting parameters for fourth gaussian (centered at pi + 2pi)
-    fit_function_0_20.SetParLimits(9, 0, 0.6)
-    fit_function_0_20.SetParameter(9, 0)
-    fit_function_0_20.FixParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
+    fit_function_0_20.SetParameter(8, 0.1)
+    # setting parameters for third gaussian (centered at pi)
+    fit_function_0_20.SetParLimits(9, 5e-4, 0.6)
+    fit_function_0_20.SetParameter(9, 0.003)
+    fit_function_0_20.FixParameter(10, rt.TMath.Pi())
     fit_function_0_20.SetParLimits(11, 0.1, 2)
-    fit_function_0_20.SetParameter(11, 0.1)
-
-    # setting parameters for constant background
-    ue_avg_0_20 = (h_lambda_dphi_subtracted_0_20.GetBinContent(1) 
-                + h_lambda_dphi_subtracted_0_20.GetBinContent(2)
-                + h_lambda_dphi_subtracted_0_20.GetBinContent(7)
-                + h_lambda_dphi_subtracted_0_20.GetBinContent(8)
-                + h_lambda_dphi_subtracted_0_20.GetBinContent(9)
-                + h_lambda_dphi_subtracted_0_20.GetBinContent(16))/6
-
-    ue_avg_error_0_20 = (1/6)*(math.sqrt(h_lambda_dphi_subtracted_0_20.GetBinError(1)**2 
-                   + h_lambda_dphi_subtracted_0_20.GetBinError(2)**2
-                   + h_lambda_dphi_subtracted_0_20.GetBinError(7)**2
-                   + h_lambda_dphi_subtracted_0_20.GetBinError(8)**2
-                   + h_lambda_dphi_subtracted_0_20.GetBinError(9)**2
-                   + h_lambda_dphi_subtracted_0_20.GetBinError(16)**2))
-
-    fit_function_0_20.SetParameter(12, ue_avg_0_20)
+    fit_function_0_20.SetParameter(11, 1)
+    # setting parameters for fourth gaussian (centered at pi + 2pi)
+    fit_function_0_20.SetParLimits(12, 0, 0.6)
+    fit_function_0_20.SetParameter(12, 0)
+    fit_function_0_20.FixParameter(13, rt.TMath.Pi() - 2*rt.TMath.Pi())
+    fit_function_0_20.SetParLimits(14, 0.1, 2)
+    fit_function_0_20.SetParameter(14, 0.1)
 
 
     h_lambda_dphi_subtracted_with_fit_0_20 = h_lambda_dphi_subtracted_0_20.Clone("h_lambda_dphi_subtracted_with_fit_0_20")
     fit_result_0_20 = h_lambda_dphi_subtracted_with_fit_0_20.Fit(fit_function_0_20, "RS")
 
-    ue_avg_fit_0_20 = rt.TF1("ue_avg_fit_0_20", "pol0", -2, 6)
-    ue_avg_fit_0_20.SetParameter(0, ue_avg_0_20)
-    ue_avg_fit_0_20.SetParError(0, ue_avg_error_0_20)
+    v2_fit_0_20 = rt.TF1("v2_fit_0_20", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
+
+    if PT_MODE == 0:
+        v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_2_4"][0])
+        v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_2_4"][1])
+        v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_2_4"][2])
+        v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_2_4"][3])
+    elif PT_MODE == 1:
+        v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_15_25"][0])
+        v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_15_25"][1])
+        v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_15_25"][2])
+        v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_15_25"][3])
+    elif PT_MODE == 2:
+        v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_25_4"][0])
+        v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_25_4"][1])
+        v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_25_4"][2])
+        v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_25_4"][3])
 
 elif USE_V2:
+
     ue_avg_0_20 = (h_lambda_dphi_subtracted_0_20.GetBinContent(1) 
                    + h_lambda_dphi_subtracted_0_20.GetBinContent(2)
                    + h_lambda_dphi_subtracted_0_20.GetBinContent(7)
@@ -574,26 +587,42 @@ elif USE_VON:
     von_fit_0_20 = rt.TF1("von_fit_0_20", von_fit_string, -2, 6)
 
     if PT_MODE == 0:
-        von_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_2_4"][0])
+        von_fit_0_20.FixParameter(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_2_4"][0])
         von_fit_0_20.FixParameter(1, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_2_4"][2])
         von_fit_0_20.FixParameter(2, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_2_4"][3])
+        von_fit_0_20.SetParLimits(3, 0.015/3, 0.015*3)
+        von_fit_0_20.SetParameter(3, 0.015)
+        von_fit_0_20.SetParLimits(4, 7.6/3, 7.6*3)
+        von_fit_0_20.SetParameter(4, 7.6)
+        von_fit_0_20.SetParLimits(5, 0.014/3, 0.014*3)
+        von_fit_0_20.SetParameter(5, 0.014)
+        von_fit_0_20.SetParLimits(6, 2.2/3, 2.2*3)
+        von_fit_0_20.SetParameter(6, 2.2)
     elif PT_MODE == 1:
-        von_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_15_25"][0])
+        von_fit_0_20.FixParameter(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_15_25"][0])
         von_fit_0_20.FixParameter(1, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_15_25"][2])
         von_fit_0_20.FixParameter(2, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_15_25"][3])
+        von_fit_0_20.SetParLimits(3, 0.02/3, 0.02*3)
+        von_fit_0_20.SetParameter(3, 0.02)
+        von_fit_0_20.SetParLimits(4, 4.6/3, 4.6*3)
+        von_fit_0_20.SetParameter(4, 4.6)
+        von_fit_0_20.SetParLimits(5, 0.057/3, 0.057*3)
+        von_fit_0_20.SetParameter(5, 0.057)
+        von_fit_0_20.SetParLimits(6, 1/3, 1*3)
+        von_fit_0_20.SetParameter(6, 1)
     elif PT_MODE == 2:
-        von_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_25_4"][0])
+        von_fit_0_20.FixParameter(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_25_4"][0])
         von_fit_0_20.FixParameter(1, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_25_4"][2])
         von_fit_0_20.FixParameter(2, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_25_4"][3])
+        von_fit_0_20.SetParLimits(3, 0.009/3, 0.009*3)
+        von_fit_0_20.SetParameter(3, 0.009)
+        von_fit_0_20.SetParLimits(4, 8.88/3, 8.88*3)
+        von_fit_0_20.SetParameter(4, 8.88)
+        von_fit_0_20.SetParLimits(5, 0.0076/3, 0.0076*3)
+        von_fit_0_20.SetParameter(5, 0.0076)
+        von_fit_0_20.SetParLimits(6, 2.55/3, 2.55*3)
+        von_fit_0_20.SetParameter(6, 2.55)
 
-    von_fit_0_20.SetParLimits(3, 0, 1)
-    von_fit_0_20.SetParameter(3, 0.02)
-    von_fit_0_20.SetParLimits(4, 0, 100)
-    von_fit_0_20.SetParameter(4, 1)
-    von_fit_0_20.SetParLimits(5, 0, 1)
-    von_fit_0_20.SetParameter(5, 0.01)
-    von_fit_0_20.SetParLimits(6, 0, 100)
-    von_fit_0_20.SetParameter(6, 1)
 
     h_lambda_dphi_subtracted_with_fit_0_20 = h_lambda_dphi_subtracted_0_20.Clone("h_lambda_dphi_subtracted_with_fit_0_20")
     fit_result_0_20 = h_lambda_dphi_subtracted_with_fit_0_20.Fit(von_fit_0_20, "R")
@@ -622,20 +651,20 @@ else:
 
 if USE_FIT:
     h_lambda_dphi_subtracted_0_20_zeroed = h_lambda_dphi_subtracted_0_20.Clone("h_lambda_dphi_subtracted_0_20_zeroed")
-    h_lambda_dphi_subtracted_0_20_zeroed.Add(ue_avg_fit_0_20, -1)
+    h_lambda_dphi_subtracted_0_20_zeroed.Add(v2_fit_0_20, -1)
 
 
     # we are only allowed to call IntegralError (and have it make sense) if the most recent fit corresponds to the TF1 being integrated
 
     h_lambda_total_integral_error_0_20 = fit_function_0_20.IntegralError(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_lambda_total_integral_0_20 = fit_function_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
-    h_lambda_ue_integral_0_20 = ue_avg_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
-    h_lambda_ue_integral_error_0_20 = ue_avg_error_0_20*(2*rt.TMath.Pi())/BIN_WIDTH
+    h_lambda_ue_integral_0_20 = v2_fit_0_20.Integral(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
+    h_lambda_ue_integral_error_0_20 = v2_fit_0_20.IntegralError(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
     h_lambda_ue_integral_error_0_20_halved = h_lambda_ue_integral_error_0_20/2
     h_lambda_near_integral_error_0_20 = math.sqrt((fit_function_0_20.IntegralError(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH)**2 + h_lambda_ue_integral_error_0_20_halved**2)
-    h_lambda_near_integral_0_20 = fit_function_0_20.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH - ue_avg_fit_0_20.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH
+    h_lambda_near_integral_0_20 = fit_function_0_20.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH - v2_fit_0_20.Integral(-rt.TMath.Pi()/2, rt.TMath.Pi()/2)/BIN_WIDTH
     h_lambda_away_integral_error_0_20 = math.sqrt((fit_function_0_20.IntegralError(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH)**2 + h_lambda_ue_integral_error_0_20_halved**2)
-    h_lambda_away_integral_0_20 = fit_function_0_20.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH - ue_avg_fit_0_20.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
+    h_lambda_away_integral_0_20 = fit_function_0_20.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH - v2_fit_0_20.Integral(rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)/BIN_WIDTH
 
 elif USE_VON:
 
@@ -802,33 +831,47 @@ elif USE_ZYAM:
     hh_zero_lower_line_0_20.SetParameter(0, -hh_ue_avg_error_0_20)
 elif USE_FIT:
 
-    # fitting to four gaussians + a constant background
-    hh_fit_function_0_20 = rt.TF1("hh_fit_function_0_20", "gaus(0) + gaus(3) + gaus(6) + gaus(9) + pol0(12)", -2, 6)
+    # fitting to v2 component + four gaussians
+    hh_fit_string_0_20 = "[0]*(1 + 2*([1]*[2]*cos(2*x)))"
+    hh_fit_string_0_20 += " + gaus(3) + gaus(6) + gaus(9) + gaus(12)"
+    hh_fit_function_0_20 = rt.TF1("hh_fit_function_0_20", hh_fit_string_0_20, -2, 6)
     hh_fit_function_0_20.SetNpx(1000)
+    if PT_MODE == 0:
+        hh_fit_function_0_20.FixParameter(0, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_2_4"][0])
+        hh_fit_function_0_20.FixParameter(1, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_2_4"][2])
+        hh_fit_function_0_20.FixParameter(2, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_2_4"][3])
+    elif PT_MODE == 1:
+        hh_fit_function_0_20.FixParameter(0, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_15_25"][0])
+        hh_fit_function_0_20.FixParameter(1, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_15_25"][2])
+        hh_fit_function_0_20.FixParameter(2, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_15_25"][3])
+    elif PT_MODE == 2:
+        hh_fit_function_0_20.FixParameter(0, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_25_4"][0])
+        hh_fit_function_0_20.FixParameter(1, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_25_4"][2])
+        hh_fit_function_0_20.FixParameter(2, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_25_4"][3])
     # setting parameters for first gaussian (centered at 0)
-    hh_fit_function_0_20.SetParLimits(0, 0.02, 1)
-    hh_fit_function_0_20.SetParameter(0, 0.16)
-    hh_fit_function_0_20.FixParameter(1, 0)
-    hh_fit_function_0_20.SetParLimits(2, 0.2, 3)
-    hh_fit_function_0_20.SetParameter(2, 0.3)
+    hh_fit_function_0_20.SetParLimits(3, 0.02, 1)
+    hh_fit_function_0_20.SetParameter(3, 0.16)
+    hh_fit_function_0_20.FixParameter(4, 0)
+    hh_fit_function_0_20.SetParLimits(5, 0.2, 3)
+    hh_fit_function_0_20.SetParameter(5, 0.3)
     # setting parameters for second gaussian (centered at 0 + 2pi)
-    hh_fit_function_0_20.SetParLimits(3, 0, 1)
-    hh_fit_function_0_20.SetParameter(3, 0)
-    hh_fit_function_0_20.FixParameter(4, 2*rt.TMath.Pi())
-    hh_fit_function_0_20.SetParLimits(5, 0.1, 2)
-    hh_fit_function_0_20.SetParameter(5, 0.1)
+    hh_fit_function_0_20.SetParLimits(6, 0, 1)
+    hh_fit_function_0_20.SetParameter(6, 0)
+    hh_fit_function_0_20.FixParameter(7, 2*rt.TMath.Pi())
+    hh_fit_function_0_20.SetParLimits(8, 0.1, 2)
+    hh_fit_function_0_20.SetParameter(8, 0.1)
     # setting parameters for third gaussian (centered at pi)
-    hh_fit_function_0_20.SetParLimits(6, 0.02, 1)
-    hh_fit_function_0_20.SetParameter(6, 0.3)
-    hh_fit_function_0_20.FixParameter(7, rt.TMath.Pi())
-    hh_fit_function_0_20.SetParLimits(8, 0.3, 3)
-    hh_fit_function_0_20.SetParameter(8, 0.5)
+    hh_fit_function_0_20.SetParLimits(9, 0.02, 1)
+    hh_fit_function_0_20.SetParameter(9, 0.3)
+    hh_fit_function_0_20.FixParameter(10, rt.TMath.Pi())
+    hh_fit_function_0_20.SetParLimits(11, 0.3, 3)
+    hh_fit_function_0_20.SetParameter(11, 0.5)
     # setting parameters for fourth gaussian (centered at pi + 2pi)
-    hh_fit_function_0_20.SetParLimits(9, 0, 1)
-    hh_fit_function_0_20.SetParameter(9, 0)
-    hh_fit_function_0_20.FixParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
-    hh_fit_function_0_20.SetParLimits(11, 0.1, 3)
-    hh_fit_function_0_20.SetParameter(11, 0.1)
+    hh_fit_function_0_20.SetParLimits(12, 0, 1)
+    hh_fit_function_0_20.SetParameter(12, 0)
+    hh_fit_function_0_20.FixParameter(13, rt.TMath.Pi() - 2*rt.TMath.Pi())
+    hh_fit_function_0_20.SetParLimits(14, 0.1, 3)
+    hh_fit_function_0_20.SetParameter(14, 0.1)
 
 
     # setting parameters for constant background
@@ -898,15 +941,15 @@ elif USE_VON:
     hh_von_fit_0_20 = rt.TF1("hh_von_fit_0_20", hh_von_fit_string, -2, 6)
 
     if PT_MODE == 0:
-        hh_von_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_2_4"][0])
+        hh_von_fit_0_20.FixParameter(0, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_2_4"][0])
         hh_von_fit_0_20.FixParameter(1, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_2_4"][2])
         hh_von_fit_0_20.FixParameter(2, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_2_4"][3])
     elif PT_MODE == 1:
-        hh_von_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_15_25"][0])
+        hh_von_fit_0_20.FixParameter(0, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_15_25"][0])
         hh_von_fit_0_20.FixParameter(1, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_15_25"][2])
         hh_von_fit_0_20.FixParameter(2, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_15_25"][3])
     elif PT_MODE == 2:
-        hh_von_fit_0_20.SetParameter(0, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_25_4"][0])
+        hh_von_fit_0_20.FixParameter(0, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_25_4"][0])
         hh_von_fit_0_20.FixParameter(1, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_25_4"][2])
         hh_von_fit_0_20.FixParameter(2, v2_fitpars_dict["h_h_cent_0_20_trigger_4_8_assoc_25_4"][3])
 
@@ -1049,7 +1092,7 @@ h_h_dphi_0_20.Write()
 
 if USE_FIT:
     fit_function_0_20.Write()
-    ue_avg_fit_0_20.Write()
+    v2_fit_0_20.Write()
     hh_fit_function_0_20.Write()
     hh_ue_avg_fit_0_20.Write()
     h_lambda_dphi_subtracted_with_fit_0_20.Write()
@@ -1422,34 +1465,49 @@ elif USE_ZYAM:
     zero_lower_line_20_50.SetParameter(0, -ue_avg_error_20_50)
 
 elif USE_FIT:
-    # fitting to four gaussians + a constant background
-    fit_function_20_50 = rt.TF1("fit_function_20_50", "gaus(0) + gaus(3) + gaus(6) + gaus(9) + pol0(12)", -2, 6)
+
+    # fitting to v2 component + four gaussians
+    fit_string_20_50 = "[0]*(1 + 2*([1]*[2]*cos(2*x)))"
+    fit_string_20_50 += " + gaus(3) + gaus(6) + gaus(9) + gaus(12)"
+    fit_function_20_50 = rt.TF1("fit_function_20_50", fit_string_20_50, -2, 6)
     fit_function_20_50.SetNpx(1000)
+    if PT_MODE == 0:
+        fit_function_20_50.FixParameter(0, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_2_4"][0])
+        fit_function_20_50.FixParameter(1, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_2_4"][2])
+        fit_function_20_50.FixParameter(2, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_2_4"][3])
+    elif PT_MODE == 1:
+        fit_function_20_50.FixParameter(0, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_15_25"][0])
+        fit_function_20_50.FixParameter(1, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_15_25"][2])
+        fit_function_20_50.FixParameter(2, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_15_25"][3])
+    elif PT_MODE == 2:
+        fit_function_20_50.FixParameter(0, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_25_4"][0])
+        fit_function_20_50.FixParameter(1, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_25_4"][2])
+        fit_function_20_50.FixParameter(2, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_25_4"][3])
 
     # setting parameters for first gaussian (centered at 0)
-    fit_function_20_50.SetParLimits(0, 5e-4, 0.6)
-    fit_function_20_50.SetParameter(0, 0.009)
-    fit_function_20_50.FixParameter(1, 0)
-    fit_function_20_50.SetParLimits(2, 0.1, 2)
-    fit_function_20_50.SetParameter(2, 0.8)
-    # setting parameters for second gaussian (centered at 0 + 2pi)
-    fit_function_20_50.SetParLimits(3, 0,  0.6)
-    fit_function_20_50.SetParameter(3, 0)
-    fit_function_20_50.FixParameter(4, 2*rt.TMath.Pi())
+    fit_function_20_50.SetParLimits(3, 5e-4, 0.6)
+    fit_function_20_50.SetParameter(3, 0.009)
+    fit_function_20_50.FixParameter(4, 0)
     fit_function_20_50.SetParLimits(5, 0.1, 2)
-    fit_function_20_50.SetParameter(5, 0.1)
-    # setting parameters for third gaussian (centered at pi)
-    fit_function_20_50.SetParLimits(6, 5e-4, 0.6)
-    fit_function_20_50.SetParameter(6, 0.003)
-    fit_function_20_50.FixParameter(7, rt.TMath.Pi())
+    fit_function_20_50.SetParameter(5, 0.8)
+    # setting parameters for second gaussian (centered at 0 + 2pi)
+    fit_function_20_50.SetParLimits(6, 0,  0.6)
+    fit_function_20_50.SetParameter(6, 0)
+    fit_function_20_50.FixParameter(7, 2*rt.TMath.Pi())
     fit_function_20_50.SetParLimits(8, 0.1, 2)
-    fit_function_20_50.SetParameter(8, 1)
-    # setting parameters for fourth gaussian (centered at pi + 2pi)
-    fit_function_20_50.SetParLimits(9, 0, 0.6)
-    fit_function_20_50.SetParameter(9, 0)
-    fit_function_20_50.FixParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
+    fit_function_20_50.SetParameter(8, 0.1)
+    # setting parameters for third gaussian (centered at pi)
+    fit_function_20_50.SetParLimits(9, 5e-4, 0.6)
+    fit_function_20_50.SetParameter(9, 0.003)
+    fit_function_20_50.FixParameter(10, rt.TMath.Pi())
     fit_function_20_50.SetParLimits(11, 0.1, 2)
-    fit_function_20_50.SetParameter(11, 0.1)
+    fit_function_20_50.SetParameter(11, 1)
+    # setting parameters for fourth gaussian (centered at pi + 2pi)
+    fit_function_20_50.SetParLimits(12, 0, 0.6)
+    fit_function_20_50.SetParameter(12, 0)
+    fit_function_20_50.FixParameter(13, rt.TMath.Pi() - 2*rt.TMath.Pi())
+    fit_function_20_50.SetParLimits(14, 0.1, 2)
+    fit_function_20_50.SetParameter(14, 0.1)
 
     # setting parameters for constant background
     ue_avg_20_50 = (h_lambda_dphi_subtracted_20_50.GetBinContent(1) 
@@ -1518,48 +1576,43 @@ elif USE_VON:
 
     von_fit_20_50 = rt.TF1("von_fit_20_50", von_fit_string, -2, 6)
 
+    scale = 0.8
     if PT_MODE == 0:
-        von_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_2_4"][0])
+        von_fit_20_50.FixParameter(0, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_2_4"][0])
         von_fit_20_50.FixParameter(1, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_2_4"][2])
         von_fit_20_50.FixParameter(2, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_2_4"][3])
-
-        von_fit_20_50.SetParLimits(3, 0, 1)
-        von_fit_20_50.SetParameter(3, 0.05)
-        von_fit_20_50.SetParLimits(4, 0, 100)
-        von_fit_20_50.SetParameter(4, 20)
-        von_fit_20_50.SetParLimits(5, 0, 1)
-        von_fit_20_50.SetParameter(5, 0.05)
-        von_fit_20_50.SetParLimits(6, 0, 100)
-        von_fit_20_50.SetParameter(6, 10)
-
+        von_fit_20_50.SetParLimits(3, scale*0.015/3, scale*0.015*3)
+        von_fit_20_50.SetParameter(3, scale*0.015)
+        von_fit_20_50.SetParLimits(4, (7.6/scale)/3, (7.6/scale)*3)
+        von_fit_20_50.SetParameter(4, 7.6/scale)
+        von_fit_20_50.SetParLimits(5, scale*0.014/3, scale*0.014*3)
+        von_fit_20_50.SetParameter(5, scale*0.014)
+        von_fit_20_50.SetParLimits(6, (2.2/scale)/3, (2.2/scale)*3)
+        von_fit_20_50.SetParameter(6, 2.2/scale)
     elif PT_MODE == 1:
-        von_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_15_25"][0])
+        von_fit_20_50.FixParameter(0, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_15_25"][0])
         von_fit_20_50.FixParameter(1, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_15_25"][2])
         von_fit_20_50.FixParameter(2, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_15_25"][3])
-
-        von_fit_20_50.SetParLimits(3, 0, 1)
-        von_fit_20_50.SetParameter(3, 0.05)
-        von_fit_20_50.SetParLimits(4, 0, 100)
-        von_fit_20_50.SetParameter(4, 15)
-        von_fit_20_50.SetParLimits(5, 0, 1)
-        von_fit_20_50.SetParameter(5, 0.05)
-        von_fit_20_50.SetParLimits(6, 0, 100)
-        von_fit_20_50.SetParameter(6, 5)
-
+        von_fit_20_50.SetParLimits(3, scale*0.02/3, scale*0.02*3)
+        von_fit_20_50.SetParameter(3, scale*0.02)
+        von_fit_20_50.SetParLimits(4, (4.6/scale)/3, (4.6/scale)*3)
+        von_fit_20_50.SetParameter(4, 4.6/scale)
+        von_fit_20_50.SetParLimits(5, scale*0.057/3, scale*0.057*3)
+        von_fit_20_50.SetParameter(5, scale*0.057)
+        von_fit_20_50.SetParLimits(6, (1/scale)/3, (1/scale)*3)
+        von_fit_20_50.SetParameter(6, 1/scale)
     elif PT_MODE == 2:
-        von_fit_20_50.SetParameter(0, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_25_4"][0])
+        von_fit_20_50.FixParameter(0, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_25_4"][0])
         von_fit_20_50.FixParameter(1, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_25_4"][2])
         von_fit_20_50.FixParameter(2, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_25_4"][3])
-
-        von_fit_20_50.SetParLimits(3, 0, 1)
-        von_fit_20_50.SetParameter(3, 0.05)
-        von_fit_20_50.SetParLimits(4, 0, 100)
-        von_fit_20_50.SetParameter(4, 25)
-        von_fit_20_50.SetParLimits(5, 0, 1)
-        von_fit_20_50.SetParameter(5, 0.05)
-        von_fit_20_50.SetParLimits(6, 0, 100)
-        von_fit_20_50.SetParameter(6, 15)
-
+        von_fit_20_50.SetParLimits(3, scale*0.009/3, scale*0.009*3)
+        von_fit_20_50.SetParameter(3, scale*0.009)
+        von_fit_20_50.SetParLimits(4, (8.88/scale)/3, (8.88/scale)*3)
+        von_fit_20_50.SetParameter(4, 8.88/scale)
+        von_fit_20_50.SetParLimits(5, scale*0.0076/3, scale*0.0076*3)
+        von_fit_20_50.SetParameter(5, scale*0.0076)
+        von_fit_20_50.SetParLimits(6, (2.55/scale)/3, (2.55/scale)*3)
+        von_fit_20_50.SetParameter(6, 2.55/scale)
 
     h_lambda_dphi_subtracted_with_fit_20_50 = h_lambda_dphi_subtracted_20_50.Clone("h_lambda_dphi_subtracted_with_fit_20_50")
     fit_result_20_50 = h_lambda_dphi_subtracted_with_fit_20_50.Fit(von_fit_20_50, "R")
@@ -1768,33 +1821,48 @@ elif USE_ZYAM:
     hh_zero_lower_line_20_50.SetParameter(0, -hh_ue_avg_error_20_50)
 elif USE_FIT:
 
-    # fitting to four gaussians + a constant background
-    hh_fit_function_20_50 = rt.TF1("hh_fit_function_20_50", "gaus(0) + gaus(3) + gaus(6) + gaus(9) + pol0(12)", -2, 6)
+    # fitting to v2 component + four gaussians
+    hh_fit_string_20_50 = "[0]*(1 + 2*([1]*[2]*cos(2*x)))"
+    hh_fit_string_20_50 += " + gaus(3) + gaus(6) + gaus(9) + gaus(12)"
+    hh_fit_function_20_50 = rt.TF1("hh_fit_function_20_50", hh_fit_string_20_50, -2, 6)
     hh_fit_function_20_50.SetNpx(1000)
+    if PT_MODE == 0:
+        hh_fit_function_20_50.FixParameter(0, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_2_4"][0])
+        hh_fit_function_20_50.FixParameter(1, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_2_4"][2])
+        hh_fit_function_20_50.FixParameter(2, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_2_4"][3])
+    elif PT_MODE == 1:
+        hh_fit_function_20_50.FixParameter(0, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_15_25"][0])
+        hh_fit_function_20_50.FixParameter(1, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_15_25"][2])
+        hh_fit_function_20_50.FixParameter(2, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_15_25"][3])
+    elif PT_MODE == 2:
+        hh_fit_function_20_50.FixParameter(0, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_25_4"][0])
+        hh_fit_function_20_50.FixParameter(1, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_25_4"][2])
+        hh_fit_function_20_50.FixParameter(2, v2_fitpars_dict["h_h_cent_20_50_trigger_4_8_assoc_25_4"][3])
+
     # setting parameters for first gaussian (centered at 0)
-    hh_fit_function_20_50.SetParLimits(0, 0.02, 1)
-    hh_fit_function_20_50.SetParameter(0, 0.16)
-    hh_fit_function_20_50.FixParameter(1, 0)
-    hh_fit_function_20_50.SetParLimits(2, 0.2, 3)
-    hh_fit_function_20_50.SetParameter(2, 0.3)
+    hh_fit_function_20_50.SetParLimits(3, 0.02, 1)
+    hh_fit_function_20_50.SetParameter(3, 0.16)
+    hh_fit_function_20_50.FixParameter(4, 0)
+    hh_fit_function_20_50.SetParLimits(5, 0.2, 3)
+    hh_fit_function_20_50.SetParameter(5, 0.3)
     # setting parameters for second gaussian (centered at 0 + 2pi)
-    hh_fit_function_20_50.SetParLimits(3, 0, 1)
-    hh_fit_function_20_50.SetParameter(3, 0)
-    hh_fit_function_20_50.FixParameter(4, 2*rt.TMath.Pi())
-    hh_fit_function_20_50.SetParLimits(5, 0.1, 2)
-    hh_fit_function_20_50.SetParameter(5, 0.1)
+    hh_fit_function_20_50.SetParLimits(6, 0, 1)
+    hh_fit_function_20_50.SetParameter(6, 0)
+    hh_fit_function_20_50.FixParameter(7, 2*rt.TMath.Pi())
+    hh_fit_function_20_50.SetParLimits(8, 0.1, 2)
+    hh_fit_function_20_50.SetParameter(8, 0.1)
     # setting parameters for third gaussian (centered at pi)
-    hh_fit_function_20_50.SetParLimits(6, 0.02, 1)
-    hh_fit_function_20_50.SetParameter(6, 0.3)
-    hh_fit_function_20_50.FixParameter(7, rt.TMath.Pi())
-    hh_fit_function_20_50.SetParLimits(8, 0.3, 3)
-    hh_fit_function_20_50.SetParameter(8, 0.5)
+    hh_fit_function_20_50.SetParLimits(9, 0.02, 1)
+    hh_fit_function_20_50.SetParameter(9, 0.3)
+    hh_fit_function_20_50.FixParameter(10, rt.TMath.Pi())
+    hh_fit_function_20_50.SetParLimits(11, 0.3, 3)
+    hh_fit_function_20_50.SetParameter(11, 0.5)
     # setting parameters for fourth gaussian (centered at pi + 2pi)
-    hh_fit_function_20_50.SetParLimits(9, 0, 1)
-    hh_fit_function_20_50.SetParameter(9, 0)
-    hh_fit_function_20_50.FixParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
-    hh_fit_function_20_50.SetParLimits(11, 0.1, 3)
-    hh_fit_function_20_50.SetParameter(11, 0.1)
+    hh_fit_function_20_50.SetParLimits(12, 0, 1)
+    hh_fit_function_20_50.SetParameter(12, 0)
+    hh_fit_function_20_50.FixParameter(13, rt.TMath.Pi() - 2*rt.TMath.Pi())
+    hh_fit_function_20_50.SetParLimits(14, 0.1, 3)
+    hh_fit_function_20_50.SetParameter(14, 0.1)
 
 
     # setting parameters for constant background
@@ -2387,34 +2455,49 @@ elif USE_ZYAM:
     zero_lower_line_50_80.SetParameter(0, -ue_avg_error_50_80)
 
 elif USE_FIT:
-    # fitting to four gaussians + a constant background
-    fit_function_50_80 = rt.TF1("fit_function_50_80", "gaus(0) + gaus(3) + gaus(6) + gaus(9) + pol0(12)", -2, 6)
+
+    # fitting to v2 component + four gaussians
+    fit_string_50_80 = "[0]*(1 + 2*([1]*[2]*cos(2*x)))"
+    fit_string_50_80 += " + gaus(3) + gaus(6) + gaus(9) + gaus(12)"
+    fit_function_50_80 = rt.TF1("fit_function_50_80", fit_string_50_80, -2, 6)
     fit_function_50_80.SetNpx(1000)
+    if PT_MODE == 0:
+        fit_function_50_80.FixParameter(0, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_2_4"][0])
+        fit_function_50_80.FixParameter(1, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_2_4"][2])
+        fit_function_50_80.FixParameter(2, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_2_4"][3])
+    elif PT_MODE == 1:
+        fit_function_50_80.FixParameter(0, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_15_25"][0])
+        fit_function_50_80.FixParameter(1, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_15_25"][2])
+        fit_function_50_80.FixParameter(2, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_15_25"][3])
+    elif PT_MODE == 2:
+        fit_function_50_80.FixParameter(0, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_25_4"][0])
+        fit_function_50_80.FixParameter(1, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_25_4"][2])
+        fit_function_50_80.FixParameter(2, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_25_4"][3])
 
     # setting parameters for first gaussian (centered at 0)
-    fit_function_50_80.SetParLimits(0, 5e-4, 0.6)
-    fit_function_50_80.SetParameter(0, 0.009)
-    fit_function_50_80.FixParameter(1, 0)
-    fit_function_50_80.SetParLimits(2, 0.1, 2)
-    fit_function_50_80.SetParameter(2, 0.8)
-    # setting parameters for second gaussian (centered at 0 + 2pi)
-    fit_function_50_80.SetParLimits(3, 0,  0.6)
-    fit_function_50_80.SetParameter(3, 0)
-    fit_function_50_80.FixParameter(4, 2*rt.TMath.Pi())
+    fit_function_50_80.SetParLimits(3, 5e-4, 0.6)
+    fit_function_50_80.SetParameter(3, 0.009)
+    fit_function_50_80.FixParameter(4, 0)
     fit_function_50_80.SetParLimits(5, 0.1, 2)
-    fit_function_50_80.SetParameter(5, 0.1)
-    # setting parameters for third gaussian (centered at pi)
-    fit_function_50_80.SetParLimits(6, 5e-4, 0.6)
-    fit_function_50_80.SetParameter(6, 0.003)
-    fit_function_50_80.FixParameter(7, rt.TMath.Pi())
+    fit_function_50_80.SetParameter(5, 0.8)
+    # setting parameters for second gaussian (centered at 0 + 2pi)
+    fit_function_50_80.SetParLimits(6, 0,  0.6)
+    fit_function_50_80.SetParameter(6, 0)
+    fit_function_50_80.FixParameter(7, 2*rt.TMath.Pi())
     fit_function_50_80.SetParLimits(8, 0.1, 2)
-    fit_function_50_80.SetParameter(8, 1)
-    # setting parameters for fourth gaussian (centered at pi + 2pi)
-    fit_function_50_80.SetParLimits(9, 0, 0.6)
-    fit_function_50_80.SetParameter(9, 0)
-    fit_function_50_80.FixParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
+    fit_function_50_80.SetParameter(8, 0.1)
+    # setting parameters for third gaussian (centered at pi)
+    fit_function_50_80.SetParLimits(9, 5e-4, 0.6)
+    fit_function_50_80.SetParameter(9, 0.003)
+    fit_function_50_80.FixParameter(10, rt.TMath.Pi())
     fit_function_50_80.SetParLimits(11, 0.1, 2)
-    fit_function_50_80.SetParameter(11, 0.1)
+    fit_function_50_80.SetParameter(11, 1)
+    # setting parameters for fourth gaussian (centered at pi + 2pi)
+    fit_function_50_80.SetParLimits(12, 0, 0.6)
+    fit_function_50_80.SetParameter(12, 0)
+    fit_function_50_80.FixParameter(13, rt.TMath.Pi() - 2*rt.TMath.Pi())
+    fit_function_50_80.SetParLimits(14, 0.1, 2)
+    fit_function_50_80.SetParameter(14, 0.1)
 
     # setting parameters for constant background
     ue_avg_50_80 = (h_lambda_dphi_subtracted_50_80.GetBinContent(1) 
@@ -2483,27 +2566,43 @@ elif USE_VON:
 
     von_fit_50_80 = rt.TF1("von_fit_50_80", von_fit_string, -2, 6)
 
+    scale = 0.6
     if PT_MODE == 0:
-        von_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_2_4"][0])
+        von_fit_50_80.FixParameter(0, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_2_4"][0])
         von_fit_50_80.FixParameter(1, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_2_4"][2])
         von_fit_50_80.FixParameter(2, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_2_4"][3])
+        von_fit_50_80.SetParLimits(3, scale*0.015/3, scale*0.015*3)
+        von_fit_50_80.SetParameter(3, scale*0.015)
+        von_fit_50_80.SetParLimits(4, (7.6/scale)/3, (7.6/scale)*3)
+        von_fit_50_80.SetParameter(4, 7.6/scale)
+        von_fit_50_80.SetParLimits(5, scale*0.014/3, scale*0.014*3)
+        von_fit_50_80.SetParameter(5, scale*0.014)
+        von_fit_50_80.SetParLimits(6, 1, 10)
+        von_fit_50_80.SetParameter(6, 5)
     elif PT_MODE == 1:
-        von_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_15_25"][0])
+        von_fit_50_80.FixParameter(0, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_15_25"][0])
         von_fit_50_80.FixParameter(1, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_15_25"][2])
         von_fit_50_80.FixParameter(2, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_15_25"][3])
+        von_fit_50_80.SetParLimits(3, scale*0.02/3, scale*0.02*3)
+        von_fit_50_80.SetParameter(3, scale*0.02)
+        von_fit_50_80.SetParLimits(4, (4.6/scale)/3, (4.6/scale)*3)
+        von_fit_50_80.SetParameter(4, 4.6/scale)
+        von_fit_50_80.SetParLimits(5, scale*0.057/3, scale*0.057*3)
+        von_fit_50_80.SetParameter(5, scale*0.057)
+        von_fit_50_80.SetParLimits(6, 1, 10)
+        von_fit_50_80.SetParameter(6, 3)
     elif PT_MODE == 2:
-        von_fit_50_80.SetParameter(0, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_25_4"][0])
+        von_fit_50_80.FixParameter(0, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_25_4"][0])
         von_fit_50_80.FixParameter(1, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_25_4"][2])
         von_fit_50_80.FixParameter(2, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_25_4"][3])
-
-    von_fit_50_80.SetParLimits(3, 0, 1)
-    von_fit_50_80.SetParameter(3, 0.02)
-    von_fit_50_80.SetParLimits(4, 0, 100)
-    von_fit_50_80.SetParameter(4, 1)
-    von_fit_50_80.SetParLimits(5, 0, 1)
-    von_fit_50_80.SetParameter(5, 0.01)
-    von_fit_50_80.SetParLimits(6, 0, 100)
-    von_fit_50_80.SetParameter(6, 1)
+        von_fit_50_80.SetParLimits(3, scale*0.009/3, scale*0.009*3)
+        von_fit_50_80.SetParameter(3, scale*0.009)
+        von_fit_50_80.SetParLimits(4, (8.88/scale)/3, (8.88/scale)*3)
+        von_fit_50_80.SetParameter(4, 8.88/scale)
+        von_fit_50_80.SetParLimits(5, scale*0.0076/3, scale*0.0076*3)
+        von_fit_50_80.SetParameter(5, scale*0.0076)
+        von_fit_50_80.SetParLimits(6, 1, 10)
+        von_fit_50_80.SetParameter(6, 8)
 
     h_lambda_dphi_subtracted_with_fit_50_80 = h_lambda_dphi_subtracted_50_80.Clone("h_lambda_dphi_subtracted_with_fit_50_80")
     fit_result_50_80 = h_lambda_dphi_subtracted_with_fit_50_80.Fit(von_fit_50_80, "R")
@@ -2715,30 +2814,49 @@ elif USE_FIT:
     # fitting to four gaussians + a constant background
     hh_fit_function_50_80 = rt.TF1("hh_fit_function_50_80", "gaus(0) + gaus(3) + gaus(6) + gaus(9) + pol0(12)", -2, 6)
     hh_fit_function_50_80.SetNpx(1000)
+
+    # fitting to v2 component + four gaussians
+    hh_fit_string_50_80 = "[0]*(1 + 2*([1]*[2]*cos(2*x)))"
+    hh_fit_string_50_80 += " + gaus(3) + gaus(6) + gaus(9) + gaus(12)"
+    hh_fit_function_50_80 = rt.TF1("hh_fit_function_50_80", hh_fit_string_50_80, -2, 6)
+    hh_fit_function_50_80.SetNpx(1000)
+    if PT_MODE == 0:
+        hh_fit_function_50_80.FixParameter(0, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_2_4"][0])
+        hh_fit_function_50_80.FixParameter(1, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_2_4"][2])
+        hh_fit_function_50_80.FixParameter(2, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_2_4"][3])
+    elif PT_MODE == 1:
+        hh_fit_function_50_80.FixParameter(0, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_15_25"][0])
+        hh_fit_function_50_80.FixParameter(1, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_15_25"][2])
+        hh_fit_function_50_80.FixParameter(2, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_15_25"][3])
+    elif PT_MODE == 2:
+        hh_fit_function_50_80.FixParameter(0, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_25_4"][0])
+        hh_fit_function_50_80.FixParameter(1, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_25_4"][2])
+        hh_fit_function_50_80.FixParameter(2, v2_fitpars_dict["h_h_cent_50_80_trigger_4_8_assoc_25_4"][3])
+
     # setting parameters for first gaussian (centered at 0)
-    hh_fit_function_50_80.SetParLimits(0, 0.02, 1)
-    hh_fit_function_50_80.SetParameter(0, 0.16)
-    hh_fit_function_50_80.FixParameter(1, 0)
-    hh_fit_function_50_80.SetParLimits(2, 0.2, 3)
-    hh_fit_function_50_80.SetParameter(2, 0.3)
+    hh_fit_function_50_80.SetParLimits(3, 0.02, 1)
+    hh_fit_function_50_80.SetParameter(3, 0.16)
+    hh_fit_function_50_80.FixParameter(4, 0)
+    hh_fit_function_50_80.SetParLimits(5, 0.2, 3)
+    hh_fit_function_50_80.SetParameter(5, 0.3)
     # setting parameters for second gaussian (centered at 0 + 2pi)
-    hh_fit_function_50_80.SetParLimits(3, 0, 1)
-    hh_fit_function_50_80.SetParameter(3, 0)
-    hh_fit_function_50_80.FixParameter(4, 2*rt.TMath.Pi())
-    hh_fit_function_50_80.SetParLimits(5, 0.1, 2)
-    hh_fit_function_50_80.SetParameter(5, 0.1)
+    hh_fit_function_50_80.SetParLimits(6, 0, 1)
+    hh_fit_function_50_80.SetParameter(6, 0)
+    hh_fit_function_50_80.FixParameter(7, 2*rt.TMath.Pi())
+    hh_fit_function_50_80.SetParLimits(8, 0.1, 2)
+    hh_fit_function_50_80.SetParameter(8, 0.1)
     # setting parameters for third gaussian (centered at pi)
-    hh_fit_function_50_80.SetParLimits(6, 0.02, 1)
-    hh_fit_function_50_80.SetParameter(6, 0.3)
-    hh_fit_function_50_80.FixParameter(7, rt.TMath.Pi())
-    hh_fit_function_50_80.SetParLimits(8, 0.3, 3)
-    hh_fit_function_50_80.SetParameter(8, 0.5)
+    hh_fit_function_50_80.SetParLimits(9, 0.02, 1)
+    hh_fit_function_50_80.SetParameter(9, 0.3)
+    hh_fit_function_50_80.FixParameter(10, rt.TMath.Pi())
+    hh_fit_function_50_80.SetParLimits(11, 3.3, 3)
+    hh_fit_function_50_80.SetParameter(11, 0.5)
     # setting parameters for fourth gaussian (centered at pi + 2pi)
-    hh_fit_function_50_80.SetParLimits(9, 0, 1)
-    hh_fit_function_50_80.SetParameter(9, 0)
-    hh_fit_function_50_80.FixParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
-    hh_fit_function_50_80.SetParLimits(11, 0.1, 3)
-    hh_fit_function_50_80.SetParameter(11, 0.1)
+    hh_fit_function_50_80.SetParLimits(12, 0, 1)
+    hh_fit_function_50_80.SetParameter(12, 0)
+    hh_fit_function_50_80.FixParameter(13, rt.TMath.Pi() - 2*rt.TMath.Pi())
+    hh_fit_function_50_80.SetParLimits(14, 0.1, 3)
+    hh_fit_function_50_80.SetParameter(14, 0.1)
 
 
     # setting parameters for constant background
@@ -3331,34 +3449,49 @@ elif USE_ZYAM:
     zero_lower_line_0_80.SetParameter(0, -ue_avg_error_0_80)
 
 elif USE_FIT:
-    # fitting to four gaussians + a constant background
-    fit_function_0_80 = rt.TF1("fit_function_0_80", "gaus(0) + gaus(3) + gaus(6) + gaus(9) + pol0(12)", -2, 6)
+
+    # fitting to v2 component + four gaussians
+    fit_string_0_80 = "[0]*(1 + 2*([1]*[2]*cos(2*x)))"
+    fit_string_0_80 += " + gaus(3) + gaus(6) + gaus(9) + gaus(12)"
+    fit_function_0_80 = rt.TF1("fit_function_0_80", fit_string_0_80, -2, 6)
     fit_function_0_80.SetNpx(1000)
+    if PT_MODE == 0:
+        fit_function_0_80.FixParameter(0, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_2_4"][0])
+        fit_function_0_80.FixParameter(1, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_2_4"][2])
+        fit_function_0_80.FixParameter(2, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_2_4"][3])
+    elif PT_MODE == 1:
+        fit_function_0_80.FixParameter(0, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_15_25"][0])
+        fit_function_0_80.FixParameter(1, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_15_25"][2])
+        fit_function_0_80.FixParameter(2, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_15_25"][3])
+    elif PT_MODE == 2:
+        fit_function_0_80.FixParameter(0, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_25_4"][0])
+        fit_function_0_80.FixParameter(1, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_25_4"][2])
+        fit_function_0_80.FixParameter(2, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_25_4"][3])
 
     # setting parameters for first gaussian (centered at 0)
-    fit_function_0_80.SetParLimits(0, 5e-4, 0.6)
-    fit_function_0_80.SetParameter(0, 0.009)
-    fit_function_0_80.FixParameter(1, 0)
-    fit_function_0_80.SetParLimits(2, 0.1, 2)
-    fit_function_0_80.SetParameter(2, 0.8)
-    # setting parameters for second gaussian (centered at 0 + 2pi)
-    fit_function_0_80.SetParLimits(3, 0,  0.6)
-    fit_function_0_80.SetParameter(3, 0)
-    fit_function_0_80.FixParameter(4, 2*rt.TMath.Pi())
+    fit_function_0_80.SetParLimits(3, 5e-4, 0.6)
+    fit_function_0_80.SetParameter(3, 0.009)
+    fit_function_0_80.FixParameter(4, 0)
     fit_function_0_80.SetParLimits(5, 0.1, 2)
-    fit_function_0_80.SetParameter(5, 0.1)
-    # setting parameters for third gaussian (centered at pi)
-    fit_function_0_80.SetParLimits(6, 5e-4, 0.6)
-    fit_function_0_80.SetParameter(6, 0.003)
-    fit_function_0_80.FixParameter(7, rt.TMath.Pi())
+    fit_function_0_80.SetParameter(5, 0.8)
+    # setting parameters for second gaussian (centered at 0 + 2pi)
+    fit_function_0_80.SetParLimits(6, 0,  0.6)
+    fit_function_0_80.SetParameter(6, 0)
+    fit_function_0_80.FixParameter(7, 2*rt.TMath.Pi())
     fit_function_0_80.SetParLimits(8, 0.1, 2)
-    fit_function_0_80.SetParameter(8, 1)
-    # setting parameters for fourth gaussian (centered at pi + 2pi)
-    fit_function_0_80.SetParLimits(9, 0, 0.6)
-    fit_function_0_80.SetParameter(9, 0)
-    fit_function_0_80.FixParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
+    fit_function_0_80.SetParameter(8, 0.1)
+    # setting parameters for third gaussian (centered at pi)
+    fit_function_0_80.SetParLimits(9, 5e-4, 0.6)
+    fit_function_0_80.SetParameter(9, 0.003)
+    fit_function_0_80.FixParameter(10, rt.TMath.Pi())
     fit_function_0_80.SetParLimits(11, 0.1, 2)
-    fit_function_0_80.SetParameter(11, 0.1)
+    fit_function_0_80.SetParameter(11, 1)
+    # setting parameters for fourth gaussian (centered at pi + 2pi)
+    fit_function_0_80.SetParLimits(12, 0, 0.6)
+    fit_function_0_80.SetParameter(12, 0)
+    fit_function_0_80.FixParameter(13, rt.TMath.Pi() - 2*rt.TMath.Pi())
+    fit_function_0_80.SetParLimits(14, 0.1, 2)
+    fit_function_0_80.SetParameter(14, 0.1)
 
     # setting parameters for constant background
     ue_avg_0_80 = (h_lambda_dphi_subtracted_0_80.GetBinContent(1) 
@@ -3428,26 +3561,41 @@ elif USE_VON:
     von_fit_0_80 = rt.TF1("von_fit_0_80", von_fit_string, -2, 6)
 
     if PT_MODE == 0:
-        von_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_2_4"][0])
+        von_fit_0_80.FixParameter(0, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_2_4"][0])
         von_fit_0_80.FixParameter(1, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_2_4"][2])
         von_fit_0_80.FixParameter(2, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_2_4"][3])
+        von_fit_0_80.SetParLimits(3, 0.015/3, 0.015*3)
+        von_fit_0_80.SetParameter(3, 0.015)
+        von_fit_0_80.SetParLimits(4, 7.6/3, 7.6*3)
+        von_fit_0_80.SetParameter(4, 7.6)
+        von_fit_0_80.SetParLimits(5, 0.014/3, 0.014*3)
+        von_fit_0_80.SetParameter(5, 0.014)
+        von_fit_0_80.SetParLimits(6, 2.2/3, 2.2*3)
+        von_fit_0_80.SetParameter(6, 2.2)
     elif PT_MODE == 1:
-        von_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_15_25"][0])
+        von_fit_0_80.FixParameter(0, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_15_25"][0])
         von_fit_0_80.FixParameter(1, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_15_25"][2])
         von_fit_0_80.FixParameter(2, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_15_25"][3])
+        von_fit_0_80.SetParLimits(3, 0.02/3, 0.02*3)
+        von_fit_0_80.SetParameter(3, 0.02)
+        von_fit_0_80.SetParLimits(4, 4.6/3, 4.6*3)
+        von_fit_0_80.SetParameter(4, 4.6)
+        von_fit_0_80.SetParLimits(5, 0.057/3, 0.057*3)
+        von_fit_0_80.SetParameter(5, 0.057)
+        von_fit_0_80.SetParLimits(6, 1/3, 1*3)
+        von_fit_0_80.SetParameter(6, 1)
     elif PT_MODE == 2:
-        von_fit_0_80.SetParameter(0, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_25_4"][0])
+        von_fit_0_80.FixParameter(0, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_25_4"][0])
         von_fit_0_80.FixParameter(1, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_25_4"][2])
         von_fit_0_80.FixParameter(2, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_25_4"][3])
-
-    von_fit_0_80.SetParLimits(3, 0, 1)
-    von_fit_0_80.SetParameter(3, 0.02)
-    von_fit_0_80.SetParLimits(4, 0, 100)
-    von_fit_0_80.SetParameter(4, 1)
-    von_fit_0_80.SetParLimits(5, 0, 1)
-    von_fit_0_80.SetParameter(5, 0.01)
-    von_fit_0_80.SetParLimits(6, 0, 100)
-    von_fit_0_80.SetParameter(6, 1)
+        von_fit_0_80.SetParLimits(3, 0.009/3, 0.009*3)
+        von_fit_0_80.SetParameter(3, 0.009)
+        von_fit_0_80.SetParLimits(4, 8.88/3, 8.88*3)
+        von_fit_0_80.SetParameter(4, 8.88)
+        von_fit_0_80.SetParLimits(5, 0.0076/3, 0.0076*3)
+        von_fit_0_80.SetParameter(5, 0.0076)
+        von_fit_0_80.SetParLimits(6, 2.55/3, 2.55*3)
+        von_fit_0_80.SetParameter(6, 2.55)
 
     h_lambda_dphi_subtracted_with_fit_0_80 = h_lambda_dphi_subtracted_0_80.Clone("h_lambda_dphi_subtracted_with_fit_0_80")
     fit_result_0_80 = h_lambda_dphi_subtracted_with_fit_0_80.Fit(von_fit_0_80, "R")
@@ -3656,33 +3804,48 @@ elif USE_ZYAM:
     hh_zero_lower_line_0_80.SetParameter(0, -hh_ue_avg_error_0_80)
 elif USE_FIT:
 
-    # fitting to four gaussians + a constant background
-    hh_fit_function_0_80 = rt.TF1("hh_fit_function_0_80", "gaus(0) + gaus(3) + gaus(6) + gaus(9) + pol0(12)", -2, 6)
+    # fitting to v2 component + four gaussians
+    hh_fit_string_0_80 = "[0]*(1 + 2*([1]*[2]*cos(2*x)))"
+    hh_fit_string_0_80 += " + gaus(3) + gaus(6) + gaus(9) + gaus(12)"
+    hh_fit_function_0_80 = rt.TF1("hh_fit_function_0_80", hh_fit_string_0_80, -2, 6)
     hh_fit_function_0_80.SetNpx(1000)
+    if PT_MODE == 0:
+        hh_fit_function_0_80.FixParameter(0, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_2_4"][0])
+        hh_fit_function_0_80.FixParameter(1, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_2_4"][2])
+        hh_fit_function_0_80.FixParameter(2, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_2_4"][3])
+    elif PT_MODE == 1:
+        hh_fit_function_0_80.FixParameter(0, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_15_25"][0])
+        hh_fit_function_0_80.FixParameter(1, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_15_25"][2])
+        hh_fit_function_0_80.FixParameter(2, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_15_25"][3])
+    elif PT_MODE == 2:
+        hh_fit_function_0_80.FixParameter(0, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_25_4"][0])
+        hh_fit_function_0_80.FixParameter(1, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_25_4"][2])
+        hh_fit_function_0_80.FixParameter(2, v2_fitpars_dict["h_h_cent_0_80_trigger_4_8_assoc_25_4"][3])
+
     # setting parameters for first gaussian (centered at 0)
-    hh_fit_function_0_80.SetParLimits(0, 0.02, 1)
-    hh_fit_function_0_80.SetParameter(0, 0.16)
-    hh_fit_function_0_80.FixParameter(1, 0)
-    hh_fit_function_0_80.SetParLimits(2, 0.2, 3)
-    hh_fit_function_0_80.SetParameter(2, 0.3)
+    hh_fit_function_0_80.SetParLimits(3, 0.02, 1)
+    hh_fit_function_0_80.SetParameter(3, 0.16)
+    hh_fit_function_0_80.FixParameter(4, 0)
+    hh_fit_function_0_80.SetParLimits(5, 0.2, 3)
+    hh_fit_function_0_80.SetParameter(5, 0.3)
     # setting parameters for second gaussian (centered at 0 + 2pi)
-    hh_fit_function_0_80.SetParLimits(3, 0, 1)
-    hh_fit_function_0_80.SetParameter(3, 0)
-    hh_fit_function_0_80.FixParameter(4, 2*rt.TMath.Pi())
-    hh_fit_function_0_80.SetParLimits(5, 0.1, 2)
-    hh_fit_function_0_80.SetParameter(5, 0.1)
+    hh_fit_function_0_80.SetParLimits(6, 0, 1)
+    hh_fit_function_0_80.SetParameter(6, 0)
+    hh_fit_function_0_80.FixParameter(7, 2*rt.TMath.Pi())
+    hh_fit_function_0_80.SetParLimits(8, 0.1, 2)
+    hh_fit_function_0_80.SetParameter(8, 0.1)
     # setting parameters for third gaussian (centered at pi)
-    hh_fit_function_0_80.SetParLimits(6, 0.02, 1)
-    hh_fit_function_0_80.SetParameter(6, 0.3)
-    hh_fit_function_0_80.FixParameter(7, rt.TMath.Pi())
-    hh_fit_function_0_80.SetParLimits(8, 0.3, 3)
-    hh_fit_function_0_80.SetParameter(8, 0.5)
+    hh_fit_function_0_80.SetParLimits(9, 0.02, 1)
+    hh_fit_function_0_80.SetParameter(9, 0.3)
+    hh_fit_function_0_80.FixParameter(10, rt.TMath.Pi())
+    hh_fit_function_0_80.SetParLimits(11, 0.3, 3)
+    hh_fit_function_0_80.SetParameter(11, 0.5)
     # setting parameters for fourth gaussian (centered at pi + 2pi)
-    hh_fit_function_0_80.SetParLimits(9, 0, 1)
-    hh_fit_function_0_80.SetParameter(9, 0)
-    hh_fit_function_0_80.FixParameter(10, rt.TMath.Pi() - 2*rt.TMath.Pi())
-    hh_fit_function_0_80.SetParLimits(11, 0.1, 3)
-    hh_fit_function_0_80.SetParameter(11, 0.1)
+    hh_fit_function_0_80.SetParLimits(12, 0, 1)
+    hh_fit_function_0_80.SetParameter(12, 0)
+    hh_fit_function_0_80.FixParameter(13, rt.TMath.Pi() - 2*rt.TMath.Pi())
+    hh_fit_function_0_80.SetParLimits(14, 0.1, 3)
+    hh_fit_function_0_80.SetParameter(14, 0.1)
 
 
     # setting parameters for constant background
