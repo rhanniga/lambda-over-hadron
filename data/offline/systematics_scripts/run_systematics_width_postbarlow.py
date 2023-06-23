@@ -3,7 +3,42 @@ rt.gStyle.SetOptStat(0)
 
 import math
 
-colors = [rt.kGreen + 2, rt.kRed + 2, rt.kBlue + 2,  rt.kMagenta + 2,  rt.kYellow + 2,  rt.kViolet + 2, rt.kOrange + 2]
+colors = [rt.kGreen + 2, rt.kRed + 2, rt.kBlue + 2,  rt.kMagenta + 2,  rt.kOrange + 2]
+
+def get_von_fit_avgbg(dphi_dist, pt_mode, avg6=True):
+
+    dphi_dist = dphi_dist.Clone()
+
+    if avg6:
+        avg = (dphi_dist.GetBinContent(1) 
+                + dphi_dist.GetBinContent(2)
+                + dphi_dist.GetBinContent(7)
+                + dphi_dist.GetBinContent(8)
+                + dphi_dist.GetBinContent(9)
+                + dphi_dist.GetBinContent(16))/6
+    else:
+        avg = (dphi_dist.GetBinContent(1)
+                + dphi_dist.GetBinContent(8)
+                + dphi_dist.GetBinContent(9)
+                + dphi_dist.GetBinContent(16))/4
+    
+    von_fit_string = "[0]"
+    von_fit_string += " + [1]/(2*TMath::Pi()*TMath::BesselI0([2]))*TMath::Exp([2]*TMath::Cos(x))"
+    von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x- TMath::Pi()))"
+    von_fit = rt.TF1("von_fit", von_fit_string, -rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+
+    von_fit.FixParameter(0, avg)
+    von_fit.SetParameter(1, 0.01)
+    von_fit.SetParameter(2, 7)
+    von_fit.SetParameter(3, 0.01)
+    von_fit.SetParameter(4, 2)
+
+    if pt_mode == 1:
+        dphi_dist.Fit(von_fit, "R", "", -rt.TMath.Pi()/2, rt.TMath.Pi() - 0.0001)
+    else:
+        dphi_dist.Fit(von_fit, "R")
+
+    return von_fit.Clone()
 
 def get_width_from_kappa(kappa):
     return rt.TMath.Sqrt(-2*rt.TMath.Log(rt.TMath.BesselI1(kappa)/rt.TMath.BesselI0(kappa)))
@@ -24,7 +59,6 @@ def get_rms(von_dict, dphi_dict, output_name, pid=False):
 
     leg = rt.TLegend(0.6, 0.67, 0.8, 0.8)
     leg.SetBorderSize(0)
-
     width_leg = rt.TLegend(0.2, 0.67, 0.45, 0.8)
     width_leg.SetBorderSize(0)
 
@@ -38,7 +72,7 @@ def get_rms(von_dict, dphi_dict, output_name, pid=False):
         if key == "central value":
 
             c1.cd()
-            central_fit = von_dict[key]
+            central_fit = von_dict[key].Clone(f"central_fit_{key}")
             central_fit.SetNpx(1000)
             central_fit.GetXaxis().SetRangeUser(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
             central_fit.SetLineColor(rt.kBlack)
@@ -47,25 +81,29 @@ def get_rms(von_dict, dphi_dict, output_name, pid=False):
             central_fit.GetYaxis().SetRangeUser(0.7*central_fit.GetMinimum(), 1.3*central_fit.GetMaximum())
             central_fit.GetYaxis().SetTitle("Counts")
             central_fit.GetXaxis().SetTitle("#Delta#varphi")
+            von_fit_string = "[0]/(2*TMath::Pi()*TMath::BesselI0([1]))*TMath::Exp([1]*TMath::Cos(x))"
+            von_fit_string += " + [2]/(2*TMath::Pi()*TMath::BesselI0([3]))*TMath::Exp([3]*TMath::Cos(x- TMath::Pi()))"
+            just_von_fit = rt.TF1("just_von_fit", von_fit_string, -rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+            just_von_fit.SetNpx(1000)
+            just_von_fit.SetParameter(0, central_fit.GetParameter(3))
+            just_von_fit.SetParameter(1, central_fit.GetParameter(4))
+            just_von_fit.SetParameter(2, central_fit.GetParameter(5))
+            just_von_fit.SetParameter(3, central_fit.GetParameter(6))
+            just_von_fit.SetLineColor(rt.kBlack)
+            just_von_fit.SetLineWidth(2)
+            just_von_fit.GetYaxis().SetRangeUser(0.7*just_von_fit.GetMinimum(), 1.3*just_von_fit.GetMaximum())
+            # just_von_fit.Draw()
             central_fit.Draw()
 
-            print("--------------------FIT PARAMETERS----------------------")
-            print("p3: ", central_fit.GetParameter(3))
-            print("p4: ", central_fit.GetParameter(4))
-            print("p5: ", central_fit.GetParameter(5))
-            print("p6: ", central_fit.GetParameter(6))
-
-
-            central_plot = dphi_dict[key]
+            central_plot = dphi_dict[key].Clone(f"central_plot_{key}")
             central_plot.GetXaxis().SetRangeUser(-rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
             central_plot.SetLineColor(rt.kBlack)
             central_plot.SetLineWidth(2)
             central_plot.GetYaxis().SetRangeUser(0.7*central_plot.GetMinimum(), 1.3*central_plot.GetMaximum())
             central_plot.GetYaxis().SetTitle("Counts")
             central_plot.GetXaxis().SetTitle("#Delta#varphi")
-            central_plot.Draw("SAME")
+            central_plot.DrawCopy("SAME")
 
-            leg.AddEntry(central_plot, key, "l")
 
             c2.cd()
             central_ns_width = get_width_from_kappa(central_fit.GetParameter(4))
@@ -87,13 +125,14 @@ def get_rms(von_dict, dphi_dict, output_name, pid=False):
             central_width_plot.GetXaxis().SetTitle("Region")
             central_width_plot.GetXaxis().SetBinLabel(1, "NS")
             central_width_plot.GetXaxis().SetBinLabel(2, "AS")
-            central_width_plot.Draw("P")
+            central_width_plot.DrawCopy("P")
 
             width_leg.AddEntry(central_width_plot, key, "l")
+            leg.AddEntry(central_width_plot, key, "l")
 
         else:
             c1.cd()
-            varied_fit = von_dict[key]
+            varied_fit = von_dict[key].Clone(f"varied_fit_{key}")
             varied_fit.SetNpx(1000)
             if pid:
                 l = -rt.TMath.Pi()/2
@@ -104,16 +143,38 @@ def get_rms(von_dict, dphi_dict, output_name, pid=False):
                 varied_fit.SetParameter(5, varied_fit.GetParameter(5)*scale_factor)
             varied_fit.SetLineColor(colors[color_index])
             varied_fit.SetLineWidth(2)
-            varied_fit.Draw("same")
 
-            varied_plot = dphi_dict[key]
+            # if key == "gaus":
+            #     just_gaus_fit = rt.TF1("just_gaus_fit", "gaus(0) + gaus(3) + gaus(6) + gaus(9)", -rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+            #     just_gaus_fit.SetNpx(1000)
+            #     just_gaus_fit.SetParameter(0, varied_fit.GetParameter(3))
+            #     just_gaus_fit.SetParameter(1, varied_fit.GetParameter(4))
+            #     just_gaus_fit.SetParameter(2, varied_fit.GetParameter(5))
+            #     just_gaus_fit.SetParameter(3, varied_fit.GetParameter(6))
+            #     just_gaus_fit.SetParameter(4, varied_fit.GetParameter(7))
+            #     just_gaus_fit.SetParameter(5, varied_fit.GetParameter(8))
+            #     just_gaus_fit.SetParameter(6, varied_fit.GetParameter(9))
+            #     just_gaus_fit.SetParameter(7, varied_fit.GetParameter(10))
+            #     just_gaus_fit.SetParameter(8, varied_fit.GetParameter(11))
+            #     just_gaus_fit.SetParameter(9, varied_fit.GetParameter(12))
+            #     just_gaus_fit.SetParameter(10, varied_fit.GetParameter(13))
+            #     just_gaus_fit.SetParameter(11, varied_fit.GetParameter(14))
+            #     just_gaus_fit.GetYaxis().SetRangeUser(0.7*just_gaus_fit.GetMinimum(), 1.3*just_gaus_fit.GetMaximum())
+            #     just_gaus_fit.Draw("same")
+
+            # else:
+            # varied_fit.DrawCopy("same")
+            varied_fit.DrawCopy("same")
+
+            varied_plot = dphi_dict[key].Clone(f"varied_plot_{key}")
             if pid:
+                scale_factor = central_plot.Integral()/varied_plot.Integral()
+                print(f"THE PID SCALE FACTOR IS: {scale_factor}\n KEY: {key}")
                 varied_plot.Scale(central_plot.Integral()/varied_plot.Integral())
             varied_plot.SetLineColor(colors[color_index])
             varied_plot.SetLineWidth(2)
-            varied_plot.Draw("same")
-
-            leg.AddEntry(varied_plot, key, "l")
+            if key not in ["gaus", "avg6", "avg4"]:
+                varied_plot.DrawCopy("same")
 
             c2.cd()
             if key == "gaus":
@@ -122,10 +183,18 @@ def get_rms(von_dict, dphi_dict, output_name, pid=False):
                 varied_as_width = varied_fit.GetParameter(11)
                 varied_as_width_error = varied_fit.GetParError(11)
             else:
-                varied_ns_width = get_width_from_kappa(varied_fit.GetParameter(4))
-                varied_ns_width_error = get_width_error_from_kappa(varied_fit.GetParameter(4), varied_fit.GetParError(4))
-                varied_as_width = get_width_from_kappa(varied_fit.GetParameter(6))
-                varied_as_width_error = get_width_error_from_kappa(varied_fit.GetParameter(6), varied_fit.GetParError(6))
+
+                if key == "avg6" or key == "avg4":
+                    varied_ns_width = get_width_from_kappa(varied_fit.GetParameter(2))
+                    varied_ns_width_error = get_width_error_from_kappa(varied_fit.GetParameter(2), varied_fit.GetParError(2))
+                    varied_as_width = get_width_from_kappa(varied_fit.GetParameter(4))
+                    varied_as_width_error = get_width_error_from_kappa(varied_fit.GetParameter(4), varied_fit.GetParError(4))
+                else:
+                    varied_ns_width = get_width_from_kappa(varied_fit.GetParameter(4))
+                    varied_ns_width_error = get_width_error_from_kappa(varied_fit.GetParameter(4), varied_fit.GetParError(4))
+                    varied_as_width = get_width_from_kappa(varied_fit.GetParameter(6))
+                    varied_as_width_error = get_width_error_from_kappa(varied_fit.GetParameter(6), varied_fit.GetParError(6))
+
             varied_width_plot = rt.TH1D("varied_width_plot", "varied_width_plot", 2, 0, 2)
             varied_width_plot.SetBinContent(1, varied_ns_width)
             varied_width_plot.SetBinError(1, varied_ns_width_error)
@@ -142,6 +211,7 @@ def get_rms(von_dict, dphi_dict, output_name, pid=False):
             varied_width_plot.GetXaxis().SetBinLabel(1, "NS")
             varied_width_plot.GetXaxis().SetBinLabel(2, "AS")
             width_leg.AddEntry(varied_width_plot.Clone(), key, "l")
+            leg.AddEntry(varied_width_plot.Clone(), key, "l")
             varied_width_plot.DrawCopy("P SAME")
 
             ns_rms += (1 - (varied_ns_width/central_ns_width))**2
@@ -151,13 +221,15 @@ def get_rms(von_dict, dphi_dict, output_name, pid=False):
             as_n += 1
 
         color_index += 1
+
+
     
     c1.cd()
-    leg.Draw("SAME")
+    leg.Draw("same")
     c1.SaveAs(output_name + ".pdf")
 
     c2.cd()
-    width_leg.Draw()
+    width_leg.Draw("same")
     c2.SaveAs(output_name + "_widths.pdf")
 
     return math.sqrt(ns_rms/ns_n), math.sqrt(as_rms/as_n)
@@ -359,7 +431,9 @@ for PT_MODE in range(3):
 
     technique_file_dict = {
         "central value": technique_central_file,
-        "gaus": technique_gaus_file
+        "gaus": technique_gaus_file,
+        "avg6" : technique_central_file,
+        "avg4" : technique_central_file
     }
 
     technique_von_dict_0_20 = {}
@@ -374,21 +448,34 @@ for PT_MODE in range(3):
 
     for key, file in technique_file_dict.items():
 
-        if key == "gaus":
-            technique_von_dict_0_20[key] = file.Get("fit_function_0_20")
-            technique_von_dict_20_50[key] = file.Get("fit_function_20_50")
-            technique_von_dict_50_80[key] = file.Get("fit_function_50_80")
-            technique_von_dict_0_80[key] = file.Get("fit_function_0_80")
-        else:
-            technique_von_dict_0_20[key] = file.Get("von_fit_0_20")
-            technique_von_dict_20_50[key] = file.Get("von_fit_20_50")
-            technique_von_dict_50_80[key] = file.Get("von_fit_50_80")
-            technique_von_dict_0_80[key] = file.Get("von_fit_0_80")
 
         technique_dphi_dict_0_20[key] = file.Get("h_lambda_dphi_subtracted_0_20")
         technique_dphi_dict_20_50[key] = file.Get("h_lambda_dphi_subtracted_20_50")
         technique_dphi_dict_50_80[key] = file.Get("h_lambda_dphi_subtracted_50_80")
         technique_dphi_dict_0_80[key] = file.Get("h_lambda_dphi_subtracted_0_80")
+
+        if key == "gaus":
+            technique_von_dict_0_20[key] = file.Get("fit_function_0_20")
+            technique_von_dict_20_50[key] = file.Get("fit_function_20_50")
+            technique_von_dict_50_80[key] = file.Get("fit_function_50_80")
+            technique_von_dict_0_80[key] = file.Get("fit_function_0_80")
+        elif key == "central value":
+            technique_von_dict_0_20[key] = file.Get("von_fit_0_20")
+            technique_von_dict_20_50[key] = file.Get("von_fit_20_50")
+            technique_von_dict_50_80[key] = file.Get("von_fit_50_80")
+            technique_von_dict_0_80[key] = file.Get("von_fit_0_80")
+        elif key == "avg6":
+            technique_von_dict_0_20[key] = get_von_fit_avgbg(technique_dphi_dict_0_20[key], PT_MODE)
+            technique_von_dict_20_50[key] = get_von_fit_avgbg(technique_dphi_dict_20_50[key], PT_MODE)
+            technique_von_dict_50_80[key] = get_von_fit_avgbg(technique_dphi_dict_50_80[key], PT_MODE)
+            technique_von_dict_0_80[key] = get_von_fit_avgbg(technique_dphi_dict_0_80[key], PT_MODE)
+        elif key == "avg4":
+            technique_von_dict_0_20[key] = get_von_fit_avgbg(technique_dphi_dict_0_20[key], PT_MODE, False)
+            technique_von_dict_20_50[key] = get_von_fit_avgbg(technique_dphi_dict_20_50[key], PT_MODE, False)
+            technique_von_dict_50_80[key] = get_von_fit_avgbg(technique_dphi_dict_50_80[key], PT_MODE, False)
+            technique_von_dict_0_80[key] = get_von_fit_avgbg(technique_dphi_dict_0_80[key], PT_MODE, False)
+
+
 
     if PT_MODE == 0:
         ns_technique_rms_0_20, as_technique_rms_0_20 = get_rms(technique_von_dict_0_20, technique_dphi_dict_0_20, "../figures/technique_variations_width_0_20")

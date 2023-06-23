@@ -13,8 +13,8 @@
 # python run_offline_v0.py config/offline_v0_config_pid_tof.ini 
 
 # python run_offline_v0.py config/offline_v0_config_yield_zyam.ini 
-python run_offline_v0.py config/offline_v0_config_yield_von.ini &
-python run_offline_v0.py config/offline_v0_config_yield_v2.ini &
+# python run_offline_v0.py config/offline_v0_config_yield_von.ini &
+# python run_offline_v0.py config/offline_v0_config_yield_v2.ini &
 # python run_offline_v0.py config/offline_v0_config_yield_gaus.ini 
 # python run_offline_v0.py config/offline_v0_config_yield_6binavgnonneg.ini 
 # python run_offline_v0.py config/offline_v0_config_yield_4binavg.ini
@@ -34,8 +34,8 @@ python run_offline_v0.py config/offline_v0_config_yield_v2.ini &
 # python run_offline_v0.py config/offline_v0_config_pid_tof_lowpt.ini 
 # python run_offline_v0.py config/offline_v0_config_yield_zyam_lowpt.ini 
 
-python run_offline_v0.py config/offline_v0_config_yield_von_lowpt.ini  &
-python run_offline_v0.py config/offline_v0_config_yield_v2_lowpt.ini &
+# python run_offline_v0.py config/offline_v0_config_yield_von_lowpt.ini  &
+# python run_offline_v0.py config/offline_v0_config_yield_v2_lowpt.ini &
 
 # python run_offline_v0.py config/offline_v0_config_yield_gaus_lowpt.ini 
 # python run_offline_v0.py config/offline_v0_config_yield_6binavgnonneg_lowpt.ini 
@@ -56,8 +56,8 @@ python run_offline_v0.py config/offline_v0_config_yield_v2_lowpt.ini &
 # python run_offline_v0.py config/offline_v0_config_pid_tof_highpt.ini 
 # python run_offline_v0.py config/offline_v0_config_yield_zyam_highpt.ini 
 
-python run_offline_v0.py config/offline_v0_config_yield_von_highpt.ini  &
-python run_offline_v0.py config/offline_v0_config_yield_v2_highpt.ini  &
+# python run_offline_v0.py config/offline_v0_config_yield_von_highpt.ini  &
+# python run_offline_v0.py config/offline_v0_config_yield_v2_highpt.ini  &
 
 # python run_offline_v0.py config/offline_v0_config_yield_gaus_highpt.ini 
 # python run_offline_v0.py config/offline_v0_config_yield_6binavgnonneg_highpt.ini 

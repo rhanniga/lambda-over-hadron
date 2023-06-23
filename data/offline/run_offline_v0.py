@@ -399,6 +399,24 @@ h_lambda_2d_subtracted_0_20 = apply_two_track_correction(h_lambda_2d_subtracted_
 # INTEGRAL AND RATIO SECTION
 h_lambda_dphi_subtracted_0_20 = h_lambda_2d_subtracted_0_20.ProjectionY("h_lambda_dphi_subtracted_0_20")
 
+# this is completely insane but i need to scale the PID stuff exactly prior to fitting
+if IS_WIDE_PID:
+    if PT_MODE == 0:
+        h_lambda_dphi_subtracted_0_20.Scale(0.9223032488724654)
+    elif PT_MODE == 1:
+        h_lambda_dphi_subtracted_0_20.Scale(0.9168476238506074)
+    elif PT_MODE == 2:
+        h_lambda_dphi_subtracted_0_20.Scale(0.9293847448569807)
+elif IS_NARROW_PID:
+    if PT_MODE == 0:
+        h_lambda_dphi_subtracted_0_20.Scale(1.1940715128854646)
+    elif PT_MODE == 1:
+        h_lambda_dphi_subtracted_0_20.Scale(1.1788960330443934)
+    elif PT_MODE == 2:
+        h_lambda_dphi_subtracted_0_20.Scale(1.1970913624774955)
+
+
+
 if USE_AVG_4:
 
     ue_line_0_20 = rt.TF1("ue_line_0_20", "pol0", -2, 6)
@@ -579,54 +597,58 @@ elif USE_VON:
                    + h_lambda_dphi_subtracted_0_20.GetBinContent(9)
                    + h_lambda_dphi_subtracted_0_20.GetBinContent(16))/6
 
-    v2_fit_0_20 = rt.TF1("v2_fit_0_20", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
+    v2_fit_0_20 = rt.TF1("v2_fit_0_20", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
     von_fit_string = "[0]*(1 + 2*([1]*[2]*cos(2*x)))"
     von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x))"
     von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()))"
 
-    von_fit_0_20 = rt.TF1("von_fit_0_20", von_fit_string, -2, 6)
+    von_fit_0_20 = rt.TF1("von_fit_0_20", von_fit_string, -rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
 
     if PT_MODE == 0:
         von_fit_0_20.FixParameter(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_2_4"][0])
         von_fit_0_20.FixParameter(1, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_2_4"][2])
         von_fit_0_20.FixParameter(2, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_2_4"][3])
-        von_fit_0_20.SetParLimits(3, 0.015/3, 0.015*3)
+        # von_fit_0_20.SetParLimits(3, 0.015/3, 0.015*3)
         von_fit_0_20.SetParameter(3, 0.015)
-        von_fit_0_20.SetParLimits(4, 7.6/3, 7.6*3)
+        # von_fit_0_20.SetParLimits(4, 7.6/3, 7.6*3)
         von_fit_0_20.SetParameter(4, 7.6)
-        von_fit_0_20.SetParLimits(5, 0.014/3, 0.014*3)
+        # von_fit_0_20.SetParLimits(5, 0.014/3, 0.014*3)
         von_fit_0_20.SetParameter(5, 0.014)
-        von_fit_0_20.SetParLimits(6, 2.2/3, 2.2*3)
+        # von_fit_0_20.SetParLimits(6, 2.2/3, 2.2*3)
         von_fit_0_20.SetParameter(6, 2.2)
     elif PT_MODE == 1:
         von_fit_0_20.FixParameter(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_15_25"][0])
         von_fit_0_20.FixParameter(1, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_15_25"][2])
         von_fit_0_20.FixParameter(2, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_15_25"][3])
-        von_fit_0_20.SetParLimits(3, 0.02/3, 0.02*3)
-        von_fit_0_20.SetParameter(3, 0.02)
-        von_fit_0_20.SetParLimits(4, 4.6/3, 4.6*3)
-        von_fit_0_20.SetParameter(4, 4.6)
-        von_fit_0_20.SetParLimits(5, 0.057/3, 0.057*3)
-        von_fit_0_20.SetParameter(5, 0.057)
-        von_fit_0_20.SetParLimits(6, 1/3, 1*3)
-        von_fit_0_20.SetParameter(6, 1)
+        # von_fit_0_20.SetParLimits(3, 0.02/3, 0.02*3)
+        von_fit_0_20.SetParameter(3, 0.0137579)
+        # von_fit_0_20.SetParLimits(4, 4.6/3, 4.6*3)
+        von_fit_0_20.SetParameter(4, 8.0)
+        # von_fit_0_20.SetParLimits(5, 0.057/5, 0.057*5)
+        von_fit_0_20.SetParameter(5, 1.33787e-2)
+        # von_fit_0_20.SetParLimits(6, 2/4, 8)
+        von_fit_0_20.SetParameter(6, 2.01496)
     elif PT_MODE == 2:
         von_fit_0_20.FixParameter(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_25_4"][0])
         von_fit_0_20.FixParameter(1, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_25_4"][2])
         von_fit_0_20.FixParameter(2, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_25_4"][3])
-        von_fit_0_20.SetParLimits(3, 0.009/3, 0.009*3)
+        # von_fit_0_20.SetParLimits(3, 0.009/3, 0.009*3)
         von_fit_0_20.SetParameter(3, 0.009)
-        von_fit_0_20.SetParLimits(4, 8.88/3, 8.88*3)
+        # von_fit_0_20.SetParLimits(4, 8.88/3, 8.88*3)
         von_fit_0_20.SetParameter(4, 8.88)
-        von_fit_0_20.SetParLimits(5, 0.0076/3, 0.0076*3)
+        # von_fit_0_20.SetParLimits(5, 0.0076/5, 0.0076*5)
         von_fit_0_20.SetParameter(5, 0.0076)
-        von_fit_0_20.SetParLimits(6, 2.55/3, 2.55*3)
+        # von_fit_0_20.SetParLimits(6, 2.55/3, 2.55*3)
         von_fit_0_20.SetParameter(6, 2.55)
 
 
     h_lambda_dphi_subtracted_with_fit_0_20 = h_lambda_dphi_subtracted_0_20.Clone("h_lambda_dphi_subtracted_with_fit_0_20")
-    fit_result_0_20 = h_lambda_dphi_subtracted_with_fit_0_20.Fit(von_fit_0_20, "R")
+    h_lambda_dphi_subtracted_with_fit_0_20.GetYaxis().SetRangeUser(0.9*h_lambda_dphi_subtracted_with_fit_0_20.GetMinimum(), 1.2*h_lambda_dphi_subtracted_with_fit_0_20.GetMaximum())
 
+    if PT_MODE == 1: # low pt has away-side width too large for von mises fit, only works if we symmetrize the peaks
+        fit_result_0_20 = h_lambda_dphi_subtracted_with_fit_0_20.Fit(von_fit_0_20, "R", "", -rt.TMath.Pi()/2, rt.TMath.Pi() - EPSILON)
+    else:
+        fit_result_0_20 = h_lambda_dphi_subtracted_with_fit_0_20.Fit(von_fit_0_20, "R")
 
     if PT_MODE == 0:
         v2_fit_0_20.SetParameter(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_2_4"][0])
@@ -643,7 +665,6 @@ elif USE_VON:
         v2_fit_0_20.SetParError(0, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_25_4"][1])
         v2_fit_0_20.SetParameter(1, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_25_4"][2])
         v2_fit_0_20.SetParameter(2, v2_fitpars_dict["h_lambda_cent_0_20_trigger_4_8_assoc_25_4"][3])
-
 
 else:
     raise NotImplementedError("UE line mode not supported")
@@ -1387,6 +1408,22 @@ h_lambda_2d_subtracted_20_50 = apply_two_track_correction(h_lambda_2d_subtracted
 # INTEGRAL AND RATIO SECTION
 h_lambda_dphi_subtracted_20_50 = h_lambda_2d_subtracted_20_50.ProjectionY("h_lambda_dphi_subtracted_20_50")
 
+# this is completely insane but i need to scale the PID stuff exactly prior to fitting
+if IS_WIDE_PID:
+    if PT_MODE == 0:
+        h_lambda_dphi_subtracted_20_50.Scale(0.9270985488699187)
+    elif PT_MODE == 1:
+        h_lambda_dphi_subtracted_20_50.Scale(0.9275249876914017)
+    elif PT_MODE == 2:
+        h_lambda_dphi_subtracted_20_50.Scale(0.9298246568065354)
+elif IS_NARROW_PID:
+    if PT_MODE == 0:
+        h_lambda_dphi_subtracted_20_50.Scale(1.1844748339350628)
+    elif PT_MODE == 1:
+        h_lambda_dphi_subtracted_20_50.Scale(1.1625641331436003)
+    elif PT_MODE == 2:
+        h_lambda_dphi_subtracted_20_50.Scale(1.1977363386098983)
+
 if USE_AVG_4:
 
     ue_line_20_50 = rt.TF1("ue_line_20_50", "pol0", -2, 6)
@@ -1421,6 +1458,7 @@ elif USE_AVG_6 or USE_AVG_6_NONNEGATIVE:
     zero_line_20_50 = rt.TF1("zero_line_20_50", "pol0", -2, 6)
     zero_upper_line_20_50 = rt.TF1("zero_upper_line_20_50", "pol0", -2, 6)
     zero_lower_line_20_50 = rt.TF1("zero_lower_line_20_50", "pol0", -2, 6)
+
     ue_avg_20_50 = (h_lambda_dphi_subtracted_20_50.GetBinContent(1) 
                    + h_lambda_dphi_subtracted_20_50.GetBinContent(2)
                    + h_lambda_dphi_subtracted_20_50.GetBinContent(7)
@@ -1570,6 +1608,7 @@ elif USE_VON:
                    + h_lambda_dphi_subtracted_20_50.GetBinContent(16))/6
 
     v2_fit_20_50 = rt.TF1("v2_fit_20_50", "[0]*(1 + 2*([1]*[2]*cos(2*x)))", -2, 6)
+
     von_fit_string = "[0]*(1 + 2*([1]*[2]*cos(2*x)))"
     von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x))"
     von_fit_string += " + [5]/(2*TMath::Pi()*TMath::BesselI0([6]))*TMath::Exp([6]*TMath::Cos(x- TMath::Pi()))"
@@ -1581,41 +1620,45 @@ elif USE_VON:
         von_fit_20_50.FixParameter(0, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_2_4"][0])
         von_fit_20_50.FixParameter(1, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_2_4"][2])
         von_fit_20_50.FixParameter(2, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_2_4"][3])
-        von_fit_20_50.SetParLimits(3, scale*0.015/3, scale*0.015*3)
+        # von_fit_20_50.SetParLimits(3, scale*0.015/3, scale*0.015*3)
         von_fit_20_50.SetParameter(3, scale*0.015)
-        von_fit_20_50.SetParLimits(4, (7.6/scale)/3, (7.6/scale)*3)
+        # von_fit_20_50.SetParLimits(4, (7.6/scale)/3, (7.6/scale)*3)
         von_fit_20_50.SetParameter(4, 7.6/scale)
-        von_fit_20_50.SetParLimits(5, scale*0.014/3, scale*0.014*3)
+        # von_fit_20_50.SetParLimits(5, scale*0.014/3, scale*0.014*3)
         von_fit_20_50.SetParameter(5, scale*0.014)
-        von_fit_20_50.SetParLimits(6, (2.2/scale)/3, (2.2/scale)*3)
+        # von_fit_20_50.SetParLimits(6, (2.2/scale)/3, (2.2/scale)*3)
         von_fit_20_50.SetParameter(6, 2.2/scale)
     elif PT_MODE == 1:
         von_fit_20_50.FixParameter(0, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_15_25"][0])
         von_fit_20_50.FixParameter(1, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_15_25"][2])
         von_fit_20_50.FixParameter(2, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_15_25"][3])
-        von_fit_20_50.SetParLimits(3, scale*0.02/3, scale*0.02*3)
+        # von_fit_20_50.SetParLimits(3, scale*0.02/6, scale*0.02*6)
         von_fit_20_50.SetParameter(3, scale*0.02)
-        von_fit_20_50.SetParLimits(4, (4.6/scale)/3, (4.6/scale)*3)
+        # von_fit_20_50.SetParLimits(4, (4.6/scale)/3, (4.6/scale)*3)
         von_fit_20_50.SetParameter(4, 4.6/scale)
-        von_fit_20_50.SetParLimits(5, scale*0.057/3, scale*0.057*3)
+        # von_fit_20_50.SetParLimits(5, scale*0.057/6, scale*0.057*6)
         von_fit_20_50.SetParameter(5, scale*0.057)
-        von_fit_20_50.SetParLimits(6, (1/scale)/3, (1/scale)*3)
+        # von_fit_20_50.SetParLimits(6, (1/scale), 3*(1/scale))
         von_fit_20_50.SetParameter(6, 1/scale)
     elif PT_MODE == 2:
         von_fit_20_50.FixParameter(0, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_25_4"][0])
         von_fit_20_50.FixParameter(1, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_25_4"][2])
         von_fit_20_50.FixParameter(2, v2_fitpars_dict["h_lambda_cent_20_50_trigger_4_8_assoc_25_4"][3])
-        von_fit_20_50.SetParLimits(3, scale*0.009/3, scale*0.009*3)
+        # von_fit_20_50.SetParLimits(3, scale*0.009/3, scale*0.009*3)
         von_fit_20_50.SetParameter(3, scale*0.009)
-        von_fit_20_50.SetParLimits(4, (8.88/scale)/3, (8.88/scale)*3)
+        # von_fit_20_50.SetParLimits(4, (8.88/scale)/3, (8.88/scale)*3)
         von_fit_20_50.SetParameter(4, 8.88/scale)
-        von_fit_20_50.SetParLimits(5, scale*0.0076/3, scale*0.0076*3)
+        # von_fit_20_50.SetParLimits(5, scale*0.0076/6, scale*0.0076*6)
         von_fit_20_50.SetParameter(5, scale*0.0076)
-        von_fit_20_50.SetParLimits(6, (2.55/scale)/3, (2.55/scale)*3)
+        # von_fit_20_50.SetParLimits(6, (2.55/scale)/3, (2.55/scale)*3)
         von_fit_20_50.SetParameter(6, 2.55/scale)
 
     h_lambda_dphi_subtracted_with_fit_20_50 = h_lambda_dphi_subtracted_20_50.Clone("h_lambda_dphi_subtracted_with_fit_20_50")
-    fit_result_20_50 = h_lambda_dphi_subtracted_with_fit_20_50.Fit(von_fit_20_50, "R")
+
+    if PT_MODE == 1: # low pt has away-side width too large for von mises fit, only works if we symmetrize the peaks
+        fit_result_20_50 = h_lambda_dphi_subtracted_with_fit_20_50.Fit(von_fit_20_50, "R", "", -rt.TMath.Pi()/2, rt.TMath.Pi() - EPSILON)
+    else:
+        fit_result_20_50 = h_lambda_dphi_subtracted_with_fit_20_50.Fit(von_fit_20_50, "R")
 
 
     if PT_MODE == 0:
@@ -2377,6 +2420,22 @@ h_lambda_2d_subtracted_50_80 = apply_two_track_correction(h_lambda_2d_subtracted
 # INTEGRAL AND RATIO SECTION
 h_lambda_dphi_subtracted_50_80 = h_lambda_2d_subtracted_50_80.ProjectionY("h_lambda_dphi_subtracted_50_80")
 
+# this is completely insane but i need to scale the PID stuff exactly prior to fitting
+if IS_WIDE_PID:
+    if PT_MODE == 0:
+        h_lambda_dphi_subtracted_50_80.Scale(0.9215763047724077)
+    elif PT_MODE == 1:
+        h_lambda_dphi_subtracted_50_80.Scale(0.9263212321482822)
+    elif PT_MODE == 2:
+        h_lambda_dphi_subtracted_50_80.Scale(0.919115638819075)
+elif IS_NARROW_PID:
+    if PT_MODE == 0:
+        h_lambda_dphi_subtracted_50_80.Scale(1.1569937866811322)
+    elif PT_MODE == 1:
+        h_lambda_dphi_subtracted_50_80.Scale(1.1573270204439357)
+    elif PT_MODE == 2:
+        h_lambda_dphi_subtracted_50_80.Scale(1.1450656317216028)
+
 if USE_AVG_4:
 
     ue_line_50_80 = rt.TF1("ue_line_50_80", "pol0", -2, 6)
@@ -2518,7 +2577,7 @@ elif USE_FIT:
 
 
     h_lambda_dphi_subtracted_with_fit_50_80 = h_lambda_dphi_subtracted_50_80.Clone("h_lambda_dphi_subtracted_with_fit_50_80")
-    fit_result_50_80 = h_lambda_dphi_subtracted_with_fit_50_80.Fit(fit_function_50_80, "RS")
+    fit_result_50_80 = h_lambda_dphi_subtracted_with_fit_50_80.Fit(fit_function_50_80, "R")
 
     ue_avg_fit_50_80 = rt.TF1("ue_avg_fit_50_80", "pol0", -2, 6)
     ue_avg_fit_50_80.SetParameter(0, ue_avg_50_80)
@@ -2571,41 +2630,44 @@ elif USE_VON:
         von_fit_50_80.FixParameter(0, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_2_4"][0])
         von_fit_50_80.FixParameter(1, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_2_4"][2])
         von_fit_50_80.FixParameter(2, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_2_4"][3])
-        von_fit_50_80.SetParLimits(3, scale*0.015/3, scale*0.015*3)
+        # von_fit_50_80.SetParLimits(3, scale*0.015/3, scale*0.015*3)
         von_fit_50_80.SetParameter(3, scale*0.015)
-        von_fit_50_80.SetParLimits(4, (7.6/scale)/3, (7.6/scale)*3)
+        # von_fit_50_80.SetParLimits(4, (7.6/scale)/3, (7.6/scale)*3)
         von_fit_50_80.SetParameter(4, 7.6/scale)
-        von_fit_50_80.SetParLimits(5, scale*0.014/3, scale*0.014*3)
+        # von_fit_50_80.SetParLimits(5, scale*0.014/3, scale*0.014*3)
         von_fit_50_80.SetParameter(5, scale*0.014)
-        von_fit_50_80.SetParLimits(6, 1, 10)
+        # von_fit_50_80.SetParLimits(6, 1, 10)
         von_fit_50_80.SetParameter(6, 5)
     elif PT_MODE == 1:
         von_fit_50_80.FixParameter(0, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_15_25"][0])
         von_fit_50_80.FixParameter(1, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_15_25"][2])
         von_fit_50_80.FixParameter(2, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_15_25"][3])
-        von_fit_50_80.SetParLimits(3, scale*0.02/3, scale*0.02*3)
+        # von_fit_50_80.SetParLimits(3, scale*0.02/6, scale*0.02*6)
         von_fit_50_80.SetParameter(3, scale*0.02)
-        von_fit_50_80.SetParLimits(4, (4.6/scale)/3, (4.6/scale)*3)
+        # von_fit_50_80.SetParLimits(4, (4.6/scale)/3, (4.6/scale)*3)
         von_fit_50_80.SetParameter(4, 4.6/scale)
-        von_fit_50_80.SetParLimits(5, scale*0.057/3, scale*0.057*3)
+        # von_fit_50_80.SetParLimits(5, scale*0.057/6, 6*scale*0.057)
         von_fit_50_80.SetParameter(5, scale*0.057)
-        von_fit_50_80.SetParLimits(6, 1, 10)
+        # von_fit_50_80.SetParLimits(6, 1, 10)
         von_fit_50_80.SetParameter(6, 3)
     elif PT_MODE == 2:
         von_fit_50_80.FixParameter(0, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_25_4"][0])
         von_fit_50_80.FixParameter(1, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_25_4"][2])
         von_fit_50_80.FixParameter(2, v2_fitpars_dict["h_lambda_cent_50_80_trigger_4_8_assoc_25_4"][3])
-        von_fit_50_80.SetParLimits(3, scale*0.009/3, scale*0.009*3)
+        # von_fit_50_80.SetParLimits(3, scale*0.009/3, scale*0.009*3)
         von_fit_50_80.SetParameter(3, scale*0.009)
-        von_fit_50_80.SetParLimits(4, (8.88/scale)/3, (8.88/scale)*3)
+        # von_fit_50_80.SetParLimits(4, (8.88/scale)/6, (8.88/scale)*6)
         von_fit_50_80.SetParameter(4, 8.88/scale)
-        von_fit_50_80.SetParLimits(5, scale*0.0076/3, scale*0.0076*3)
+        # von_fit_50_80.SetParLimits(5, scale*0.0076/6, scale*0.0076*6)
         von_fit_50_80.SetParameter(5, scale*0.0076)
-        von_fit_50_80.SetParLimits(6, 1, 10)
-        von_fit_50_80.SetParameter(6, 8)
+        # von_fit_50_80.SetParLimits(6, 1, 9)
+        von_fit_50_80.SetParameter(6, 3)
 
     h_lambda_dphi_subtracted_with_fit_50_80 = h_lambda_dphi_subtracted_50_80.Clone("h_lambda_dphi_subtracted_with_fit_50_80")
-    fit_result_50_80 = h_lambda_dphi_subtracted_with_fit_50_80.Fit(von_fit_50_80, "R")
+    if PT_MODE == 1: # low pt has away-side width too large for von mises fit, only works if we symmetrize the peaks
+        fit_result_50_80 = h_lambda_dphi_subtracted_with_fit_50_80.Fit(von_fit_50_80, "R", "", -rt.TMath.Pi()/2, rt.TMath.Pi() - EPSILON)
+    else:
+        fit_result_50_80 = h_lambda_dphi_subtracted_with_fit_50_80.Fit(von_fit_50_80, "R")
 
 
     if PT_MODE == 0:
@@ -3512,7 +3574,8 @@ elif USE_FIT:
 
 
     h_lambda_dphi_subtracted_with_fit_0_80 = h_lambda_dphi_subtracted_0_80.Clone("h_lambda_dphi_subtracted_with_fit_0_80")
-    fit_result_0_80 = h_lambda_dphi_subtracted_with_fit_0_80.Fit(fit_function_0_80, "RS")
+    fit_result_0_80 = h_lambda_dphi_subtracted_with_fit_0_80.Fit(fit_function_0_80, "R")
+
 
     ue_avg_fit_0_80 = rt.TF1("ue_avg_fit_0_80", "pol0", -2, 6)
     ue_avg_fit_0_80.SetParameter(0, ue_avg_0_80)
@@ -3582,7 +3645,7 @@ elif USE_VON:
         von_fit_0_80.SetParameter(4, 4.6)
         von_fit_0_80.SetParLimits(5, 0.057/3, 0.057*3)
         von_fit_0_80.SetParameter(5, 0.057)
-        von_fit_0_80.SetParLimits(6, 1/3, 1*3)
+        von_fit_0_80.SetParLimits(6, 1/3, 3)
         von_fit_0_80.SetParameter(6, 1)
     elif PT_MODE == 2:
         von_fit_0_80.FixParameter(0, v2_fitpars_dict["h_lambda_cent_0_80_trigger_4_8_assoc_25_4"][0])
@@ -3598,7 +3661,10 @@ elif USE_VON:
         von_fit_0_80.SetParameter(6, 2.55)
 
     h_lambda_dphi_subtracted_with_fit_0_80 = h_lambda_dphi_subtracted_0_80.Clone("h_lambda_dphi_subtracted_with_fit_0_80")
-    fit_result_0_80 = h_lambda_dphi_subtracted_with_fit_0_80.Fit(von_fit_0_80, "R")
+    if PT_MODE == 1: # low pt has away-side width too large for von mises fit, only works if we symmetrize the peaks
+        fit_result_0_80 = h_lambda_dphi_subtracted_with_fit_0_80.Fit(von_fit_0_80, "R", "", 0, rt.TMath.Pi())
+    else:
+        fit_result_0_80 = h_lambda_dphi_subtracted_with_fit_0_80.Fit(von_fit_0_80, "R")
 
 
     if PT_MODE == 0:
