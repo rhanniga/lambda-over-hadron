@@ -22,6 +22,7 @@ low_pt_infile = rt.TFile("../output/yield_variation/v0_von_sideband_subtraction_
 high_pt_infile = rt.TFile("../output/yield_variation/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_25_40_delta_eta_12_normal_highpt.root")
 normal_pt_infile = rt.TFile("../output/yield_variation/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
 
+
 for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
 
     h_h_dphi_0_20 = f.Get("h_h_dphi_0_20")
@@ -348,8 +349,27 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
     # if i != 2:
     #     continue
 
+    syst_infile = rt.TFile("../systematics_scripts/width_syst_out.root", "READ")
+
+    if i == 0:
+        h_lambda_ns_syst_graph = syst_infile.Get("ns_total_syst")
+        h_lambda_as_syst_graph = syst_infile.Get("as_total_syst")
+        h_h_ns_syst_graph = syst_infile.Get("hh_ns_total_syst")
+        h_h_as_syst_graph = syst_infile.Get("hh_as_total_syst")
+    elif i == 1:
+        h_lambda_ns_syst_graph = syst_infile.Get("ns_total_syst_lowpt")
+        h_lambda_as_syst_graph = syst_infile.Get("as_total_syst_lowpt")
+        h_h_ns_syst_graph = syst_infile.Get("hh_ns_total_syst_lowpt")
+        h_h_as_syst_graph = syst_infile.Get("hh_as_total_syst_lowpt")
+    elif i == 2:
+        h_lambda_ns_syst_graph = syst_infile.Get("ns_total_syst_highpt")
+        h_lambda_as_syst_graph = syst_infile.Get("as_total_syst_highpt")
+        h_h_ns_syst_graph = syst_infile.Get("hh_ns_total_syst_highpt")
+        h_h_as_syst_graph = syst_infile.Get("hh_as_total_syst_highpt")
+
     mult_array = arr('d', [35, 65, 90])
     mult_array_err = arr('d', [15, 15, 10])
+    mult_array_err_syst = arr('d', [3, 3, 3])
     tmp_width_array_err = arr('d', [0, 0, 0])
 
     h_h_kappa_near_0_20 = h_h_von_fit_0_20.GetParameter(4)
@@ -367,6 +387,12 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
     h_h_near_width_array = arr('d', [h_h_width_near_50_80, h_h_width_near_20_50, h_h_width_near_0_20])
     h_h_near_width_error_array = arr('d', [h_h_width_error_near_50_80, h_h_width_error_near_20_50, h_h_width_error_near_0_20])
 
+    h_h_near_width_syst_error_array = arr('d', [
+        h_h_ns_syst_graph.GetY()[0]*h_h_width_near_50_80,
+        h_h_ns_syst_graph.GetY()[1]*h_h_width_near_20_50,
+        h_h_ns_syst_graph.GetY()[2]*h_h_width_near_0_20
+    ])
+
     h_h_kappa_away_0_20 = h_h_von_fit_0_20.GetParameter(6)
     h_h_kappa_away_20_50 = h_h_von_fit_20_50.GetParameter(6)
     h_h_kappa_away_50_80 = h_h_von_fit_50_80.GetParameter(6)
@@ -381,6 +407,12 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
     h_h_width_error_away_50_80 = get_width_error_from_kappa(h_h_kappa_away_50_80, h_h_kappa_away_error_50_80)
     h_h_away_width_array = arr('d', [h_h_width_away_50_80, h_h_width_away_20_50, h_h_width_away_0_20])
     h_h_away_width_error_array = arr('d', [h_h_width_error_away_50_80, h_h_width_error_away_20_50, h_h_width_error_away_0_20])
+
+    h_h_away_width_syst_error_array = arr('d', [
+        h_h_as_syst_graph.GetY()[0]*h_h_width_away_50_80,
+        h_h_as_syst_graph.GetY()[1]*h_h_width_away_20_50,
+        h_h_as_syst_graph.GetY()[2]*h_h_width_away_0_20
+    ])
 
 
     h_lambda_kappa_near_0_20 = h_lambda_von_fit_0_20.GetParameter(4)
@@ -397,6 +429,13 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
     h_lambda_width_error_near_50_80 = get_width_error_from_kappa(h_lambda_kappa_near_50_80, h_lambda_kappa_near_error_50_80)
     h_lambda_near_width_array = arr('d', [h_lambda_width_near_50_80, h_lambda_width_near_20_50, h_lambda_width_near_0_20])
     h_lambda_near_width_error_array = arr('d', [h_lambda_width_error_near_50_80, h_lambda_width_error_near_20_50, h_lambda_width_error_near_0_20])
+
+    h_lambda_near_width_syst_error_array = arr('d', [
+        h_lambda_ns_syst_graph.GetY()[0]*h_lambda_width_near_50_80,
+        h_lambda_ns_syst_graph.GetY()[1]*h_lambda_width_near_20_50,
+        h_lambda_ns_syst_graph.GetY()[2]*h_lambda_width_near_0_20
+    ])
+
     h_lambda_kappa_away_0_20 = h_lambda_von_fit_0_20.GetParameter(6)
     h_lambda_kappa_away_20_50 = h_lambda_von_fit_20_50.GetParameter(6)
     h_lambda_kappa_away_50_80 = h_lambda_von_fit_50_80.GetParameter(6)
@@ -411,6 +450,12 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
     h_lambda_width_error_away_50_80 = get_width_error_from_kappa(h_lambda_kappa_away_50_80, h_lambda_kappa_away_error_50_80)
     h_lambda_away_width_array = arr('d', [h_lambda_width_away_50_80, h_lambda_width_away_20_50, h_lambda_width_away_0_20])
     h_lambda_away_width_error_array = arr('d', [h_lambda_width_error_away_50_80, h_lambda_width_error_away_20_50, h_lambda_width_error_away_0_20])
+
+    h_lambda_away_width_syst_error_array = arr('d', [
+        h_lambda_as_syst_graph.GetY()[0]*h_lambda_width_away_50_80,
+        h_lambda_as_syst_graph.GetY()[1]*h_lambda_width_away_20_50,
+        h_lambda_as_syst_graph.GetY()[2]*h_lambda_width_away_0_20
+    ])
 
     h_phi_fit_file = rt.TFile("../output/h_phi_fits.root", "READ")
     h_phi_von_fit_0_20 = h_phi_fit_file.Get("h_phi_von_fit_0_20")
@@ -462,35 +507,71 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
     
     # h_h_near_width_graph = rt.TGraphErrors(3, mult_array, h_h_near_width_array, mult_array_err, tmp_width_array_err)
     h_h_near_width_graph = rt.TGraphErrors(3, mult_array, h_h_near_width_array, mult_array_err, h_h_near_width_error_array)
-    h_h_near_width_graph.SetLineColor(rt.kRed)
+    h_h_near_width_graph_syst = rt.TGraphErrors(3, mult_array, h_h_near_width_array, mult_array_err_syst, h_h_near_width_syst_error_array)
+
+    h_h_near_width_graph.SetLineColor(rt.kRed+3)
     h_h_near_width_graph.SetLineWidth(2)
     h_h_near_width_graph.SetMarkerStyle(20)
     h_h_near_width_graph.SetMarkerSize(2)
-    h_h_near_width_graph.SetMarkerColor(rt.kRed)
+    h_h_near_width_graph.SetMarkerColor(rt.kRed+3)
+
+    h_h_near_width_graph_syst.SetMarkerStyle(21)
+    h_h_near_width_graph_syst.SetMarkerSize(0)
+    h_h_near_width_graph_syst.SetMarkerColor(rt.kRed+3)
+    h_h_near_width_graph_syst.SetLineColor(rt.kRed+3)
+    h_h_near_width_graph_syst.SetLineWidth(2)
+    h_h_near_width_graph_syst.SetFillStyle(0)
 
     # h_h_away_width_graph = rt.TGraphErrors(3, mult_array, h_h_away_width_array, mult_array_err, tmp_width_array_err)
     h_h_away_width_graph = rt.TGraphErrors(3, mult_array, h_h_away_width_array, mult_array_err, h_h_away_width_error_array)
-    h_h_away_width_graph.SetLineColor(rt.kBlue)
+    h_h_away_width_graph_syst = rt.TGraphErrors(3, mult_array, h_h_away_width_array, mult_array_err_syst, h_h_away_width_syst_error_array)
+
+    h_h_away_width_graph.SetLineColor(rt.kBlue+2)
     h_h_away_width_graph.SetLineWidth(2)
     h_h_away_width_graph.SetMarkerStyle(20)
     h_h_away_width_graph.SetMarkerSize(2)
-    h_h_away_width_graph.SetMarkerColor(rt.kBlue)
-    
+    h_h_away_width_graph.SetMarkerColor(rt.kBlue+2)
+
+    h_h_away_width_graph_syst.SetMarkerStyle(21)
+    h_h_away_width_graph_syst.SetMarkerSize(0)
+    h_h_away_width_graph_syst.SetMarkerColor(rt.kBlue+2)
+    h_h_away_width_graph_syst.SetLineColor(rt.kBlue+2)
+    h_h_away_width_graph_syst.SetLineWidth(2)
+    h_h_away_width_graph_syst.SetFillStyle(0)
+
 
     # h_lambda_near_width_graph = rt.TGraphErrors(3, mult_array, h_lambda_near_width_array, mult_array_err, tmp_width_array_err)
     h_lambda_near_width_graph = rt.TGraphErrors(3, mult_array, h_lambda_near_width_array, mult_array_err, h_lambda_near_width_error_array)
-    h_lambda_near_width_graph.SetLineColor(rt.kRed)
+    h_lambda_near_width_graph_syst = rt.TGraphErrors(3, mult_array, h_lambda_near_width_array, mult_array_err_syst, h_lambda_near_width_syst_error_array)
+
+    h_lambda_near_width_graph.SetLineColor(rt.kRed-7)
     h_lambda_near_width_graph.SetLineWidth(2)
     h_lambda_near_width_graph.SetMarkerStyle(43)
     h_lambda_near_width_graph.SetMarkerSize(2.5)
-    h_lambda_near_width_graph.SetMarkerColor(rt.kRed)
-    # h_lambda_away_width_graph = rt.TGraphErrors(3, mult_array, h_lambda_away_width_array, mult_array_err, tmp_width_array_err)
+    h_lambda_near_width_graph.SetMarkerColor(rt.kRed-7)
+
+    h_lambda_near_width_graph_syst.SetMarkerStyle(21)
+    h_lambda_near_width_graph_syst.SetMarkerSize(0)
+    h_lambda_near_width_graph_syst.SetMarkerColor(rt.kRed-7)
+    h_lambda_near_width_graph_syst.SetLineColor(rt.kRed-7)
+    h_lambda_near_width_graph_syst.SetLineWidth(2)
+    h_lambda_near_width_graph_syst.SetFillStyle(0)
+
     h_lambda_away_width_graph = rt.TGraphErrors(3, mult_array, h_lambda_away_width_array, mult_array_err, h_lambda_away_width_error_array)
-    h_lambda_away_width_graph.SetLineColor(rt.kBlue)
+    h_lambda_away_width_graph_syst = rt.TGraphErrors(3, mult_array, h_lambda_away_width_array, mult_array_err_syst, h_lambda_away_width_syst_error_array)
+
+    h_lambda_away_width_graph.SetLineColor(rt.kCyan-2)
     h_lambda_away_width_graph.SetLineWidth(2)
     h_lambda_away_width_graph.SetMarkerStyle(43)
     h_lambda_away_width_graph.SetMarkerSize(2.5)
-    h_lambda_away_width_graph.SetMarkerColor(rt.kBlue)
+    h_lambda_away_width_graph.SetMarkerColor(rt.kCyan-2)
+
+    h_lambda_away_width_graph_syst.SetMarkerStyle(21)
+    h_lambda_away_width_graph_syst.SetMarkerSize(0)
+    h_lambda_away_width_graph_syst.SetMarkerColor(rt.kCyan-2)
+    h_lambda_away_width_graph_syst.SetLineColor(rt.kCyan-2)
+    h_lambda_away_width_graph_syst.SetLineWidth(2)
+    h_lambda_away_width_graph_syst.SetFillStyle(0)
 
     # h_phi_near_width_graph = rt.TGraphErrors(3, mult_array, h_phi_near_width_array, mult_array_err, tmp_width_array_err)
     h_phi_near_width_graph = rt.TGraphErrors(3, mult_array, h_phi_near_width_array, mult_array_err, h_phi_near_width_error_array)
@@ -554,6 +635,8 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
     h_h_width_legend.Draw()
     h_h_near_width_graph.Draw("sameP")
     h_h_away_width_graph.Draw("sameP")
+    h_h_near_width_graph_syst.Draw("same e2")
+    h_h_away_width_graph_syst.Draw("same e2")
 
     h_lambda_width_legend = rt.TLegend(0.35, 0.7, 0.51, 0.9)
     h_lambda_width_legend.AddEntry(h_lambda_near_width_graph, "h-#Lambda, near-side", "p")
@@ -562,6 +645,8 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
     h_lambda_width_legend.Draw()
     h_lambda_near_width_graph.Draw("sameP")
     h_lambda_away_width_graph.Draw("sameP")
+    h_lambda_near_width_graph_syst.Draw("same e2")
+    h_lambda_away_width_graph_syst.Draw("same e2")
 
     # h_phi_width_legend = rt.TLegend(0.51, 0.7, 0.68, 0.9)
     # h_phi_width_legend.AddEntry(h_phi_near_width_graph, "h-#phi, near-side", "p")
