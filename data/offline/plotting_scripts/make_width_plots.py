@@ -18,9 +18,9 @@ c.SetTopMargin(0.05)
 c.SetBottomMargin(0.15)
 
 
-low_pt_infile = rt.TFile("output/yield_variation/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_15_25_delta_eta_12_normal_lowpt.root")
-high_pt_infile = rt.TFile("output/yield_variation/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_25_40_delta_eta_12_normal_highpt.root")
-normal_pt_infile = rt.TFile("output/yield_variation/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
+low_pt_infile = rt.TFile("../output/yield_variation/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_15_25_delta_eta_12_normal_lowpt.root")
+high_pt_infile = rt.TFile("../output/yield_variation/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_25_40_delta_eta_12_normal_highpt.root")
+normal_pt_infile = rt.TFile("../output/yield_variation/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
 
 for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
 
@@ -344,9 +344,9 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
 
     # parameter 4 == near side, parameter 6 == away side
 
-    # only doing width comp with phi for 2-4 GeV bin
-    if i != 2:
-        continue
+    # # only doing width comp with phi for 2-4 GeV bin
+    # if i != 2:
+    #     continue
 
     mult_array = arr('d', [35, 65, 90])
     mult_array_err = arr('d', [15, 15, 10])
@@ -412,7 +412,7 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
     h_lambda_away_width_array = arr('d', [h_lambda_width_away_50_80, h_lambda_width_away_20_50, h_lambda_width_away_0_20])
     h_lambda_away_width_error_array = arr('d', [h_lambda_width_error_away_50_80, h_lambda_width_error_away_20_50, h_lambda_width_error_away_0_20])
 
-    h_phi_fit_file = rt.TFile("output/h_phi_fits.root", "READ")
+    h_phi_fit_file = rt.TFile("../output/h_phi_fits.root", "READ")
     h_phi_von_fit_0_20 = h_phi_fit_file.Get("h_phi_von_fit_0_20")
     h_phi_von_fit_20_50 = h_phi_fit_file.Get("h_phi_von_fit_20_50")
     h_phi_von_fit_50_80 = h_phi_fit_file.Get("h_phi_von_fit_50_80")
@@ -531,9 +531,9 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
     plotting_hist.GetXaxis().SetTickSize(0)
 
     if i == 0:
-        plotting_hist.GetYaxis().SetRangeUser(0.1, 2.0)
+        plotting_hist.GetYaxis().SetRangeUser(0.1, 1.3)
     else:
-        plotting_hist.GetYaxis().SetRangeUser(0.1, 2.0)
+        plotting_hist.GetYaxis().SetRangeUser(0.1, 1.3)
     rt.gPad.Update()
     new_axis = rt.TGaxis(rt.gPad.GetUxmax(),
             rt.gPad.GetUymin(),
@@ -563,13 +563,13 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
     h_lambda_near_width_graph.Draw("sameP")
     h_lambda_away_width_graph.Draw("sameP")
 
-    h_phi_width_legend = rt.TLegend(0.51, 0.7, 0.68, 0.9)
-    h_phi_width_legend.AddEntry(h_phi_near_width_graph, "h-#phi, near-side", "p")
-    h_phi_width_legend.AddEntry(h_phi_away_width_graph, "h-#phi, away-side", "p")
-    h_phi_width_legend.SetBorderSize(0)
-    h_phi_width_legend.Draw()
-    h_phi_near_width_graph.Draw("sameP")
-    h_phi_away_width_graph.Draw("sameP")
+    # h_phi_width_legend = rt.TLegend(0.51, 0.7, 0.68, 0.9)
+    # h_phi_width_legend.AddEntry(h_phi_near_width_graph, "h-#phi, near-side", "p")
+    # h_phi_width_legend.AddEntry(h_phi_away_width_graph, "h-#phi, away-side", "p")
+    # h_phi_width_legend.SetBorderSize(0)
+    # h_phi_width_legend.Draw()
+    # h_phi_near_width_graph.Draw("sameP")
+    # h_phi_away_width_graph.Draw("sameP")
 
     c.Draw()
     if i == 0:

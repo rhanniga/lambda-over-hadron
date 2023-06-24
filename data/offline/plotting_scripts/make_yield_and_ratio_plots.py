@@ -199,15 +199,23 @@ for PT_MODE in [0, 1, 2]:
             away_ratio_graph_final_syst.SetLineWidth(2)
             away_ratio_graph_final_syst.SetFillStyle(0)
 
-            # for i in range(ue_ratio_graph.GetN()):
-            #     ue_ratio_graph.SetPointError(i, ue_ratio_graph.GetErrorX(i), ue_ratio_graph_final_syst.GetErrorY(i))
-            ue_ratio_graph.SetMarkerStyle(43)
-            ue_ratio_graph.SetMarkerSize(2)
+            for i in range(ue_ratio_graph.GetN()):
+                ue_ratio_graph.SetPointError(i, ue_ratio_graph.GetErrorX(i), ue_ratio_graph_final_syst.GetErrorY(i))
+            ue_ratio_graph.SetMarkerStyle(0)
+            ue_ratio_graph.SetMarkerSize(0)
             ue_ratio_graph.SetMarkerColor(rt.kGreen+2)
             ue_ratio_graph.SetLineColor(rt.kGreen+3)
-            ue_ratio_graph.SetLineWidth(2)
-            ue_ratio_graph.SetFillStyle(3002)
+            ue_ratio_graph.SetLineWidth(0)
+            ue_ratio_graph.SetFillStyle(3244)
             ue_ratio_graph.SetFillColor(rt.kGreen+1)
+
+            # ue_ratio_graph.SetMarkerStyle(43)
+            # ue_ratio_graph.SetMarkerSize(2)
+            # ue_ratio_graph.SetMarkerColor(rt.kGreen+2)
+            # ue_ratio_graph.SetLineColor(rt.kGreen+3)
+            # ue_ratio_graph.SetLineWidth(2)
+            # ue_ratio_graph.SetFillStyle(3002)
+            # ue_ratio_graph.SetFillColor(rt.kGreen+1)
 
             ue_ratio_graph_final_syst.SetMarkerStyle(43)
             ue_ratio_graph_final_syst.SetMarkerSize(0)
@@ -269,7 +277,7 @@ for PT_MODE in [0, 1, 2]:
             ratios_legend.SetMargin(0.35)
             ratios_legend.AddEntry(near_ratio_graph, "Near-side (Jet)", "lp")
             ratios_legend.AddEntry(away_ratio_graph, "Away-side (Jet)", "lp")
-            ratios_legend.AddEntry(ue_ratio_graph, "Underlying Event", "lp")
+            ratios_legend.AddEntry(ue_ratio_graph, "Underlying Event", "f")
             # ratios_legend.AddEntry(total_ratio_graph, "Total (Jet + UE)", "pl")
             ratios_legend.SetLineWidth(0)
 
@@ -317,7 +325,7 @@ for PT_MODE in [0, 1, 2]:
 
                 if lambda_phi_ratio:
                     plotting_hist.GetYaxis().SetTitle("Yield Ratio #left(#frac{h#minus#Lambda}{h#minus#phi}#right)")
-                    plotting_hist.GetYaxis().SetRangeUser(4, 26)
+                    plotting_hist.GetYaxis().SetRangeUser(0, 30)
                 else:
                     plotting_hist.GetYaxis().SetRangeUser(0.0, 0.40)
                     plotting_hist.GetYaxis().SetTitle("Yield Ratio #left(#frac{h#minus#Lambda}{h#minush}#right)")
@@ -365,8 +373,8 @@ for PT_MODE in [0, 1, 2]:
             near_ratio_graph_final_syst.Draw("E2 SAME")
             away_ratio_graph.Draw("PE SAME")
             away_ratio_graph_final_syst.Draw("E2 SAME")
-            ue_ratio_graph.Draw("PE SAME")
-            ue_ratio_graph_final_syst.Draw("E2 SAME")
+            ue_ratio_graph.Draw("E2 SAME")
+            # ue_ratio_graph_final_syst.Draw("E2 SAME")
             if not use_new_x_axis:
                 dpmjet_near_ratio_graph.SetFillColor(rt.kRed+1)
                 dpmjet_near_ratio_graph.SetFillStyle(3001)

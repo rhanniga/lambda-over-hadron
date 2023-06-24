@@ -349,7 +349,6 @@ for PT_MODE in range(3):
         ns_sideband_rms_0_20, as_sideband_rms_0_20 = get_rms(sideband_von_dict_0_20, sideband_dphi_dict_0_20, "../figures/sideband_variations_width_0_20_highpt")
         ns_sideband_rms_20_50, as_sideband_rms_20_50 = get_rms(sideband_von_dict_20_50, sideband_dphi_dict_20_50, "../figures/sideband_variations_width_20_50_highpt")
         ns_sideband_rms_50_80, as_sideband_rms_50_80 = get_rms(sideband_von_dict_50_80, sideband_dphi_dict_50_80, "../figures/sideband_variations_width_50_80_highpt")
-    
 
 
     if PT_MODE == 0:
@@ -407,16 +406,6 @@ for PT_MODE in range(3):
         ns_pid_rms_20_50, as_pid_rms_20_50 = get_rms(pid_von_dict_20_50, pid_dphi_dict_20_50, "../figures/pid_variations_width_20_50_highpt", True)
         ns_pid_rms_50_80, as_pid_rms_50_80 = get_rms(pid_von_dict_50_80, pid_dphi_dict_50_80, "../figures/pid_variations_width_50_80_highpt", True)
 
-    
-    print("NS 0-20% total systematic: {}".format(math.sqrt(ns_pid_rms_0_20**2 + ns_signal_rms_0_20**2 + ns_sideband_rms_0_20**2)))
-    print("AS 0-20% total systematic: {}".format(math.sqrt(as_pid_rms_0_20**2 + as_signal_rms_0_20**2 + as_sideband_rms_0_20**2)))
-
-    print("NS 20-50% total systematic: {}".format(math.sqrt(ns_pid_rms_20_50**2 + ns_signal_rms_20_50**2 + ns_sideband_rms_20_50**2)))
-    print("AS 20-50% total systematic: {}".format(math.sqrt(as_pid_rms_20_50**2 + as_signal_rms_20_50**2 + as_sideband_rms_20_50**2)))
-
-    print("NS 50-80% total systematic: {}".format(math.sqrt(ns_pid_rms_50_80**2 + ns_signal_rms_50_80**2 + ns_sideband_rms_50_80**2)))
-    print("AS 50-80% total systematic: {}".format(math.sqrt(as_pid_rms_50_80**2 + as_signal_rms_50_80**2 + as_sideband_rms_50_80**2)))
-
 
     if PT_MODE == 0:
         technique_central_file = rt.TFile.Open("../output/central_value/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
@@ -440,54 +429,342 @@ for PT_MODE in range(3):
     technique_von_dict_20_50 = {}
     technique_von_dict_50_80 = {}
     technique_von_dict_0_80 = {}
-
     technique_dphi_dict_0_20 = {}
     technique_dphi_dict_20_50 = {}
     technique_dphi_dict_50_80 = {}
     technique_dphi_dict_0_80 = {}
 
-    for key, file in technique_file_dict.items():
+    hh_technique_von_dict_0_20 = {}
+    hh_technique_von_dict_20_50 = {}
+    hh_technique_von_dict_50_80 = {}
+    hh_technique_von_dict_0_80 = {}
 
+    hh_technique_dphi_dict_0_20 = {}
+    hh_technique_dphi_dict_20_50 = {}
+    hh_technique_dphi_dict_50_80 = {}
+    hh_technique_dphi_dict_0_80 = {}
+
+    for key, file in technique_file_dict.items():
 
         technique_dphi_dict_0_20[key] = file.Get("h_lambda_dphi_subtracted_0_20")
         technique_dphi_dict_20_50[key] = file.Get("h_lambda_dphi_subtracted_20_50")
         technique_dphi_dict_50_80[key] = file.Get("h_lambda_dphi_subtracted_50_80")
         technique_dphi_dict_0_80[key] = file.Get("h_lambda_dphi_subtracted_0_80")
 
+        hh_technique_dphi_dict_0_20[key] = file.Get("h_h_dphi_0_20")
+        hh_technique_dphi_dict_20_50[key] = file.Get("h_h_dphi_20_50")
+        hh_technique_dphi_dict_50_80[key] = file.Get("h_h_dphi_50_80")
+        hh_technique_dphi_dict_0_80[key] = file.Get("h_h_dphi_0_80")
+
         if key == "gaus":
+
             technique_von_dict_0_20[key] = file.Get("fit_function_0_20")
             technique_von_dict_20_50[key] = file.Get("fit_function_20_50")
             technique_von_dict_50_80[key] = file.Get("fit_function_50_80")
             technique_von_dict_0_80[key] = file.Get("fit_function_0_80")
+            
+            hh_technique_von_dict_0_20[key] = file.Get("hh_fit_function_0_20")
+            hh_technique_von_dict_20_50[key] = file.Get("hh_fit_function_20_50")
+            hh_technique_von_dict_50_80[key] = file.Get("hh_fit_function_50_80")
+            hh_technique_von_dict_0_80[key] = file.Get("hh_fit_function_0_80")
+
         elif key == "central value":
+
             technique_von_dict_0_20[key] = file.Get("von_fit_0_20")
             technique_von_dict_20_50[key] = file.Get("von_fit_20_50")
             technique_von_dict_50_80[key] = file.Get("von_fit_50_80")
             technique_von_dict_0_80[key] = file.Get("von_fit_0_80")
+
+            hh_technique_von_dict_0_20[key] = file.Get("hh_von_fit_0_20")
+            hh_technique_von_dict_20_50[key] = file.Get("hh_von_fit_20_50")
+            hh_technique_von_dict_50_80[key] = file.Get("hh_von_fit_50_80")
+            hh_technique_von_dict_0_80[key] = file.Get("hh_von_fit_0_80")
+
         elif key == "avg6":
+
             technique_von_dict_0_20[key] = get_von_fit_avgbg(technique_dphi_dict_0_20[key], PT_MODE)
             technique_von_dict_20_50[key] = get_von_fit_avgbg(technique_dphi_dict_20_50[key], PT_MODE)
             technique_von_dict_50_80[key] = get_von_fit_avgbg(technique_dphi_dict_50_80[key], PT_MODE)
             technique_von_dict_0_80[key] = get_von_fit_avgbg(technique_dphi_dict_0_80[key], PT_MODE)
+
+            hh_technique_von_dict_0_20[key] = get_von_fit_avgbg(hh_technique_dphi_dict_0_20[key], PT_MODE)
+            hh_technique_von_dict_20_50[key] = get_von_fit_avgbg(hh_technique_dphi_dict_20_50[key], PT_MODE)
+            hh_technique_von_dict_50_80[key] = get_von_fit_avgbg(hh_technique_dphi_dict_50_80[key], PT_MODE)
+            hh_technique_von_dict_0_80[key] = get_von_fit_avgbg(hh_technique_dphi_dict_0_80[key], PT_MODE)
+
         elif key == "avg4":
+
             technique_von_dict_0_20[key] = get_von_fit_avgbg(technique_dphi_dict_0_20[key], PT_MODE, False)
             technique_von_dict_20_50[key] = get_von_fit_avgbg(technique_dphi_dict_20_50[key], PT_MODE, False)
             technique_von_dict_50_80[key] = get_von_fit_avgbg(technique_dphi_dict_50_80[key], PT_MODE, False)
             technique_von_dict_0_80[key] = get_von_fit_avgbg(technique_dphi_dict_0_80[key], PT_MODE, False)
 
+            hh_technique_von_dict_0_20[key] = get_von_fit_avgbg(hh_technique_dphi_dict_0_20[key], PT_MODE, False)
+            hh_technique_von_dict_20_50[key] = get_von_fit_avgbg(hh_technique_dphi_dict_20_50[key], PT_MODE, False)
+            hh_technique_von_dict_50_80[key] = get_von_fit_avgbg(hh_technique_dphi_dict_50_80[key], PT_MODE, False)
+            hh_technique_von_dict_0_80[key] = get_von_fit_avgbg(hh_technique_dphi_dict_0_80[key], PT_MODE, False)
+
 
 
     if PT_MODE == 0:
+
         ns_technique_rms_0_20, as_technique_rms_0_20 = get_rms(technique_von_dict_0_20, technique_dphi_dict_0_20, "../figures/technique_variations_width_0_20")
         ns_technique_rms_20_50, as_technique_rms_20_50 = get_rms(technique_von_dict_20_50, technique_dphi_dict_20_50, "../figures/technique_variations_width_20_50")
         ns_technique_rms_50_80, as_technique_rms_50_80 = get_rms(technique_von_dict_50_80, technique_dphi_dict_50_80, "../figures/technique_variations_width_50_80")
+
+        ns_hh_technique_rms_0_20, as_hh_technique_rms_0_20 = get_rms(hh_technique_von_dict_0_20, hh_technique_dphi_dict_0_20, "../figures/hh_technique_variations_width_0_20")
+        ns_hh_technique_rms_20_50, as_hh_technique_rms_20_50 = get_rms(hh_technique_von_dict_20_50, hh_technique_dphi_dict_20_50, "../figures/hh_technique_variations_width_20_50")
+        ns_hh_technique_rms_50_80, as_hh_technique_rms_50_80 = get_rms(hh_technique_von_dict_50_80, hh_technique_dphi_dict_50_80, "../figures/hh_technique_variations_width_50_80")
+
+        
     elif PT_MODE == 1:
+
         ns_technique_rms_0_20, as_technique_rms_0_20 = get_rms(technique_von_dict_0_20, technique_dphi_dict_0_20, "../figures/technique_variations_width_0_20_lowpt")
         ns_technique_rms_20_50, as_technique_rms_20_50 = get_rms(technique_von_dict_20_50, technique_dphi_dict_20_50, "../figures/technique_variations_width_20_50_lowpt")
         ns_technique_rms_50_80, as_technique_rms_50_80 = get_rms(technique_von_dict_50_80, technique_dphi_dict_50_80, "../figures/technique_variations_width_50_80_lowpt")
+
+        ns_hh_technique_rms_0_20, as_hh_technique_rms_0_20 = get_rms(hh_technique_von_dict_0_20, hh_technique_dphi_dict_0_20, "../figures/hh_technique_variations_width_0_20_lowpt")
+        ns_hh_technique_rms_20_50, as_hh_technique_rms_20_50 = get_rms(hh_technique_von_dict_20_50, hh_technique_dphi_dict_20_50, "../figures/hh_technique_variations_width_20_50_lowpt")
+        ns_hh_technique_rms_50_80, as_hh_technique_rms_50_80 = get_rms(hh_technique_von_dict_50_80, hh_technique_dphi_dict_50_80, "../figures/hh_technique_variations_width_50_80_lowpt")
+
     elif PT_MODE == 2:
+
         ns_technique_rms_0_20, as_technique_rms_0_20 = get_rms(technique_von_dict_0_20, technique_dphi_dict_0_20, "../figures/technique_variations_width_0_20_highpt")
         ns_technique_rms_20_50, as_technique_rms_20_50 = get_rms(technique_von_dict_20_50, technique_dphi_dict_20_50, "../figures/technique_variations_width_20_50_highpt")
         ns_technique_rms_50_80, as_technique_rms_50_80 = get_rms(technique_von_dict_50_80, technique_dphi_dict_50_80, "../figures/technique_variations_width_50_80_highpt")
-    
-    print(ns_technique_rms_0_20, as_technique_rms_0_20)
+
+        ns_hh_technique_rms_0_20, as_hh_technique_rms_0_20 = get_rms(hh_technique_von_dict_0_20, hh_technique_dphi_dict_0_20, "../figures/hh_technique_variations_width_0_20_highpt")
+        ns_hh_technique_rms_20_50, as_hh_technique_rms_20_50 = get_rms(hh_technique_von_dict_20_50, hh_technique_dphi_dict_20_50, "../figures/hh_technique_variations_width_20_50_highpt")
+        ns_hh_technique_rms_50_80, as_hh_technique_rms_50_80 = get_rms(hh_technique_von_dict_50_80, hh_technique_dphi_dict_50_80, "../figures/hh_technique_variations_width_50_80_highpt")
+
+
+
+    ns_total_rms_0_20 = math.sqrt(ns_signal_rms_0_20**2 + ns_sideband_rms_0_20**2 + ns_pid_rms_0_20**2 + ns_technique_rms_0_20**2)
+    print("ns_total_rms_0_20: " + str(ns_total_rms_0_20))
+    as_total_rms_0_20 = math.sqrt(as_signal_rms_0_20**2 + as_sideband_rms_0_20**2 + as_pid_rms_0_20**2 + as_technique_rms_0_20**2)
+    print("as_total_rms_0_20: " + str(as_total_rms_0_20))
+
+    c = rt.TCanvas("c", "c", 800, 600)
+    c.SetLeftMargin(0.15)
+    c.SetRightMargin(0.05)
+    c.SetTopMargin(0.05)
+    ns_sideband_syst_hist = rt.TH1D("ns_sideband_syst_hist", "", 3, 0, 3)
+    ns_sideband_syst_hist.SetBinContent(1, ns_sideband_rms_0_20)
+    ns_sideband_syst_hist.SetBinContent(2, ns_sideband_rms_20_50)
+    ns_sideband_syst_hist.SetBinContent(3, ns_sideband_rms_50_80)
+    ns_sideband_syst_hist.SetBinError(1, 0)
+    ns_sideband_syst_hist.SetBinError(2, 0)
+    ns_sideband_syst_hist.SetBinError(3, 0)
+    ns_sideband_syst_hist.SetLineColor(rt.kGreen - 2)
+    ns_sideband_syst_hist.SetLineWidth(2)
+    ns_signal_syst_hist = rt.TH1D("ns_signal_syst_hist", "", 3, 0, 3)
+    ns_signal_syst_hist.SetBinContent(1, ns_signal_rms_0_20)
+    ns_signal_syst_hist.SetBinContent(2, ns_signal_rms_20_50)
+    ns_signal_syst_hist.SetBinContent(3, ns_signal_rms_50_80)
+    ns_signal_syst_hist.SetBinError(1, 0)
+    ns_signal_syst_hist.SetBinError(2, 0)
+    ns_signal_syst_hist.SetBinError(3, 0)
+    ns_signal_syst_hist.SetLineColor(rt.kMagenta - 2)
+    ns_signal_syst_hist.SetLineWidth(2)
+    ns_pid_syst_hist = rt.TH1D("ns_pid_syst_hist", "", 3, 0, 3)
+    ns_pid_syst_hist.SetBinContent(1, ns_pid_rms_0_20)
+    ns_pid_syst_hist.SetBinContent(2, ns_pid_rms_20_50)
+    ns_pid_syst_hist.SetBinContent(3, ns_pid_rms_50_80)
+    ns_pid_syst_hist.SetBinError(1, 0)
+    ns_pid_syst_hist.SetBinError(2, 0)
+    ns_pid_syst_hist.SetBinError(3, 0)
+    ns_pid_syst_hist.SetLineColor(rt.kAzure - 2)
+    ns_pid_syst_hist.SetLineWidth(2)
+    ns_technique_syst_hist = rt.TH1D("ns_technique_syst_hist", "", 3, 0, 3)
+    ns_technique_syst_hist.SetBinContent(1, ns_technique_rms_0_20)
+    ns_technique_syst_hist.SetBinContent(2, ns_technique_rms_20_50)
+    ns_technique_syst_hist.SetBinContent(3, ns_technique_rms_50_80)
+    ns_technique_syst_hist.SetBinError(1, 0)
+    ns_technique_syst_hist.SetBinError(2, 0)
+    ns_technique_syst_hist.SetBinError(3, 0)
+    ns_technique_syst_hist.SetLineColor(rt.kViolet + 2)
+    ns_technique_syst_hist.SetLineWidth(2)
+
+
+    as_sideband_syst_hist = rt.TH1D("as_sideband_syst_hist", "", 3, 0, 3)
+    as_sideband_syst_hist.SetBinContent(1, as_sideband_rms_0_20)
+    as_sideband_syst_hist.SetBinContent(2, as_sideband_rms_20_50)
+    as_sideband_syst_hist.SetBinContent(3, as_sideband_rms_50_80)
+    as_sideband_syst_hist.SetBinError(1, 0)
+    as_sideband_syst_hist.SetBinError(2, 0)
+    as_sideband_syst_hist.SetBinError(3, 0)
+    as_sideband_syst_hist.SetLineColor(rt.kGreen - 2)
+    as_sideband_syst_hist.SetLineWidth(2)
+    as_signal_syst_hist = rt.TH1D("as_signal_syst_hist", "", 3, 0, 3)
+    as_signal_syst_hist.SetBinContent(1, as_signal_rms_0_20)
+    as_signal_syst_hist.SetBinContent(2, as_signal_rms_20_50)
+    as_signal_syst_hist.SetBinContent(3, as_signal_rms_50_80)
+    as_signal_syst_hist.SetBinError(1, 0)
+    as_signal_syst_hist.SetBinError(2, 0)
+    as_signal_syst_hist.SetBinError(3, 0)
+    as_signal_syst_hist.SetLineColor(rt.kMagenta - 2)
+    as_signal_syst_hist.SetLineWidth(2)
+    as_pid_syst_hist = rt.TH1D("as_pid_syst_hist", "", 3, 0, 3)
+    as_pid_syst_hist.SetBinContent(1, as_pid_rms_0_20)
+    as_pid_syst_hist.SetBinContent(2, as_pid_rms_20_50)
+    as_pid_syst_hist.SetBinContent(3, as_pid_rms_50_80)
+    as_pid_syst_hist.SetBinError(1, 0)
+    as_pid_syst_hist.SetBinError(2, 0)
+    as_pid_syst_hist.SetBinError(3, 0)
+    as_pid_syst_hist.SetLineColor(rt.kAzure - 2)
+    as_pid_syst_hist.SetLineWidth(2)
+    as_technique_syst_hist = rt.TH1D("as_technique_syst_hist", "", 3, 0, 3)
+    as_technique_syst_hist.SetBinContent(1, as_technique_rms_0_20)
+    as_technique_syst_hist.SetBinContent(2, as_technique_rms_20_50)
+    as_technique_syst_hist.SetBinContent(3, as_technique_rms_50_80)
+    as_technique_syst_hist.SetBinError(1, 0)
+    as_technique_syst_hist.SetBinError(2, 0)
+    as_technique_syst_hist.SetBinError(3, 0)
+    as_technique_syst_hist.SetLineColor(rt.kViolet + 2)
+    as_technique_syst_hist.SetLineWidth(2)
+
+    # the topo syst is a LITTLE higher at low pT
+    if PT_MODE == 1:
+        topo_rms = 0.032
+        topo_nch_dep_rms = 0.005
+        topo_syst_hist = rt.TH1D("topo_syst_hist", "", 3, 0, 3)
+        topo_syst_hist.SetBinContent(1, topo_rms)
+        topo_syst_hist.SetBinContent(2, topo_rms)
+        topo_syst_hist.SetBinContent(3, topo_rms)
+        topo_syst_hist.SetBinError(1, 0)
+        topo_syst_hist.SetBinError(2, 0)
+        topo_syst_hist.SetBinError(3, 0)
+        topo_syst_hist.SetLineColor(rt.kRed - 2)
+        topo_syst_hist.SetLineWidth(2)
+    else:
+        topo_rms = 0.030
+        topo_nch_dep_rms = 0.005
+        topo_syst_hist = rt.TH1D("topo_syst_hist", "", 3, 0, 3)
+        topo_syst_hist.SetBinContent(1, topo_rms)
+        topo_syst_hist.SetBinContent(2, topo_rms)
+        topo_syst_hist.SetBinContent(3, topo_rms)
+        topo_syst_hist.SetBinError(1, 0)
+        topo_syst_hist.SetBinError(2, 0)
+        topo_syst_hist.SetBinError(3, 0)
+        topo_syst_hist.SetLineColor(rt.kRed - 2)
+        topo_syst_hist.SetLineWidth(2)
+
+    # the matbud syst is a LITTLE higher at low pT
+    if PT_MODE == 1:
+        matbud_rms = 0.011
+        matbud_nch_dep_rms = 0.0
+        matbud_syst_hist = rt.TH1D("matbud_syst_hist", "", 3, 0, 3)
+        matbud_syst_hist.SetBinContent(1, matbud_rms)
+        matbud_syst_hist.SetBinContent(2, matbud_rms)
+        matbud_syst_hist.SetBinContent(3, matbud_rms)
+        matbud_syst_hist.SetBinError(1, 0)
+        matbud_syst_hist.SetBinError(2, 0)
+        matbud_syst_hist.SetBinError(3, 0)
+        matbud_syst_hist.SetLineColor(rt.kOrange - 2)
+        matbud_syst_hist.SetLineWidth(2)
+    else:
+        matbud_rms = 0.006
+        matbud_nch_dep_rms = 0.000
+        matbud_syst_hist = rt.TH1D("matbud_syst_hist", "", 3, 0, 3)
+        matbud_syst_hist.SetBinContent(1, matbud_rms)
+        matbud_syst_hist.SetBinContent(2, matbud_rms)
+        matbud_syst_hist.SetBinContent(3, matbud_rms)
+        matbud_syst_hist.SetBinError(1, 0)
+        matbud_syst_hist.SetBinError(2, 0)
+        matbud_syst_hist.SetBinError(3, 0)
+        matbud_syst_hist.SetLineColor(rt.kOrange - 2)
+        matbud_syst_hist.SetLineWidth(2)
+
+    ns_total_syst_hist = rt.TH1D("ns_total_syst_hist", "", 3, 0, 3)
+    ns_total_syst_hist.SetBinContent(1, math.sqrt(ns_sideband_rms_0_20**2 + ns_signal_rms_0_20**2 + ns_pid_rms_0_20**2 + ns_technique_rms_0_20**2 + topo_rms**2 + matbud_rms**2 ))
+    ns_total_syst_hist.SetBinContent(2, math.sqrt(ns_sideband_rms_20_50**2 + ns_signal_rms_20_50**2 + ns_pid_rms_20_50**2 + ns_technique_rms_20_50**2 + topo_rms**2 + matbud_rms**2))
+    ns_total_syst_hist.SetBinContent(3, math.sqrt(ns_sideband_rms_50_80**2 + ns_signal_rms_50_80**2 + ns_pid_rms_50_80**2 + ns_technique_rms_50_80**2 + topo_rms**2 + matbud_rms**2))
+    ns_total_syst_hist.SetBinError(1, 0)
+    ns_total_syst_hist.SetBinError(2, 0)
+    ns_total_syst_hist.SetBinError(3, 0)
+    ns_total_syst_hist.SetLineColor(rt.kBlack)
+    ns_total_syst_hist.SetLineWidth(2)
+    ns_total_syst_hist.SetTitle("")
+    ns_total_syst_hist.GetXaxis().SetBinLabel(1, "0-20%")
+    ns_total_syst_hist.GetXaxis().SetBinLabel(2, "20-50%")
+    ns_total_syst_hist.GetXaxis().SetBinLabel(3, "50-80%")
+    ns_total_syst_hist.GetXaxis().SetTitle("Mult. Percentile")
+    ns_total_syst_hist.GetYaxis().SetTitle("Systematic Uncertainty (%)")
+
+    as_total_syst_hist = rt.TH1D("as_total_syst_hist", "", 3, 0, 3)
+    as_total_syst_hist.SetBinContent(1, math.sqrt(as_sideband_rms_0_20**2 + as_signal_rms_0_20**2 + as_pid_rms_0_20**2 + as_technique_rms_0_20**2 + topo_rms**2 + matbud_rms**2 ))
+    as_total_syst_hist.SetBinContent(2, math.sqrt(as_sideband_rms_20_50**2 + as_signal_rms_20_50**2 + as_pid_rms_20_50**2 + as_technique_rms_20_50**2 + topo_rms**2 + matbud_rms**2))
+    as_total_syst_hist.SetBinContent(3, math.sqrt(as_sideband_rms_50_80**2 + as_signal_rms_50_80**2 + as_pid_rms_50_80**2 + as_technique_rms_50_80**2 + topo_rms**2 + matbud_rms**2))
+    as_total_syst_hist.SetBinError(1, 0)
+    as_total_syst_hist.SetBinError(2, 0)
+    as_total_syst_hist.SetBinError(3, 0)
+    as_total_syst_hist.SetLineColor(rt.kBlack)
+    as_total_syst_hist.SetLineWidth(2)
+    as_total_syst_hist.SetTitle("")
+    as_total_syst_hist.GetXaxis().SetBinLabel(1, "0-20%")
+    as_total_syst_hist.GetXaxis().SetBinLabel(2, "20-50%")
+    as_total_syst_hist.GetXaxis().SetBinLabel(3, "50-80%")
+    as_total_syst_hist.GetXaxis().SetTitle("Mult. Percentile")
+    as_total_syst_hist.GetYaxis().SetTitle("Systematic Uncertainty (%)")
+
+    leg = rt.TLegend(0.6, 0.7, 0.9, 0.9)
+    leg.SetBorderSize(0)
+    leg.SetFillStyle(0)
+    leg.AddEntry(ns_sideband_syst_hist, "Sideband", "l")
+    leg.AddEntry(ns_signal_syst_hist, "Signal", "l")
+    leg.AddEntry(ns_pid_syst_hist, "PID", "l")
+    leg.AddEntry(ns_technique_syst_hist, "Technique", "l")
+    leg.AddEntry(topo_syst_hist, "Topo", "l")
+    leg.AddEntry(matbud_syst_hist, "Mat. budget", "l")
+    leg.AddEntry(ns_total_syst_hist, "Total", "l")
+
+    ns_total_syst_hist.Scale(100)
+    ns_sideband_syst_hist.Scale(100)
+    ns_signal_syst_hist.Scale(100)
+    ns_pid_syst_hist.Scale(100)
+    ns_technique_syst_hist.Scale(100)
+
+    as_total_syst_hist.Scale(100)
+    as_sideband_syst_hist.Scale(100)
+    as_signal_syst_hist.Scale(100)
+    as_pid_syst_hist.Scale(100)
+    as_technique_syst_hist.Scale(100)
+
+    topo_syst_hist.Scale(100)
+    matbud_syst_hist.Scale(100)
+
+    ns_total_syst_hist.GetYaxis().SetRangeUser(0, ns_total_syst_hist.GetMaximum()*1.8)
+    as_total_syst_hist.GetYaxis().SetRangeUser(0, as_total_syst_hist.GetMaximum()*1.8)
+
+
+    ns_total_syst_hist.Draw("hist")
+    ns_sideband_syst_hist.Draw("hist same")
+    ns_signal_syst_hist.Draw("hist same")
+    ns_pid_syst_hist.Draw("hist same")
+    ns_technique_syst_hist.Draw("hist same")
+    topo_syst_hist.Draw("hist same")
+    matbud_syst_hist.Draw("hist same")
+
+    leg.Draw("SAME")
+    if PT_MODE == 0:
+        c.SaveAs("../figures/systematics_ns_width_postbarlow.pdf")
+    elif PT_MODE == 1:
+        c.SaveAs("../figures/systematics_ns_width_postbarlow_lowpt.pdf")
+    elif PT_MODE == 2:
+        c.SaveAs("../figures/systematics_ns_width_postbarlow_highpt.pdf")
+
+    as_total_syst_hist.Draw("hist")
+    as_sideband_syst_hist.Draw("hist same")
+    as_signal_syst_hist.Draw("hist same")
+    as_pid_syst_hist.Draw("hist same")
+    as_technique_syst_hist.Draw("hist same")
+    topo_syst_hist.Draw("hist same")
+    matbud_syst_hist.Draw("hist same")
+
+    leg.Draw("SAME")
+    if PT_MODE == 0:
+        c.SaveAs("../figures/systematics_as_width_postbarlow.pdf")
+    elif PT_MODE == 1:
+        c.SaveAs("../figures/systematics_as_width_postbarlow_lowpt.pdf")
+    elif PT_MODE == 2:
+        c.SaveAs("../figures/systematics_as_width_postbarlow_highpt.pdf")
