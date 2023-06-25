@@ -352,20 +352,31 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
     syst_infile = rt.TFile("../systematics_scripts/width_syst_out.root", "READ")
 
     if i == 0:
+        dpmjet_infile = rt.TFile("../output/dpmjet_graphs_assoc_2_4.root")
+
         h_lambda_ns_syst_graph = syst_infile.Get("ns_total_syst")
         h_lambda_as_syst_graph = syst_infile.Get("as_total_syst")
         h_h_ns_syst_graph = syst_infile.Get("hh_ns_total_syst")
         h_h_as_syst_graph = syst_infile.Get("hh_as_total_syst")
     elif i == 1:
+        dpmjet_infile = rt.TFile("../output/dpmjet_graphs_assoc_15_25.root")
+
         h_lambda_ns_syst_graph = syst_infile.Get("ns_total_syst_lowpt")
         h_lambda_as_syst_graph = syst_infile.Get("as_total_syst_lowpt")
         h_h_ns_syst_graph = syst_infile.Get("hh_ns_total_syst_lowpt")
         h_h_as_syst_graph = syst_infile.Get("hh_as_total_syst_lowpt")
     elif i == 2:
+        dpmjet_infile = rt.TFile("../output/dpmjet_graphs_assoc_25_4.root")
+
         h_lambda_ns_syst_graph = syst_infile.Get("ns_total_syst_highpt")
         h_lambda_as_syst_graph = syst_infile.Get("as_total_syst_highpt")
         h_h_ns_syst_graph = syst_infile.Get("hh_ns_total_syst_highpt")
         h_h_as_syst_graph = syst_infile.Get("hh_as_total_syst_highpt")
+
+    h_lambda_near_width_graph_dpmjet = dpmjet_infile.Get("h_lambda_near_width_graph")
+    h_lambda_away_width_graph_dpmjet = dpmjet_infile.Get("h_lambda_away_width_graph")
+    h_h_near_width_graph_dpmjet = dpmjet_infile.Get("h_h_near_width_graph")
+    h_h_away_width_graph_dpmjet = dpmjet_infile.Get("h_h_away_width_graph")
 
     mult_array = arr('d', [35, 65, 90])
     mult_array_err = arr('d', [15, 15, 10])
@@ -515,6 +526,13 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
     h_h_near_width_graph.SetMarkerSize(2)
     h_h_near_width_graph.SetMarkerColor(rt.kRed+3)
 
+    h_h_near_width_graph_dpmjet.SetLineColor(rt.kRed+3)
+    h_h_near_width_graph_dpmjet.SetLineWidth(1)
+    h_h_near_width_graph_dpmjet.SetMarkerStyle(0)
+    h_h_near_width_graph_dpmjet.SetMarkerSize(0)
+    h_h_near_width_graph_dpmjet.SetFillColor(rt.kRed+3)
+    h_h_near_width_graph_dpmjet.SetFillStyle(3144)
+
     h_h_near_width_graph_syst.SetMarkerStyle(21)
     h_h_near_width_graph_syst.SetMarkerSize(0)
     h_h_near_width_graph_syst.SetMarkerColor(rt.kRed+3)
@@ -526,16 +544,23 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
     h_h_away_width_graph = rt.TGraphErrors(3, mult_array, h_h_away_width_array, mult_array_err, h_h_away_width_error_array)
     h_h_away_width_graph_syst = rt.TGraphErrors(3, mult_array, h_h_away_width_array, mult_array_err_syst, h_h_away_width_syst_error_array)
 
-    h_h_away_width_graph.SetLineColor(rt.kBlue+2)
+    h_h_away_width_graph.SetLineColor(rt.kViolet - 6)
     h_h_away_width_graph.SetLineWidth(2)
     h_h_away_width_graph.SetMarkerStyle(20)
     h_h_away_width_graph.SetMarkerSize(2)
-    h_h_away_width_graph.SetMarkerColor(rt.kBlue+2)
+    h_h_away_width_graph.SetMarkerColor(rt.kViolet - 6)
+
+    h_h_away_width_graph_dpmjet.SetLineColor(rt.kViolet-6)
+    h_h_away_width_graph_dpmjet.SetLineWidth(1)
+    h_h_away_width_graph_dpmjet.SetMarkerStyle(0)
+    h_h_away_width_graph_dpmjet.SetMarkerSize(0)
+    h_h_away_width_graph_dpmjet.SetFillColor(rt.kViolet-6)
+    h_h_away_width_graph_dpmjet.SetFillStyle(3144)
 
     h_h_away_width_graph_syst.SetMarkerStyle(21)
     h_h_away_width_graph_syst.SetMarkerSize(0)
-    h_h_away_width_graph_syst.SetMarkerColor(rt.kBlue+2)
-    h_h_away_width_graph_syst.SetLineColor(rt.kBlue+2)
+    h_h_away_width_graph_syst.SetMarkerColor(rt.kViolet - 6)
+    h_h_away_width_graph_syst.SetLineColor(rt.kViolet - 6)
     h_h_away_width_graph_syst.SetLineWidth(2)
     h_h_away_width_graph_syst.SetFillStyle(0)
 
@@ -544,32 +569,46 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
     h_lambda_near_width_graph = rt.TGraphErrors(3, mult_array, h_lambda_near_width_array, mult_array_err, h_lambda_near_width_error_array)
     h_lambda_near_width_graph_syst = rt.TGraphErrors(3, mult_array, h_lambda_near_width_array, mult_array_err_syst, h_lambda_near_width_syst_error_array)
 
-    h_lambda_near_width_graph.SetLineColor(rt.kRed-7)
+    h_lambda_near_width_graph.SetLineColor(rt.kOrange-1)
     h_lambda_near_width_graph.SetLineWidth(2)
     h_lambda_near_width_graph.SetMarkerStyle(43)
     h_lambda_near_width_graph.SetMarkerSize(2.5)
-    h_lambda_near_width_graph.SetMarkerColor(rt.kRed-7)
+    h_lambda_near_width_graph.SetMarkerColor(rt.kOrange-1)
+
+    h_lambda_near_width_graph_dpmjet.SetLineColor(rt.kOrange-1)
+    h_lambda_near_width_graph_dpmjet.SetLineWidth(1)
+    h_lambda_near_width_graph_dpmjet.SetMarkerStyle(0)
+    h_lambda_near_width_graph_dpmjet.SetMarkerSize(0)
+    h_lambda_near_width_graph_dpmjet.SetFillColor(rt.kOrange-1)
+    h_lambda_near_width_graph_dpmjet.SetFillStyle(3144)
 
     h_lambda_near_width_graph_syst.SetMarkerStyle(21)
     h_lambda_near_width_graph_syst.SetMarkerSize(0)
-    h_lambda_near_width_graph_syst.SetMarkerColor(rt.kRed-7)
-    h_lambda_near_width_graph_syst.SetLineColor(rt.kRed-7)
+    h_lambda_near_width_graph_syst.SetMarkerColor(rt.kOrange-1)
+    h_lambda_near_width_graph_syst.SetLineColor(rt.kOrange-1)
     h_lambda_near_width_graph_syst.SetLineWidth(2)
     h_lambda_near_width_graph_syst.SetFillStyle(0)
 
     h_lambda_away_width_graph = rt.TGraphErrors(3, mult_array, h_lambda_away_width_array, mult_array_err, h_lambda_away_width_error_array)
     h_lambda_away_width_graph_syst = rt.TGraphErrors(3, mult_array, h_lambda_away_width_array, mult_array_err_syst, h_lambda_away_width_syst_error_array)
 
-    h_lambda_away_width_graph.SetLineColor(rt.kCyan-2)
+    h_lambda_away_width_graph.SetLineColor(rt.kAzure-1)
     h_lambda_away_width_graph.SetLineWidth(2)
     h_lambda_away_width_graph.SetMarkerStyle(43)
     h_lambda_away_width_graph.SetMarkerSize(2.5)
-    h_lambda_away_width_graph.SetMarkerColor(rt.kCyan-2)
+    h_lambda_away_width_graph.SetMarkerColor(rt.kAzure-1)
+
+    h_lambda_away_width_graph_dpmjet.SetLineColor(rt.kAzure-1)
+    h_lambda_away_width_graph_dpmjet.SetLineWidth(1)
+    h_lambda_away_width_graph_dpmjet.SetMarkerStyle(0)
+    h_lambda_away_width_graph_dpmjet.SetMarkerSize(0)
+    h_lambda_away_width_graph_dpmjet.SetFillColor(rt.kAzure-1)
+    h_lambda_away_width_graph_dpmjet.SetFillStyle(3144)
 
     h_lambda_away_width_graph_syst.SetMarkerStyle(21)
     h_lambda_away_width_graph_syst.SetMarkerSize(0)
-    h_lambda_away_width_graph_syst.SetMarkerColor(rt.kCyan-2)
-    h_lambda_away_width_graph_syst.SetLineColor(rt.kCyan-2)
+    h_lambda_away_width_graph_syst.SetMarkerColor(rt.kAzure-1)
+    h_lambda_away_width_graph_syst.SetLineColor(rt.kAzure-1)
     h_lambda_away_width_graph_syst.SetLineWidth(2)
     h_lambda_away_width_graph_syst.SetFillStyle(0)
 
@@ -612,9 +651,9 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
     plotting_hist.GetXaxis().SetTickSize(0)
 
     if i == 0:
-        plotting_hist.GetYaxis().SetRangeUser(0.1, 1.3)
+        plotting_hist.GetYaxis().SetRangeUser(0.1, 1.1)
     else:
-        plotting_hist.GetYaxis().SetRangeUser(0.1, 1.3)
+        plotting_hist.GetYaxis().SetRangeUser(0.1, 1.1)
     rt.gPad.Update()
     new_axis = rt.TGaxis(rt.gPad.GetUxmax(),
             rt.gPad.GetUymin(),
@@ -637,16 +676,29 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
     h_h_away_width_graph.Draw("sameP")
     h_h_near_width_graph_syst.Draw("same e2")
     h_h_away_width_graph_syst.Draw("same e2")
+    h_h_near_width_graph_dpmjet.Draw("same e3")
+    h_h_away_width_graph_dpmjet.Draw("same e3")
 
     h_lambda_width_legend = rt.TLegend(0.35, 0.7, 0.51, 0.9)
     h_lambda_width_legend.AddEntry(h_lambda_near_width_graph, "h-#Lambda, near-side", "p")
     h_lambda_width_legend.AddEntry(h_lambda_away_width_graph, "h-#Lambda, away-side", "p")
     h_lambda_width_legend.SetBorderSize(0)
     h_lambda_width_legend.Draw()
+
     h_lambda_near_width_graph.Draw("sameP")
     h_lambda_away_width_graph.Draw("sameP")
     h_lambda_near_width_graph_syst.Draw("same e2")
     h_lambda_away_width_graph_syst.Draw("same e2")
+    h_lambda_near_width_graph_dpmjet.Draw("same e3")
+    h_lambda_away_width_graph_dpmjet.Draw("same e3")
+
+    dpmjet_width_legend = rt.TLegend(0.55, 0.75, 0.69, 0.85)
+    tmp_graph = h_lambda_near_width_graph_dpmjet.Clone("tmp_graph")
+    tmp_graph.SetLineColor(rt.kGray+1)
+    tmp_graph.SetFillColor(rt.kGray+1)
+    dpmjet_width_legend.AddEntry(tmp_graph, "DPMJet", "f")
+    dpmjet_width_legend.SetBorderSize(0)
+    dpmjet_width_legend.Draw()
 
     # h_phi_width_legend = rt.TLegend(0.51, 0.7, 0.68, 0.9)
     # h_phi_width_legend.AddEntry(h_phi_near_width_graph, "h-#phi, near-side", "p")

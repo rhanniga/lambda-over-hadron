@@ -38,6 +38,41 @@ MODEL_BINS = AnalysisBins("model_bins",
                         # AnalysisBin("epos", 2, 2, "output/epos_17f2a_fast.root"),
                         # AnalysisBin("phsd", 3, 3, "output/phsd_out_50mil_betterdists.root")])
 
+
+def get_width_from_kappa(kappa):
+    return rt.TMath.Sqrt(-2*rt.TMath.Log(rt.TMath.BesselI1(kappa)/rt.TMath.BesselI0(kappa)))
+
+def get_width_error_from_kappa(kappa, kappa_error):
+    deriv = (rt.TMath.BesselI0(kappa)**2 + rt.TMath.BesselI0(kappa)*rt.TMath.BesselI(2, kappa) - 2*rt.TMath.BesselI1(kappa)**2)/(2*rt.TMath.Sqrt(2)*rt.TMath.BesselI0(kappa)*rt.TMath.BesselI1(kappa)*rt.TMath.Sqrt(-rt.TMath.Log(rt.TMath.BesselI1(kappa)/rt.TMath.BesselI0(kappa))))
+    return deriv * kappa_error
+
+def get_von_fit(dphi_dist):
+    dphi_dist = dphi_dist.Clone()
+
+    avg = (dphi_dist.GetBinContent(1) 
+            + dphi_dist.GetBinContent(2)
+            + dphi_dist.GetBinContent(7)
+            + dphi_dist.GetBinContent(8)
+            + dphi_dist.GetBinContent(9)
+            + dphi_dist.GetBinContent(16))/6
+
+    
+    von_fit_string = "[0]"
+    von_fit_string += " + [1]/(2*TMath::Pi()*TMath::BesselI0([2]))*TMath::Exp([2]*TMath::Cos(x))"
+    von_fit_string += " + [3]/(2*TMath::Pi()*TMath::BesselI0([4]))*TMath::Exp([4]*TMath::Cos(x- TMath::Pi()))"
+    von_fit = rt.TF1("von_fit", von_fit_string, -rt.TMath.Pi()/2, 3*rt.TMath.Pi()/2)
+
+    von_fit.FixParameter(0, avg)
+    von_fit.SetParameter(1, 0.01)
+    von_fit.SetParameter(2, 7)
+    von_fit.SetParameter(3, 0.01)
+    von_fit.SetParameter(4, 2)
+
+    dphi_dist.Fit(von_fit, "R")
+
+    return von_fit.Clone()
+
+
 def get_dphi_dists(model, 
                    centrality_bin,
                    trigger_pt_bin,
@@ -179,6 +214,21 @@ for model in MODEL_BINS.analysis_bins:
             outfile = rt.TFile(f"dpmjet_graphs_{assoc_pt_bin.name}.root", "recreate")
             for delta_eta_bin in DELTA_ETA_BINS.analysis_bins:
 
+                h_lambda_near_width_cent = []
+                h_lambda_near_width_cent_err = []
+                h_lambda_away_width_cent = []
+                h_lambda_away_width_cent_err = []
+
+                h_phi_near_width_cent = []
+                h_phi_near_width_cent_err = []
+                h_phi_away_width_cent = []
+                h_phi_away_width_cent_err = []
+
+                h_h_near_width_cent = []
+                h_h_near_width_cent_err = []
+                h_h_away_width_cent = []
+                h_h_away_width_cent_err = []
+
                 lambda_hadron_near_ratio_cent = []
                 lambda_hadron_near_ratio_cent_err = []
                 lambda_hadron_away_ratio_cent = []
@@ -212,6 +262,53 @@ for model in MODEL_BINS.analysis_bins:
                     h_lambda_yield_extractor = YieldExtractor(h_lambda_dphi)
                     h_phi_yield_extractor = YieldExtractor(h_phi_dphi)
                     h_h_yield_extractor = YieldExtractor(h_h_dphi)
+
+                    h_lambda_von_fit = get_von_fit(h_lambda_dphi)
+                    h_phi_von_fit = get_von_fit(h_phi_dphi)
+                    h_h_von_fit = get_von_fit(h_h_dphi)
+
+                    h_lambda_near_kappa = h_lambda_von_fit.GetParameter(2)
+                    h_lambda_near_kappa_err = h_lambda_von_fit.GetParError(2)
+                    h_lambda_near_width = get_width_from_kappa(h_lambda_near_kappa)
+                    h_lambda_near_width_err = get_width_error_from_kappa(h_lambda_near_kappa, h_lambda_near_kappa_err)
+                    h_lambda_near_width_cent.append(h_lambda_near_width)
+                    h_lambda_near_width_cent_err.append(h_lambda_near_width_err)
+
+                    h_lambda_away_kappa = h_lambda_von_fit.GetParameter(4)
+                    h_lambda_away_kappa_err = h_lambda_von_fit.GetParError(4)
+                    h_lambda_away_width = get_width_from_kappa(h_lambda_away_kappa)
+                    h_lambda_away_width_err = get_width_error_from_kappa(h_lambda_away_kappa, h_lambda_away_kappa_err)
+                    h_lambda_away_width_cent.append(h_lambda_away_width)
+                    h_lambda_away_width_cent_err.append(h_lambda_away_width_err)
+
+                    h_phi_near_kappa = h_phi_von_fit.GetParameter(2)
+                    h_phi_near_kappa_err = h_phi_von_fit.GetParError(2)
+                    h_phi_near_width = get_width_from_kappa(h_phi_near_kappa)
+                    h_phi_near_width_err = get_width_error_from_kappa(h_phi_near_kappa, h_phi_near_kappa_err)
+                    h_phi_near_width_cent.append(h_phi_near_width)
+                    h_phi_near_width_cent_err.append(h_phi_near_width_err)
+
+                    h_phi_away_kappa = h_phi_von_fit.GetParameter(4)
+                    h_phi_away_kappa_err = h_phi_von_fit.GetParError(4)
+                    h_phi_away_width = get_width_from_kappa(h_phi_away_kappa)
+                    h_phi_away_width_err = get_width_error_from_kappa(h_phi_away_kappa, h_phi_away_kappa_err)
+                    h_phi_away_width_cent.append(h_phi_away_width)
+                    h_phi_away_width_cent_err.append(h_phi_away_width_err)
+
+                    h_h_near_kappa = h_h_von_fit.GetParameter(2)
+                    h_h_near_kappa_err = h_h_von_fit.GetParError(2)
+                    h_h_near_width = get_width_from_kappa(h_h_near_kappa)
+                    h_h_near_width_err = get_width_error_from_kappa(h_h_near_kappa, h_h_near_kappa_err)
+                    h_h_near_width_cent.append(h_h_near_width)
+                    h_h_near_width_cent_err.append(h_h_near_width_err)
+
+                    h_h_away_kappa = h_h_von_fit.GetParameter(4)
+                    h_h_away_kappa_err = h_h_von_fit.GetParError(4)
+                    h_h_away_width = get_width_from_kappa(h_h_away_kappa)
+                    h_h_away_width_err = get_width_error_from_kappa(h_h_away_kappa, h_h_away_kappa_err)
+                    h_h_away_width_cent.append(h_h_away_width)
+                    h_h_away_width_cent_err.append(h_h_away_width_err)
+
 
                     h_lambda_yield_extractor.extract_all_yields()
                     h_phi_yield_extractor.extract_all_yields()
@@ -300,6 +397,22 @@ for model in MODEL_BINS.analysis_bins:
                 mult_list = arr.array('d', [35, 65, 90])
                 mult_error_list = arr.array('d', [15, 15, 10])
 
+                h_lambda_near_width_cent = arr.array('d', h_lambda_near_width_cent)
+                h_lambda_near_width_cent_err = arr.array('d', h_lambda_near_width_cent_err)
+                h_lambda_away_width_cent = arr.array('d', h_lambda_away_width_cent)
+                h_lambda_away_width_cent_err = arr.array('d', h_lambda_away_width_cent_err)
+
+                h_phi_near_width_cent = arr.array('d', h_phi_near_width_cent)
+                h_phi_near_width_cent_err = arr.array('d', h_phi_near_width_cent_err)
+                h_phi_away_width_cent = arr.array('d', h_phi_away_width_cent)
+                h_phi_away_width_cent_err = arr.array('d', h_phi_away_width_cent_err)
+
+                h_h_near_width_cent = arr.array('d', h_h_near_width_cent)
+                h_h_near_width_cent_err = arr.array('d', h_h_near_width_cent_err)
+                h_h_away_width_cent = arr.array('d', h_h_away_width_cent)
+                h_h_away_width_cent_err = arr.array('d', h_h_away_width_cent_err)
+
+
                 lambda_hadron_near_ratio_cent = arr.array('d', lambda_hadron_near_ratio_cent)
                 lambda_hadron_near_ratio_cent_err = arr.array('d', lambda_hadron_near_ratio_cent_err)
                 lambda_hadron_away_ratio_cent = arr.array('d', lambda_hadron_away_ratio_cent)
@@ -326,6 +439,45 @@ for model in MODEL_BINS.analysis_bins:
                 lambda_phi_ue_ratio_cent_err = arr.array('d', lambda_phi_ue_ratio_cent_err)
                 lambda_phi_total_ratio_cent = arr.array('d', lambda_phi_total_ratio_cent)
                 lambda_phi_total_ratio_cent_err = arr.array('d', lambda_phi_total_ratio_cent_err)
+
+                h_lambda_near_width_graph = rt.TGraphErrors(3, mult_list, h_lambda_near_width_cent, mult_error_list, h_lambda_near_width_cent_err)
+                h_lambda_near_width_graph.SetMarkerStyle(20)
+                h_lambda_near_width_graph.SetMarkerSize(1)
+                h_lambda_near_width_graph.SetMarkerColor(rt.kRed+1)
+                h_lambda_near_width_graph.SetLineColor(rt.kRed+2)
+                h_lambda_near_width_graph.SetLineWidth(2)
+                h_lambda_away_width_graph = rt.TGraphErrors(3, mult_list, h_lambda_away_width_cent, mult_error_list, h_lambda_away_width_cent_err)
+                h_lambda_away_width_graph.SetMarkerStyle(20)
+                h_lambda_away_width_graph.SetMarkerSize(1)
+                h_lambda_away_width_graph.SetMarkerColor(rt.kBlue+1)
+                h_lambda_away_width_graph.SetLineColor(rt.kBlue+2)
+                h_lambda_away_width_graph.SetLineWidth(2)
+
+                h_phi_near_width_graph = rt.TGraphErrors(3, mult_list, h_phi_near_width_cent, mult_error_list, h_phi_near_width_cent_err)
+                h_phi_near_width_graph.SetMarkerStyle(20)
+                h_phi_near_width_graph.SetMarkerSize(1)
+                h_phi_near_width_graph.SetMarkerColor(rt.kRed+1)
+                h_phi_near_width_graph.SetLineColor(rt.kRed+2)
+                h_phi_near_width_graph.SetLineWidth(2)
+                h_phi_away_width_graph = rt.TGraphErrors(3, mult_list, h_phi_away_width_cent, mult_error_list, h_phi_away_width_cent_err)
+                h_phi_away_width_graph.SetMarkerStyle(20)
+                h_phi_away_width_graph.SetMarkerSize(1)
+                h_phi_away_width_graph.SetMarkerColor(rt.kBlue+1)
+                h_phi_away_width_graph.SetLineColor(rt.kBlue+2)
+                h_phi_away_width_graph.SetLineWidth(2)
+
+                h_h_near_width_graph = rt.TGraphErrors(3, mult_list, h_h_near_width_cent, mult_error_list, h_h_near_width_cent_err)
+                h_h_near_width_graph.SetMarkerStyle(20)
+                h_h_near_width_graph.SetMarkerSize(1)
+                h_h_near_width_graph.SetMarkerColor(rt.kRed+1)
+                h_h_near_width_graph.SetLineColor(rt.kRed+2)
+                h_h_near_width_graph.SetLineWidth(2)
+                h_h_away_width_graph = rt.TGraphErrors(3, mult_list, h_h_away_width_cent, mult_error_list, h_h_away_width_cent_err)
+                h_h_away_width_graph.SetMarkerStyle(20)
+                h_h_away_width_graph.SetMarkerSize(1)
+                h_h_away_width_graph.SetMarkerColor(rt.kBlue+1)
+                h_h_away_width_graph.SetLineColor(rt.kBlue+2)
+                h_h_away_width_graph.SetLineWidth(2)
 
                 lambda_hadron_near_ratio_graph = rt.TGraphErrors(3, mult_list, lambda_hadron_near_ratio_cent, mult_error_list, lambda_hadron_near_ratio_cent_err)
                 lambda_hadron_near_ratio_graph.SetMarkerStyle(20)
@@ -404,6 +556,15 @@ for model in MODEL_BINS.analysis_bins:
 
                 outfile.cd()
 
+                h_lambda_near_width_graph.Write(f"h_lambda_near_width_graph")
+                h_lambda_away_width_graph.Write(f"h_lambda_away_width_graph")
+
+                h_phi_near_width_graph.Write(f"h_phi_near_width_graph")
+                h_phi_away_width_graph.Write(f"h_phi_away_width_graph")
+
+                h_h_near_width_graph.Write(f"h_h_near_width_graph")
+                h_h_away_width_graph.Write(f"h_h_away_width_graph")
+
                 lambda_hadron_near_ratio_graph.Write(f"lambda_hadron_near_ratio_graph")
                 lambda_hadron_away_ratio_graph.Write(f"lambda_hadron_away_ratio_graph")
                 lambda_hadron_ue_ratio_graph.Write(f"lambda_hadron_ue_ratio_graph")
@@ -418,6 +579,7 @@ for model in MODEL_BINS.analysis_bins:
                 lambda_phi_away_ratio_graph.Write(f"lambda_phi_away_ratio_graph")
                 lambda_phi_ue_ratio_graph.Write(f"lambda_phi_ue_ratio_graph")
                 lambda_phi_total_ratio_graph.Write(f"lambda_phi_total_ratio_graph")
+
 
                 legend = rt.TLegend(0.65, 0.65, 0.85, 0.85)
                 legend.SetBorderSize(0)
