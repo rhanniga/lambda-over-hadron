@@ -23,7 +23,7 @@ high_pt_infile = rt.TFile("../output/yield_variation/v0_von_sideband_subtraction
 normal_pt_infile = rt.TFile("../output/yield_variation/v0_von_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
 
 
-for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
+for i, f in enumerate([normal_pt_infile, low_pt_infile, high_pt_infile]):
 
     h_h_dphi_0_20 = f.Get("h_h_dphi_0_20")
     h_h_dphi_20_50 = f.Get("h_h_dphi_20_50")
@@ -126,7 +126,7 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
     h_h_50_80_leg.SetLineWidth(0)
     h_h_50_80_leg.SetBorderSize(0)
 
-    if i == 0:
+    if i == 1:
         h_h_dphi_0_20.Draw("PE")
         h_h_von_fit_0_20.Draw("SAME")
         h_h_0_20_leg.Draw("SAME")
@@ -142,7 +142,7 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
         h_h_50_80_leg.Draw("SAME")
         c.Draw()
         c.SaveAs("figures/width_tmp/h_h_dphi_with_von_50_80_lowpt.pdf")
-    elif i == 1:
+    elif i == 2:
         h_h_dphi_0_20.Draw("PE")
         h_h_von_fit_0_20.Draw("SAME")
         h_h_0_20_leg.Draw("SAME")
@@ -175,7 +175,7 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
         c.Draw()
         c.SaveAs("figures/width_tmp/h_h_dphi_with_von_50_80_midpt.pdf")
 
-    if i == 0:
+    if i == 1:
         h_h_dphi_0_20.Draw("PE")
         h_h_von_fit_0_20.Draw("SAME")
         h_h_0_20_leg.Draw("SAME")
@@ -191,7 +191,7 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
         h_h_50_80_leg.Draw("SAME")
         c.Draw()
         c.SaveAs("figures/width_tmp/png/h_h_dphi_with_von_50_80_lowpt.png")
-    elif i == 1:
+    elif i == 2:
         h_h_dphi_0_20.Draw("PE")
         h_h_von_fit_0_20.Draw("SAME")
         h_h_0_20_leg.Draw("SAME")
@@ -243,7 +243,7 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
     h_lambda_50_80_leg.SetLineWidth(0)
     h_lambda_50_80_leg.SetBorderSize(0)
 
-    if i == 0:
+    if i == 1:
         h_lambda_dphi_0_20.Draw("PE")
         h_lambda_von_fit_0_20.Draw("SAME")
         h_lambda_0_20_leg.Draw("SAME")
@@ -259,7 +259,7 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
         h_lambda_50_80_leg.Draw("SAME")
         c.Draw()
         c.SaveAs("figures/width_tmp/h_lambda_dphi_with_von_50_80_lowpt.pdf")
-    elif i == 1:
+    elif i == 2:
         h_lambda_dphi_0_20.Draw("PE")
         h_lambda_von_fit_0_20.Draw("SAME")
         h_lambda_0_20_leg.Draw("SAME")
@@ -292,7 +292,7 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
         c.Draw()
         c.SaveAs("figures/width_tmp/h_lambda_dphi_with_von_50_80_midpt.pdf")
 
-    if i == 0:
+    if i == 1:
         h_lambda_dphi_0_20.Draw("PE")
         h_lambda_von_fit_0_20.Draw("SAME")
         h_lambda_0_20_leg.Draw("SAME")
@@ -308,7 +308,7 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
         h_lambda_50_80_leg.Draw("SAME")
         c.Draw()
         c.SaveAs("figures/width_tmp/png/h_lambda_dphi_with_von_50_80_lowpt.png")
-    elif i == 1:
+    elif i == 2:
         h_lambda_dphi_0_20.Draw("PE")
         h_lambda_von_fit_0_20.Draw("SAME")
         h_lambda_0_20_leg.Draw("SAME")
@@ -506,13 +506,17 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
     h_phi_away_width_array = arr('d', [h_phi_width_away_50_80, h_phi_width_away_20_50, h_phi_width_away_0_20])
     h_phi_away_width_error_array = arr('d', [h_phi_width_error_away_50_80, h_phi_width_error_away_20_50, h_phi_width_error_away_0_20])
 
-    print("THE 0-20 FIT Chi2/NDF: ", h_phi_von_fit_0_20.GetChisquare()/h_phi_von_fit_0_20.GetNDF())
-    print("THE 20-50 FIT Chi2/NDF: ", h_phi_von_fit_20_50.GetChisquare()/h_phi_von_fit_20_50.GetNDF())
-    print("THE 50-80 FIT Chi2/NDF: ", h_phi_von_fit_50_80.GetChisquare()/h_phi_von_fit_50_80.GetNDF())
 
-    print("THE 0-20 WIDTH ERROR: ", h_phi_width_error_away_0_20)
-    print("THE 20-50 WIDTH ERROR: ", h_phi_width_error_away_20_50)
-    print("THE 50-80 WIDTH ERROR: ", h_phi_width_error_away_50_80)
+
+    print(f"----------------------PT MODE: {i}----------------------")
+    print("---------------h lambda width values----------------")
+    print(f"0-20\% & {h_lambda_width_near_0_20:.2e} $\\pm$ {h_lambda_width_error_near_0_20:.2e} &  {h_lambda_width_away_0_20:.2e} $\\pm$ {h_lambda_width_error_away_0_20:.2e} \\\\")
+    print(f"20-50\% & {h_lambda_width_near_20_50:.2e} $\\pm$ {h_lambda_width_error_near_20_50:.2e} &  {h_lambda_width_away_20_50:.2e} $\\pm$ {h_lambda_width_error_away_20_50:.2e} \\\\")
+    print(f"50-80\% & {h_lambda_width_near_50_80:.2e} $\\pm$ {h_lambda_width_error_near_50_80:.2e} &  {h_lambda_width_away_50_80:.2e} $\\pm$ {h_lambda_width_error_away_50_80:.2e} \\\\")
+    print("---------------h h width values----------------")
+    print(f"0-20\% & {h_h_width_near_0_20:.2e} $\\pm$ {h_h_width_error_near_0_20:.2e} &  {h_h_width_away_0_20:.2e} $\\pm$ {h_h_width_error_away_0_20:.2e} \\\\")
+    print(f"20-50\% & {h_h_width_near_20_50:.2e} $\\pm$ {h_h_width_error_near_20_50:.2e} &  {h_h_width_away_20_50:.2e} $\\pm$ {h_h_width_error_away_20_50:.2e} \\\\")
+    print(f"50-80\% & {h_h_width_near_50_80:.2e} $\\pm$ {h_h_width_error_near_50_80:.2e} &  {h_h_width_away_50_80:.2e} $\\pm$ {h_h_width_error_away_50_80:.2e} \\\\")
 
 
     
@@ -709,9 +713,9 @@ for i, f in enumerate([low_pt_infile, high_pt_infile, normal_pt_infile]):
     # h_phi_away_width_graph.Draw("sameP")
 
     c.Draw()
-    if i == 0:
+    if i == 1:
         c.SaveAs("figures/width_tmp/von_mises_widths_lowpt.pdf")
-    elif i == 1:
+    elif i == 2:
         c.SaveAs("figures/width_tmp/von_mises_widths_highpt.pdf")
     else:
         c.SaveAs("figures/width_tmp/von_mises_widths.pdf")
