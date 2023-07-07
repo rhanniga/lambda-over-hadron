@@ -414,6 +414,15 @@ elif IS_NARROW_PID:
         h_lambda_dphi_subtracted_0_20.Scale(1.1788960330443934)
     elif PT_MODE == 2:
         h_lambda_dphi_subtracted_0_20.Scale(1.1970913624774955)
+elif IS_TOF_PID:
+    if PT_MODE == 0:
+        h_lambda_dphi_subtracted_0_20.Scale(0.9925605504303531)
+    elif PT_MODE == 1:
+        h_lambda_dphi_subtracted_0_20.Scale(1.768552008127845)
+    elif PT_MODE == 2:
+        h_lambda_dphi_subtracted_0_20.Scale(0.8240094208251248)
+
+
 
 
 
@@ -1423,6 +1432,14 @@ elif IS_NARROW_PID:
         h_lambda_dphi_subtracted_20_50.Scale(1.1625641331436003)
     elif PT_MODE == 2:
         h_lambda_dphi_subtracted_20_50.Scale(1.1977363386098983)
+elif IS_TOF_PID:
+    if PT_MODE == 0:
+        h_lambda_dphi_subtracted_20_50.Scale(0.9911803993835522)
+    elif PT_MODE == 1:
+        h_lambda_dphi_subtracted_20_50.Scale(1.7238151003786188)
+    elif PT_MODE == 2:
+        h_lambda_dphi_subtracted_20_50.Scale(0.8182694751096258)
+
 
 if USE_AVG_4:
 
@@ -2435,6 +2452,13 @@ elif IS_NARROW_PID:
         h_lambda_dphi_subtracted_50_80.Scale(1.1573270204439357)
     elif PT_MODE == 2:
         h_lambda_dphi_subtracted_50_80.Scale(1.1450656317216028)
+elif IS_TOF_PID:
+    if PT_MODE == 0:
+        h_lambda_dphi_subtracted_50_80.Scale(0.9938083447210315)
+    elif PT_MODE == 1:
+        h_lambda_dphi_subtracted_50_80.Scale(1.7314056184347324)
+    elif PT_MODE == 2:
+        h_lambda_dphi_subtracted_50_80.Scale(0.831187045177973)
 
 if USE_AVG_4:
 

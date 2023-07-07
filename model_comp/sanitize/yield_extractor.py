@@ -6,10 +6,7 @@ from enum import Enum
 class FitType(Enum):
     AVG_SIX = 1
     AVG_FOUR = 2
-    # V2 = 3
-    # ZYAM = 4
-    # DOUBLE_GAUS = 5
-    # VON_MISES = 6
+    AVG_SIX_NONNEG = 3
 
 class YieldExtractor:
 
@@ -41,6 +38,8 @@ class YieldExtractor:
             self.extract_yield_avg(n_bins=6, accept_negative_contributions=True)
         elif fit_type == FitType.AVG_FOUR:
             self.extract_yield_avg(n_bins=4, accept_negative_contributions=True)
+        elif fit_type == FitType.AVG_SIX_NONNEG:
+            self.extract_yield_avg(n_bins=6, accept_negative_contributions=False)
         
     
     def extract_yield_avg(self, n_bins, accept_negative_contributions):
@@ -52,7 +51,10 @@ class YieldExtractor:
             self.yields[fit_type] = {}
         elif n_bins == 6:
             avg_bins = [1, 2, 7, 8, 9, 16]
-            fit_type = FitType.AVG_SIX
+            if accept_negative_contributions:
+                fit_type = FitType.AVG_SIX_NONNEG
+            else:
+                fit_type = FitType.AVG_SIX
             self.yields[fit_type] = {}
         else:
             raise ValueError("n_bins must be 4 or 6 for now")

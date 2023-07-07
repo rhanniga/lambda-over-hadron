@@ -61,6 +61,7 @@ def do_barlow(dphi_dict, name, is_pid = False):
     c.SaveAs(name)
 
 for pt_mode in range(3):
+
     if pt_mode == 0: # CENTRAL 2 - 4 BIN
         signal_central_file = rt.TFile.Open("output/central_value/v0_avg6_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
         signal_narrow_file = rt.TFile.Open("output/signal_variation/v0_avg6_sideband_subtraction_rsb_1135_115_sig_1108_1124_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
@@ -86,6 +87,7 @@ for pt_mode in range(3):
         "narrower": signal_narrower_file,
         "wider": signal_wider_file
     }
+
     signal_dphi_dict_0_20 = {}
     signal_dphi_dict_20_50 = {}
     signal_dphi_dict_50_80 = {}
@@ -105,6 +107,7 @@ for pt_mode in range(3):
         do_barlow(signal_dphi_dict_0_20, "figures/signal_barlow_0_20_highpt.pdf")
         do_barlow(signal_dphi_dict_20_50, "figures/signal_barlow_20_50_highpt.pdf")
         do_barlow(signal_dphi_dict_50_80, "figures/signal_barlow_50_80_highpt.pdf")
+
     if pt_mode == 0:
         sideband_central_file = rt.TFile.Open("output/central_value/v0_avg6_sideband_subtraction_rsb_1135_115_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")
         sideband_shifted_right_file = rt.TFile.Open("output/sideband_variation/v0_avg6_sideband_subtraction_rsb_114_1155_sig_1102_113_trig_40_80_assoc_20_40_delta_eta_12_normal.root")

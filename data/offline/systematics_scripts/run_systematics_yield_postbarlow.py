@@ -885,12 +885,9 @@ for PT_MODE in [0, 1, 2]:
     nch_20_50_err = 0.5
     nch_50_80 = 17.7
     nch_50_80_err = 0.4
-
-
     print("nch_0_20: ", nch_0_20, " +/- ", nch_0_20_err)
     print("nch_20_50: ", nch_20_50, " +/- ", nch_20_50_err)
     print("nch_50_80: ", nch_50_80, " +/- ", nch_50_80_err)
-
     new_x_axis = arr.array("d", [nch_50_80, nch_20_50, nch_0_20])
     new_x_axis_err = arr.array("d", [nch_50_80_err, nch_20_50_err, nch_0_20_err])
     new_x_axis_stat_err = arr.array("d", [0.0, 0.0, 0.0])
