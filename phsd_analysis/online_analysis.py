@@ -66,8 +66,8 @@ mult_dist = rt.TH1D("fMultDist", "Charged pat. dist in V0A acceptance", 1000, 0,
 
 # single particle distributions, axes are (pt, phi, eta, zvtx = 0 since PHSD has no PV info)
 single_dist_bins = array("i", [100, 16, 100, 1, 4])
-single_dist_mins = array("d", [0.0, 0, -10, 0, 0])
-single_dist_maxes = array("d", [10.0, 6.28, 10, 1, 4])
+single_dist_mins = array("d", [0.0, 0, -13, 0, 0])
+single_dist_maxes = array("d", [10.0, 6.28, 13, 1, 4])
 
 trigger_dist = rt.THnSparseD("fTriggerDist_MC", "Trigger distribution", 5, single_dist_bins, single_dist_mins, single_dist_maxes)
 trigger_dist.Sumw2()
@@ -128,20 +128,27 @@ def process_event(event):
     phi_list_no_eta_cut = []
 
 
+    collision_energy = 4000 + (82/208)*4000
+    collision_momentum = 4000 - (82/208)*4000
+
+    collision_lorentz_vector = rt.TLorentzVector(0, 0, collision_momentum, collision_energy)
 
     # counting number of charged hadrons in V0A acceptance
     num_tracks_in_v0a_acceptance = 0
 
     # loop over tracks in event to get number of charged hadrons in V0A acceptance
     for index, track in enumerate(event):
+
         track_info = track.split()
         track_pdg = int(track_info[0])
-        track_momentum = [float(track_info[2]), float(track_info[3]), float(track_info[4])]
-        track_kinematics = get_kinematics(track_momentum)
-        track_pt = track_kinematics[0]
-        track_eta = track_kinematics[1]
-        track_phi = track_kinematics[2]
+        track_fourmomentum = [float(track_info[2]), float(track_info[3]), -float(track_info[4]), float(track_info[5])]
+        track_lorentz_vector = rt.TLorentzVector(track_fourmomentum[0], track_fourmomentum[1], track_fourmomentum[2], track_fourmomentum[3])
+        track_lorentz_vector.Boost(-collision_lorentz_vector.BoostVector())
+        track_pt = track_lorentz_vector.Pt()
+        track_eta = track_lorentz_vector.Eta()
+        track_phi = track_lorentz_vector.Phi()
         particle = Particle(track_pdg, track_pt, track_eta, track_phi, index)
+
         if particle.pt <= 0.15:
             continue
         if is_charged_hadron(particle.pdg):
@@ -160,12 +167,22 @@ def process_event(event):
     for index, track in enumerate(event):
         track_info = track.split()
         track_pdg = int(track_info[0])
-        track_momentum = [float(track_info[2]), float(track_info[3]), float(track_info[4])]
-        track_kinematics = get_kinematics(track_momentum)
-        track_pt = track_kinematics[0]
-        track_eta = track_kinematics[1]
-        track_phi = track_kinematics[2]
+        track_fourmomentum = [float(track_info[2]), float(track_info[3]), -float(track_info[4]), float(track_info[5])]
+        track_lorentz_vector = rt.TLorentzVector(track_fourmomentum[0], track_fourmomentum[1], track_fourmomentum[2], track_fourmomentum[3])
+        track_lorentz_vector.Boost(-collision_lorentz_vector.BoostVector())
+        track_pt = track_lorentz_vector.Pt()
+        track_eta = track_lorentz_vector.Eta()
+        track_phi = track_lorentz_vector.Phi()
         particle = Particle(track_pdg, track_pt, track_eta, track_phi, index)
+
+        # track_info = track.split()
+        # track_pdg = int(track_info[0])
+        # track_momentum = [float(track_info[2]), float(track_info[3]), float(track_info[4])]
+        # track_kinematics = get_kinematics(track_momentum)
+        # track_pt = track_kinematics[0]
+        # track_eta = track_kinematics[1]
+        # track_phi = track_kinematics[2]
+        # particle = Particle(track_pdg, track_pt, track_eta, track_phi, index)
 
         if particle.pt <= 0.15:
             continue
@@ -179,78 +196,76 @@ def process_event(event):
                 lambda_dist.Fill(single_dist_array)
 
         elif rt.TMath.Abs(particle.pdg) == 3212: # sigmas
-            sigma_mass = 1.19265
-            energy = math.sqrt(track_momentum[0]**2 + track_momentum[1]**2 + track_momentum[2]**2 + sigma_mass**2)
-            lorentz_vector = rt.TLorentzVector(track_momentum[0], track_momentum[1], track_momentum[2], energy)
             decay_event = rt.TGenPhaseSpace()
-            decay_event.SetDecay(lorentz_vector, 2, array("d", [1.115683, 0.0]))
+            decay_event.SetDecay(track_lorentz_vector, 2, array("d", [1.115683, 0.0]))
             decay_event.Generate()
             lambda_lorentz_vector = decay_event.GetDecay(0)
 
-            lambda_momentum = [lambda_lorentz_vector.Px(), lambda_lorentz_vector.Py(), lambda_lorentz_vector.Pz()]
-            lambda_kinematics = get_kinematics(lambda_momentum)
-            lambda_pt = lambda_kinematics[0]
-            lambda_eta = lambda_kinematics[1]
-            lambda_phi = lambda_kinematics[2]
+            # lambda_momentum = [lambda_lorentz_vector.Px(), lambda_lorentz_vector.Py(), lambda_lorentz_vector.Pz()]
+            # lambda_kinematics = get_kinematics(lambda_momentum)
+
+            lambda_pt = lambda_lorentz_vector.Pt()
+            lambda_eta = lambda_lorentz_vector.Eta()
+            lambda_phi = lambda_lorentz_vector.Phi()
 
             lambda_particle = Particle(3122, lambda_pt, lambda_eta, lambda_phi, index)
             lambda_list_no_eta_cut.append(lambda_particle)
             lambda_from_sigma_dist_no_eta_cut.Fill(array("d", [lambda_particle.pt, lambda_particle.phi, lambda_particle.eta, 0.5]))
 
         elif rt.TMath.Abs(particle.pdg) == 3334: # omegas
-            omega_mass = 1.67245
-            energy = math.sqrt(track_momentum[0]**2 + track_momentum[1]**2 + track_momentum[2]**2 + omega_mass**2)
-            lorentz_vector = rt.TLorentzVector(track_momentum[0], track_momentum[1], track_momentum[2], energy)
             decay_event = rt.TGenPhaseSpace()
             rand_number = rt.gRandom.Uniform(0, 1)
             if rand_number <= 0.678:
-                decay_event.SetDecay(lorentz_vector, 2, array("d", [1.115683, 0.493677]))
+                decay_event.SetDecay(track_lorentz_vector, 2, array("d", [1.115683, 0.493677]))
                 decay_event.Generate()
                 lambda_lorentz_vector = decay_event.GetDecay(0)
 
-                lambda_momentum = [lambda_lorentz_vector.Px(), lambda_lorentz_vector.Py(), lambda_lorentz_vector.Pz()]
-                lambda_kinematics = get_kinematics(lambda_momentum)
-                lambda_pt = lambda_kinematics[0]
-                lambda_eta = lambda_kinematics[1]
-                lambda_phi = lambda_kinematics[2]
+                # lambda_momentum = [lambda_lorentz_vector.Px(), lambda_lorentz_vector.Py(), lambda_lorentz_vector.Pz()]
+                # lambda_kinematics = get_kinematics(lambda_momentum)
+
+                lambda_pt = lambda_lorentz_vector.Pt()
+                lambda_eta = lambda_lorentz_vector.Eta()
+                lambda_phi = lambda_lorentz_vector.Phi()
 
                 lambda_particle = Particle(3122, lambda_pt, lambda_eta, lambda_phi, index)
                 lambda_list_no_eta_cut.append(lambda_particle)
                 lambda_from_omega_dist_no_eta_cut.Fill(array("d", [lambda_particle.pt, lambda_particle.phi, lambda_particle.eta, 0.5]))
 
         elif rt.TMath.Abs(particle.pdg) == 3322: # neutral xis
-            xi_mass = 1.31486
-            energy = math.sqrt(track_momentum[0]**2 + track_momentum[1]**2 + track_momentum[2]**2 + xi_mass**2)
-            lorentz_vector = rt.TLorentzVector(track_momentum[0], track_momentum[1], track_momentum[2], energy)
             decay_event = rt.TGenPhaseSpace()
-            decay_event.SetDecay(lorentz_vector, 2, array("d", [1.115683, 0.134976]))
+            decay_event.SetDecay(track_lorentz_vector, 2, array("d", [1.115683, 0.134976]))
             decay_event.Generate()
             lambda_lorentz_vector = decay_event.GetDecay(0)
 
-            lambda_momentum = [lambda_lorentz_vector.Px(), lambda_lorentz_vector.Py(), lambda_lorentz_vector.Pz()]
-            lambda_kinematics = get_kinematics(lambda_momentum)
-            lambda_pt = lambda_kinematics[0]
-            lambda_eta = lambda_kinematics[1]
-            lambda_phi = lambda_kinematics[2]
+            # lambda_momentum = [lambda_lorentz_vector.Px(), lambda_lorentz_vector.Py(), lambda_lorentz_vector.Pz()]
+            # lambda_kinematics = get_kinematics(lambda_momentum)
+            # lambda_pt = lambda_kinematics[0]
+            # lambda_eta = lambda_kinematics[1]
+            # lambda_phi = lambda_kinematics[2]
+
+            lambda_pt = lambda_lorentz_vector.Pt()
+            lambda_eta = lambda_lorentz_vector.Eta()
+            lambda_phi = lambda_lorentz_vector.Phi()
 
             lambda_particle = Particle(3122, lambda_pt, lambda_eta, lambda_phi, index)
             lambda_list_no_eta_cut.append(lambda_particle)
             lambda_from_xi_dist_no_eta_cut.Fill(array("d", [lambda_particle.pt, lambda_particle.phi, lambda_particle.eta, 0.5]))
         
         elif rt.TMath.Abs(particle.pdg) == 3312: # charged xis
-            xi_mass = 1.32131
-            energy = math.sqrt(track_momentum[0]**2 + track_momentum[1]**2 + track_momentum[2]**2 + xi_mass**2)
-            lorentz_vector = rt.TLorentzVector(track_momentum[0], track_momentum[1], track_momentum[2], energy)
             decay_event = rt.TGenPhaseSpace()
-            decay_event.SetDecay(lorentz_vector, 2, array("d", [1.115683, 0.139570]))
+            decay_event.SetDecay(track_lorentz_vector, 2, array("d", [1.115683, 0.139570]))
             decay_event.Generate()
             lambda_lorentz_vector = decay_event.GetDecay(0)
 
-            lambda_momentum = [lambda_lorentz_vector.Px(), lambda_lorentz_vector.Py(), lambda_lorentz_vector.Pz()]
-            lambda_kinematics = get_kinematics(lambda_momentum)
-            lambda_pt = lambda_kinematics[0]
-            lambda_eta = lambda_kinematics[1]
-            lambda_phi = lambda_kinematics[2]
+            # lambda_momentum = [lambda_lorentz_vector.Px(), lambda_lorentz_vector.Py(), lambda_lorentz_vector.Pz()]
+            # lambda_kinematics = get_kinematics(lambda_momentum)
+            # lambda_pt = lambda_kinematics[0]
+            # lambda_eta = lambda_kinematics[1]
+            # lambda_phi = lambda_kinematics[2]
+
+            lambda_pt = lambda_lorentz_vector.Pt()
+            lambda_eta = lambda_lorentz_vector.Eta()
+            lambda_phi = lambda_lorentz_vector.Phi()
 
             lambda_particle = Particle(3122, lambda_pt, lambda_eta, lambda_phi, index)
             lambda_list_no_eta_cut.append(lambda_particle)
@@ -285,11 +300,12 @@ def process_event(event):
         for index, track in enumerate(event):
             track_info = track.split()
             track_pdg = int(track_info[0])
-            track_momentum = [float(track_info[2]), float(track_info[3]), float(track_info[4])]
-            track_kinematics = get_kinematics(track_momentum)
-            track_pt = track_kinematics[0]
-            track_eta = track_kinematics[1]
-            track_phi = track_kinematics[2]
+            track_fourmomentum = [float(track_info[2]), float(track_info[3]), -float(track_info[4]), float(track_info[5])]
+            track_lorentz_vector = rt.TLorentzVector(track_fourmomentum[0], track_fourmomentum[1], track_fourmomentum[2], track_fourmomentum[3])
+            track_lorentz_vector.Boost(-collision_lorentz_vector.BoostVector())
+            track_pt = track_lorentz_vector.Pt()
+            track_eta = track_lorentz_vector.Eta()
+            track_phi = track_lorentz_vector.Phi()
             particle = Particle(track_pdg, track_pt, track_eta, track_phi, index)
             if particle.pt <= 0.15:
                 continue
@@ -324,9 +340,9 @@ with open(argv[1], "r") as f:
 
             event = []
         elif line_num > 1:
-            if line.split()[6] == "-1":
-                line_num += 1
-                continue
+            # if line.split()[6] == "-1":
+            #     line_num += 1
+            #     continue
             event.append(line)
         line_num += 1
 
