@@ -71,33 +71,44 @@ single_dist_maxes = array("d", [10.0, 6.28, 13, 1, 4])
 
 trigger_dist = rt.THnSparseD("fTriggerDist_MC", "Trigger distribution", 5, single_dist_bins, single_dist_mins, single_dist_maxes)
 trigger_dist.Sumw2()
+
 associated_dist = rt.THnSparseD("fAssociatedDist_MC", "Associated distribution", 5, single_dist_bins, single_dist_mins, single_dist_maxes)
 associated_dist.Sumw2()
+
 lambda_dist = rt.THnSparseD("fLambdaDist_MC", "Lambda distribution", 5, single_dist_bins, single_dist_mins, single_dist_maxes)
 lambda_dist.Sumw2()
+
 phi_dist = rt.THnSparseD("fPhiDist_MC", "Phi distribution", 5, single_dist_bins, single_dist_mins, single_dist_maxes)
 phi_dist.Sumw2()
 
 trigger_dist_no_eta_cut = rt.THnSparseD("fTriggerDist_MC_no_eta_cut", "Trigger distribution (no eta cut)", 5, single_dist_bins, single_dist_mins, single_dist_maxes)
 trigger_dist_no_eta_cut.Sumw2()
+
 associated_dist_no_eta_cut = rt.THnSparseD("fAssociatedDist_MC_no_eta_cut", "Associated distribution (no eta cut)", 5, single_dist_bins, single_dist_mins, single_dist_maxes)
 associated_dist_no_eta_cut.Sumw2()
+
 lambda_dist_no_eta_cut = rt.THnSparseD("fLambdaDist_MC_no_eta_cut", "Lambda distribution (no eta cut)", 5, single_dist_bins, single_dist_mins, single_dist_maxes)
 lambda_dist_no_eta_cut.Sumw2()
+
 lambda_from_sigma_dist_no_eta_cut = rt.THnSparseD("fLambdaFromSigmaDist_MC_no_eta_cut", "Lambda distribution (from sigmas,no eta cut)", 5, single_dist_bins, single_dist_mins, single_dist_maxes)
 lambda_from_sigma_dist_no_eta_cut.Sumw2()
 lambda_from_omega_dist_no_eta_cut = rt.THnSparseD("fLambdaFromOmegaDist_MC_no_eta_cut", "Lambda distribution (from omegas,no eta cut)", 5, single_dist_bins, single_dist_mins, single_dist_maxes)
 lambda_from_omega_dist_no_eta_cut.Sumw2()
 lambda_from_xi_dist_no_eta_cut = rt.THnSparseD("fLambdaFromXiDist_MC_no_eta_cut", "Lambda distribution (from xis,no eta cut)", 5, single_dist_bins, single_dist_mins, single_dist_maxes)
 lambda_from_xi_dist_no_eta_cut.Sumw2()
+
 phi_dist_no_eta_cut = rt.THnSparseD("fPhiDist_MC_no_eta_cut", "Phi distribution (no eta cut)", 5, single_dist_bins, single_dist_mins, single_dist_maxes)
 phi_dist_no_eta_cut.Sumw2()
+
 triggered_trigger_dist = rt.THnSparseD("fTriggeredTriggerDist_MC", "Trigger distribution (triggered event)", 5, single_dist_bins, single_dist_mins, single_dist_maxes)
 triggered_trigger_dist.Sumw2()
+
 triggered_associated_dist = rt.THnSparseD("fTriggeredAssociatedDist_MC", "Associated distribution (triggered event)", 5, single_dist_bins, single_dist_mins, single_dist_maxes)
 triggered_associated_dist.Sumw2()
+
 triggered_lambda_dist = rt.THnSparseD("fTriggeredLambdaDist_MC", "Lambda distribution (triggered event)", 5, single_dist_bins, single_dist_mins, single_dist_maxes)
 triggered_lambda_dist.Sumw2()
+
 triggered_phi_dist = rt.THnSparseD("fTriggeredPhiDist_MC", "Phi distribution (triggered event)", 5, single_dist_bins, single_dist_mins, single_dist_maxes)
 triggered_phi_dist.Sumw2()
 
@@ -123,10 +134,13 @@ def process_event(event):
 
     trigger_list = []
 
-    associated_list_no_eta_cut = []
+    hadron_list = []
+    lambda_list = []
+    phi_list = []
+
+    hadron_list_no_eta_cut = []
     lambda_list_no_eta_cut = []
     phi_list_no_eta_cut = []
-
 
     collision_energy = 4000 + (82/208)*4000
     collision_momentum = 4000 - (82/208)*4000
@@ -141,16 +155,19 @@ def process_event(event):
 
         track_info = track.split()
         track_pdg = int(track_info[0])
-        track_fourmomentum = [float(track_info[2]), float(track_info[3]), -float(track_info[4]), float(track_info[5])]
-        track_lorentz_vector = rt.TLorentzVector(track_fourmomentum[0], track_fourmomentum[1], track_fourmomentum[2], track_fourmomentum[3])
+
+        track_lorentz_vector = rt.TLorentzVector(float(track_info[2]), float(track_info[3]), -float(track_info[4]), float(track_info[5]))
         track_lorentz_vector.Boost(-collision_lorentz_vector.BoostVector())
+
         track_pt = track_lorentz_vector.Pt()
         track_eta = track_lorentz_vector.Eta()
         track_phi = track_lorentz_vector.Phi()
+
         particle = Particle(track_pdg, track_pt, track_eta, track_phi, index)
 
         if particle.pt <= 0.15:
             continue
+
         if is_charged_hadron(particle.pdg):
             if particle.eta > 2.8 and particle.eta < 5.1:
                 num_tracks_in_v0a_acceptance += 1
@@ -165,35 +182,28 @@ def process_event(event):
 
     # loop over tracks in event
     for index, track in enumerate(event):
+
         track_info = track.split()
+
         track_pdg = int(track_info[0])
-        track_fourmomentum = [float(track_info[2]), float(track_info[3]), -float(track_info[4]), float(track_info[5])]
-        track_lorentz_vector = rt.TLorentzVector(track_fourmomentum[0], track_fourmomentum[1], track_fourmomentum[2], track_fourmomentum[3])
+
+        track_lorentz_vector = rt.TLorentzVector(float(track_info[2]), float(track_info[3]), -float(track_info[4]), float(track_info[5]))
         track_lorentz_vector.Boost(-collision_lorentz_vector.BoostVector())
+
         track_pt = track_lorentz_vector.Pt()
         track_eta = track_lorentz_vector.Eta()
         track_phi = track_lorentz_vector.Phi()
-        particle = Particle(track_pdg, track_pt, track_eta, track_phi, index)
 
-        # track_info = track.split()
-        # track_pdg = int(track_info[0])
-        # track_momentum = [float(track_info[2]), float(track_info[3]), float(track_info[4])]
-        # track_kinematics = get_kinematics(track_momentum)
-        # track_pt = track_kinematics[0]
-        # track_eta = track_kinematics[1]
-        # track_phi = track_kinematics[2]
-        # particle = Particle(track_pdg, track_pt, track_eta, track_phi, index)
+        particle = Particle(track_pdg, track_pt, track_eta, track_phi, index)
 
         if particle.pt <= 0.15:
             continue
 
-        single_dist_array = array("d", [particle.pt, particle.phi, particle.eta, 0.5, mult_bin])
 
         if rt.TMath.Abs(particle.pdg) == 3122: # lambdas
             lambda_list_no_eta_cut.append(particle)
-            lambda_dist_no_eta_cut.Fill(single_dist_array)
             if rt.TMath.Abs(particle.eta) < 0.8:
-                lambda_dist.Fill(single_dist_array)
+                lambda_list.append(particle)
 
         elif rt.TMath.Abs(particle.pdg) == 3212: # sigmas
             decay_event = rt.TGenPhaseSpace()
@@ -237,12 +247,6 @@ def process_event(event):
             decay_event.Generate()
             lambda_lorentz_vector = decay_event.GetDecay(0)
 
-            # lambda_momentum = [lambda_lorentz_vector.Px(), lambda_lorentz_vector.Py(), lambda_lorentz_vector.Pz()]
-            # lambda_kinematics = get_kinematics(lambda_momentum)
-            # lambda_pt = lambda_kinematics[0]
-            # lambda_eta = lambda_kinematics[1]
-            # lambda_phi = lambda_kinematics[2]
-
             lambda_pt = lambda_lorentz_vector.Pt()
             lambda_eta = lambda_lorentz_vector.Eta()
             lambda_phi = lambda_lorentz_vector.Phi()
@@ -257,12 +261,6 @@ def process_event(event):
             decay_event.Generate()
             lambda_lorentz_vector = decay_event.GetDecay(0)
 
-            # lambda_momentum = [lambda_lorentz_vector.Px(), lambda_lorentz_vector.Py(), lambda_lorentz_vector.Pz()]
-            # lambda_kinematics = get_kinematics(lambda_momentum)
-            # lambda_pt = lambda_kinematics[0]
-            # lambda_eta = lambda_kinematics[1]
-            # lambda_phi = lambda_kinematics[2]
-
             lambda_pt = lambda_lorentz_vector.Pt()
             lambda_eta = lambda_lorentz_vector.Eta()
             lambda_phi = lambda_lorentz_vector.Phi()
@@ -273,54 +271,21 @@ def process_event(event):
 
         elif rt.TMath.Abs(particle.pdg) == 333: # phis
             phi_list_no_eta_cut.append(particle)
-            phi_dist_no_eta_cut.Fill(single_dist_array)
             if rt.TMath.Abs(particle.eta) < 0.8:
                 phi_dist.Fill(single_dist_array)
 
         elif is_charged_hadron(particle.pdg):
-            associated_list_no_eta_cut.append(particle)
-            associated_dist_no_eta_cut.Fill(single_dist_array)
-            trigger_dist_no_eta_cut.Fill(single_dist_array)
+            hadron_list_no_eta_cut.append(particle)
             if rt.TMath.Abs(particle.eta) < 0.8:
                 trigger_list.append(particle)
-                trigger_dist.Fill(single_dist_array)
-                associated_dist.Fill(single_dist_array)
                 if particle.pt > 4:
                     is_triggered_event = True
 
 
 
     fill_correlation_dist(trigger_list, lambda_list_no_eta_cut, h_lambda_dist, mult_bin)
-    fill_correlation_dist(trigger_list, associated_list_no_eta_cut, h_h_dist, mult_bin)
+    fill_correlation_dist(trigger_list, hadron_list_no_eta_cut, h_h_dist, mult_bin)
     fill_correlation_dist(trigger_list, phi_list_no_eta_cut, h_phi_dist, mult_bin)
-
-    # too lazy to re-write code so we do this instead
-    if is_triggered_event:
-        # loop over tracks in event
-        for index, track in enumerate(event):
-            track_info = track.split()
-            track_pdg = int(track_info[0])
-            track_fourmomentum = [float(track_info[2]), float(track_info[3]), -float(track_info[4]), float(track_info[5])]
-            track_lorentz_vector = rt.TLorentzVector(track_fourmomentum[0], track_fourmomentum[1], track_fourmomentum[2], track_fourmomentum[3])
-            track_lorentz_vector.Boost(-collision_lorentz_vector.BoostVector())
-            track_pt = track_lorentz_vector.Pt()
-            track_eta = track_lorentz_vector.Eta()
-            track_phi = track_lorentz_vector.Phi()
-            particle = Particle(track_pdg, track_pt, track_eta, track_phi, index)
-            if particle.pt <= 0.15:
-                continue
-            single_dist_array = array("d", [particle.pt, particle.phi, particle.eta, 0.5, mult_bin])
-            if rt.TMath.Abs(particle.pdg) == 3122:
-                if rt.TMath.Abs(particle.eta) < 0.8:
-                    triggered_lambda_dist.Fill(single_dist_array)
-            elif rt.TMath.Abs(particle.pdg) == 333:
-                if rt.TMath.Abs(particle.eta) < 0.8:
-                    triggered_phi_dist.Fill(single_dist_array)
-            elif is_charged_hadron(particle.pdg):
-                if rt.TMath.Abs(particle.eta) < 0.8:
-                    triggered_trigger_dist.Fill(single_dist_array)
-                    triggered_associated_dist.Fill(single_dist_array)
-
 
 
 # we have to read line by line since the file is so large
