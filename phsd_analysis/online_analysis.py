@@ -12,6 +12,8 @@ COL_ENERGY = 4000 + (82/208)*4000
 COL_MOMENTUM = 4000 - (82/208)*4000
 COL_LVECTOR = rt.TLorentzVector(0, 0, COL_MOMENTUM, COL_ENERGY)
 
+TRACK_DEPTH = 500
+
 # particle class, mostly for keeping track of indices within event stack
 class Particle:
     def __init__(self, pdg, pt, eta, phi, index):
@@ -31,6 +33,8 @@ class PHSDAnalyzer:
 
         self.output_list = rt.TList()
         self.output_list.SetOwner(True)
+
+        self.mixed_trigger_dict = {}
 
         # mult dist (in V0A acceptance) for determining percentiles
         self.mult_dist = rt.TH1D("fMultDist", "Charged pat. dist in V0A acceptance", 1000, 0, 1000)
@@ -333,6 +337,14 @@ class PHSDAnalyzer:
         self.fill_correlation_dist(trigger_list, lambda_list_total_no_eta_cut, self.h_lambda_dist, mult_bin)
         self.fill_correlation_dist(trigger_list, hadron_list_no_eta_cut, self.h_h_dist, mult_bin)
         self.fill_correlation_dist(trigger_list, phi_list_no_eta_cut, self.h_phi_dist, mult_bin)
+
+
+        if mult_bin in self.mixed_trigger_dist:
+            self.fill_correlation_dist(self.mixed_trigger_dict[mult_bin], lambda_list_total, self.h_lambda_dist, mult_bin)
+            self.mixed_trigger_dict[mult_bin] += trigger_list
+        else:
+            self.mixed_trigger_dict[mult_bin] = trigger_list
+
 
     def parse_and_process(self, file_name):
 
