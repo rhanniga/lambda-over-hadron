@@ -117,6 +117,8 @@ private:
   THnSparse* fDphiHHMixed; //!>! hadron-hadron mixed correlation hist
   THnSparse* fDphiHHMixed_highestPt; //!>! hadron-hadron mixed correlation hist (highest pt trigger between 4 and 8)
 
+  THnSparse* fV0TopDist; //!>! dist containing v0 top variables to see which cuts are applied by default
+
 
   AliMotherContainer DaughtersToMother(AliAODTrack* track1, AliAODTrack* track2, double mass1, double mass2);
   void FillSingleParticleDist(std::vector<AliAODTrack*> particle_list, double zVtx, double multPercentile, THnSparse* fDist, bool trig_eff=false);

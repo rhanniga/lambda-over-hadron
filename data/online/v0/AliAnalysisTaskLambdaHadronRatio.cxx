@@ -46,7 +46,6 @@
 ClassImp(AliAnalysisTaskLambdaHadronRatio);
 
 AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
-
     AliAnalysisTaskSE(),
     fAOD(0x0),
     fOutputList(0x0),
@@ -80,6 +79,7 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio() :
     fDphiHLambdaMixed_highestPt(0x0),
     fDphiHHMixed(0x0),
     fDphiHHMixed_highestPt(0x0),
+    fV0TopDist(0x0),
     fpidResponse(0x0),
     fMultSelection(0x0),
     fCentEstimator(0x0),
@@ -130,6 +130,7 @@ AliAnalysisTaskLambdaHadronRatio::AliAnalysisTaskLambdaHadronRatio(const char *n
     fDphiHLambdaMixed_highestPt(0x0),
     fDphiHHMixed(0x0),
     fDphiHHMixed_highestPt(0x0),
+    fV0TopDist(0x0),
     fpidResponse(0x0),
     fMultSelection(0x0),
     fCentEstimator(0x0),
@@ -286,6 +287,16 @@ void AliAnalysisTaskLambdaHadronRatio::UserCreateOutputObjects()
     fTOFvTPCnSigmaProton = new TH2D("fTOFvTPCnSigmaProton", "TPC vs TOF nSigma Proton", 100, -5, 5, 100, -5, 5);
     fTOFvTPCnSigmaProton->Sumw2();
     fOutputList->Add(fTOFvTPCnSigmaProton);
+
+
+    // V0 topological variables
+    int v0_top_bins[4] = {2100, 1000, 1000, 1000};
+    double v0_top_mins[4] = {0, 0, 0, 0};
+    double v0_top_maxes[4] = {210, 10, 10, 10};
+
+    fV0TopDist = new THnSparseF("fV0TopDist", "V0 Topological Variables", 4, v0_top_bins, v0_top_mins, v0_top_maxes);
+    fV0TopDist->Sumw2();
+    fOutputList->Add(fV0TopDist);
 
 
     PostData(1, fOutputList);
@@ -958,7 +969,17 @@ void AliAnalysisTaskLambdaHadronRatio::UserExec(Option_t*)
     int numV0s = fAOD->GetNumberOfV0s();
     for(int i = 0; i < numV0s; i++) {
         AliAODv0 *v0 = fAOD->GetV0(i);
+
+        double radius = v0->RadiusV0();
+        double dca_neg = v0->DcaNegToPrimVertex();
+        double dca_daughters = v0->DcaV0Daughters();
+        double cos_pointing = v0->CosPointingAngle((AliAODVertex*)prim);
+
+        double top_array[4] = {radius, dca_neg, dca_daughters, cos_pointing};
+
+        
         if(v0->GetOnFlyStatus()) continue;
+        fV0TopDist->Fill({top_array});
         if(TMath::Abs(v0->Eta()) > 0.8) continue;
 
         AliAODTrack* posTrack = (AliAODTrack*) v0->GetDaughter(0);

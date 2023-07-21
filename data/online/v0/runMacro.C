@@ -117,10 +117,12 @@ void runMacro(bool local=true, bool full=true, bool gridMerge=true){
     TChain *chain = new TChain("aodTree");
 
     chain->Add("~/Wonderland/native/data/265525_0001.root");  
-    chain->Add("~/Wonderland/native/data/265525_0007.root");
-    chain->Add("~/Wonderland/native/data/265525_0012.root");
-    chain->Add("~/Wonderland/native/data/265525_0018.root");
-    chain->Add("~/Wonderland/native/data/265525_0024.root");
+    chain->Add("~/Wonderland/native/data/265525_0002.root");  
+    chain->Add("~/Wonderland/native/data/265525_0003.root");  
+    // chain->Add("~/Wonderland/native/data/265525_0007.root");
+    // chain->Add("~/Wonderland/native/data/265525_0012.root");
+    // chain->Add("~/Wonderland/native/data/265525_0018.root");
+    // chain->Add("~/Wonderland/native/data/265525_0024.root");
     // chain->Add("~/Wonderland/native/data/265525_0030.root");
     // chain->Add("~/Wonderland/native/data/265525_0036.root");
     // chain->Add("~/Wonderland/native/data/265525_0042.root");
