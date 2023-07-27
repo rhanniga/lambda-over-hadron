@@ -1,4 +1,5 @@
 import ROOT as rt
+rt.gStyle.SetOptStat(0)
 
 c = rt.TCanvas("c", "", 800, 600)
 
@@ -61,46 +62,36 @@ def main(filepath="AnalysisResults.root"):
         nsigma_proton = (tpc_average_proton_0 - tpc_average_elec_0) / width
         bethe_bloch_nsigma_proton.SetBinContent(int(momentum_bin/4) + 1, nsigma_proton)
         big_dist.GetAxis(5).SetRange(0, -1)
+
+        bethe_bloch_nsigma_electron.SetBinContent(int(momentum_bin/4) + 1, 0.0)
         
 
     big_dist.GetAxis(0).SetRange(0,-1)
     nsigma_electron = big_dist.Projection(2, 0)
 
+    bethe_bloch_nsigma_electron.SetLineColor(rt.kBlack)
     bethe_bloch_nsigma_pion.SetLineColor(rt.kRed)
     bethe_bloch_nsigma_kaon.SetLineColor(rt.kMagenta)
     bethe_bloch_nsigma_proton.SetLineColor(rt.kGreen)
 
+    bethe_bloch_nsigma_electron.SetLineWidth(2)
     bethe_bloch_nsigma_pion.SetLineWidth(2)
     bethe_bloch_nsigma_kaon.SetLineWidth(2)
     bethe_bloch_nsigma_proton.SetLineWidth(2)
 
+    c.SetLogz()
+
     nsigma_electron.GetXaxis().SetRangeUser(2, 6)
+    nsigma_electron.SetTitle(";p (GeV/c);n#sigma_{e}")
     nsigma_electron.Draw("COLZ")
+    bethe_bloch_nsigma_electron.Draw("l same")
     bethe_bloch_nsigma_pion.Draw("l same")
     bethe_bloch_nsigma_kaon.Draw("l same")
     bethe_bloch_nsigma_proton.Draw("l same")
 
-
     c.SaveAs("shitty_plot.png")
 
-    # # get electron, pion, kaon, proton nsigma 
-    # nsigma_electron_bethe = inlist.FindObject("fNSigmaElectronBethe")
-    # nsigma_pion_bethe = inlist.FindObject("fNSigmaPionBethe")
-    # nsigma_kaon_bethe = inlist.FindObject("fNSigmaKaonBethe")
-    # nsigma_proton_bethe = inlist.FindObject("fNSigmaProtonBethe")
-
-
-
     nsigma_electron = big_dist.Projection(2)
-
-    # nsigma_pion_bethe.GetXaxis().SetRangeUser(2.5, 3.0 - 0.0001)
-    # nsigma_electron_bethe_1d = nsigma_pion_bethe.ProjectionY()
-    # nsigma_electron_bethe_1d.SetLineColor(rt.kRed)
-
-    # nsigma_electron.Draw()
-    # nsigma_electron_bethe_1d.Draw("same")
-    # c.SaveAs("nsigma_electron.png")
-
 
 if __name__ == "__main__":
     main()
