@@ -342,6 +342,9 @@ class PHSDAnalyzer:
         if mult_bin in self.mixed_trigger_dist:
             self.fill_correlation_dist(self.mixed_trigger_dict[mult_bin], lambda_list_total, self.h_lambda_dist, mult_bin)
             self.mixed_trigger_dict[mult_bin] += trigger_list
+            if len(self.mixed_trigger_dict[mult_bin]) > TRACK_DEPTH:
+                # remove the first TRACK_DEPTH elements
+                self.mixed_trigger_dict[mult_bin] = self.mixed_trigger_dict[mult_bin][TRACK_DEPTH:]
         else:
             self.mixed_trigger_dict[mult_bin] = trigger_list
 
