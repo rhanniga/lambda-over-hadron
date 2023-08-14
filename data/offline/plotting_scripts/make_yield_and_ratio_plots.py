@@ -88,6 +88,11 @@ pairwise_final_canvas.SetMargin(0,0,0,0)
 pairwise_final_canvas_new_x_axis = rt.TCanvas("pairwise_final_canvas_new_x_axis", "", 1500, 800)
 pairwise_final_canvas_new_x_axis.SetMargin(0,0,0,0)
 
+unity_line1 = rt.TLine(3, 1, 53, 1)
+unity_line1.SetLineColor(rt.kBlack)
+unity_line1.SetLineWidth(1)
+unity_line1.SetLineStyle(7)
+
 c.cd()
 
 for PT_MODE in [0, 1, 2]:
@@ -308,7 +313,7 @@ for PT_MODE in [0, 1, 2]:
 
 
             near_ratio_graph.SetMarkerStyle(20)
-            near_ratio_graph.SetMarkerSize(1.5)
+            near_ratio_graph.SetMarkerSize(2)
             near_ratio_graph.SetMarkerColor(rt.kRed+1)
             near_ratio_graph.SetLineColor(rt.kRed+2)
             near_ratio_graph.SetLineWidth(2)
@@ -325,12 +330,12 @@ for PT_MODE in [0, 1, 2]:
             near_ratio_graph_comparison_dpmjet.SetMarkerColor(rt.kRed+1)
             near_ratio_graph_comparison_dpmjet.SetLineColor(rt.kRed+2)
             near_ratio_graph_comparison_dpmjet.SetLineWidth(2)
-            near_ratio_graph_comparison_dpmjet.SetFillStyle(3144)
+            near_ratio_graph_comparison_dpmjet.SetFillStyle(3244)
             near_ratio_graph_comparison_dpmjet.SetFillColor(rt.kRed+2)
 
 
             away_ratio_graph.SetMarkerStyle(21)
-            away_ratio_graph.SetMarkerSize(1.5)
+            away_ratio_graph.SetMarkerSize(2)
             away_ratio_graph.SetMarkerColor(rt.kBlue+1)
             away_ratio_graph.SetLineColor(rt.kBlue+2)
             away_ratio_graph.SetLineWidth(2)
@@ -347,8 +352,8 @@ for PT_MODE in [0, 1, 2]:
             away_ratio_graph_comparison_dpmjet.SetMarkerColor(rt.kBlue+1)
             away_ratio_graph_comparison_dpmjet.SetLineColor(rt.kBlue+2)
             away_ratio_graph_comparison_dpmjet.SetLineWidth(2)
-            away_ratio_graph_comparison_dpmjet.SetFillStyle(3144)
-            away_ratio_graph_comparison_dpmjet.SetFillColor(rt.kBlue+2)
+            away_ratio_graph_comparison_dpmjet.SetFillStyle(3244)
+            away_ratio_graph_comparison_dpmjet.SetFillColorAlpha(rt.kBlue+2, 0.5)
 
             if not use_new_x_axis:
                 for i in range(ue_ratio_graph.GetN()):
@@ -362,7 +367,7 @@ for PT_MODE in [0, 1, 2]:
                 ue_ratio_graph.SetFillColor(rt.kGreen+1)
             else:
                 ue_ratio_graph.SetMarkerStyle(43)
-                ue_ratio_graph.SetMarkerSize(2)
+                ue_ratio_graph.SetMarkerSize(3)
                 ue_ratio_graph.SetMarkerColor(rt.kGreen+2)
                 ue_ratio_graph.SetLineColor(rt.kGreen+3)
                 ue_ratio_graph.SetLineWidth(2)
@@ -374,8 +379,9 @@ for PT_MODE in [0, 1, 2]:
             ue_ratio_graph_comparison_dpmjet.SetMarkerColor(rt.kGreen+2)
             ue_ratio_graph_comparison_dpmjet.SetLineColor(rt.kGreen+3)
             ue_ratio_graph_comparison_dpmjet.SetLineWidth(2)
-            ue_ratio_graph_comparison_dpmjet.SetFillStyle(3144)
-            ue_ratio_graph_comparison_dpmjet.SetFillColor(rt.kGreen+1)
+            ue_ratio_graph_comparison_dpmjet.SetFillStyle(3244)
+            ue_ratio_graph_comparison_dpmjet.SetFillColorAlpha(rt.kGreen+1, 0.5)
+
 
             ue_ratio_graph_final_syst.SetMarkerStyle(43)
             ue_ratio_graph_final_syst.SetMarkerSize(0)
@@ -939,8 +945,8 @@ for PT_MODE in [0, 1, 2]:
                         left_pad.cd()
                         left_plotting_hist.GetYaxis().SetTitleOffset(TITLE_OFFSET + 0.2)
                         left_plotting_hist.DrawCopy("PE")
-                        label_x_start = 0.6
-                        label_y_start = 0.8
+                        label_x_start = 0.66
+                        label_y_start = 0.9
                         label_text_space = 0.07
                         alice_data_label = rt.TLatex()
                         alice_data_label.SetNDC()
@@ -951,19 +957,19 @@ for PT_MODE in [0, 1, 2]:
                         alice_data_label.DrawLatex(label_x_start, label_y_start - 2*label_text_space, "#bf{#sqrt{#it{s}_{NN}} = 5.02 TeV}")
                         pt_label_x_start = 0.28
                         pt_label_y_start = 0.93
-                        pt_label_text_space = 0.06
+                        pt_label_text_space = 0.07
                         pt_label = rt.TLatex()
                         pt_label.SetNDC()
-                        pt_label.SetTextSize(0.04)
+                        pt_label.SetTextSize(0.05)
                         pt_label.SetTextAlign(13)
                         pt_label.DrawLatex(pt_label_x_start, pt_label_y_start - 1*pt_label_text_space, "#bf{4.0 < #it{p}^{h}_{T,trig}    <  8.0 GeV/#it{c}}")
                         pt_label.DrawLatex(pt_label_x_start, pt_label_y_start - 2*pt_label_text_space, "#bf{|#Delta#it{#eta}| < 1.2}")
                         assoc_pt_label_x_start = 0.28
                         assoc_pt_label_y_start = 0.93
-                        assoc_pt_label_text_space = 0.06
+                        assoc_pt_label_text_space = 0.07
                         assoc_pt_label = rt.TLatex()
                         assoc_pt_label.SetNDC()
-                        assoc_pt_label.SetTextSize(0.04)
+                        assoc_pt_label.SetTextSize(0.05)
                         assoc_pt_label.SetTextAlign(13)
                     if lambda_phi_ratio:
                         assoc_pt_label.DrawLatex(assoc_pt_label_x_start, assoc_pt_label_y_start, "#bf{1.5 < #it{p}^{#Lambda, #phi}_{T,assoc} < 2.5 GeV/#it{c}}")
@@ -1010,10 +1016,10 @@ for PT_MODE in [0, 1, 2]:
                         right_plotting_hist.DrawCopy("PE")
                         assoc_pt_label_x_start = 0.04
                         assoc_pt_label_y_start = 0.93
-                        assoc_pt_label_text_space = 0.06
+                        assoc_pt_label_text_space = 0.07
                         assoc_pt_label = rt.TLatex()
                         assoc_pt_label.SetNDC()
-                        assoc_pt_label.SetTextSize(scale*0.035)
+                        assoc_pt_label.SetTextSize(scale*0.040)
                         assoc_pt_label.SetTextAlign(13)
                         if lambda_phi_ratio:
                             assoc_pt_label.DrawLatex(assoc_pt_label_x_start, assoc_pt_label_y_start, "#bf{2.5 < #it{p}^{#Lambda, #phi}_{T,assoc} < 4.0 GeV/#it{c}}")
@@ -1035,15 +1041,17 @@ for PT_MODE in [0, 1, 2]:
                 else:
                     ue_ratio_graph.Draw("E2 SAME")
                 ue_fit.Draw("SAME")
-                dpmjet_near_ratio_graph.SetFillColor(rt.kRed+1)
-                dpmjet_near_ratio_graph.SetFillStyle(3001)
-                dpmjet_away_ratio_graph.SetFillColor(rt.kBlue+1)
-                dpmjet_away_ratio_graph.SetFillStyle(3001)
-                dpmjet_ue_ratio_graph.SetFillColor(rt.kGreen+2)
-                dpmjet_ue_ratio_graph.SetFillStyle(3001)
+                dpmjet_near_ratio_graph.SetFillColorAlpha(rt.kRed+1, 0.5)
+                dpmjet_near_ratio_graph.SetFillStyle(3144)
+                dpmjet_away_ratio_graph.SetFillColorAlpha(rt.kBlue+1, 0.5)
+                dpmjet_away_ratio_graph.SetFillStyle(3144)
+                dpmjet_ue_ratio_graph.SetFillColorAlpha(rt.kGreen+2, 0.5)
+                dpmjet_ue_ratio_graph.SetFillStyle(3144)
                 tmp = dpmjet_near_ratio_graph.Clone("tmp")
                 tmp.SetFillColor(rt.kBlack)
                 tmp.SetLineColor(rt.kBlack)
+                tmp.SetLineWidth(0)
+                tmp.SetFillStyle(3244)
                 # ratios_legend.AddEntry(tmp, "DPMJet", "f")
                 dpmjet_near_ratio_graph.Draw("E3 SAME")
                 dpmjet_away_ratio_graph.Draw("E3 SAME")
@@ -1052,18 +1060,23 @@ for PT_MODE in [0, 1, 2]:
                 # total_ratio_graph_final_syst.Draw("E2 SAME")
                 # total_ratio_graph.Draw("PE SAME")
                 # ratios_legend.Draw()
-                new_legend = rt.TLegend(0.5, 0.7, 0.9, 0.9)
+                new_legend = rt.TLegend(0.47, 0.65, 0.94, 0.90)
                 new_legend.SetBorderSize(0)
                 new_legend.SetFillStyle(0)
                 new_legend.AddEntry(near_ratio_graph, "Near-side (jet)", "lp")
                 new_legend.AddEntry(away_ratio_graph, "Away-side (jet)", "lp")
-                new_legend.AddEntry(ue_ratio_graph, "Underlying Event", "lp")
+                new_legend.AddEntry(ue_ratio_graph, "UE", "lp")
                 new_legend.Draw()
 
-                dpmjet_legend = rt.TLegend(0.3, 0.77, 0.6, 0.82)
+                dpmjet_legend = rt.TLegend(0.1, 0.63, 0.45, 0.77)
                 dpmjet_legend.SetBorderSize(0)
                 dpmjet_legend.SetFillStyle(0)
                 dpmjet_legend.AddEntry(tmp, "DPMJet", "f")
+                tmp_line = rt.TLine()
+                tmp_line.SetLineColor(rt.kBlack)
+                tmp_line.SetLineWidth(2)
+                tmp_line.SetLineStyle(7)
+                dpmjet_legend.AddEntry(tmp_line, "Fit (data)", "l")
                 dpmjet_legend.Draw()
 
                 if do_model_ratio:
@@ -1102,7 +1115,7 @@ for PT_MODE in [0, 1, 2]:
                         test_plotting_hist.GetYaxis().SetTitle("Model/Data")
                         test_plotting_hist.GetYaxis().SetTitleSize(0.1)
                         test_plotting_hist.GetYaxis().SetTitleOffset(0.5)
-                        test_plotting_hist.GetYaxis().SetRangeUser(0.1, 1.08)
+                        test_plotting_hist.GetYaxis().SetRangeUser(0.1, 0.75)
                         test_plotting_hist
                         test_plotting_hist.DrawCopy("PE")
 
@@ -1131,7 +1144,7 @@ for PT_MODE in [0, 1, 2]:
                         test_plotting_hist.GetXaxis().SetTitle("<d#it{N}_{ch}/d#it{#eta}>")
                         test_plotting_hist.GetXaxis().SetTitleSize(0.13)
                         test_plotting_hist.GetXaxis().SetTitleOffset(0.93)
-                        test_plotting_hist.GetYaxis().SetRangeUser(0.1, 1.08)
+                        test_plotting_hist.GetYaxis().SetRangeUser(0.1, 0.75)
                         test_plotting_hist.DrawCopy("PE")
 
                         # dpmjet_near_comparison.DrawCopy("SAME")
@@ -1180,7 +1193,7 @@ for PT_MODE in [0, 1, 2]:
 
 
 
-
+            dpmjet_fill_style = 3244
 
 
             hh_near_graph_final_syst.SetMarkerSize(0)
@@ -1190,7 +1203,7 @@ for PT_MODE in [0, 1, 2]:
             hh_near_graph_final_syst.SetLineWidth(2)
 
             hh_near_graph.SetMarkerStyle(20)
-            hh_near_graph.SetMarkerSize(1)
+            hh_near_graph.SetMarkerSize(1.5)
             hh_near_graph.SetMarkerColor(rt.kRed + 3)
             hh_near_graph.SetLineColor(rt.kRed + 3)
             hh_near_graph.SetFillColor(rt.kRed + 3)
@@ -1198,19 +1211,21 @@ for PT_MODE in [0, 1, 2]:
             hh_near_graph.SetLineWidth(2)
 
             hh_near_graph_dpmjet.SetMarkerStyle(20)
-            hh_near_graph_dpmjet.SetMarkerSize(1)
+            hh_near_graph_dpmjet.SetMarkerSize(0)
             hh_near_graph_dpmjet.SetMarkerColor(rt.kRed + 3)
             hh_near_graph_dpmjet.SetLineColor(rt.kRed + 3)
+            hh_near_graph_dpmjet.SetLineStyle(7)
             hh_near_graph_dpmjet.SetFillColor(rt.kRed + 3)
             hh_near_graph_dpmjet.SetFillStyle(3144)
-            hh_near_graph_dpmjet.SetLineWidth(2)
+            hh_near_graph_dpmjet.SetFillColorAlpha(rt.kRed + 3, 0.5)
+            hh_near_graph_dpmjet.SetLineWidth(0)
 
             hh_near_comparison_graph_dpmjet.SetMarkerStyle(20)
             hh_near_comparison_graph_dpmjet.SetMarkerSize(1)
-            hh_near_comparison_graph_dpmjet.SetMarkerColor(rt.kRed + 3)
-            hh_near_comparison_graph_dpmjet.SetLineColor(rt.kRed + 3)
-            hh_near_comparison_graph_dpmjet.SetFillColor(rt.kRed + 3)
-            hh_near_comparison_graph_dpmjet.SetFillStyle(3144)
+            hh_near_comparison_graph_dpmjet.SetMarkerColor(rt.kRed + 2)
+            hh_near_comparison_graph_dpmjet.SetLineColor(rt.kRed + 2)
+            hh_near_comparison_graph_dpmjet.SetFillColor(rt.kRed + 2)
+            hh_near_comparison_graph_dpmjet.SetFillStyle(dpmjet_fill_style)
             hh_near_comparison_graph_dpmjet.SetLineWidth(2)
 
             near_graph_final_syst.SetMarkerSize(0)
@@ -1220,7 +1235,7 @@ for PT_MODE in [0, 1, 2]:
             near_graph_final_syst.SetLineWidth(2)
 
             near_graph.SetMarkerStyle(21)
-            near_graph.SetMarkerSize(1)
+            near_graph.SetMarkerSize(1.5)
             near_graph.SetMarkerColor(rt.kPink-1)
             near_graph.SetLineColor(rt.kPink-1)
             near_graph.SetFillColor(rt.kPink-1)
@@ -1228,19 +1243,21 @@ for PT_MODE in [0, 1, 2]:
             near_graph.SetLineWidth(2)
 
             near_graph_dpmjet.SetMarkerStyle(21)
-            near_graph_dpmjet.SetMarkerSize(1)
-            near_graph_dpmjet.SetMarkerColor(rt.kPink-1)
-            near_graph_dpmjet.SetLineColor(rt.kPink-1)
-            near_graph_dpmjet.SetFillColor(rt.kPink-1)
+            near_graph_dpmjet.SetMarkerSize(0)
+            near_graph_dpmjet.SetMarkerColor(rt.kPink)
+            near_graph_dpmjet.SetLineColor(rt.kPink)
+            near_graph_dpmjet.SetLineStyle(7)
+            near_graph_dpmjet.SetFillColor(rt.kPink)
+            near_graph_dpmjet.SetFillColorAlpha(rt.kPink, 0.5)
             near_graph_dpmjet.SetFillStyle(3144)
-            near_graph_dpmjet.SetLineWidth(2)
+            near_graph_dpmjet.SetLineWidth(0)
 
             near_comparison_graph_dpmjet.SetMarkerStyle(21)
             near_comparison_graph_dpmjet.SetMarkerSize(1)
-            near_comparison_graph_dpmjet.SetMarkerColor(rt.kPink-1)
-            near_comparison_graph_dpmjet.SetLineColor(rt.kPink-1)
-            near_comparison_graph_dpmjet.SetFillColor(rt.kPink-1)
-            near_comparison_graph_dpmjet.SetFillStyle(3144)
+            near_comparison_graph_dpmjet.SetMarkerColor(rt.kPink)
+            near_comparison_graph_dpmjet.SetLineColor(rt.kPink)
+            near_comparison_graph_dpmjet.SetFillColor(rt.kPink)
+            near_comparison_graph_dpmjet.SetFillStyle(dpmjet_fill_style)
             near_comparison_graph_dpmjet.SetLineWidth(2)
 
             hh_away_graph_final_syst.SetMarkerSize(0)
@@ -1250,28 +1267,30 @@ for PT_MODE in [0, 1, 2]:
             hh_away_graph_final_syst.SetFillStyle(0)
 
             hh_away_graph.SetMarkerStyle(20)
-            hh_away_graph.SetMarkerSize(1)
+            hh_away_graph.SetMarkerSize(1.5)
             hh_away_graph.SetMarkerColor(rt.kViolet - 6)
             hh_away_graph.SetLineColor(rt.kViolet - 6)
             hh_away_graph.SetLineWidth(2)
             hh_away_graph.SetFillColor(rt.kViolet - 6)
-            hh_away_graph.SetFillStyle(3144)
+            hh_away_graph.SetFillStyle(3244)
 
             hh_away_graph_dpmjet.SetMarkerStyle(20)
-            hh_away_graph_dpmjet.SetMarkerSize(1)
-            hh_away_graph_dpmjet.SetMarkerColor(rt.kViolet - 6)
-            hh_away_graph_dpmjet.SetLineColor(rt.kViolet - 6)
-            hh_away_graph_dpmjet.SetLineWidth(2)
-            hh_away_graph_dpmjet.SetFillColor(rt.kViolet - 6)
+            hh_away_graph_dpmjet.SetMarkerSize(0)
+            hh_away_graph_dpmjet.SetMarkerColor(rt.kViolet - 3)
+            hh_away_graph_dpmjet.SetLineColor(rt.kViolet - 3)
+            hh_away_graph_dpmjet.SetLineWidth(0)
+            hh_away_graph_dpmjet.SetLineStyle(7)
+            hh_away_graph_dpmjet.SetFillColor(rt.kViolet - 3)
             hh_away_graph_dpmjet.SetFillStyle(3144)
+            hh_away_graph_dpmjet.SetFillColorAlpha(rt.kViolet - 3, 0.5)
 
             hh_away_comparison_graph_dpmjet.SetMarkerStyle(20)
             hh_away_comparison_graph_dpmjet.SetMarkerSize(1)
-            hh_away_comparison_graph_dpmjet.SetMarkerColor(rt.kViolet - 6)
-            hh_away_comparison_graph_dpmjet.SetLineColor(rt.kViolet - 6)
+            hh_away_comparison_graph_dpmjet.SetMarkerColor(rt.kViolet - 3)
+            hh_away_comparison_graph_dpmjet.SetLineColor(rt.kViolet - 3)
             hh_away_comparison_graph_dpmjet.SetLineWidth(2)
-            hh_away_comparison_graph_dpmjet.SetFillColor(rt.kViolet - 6)
-            hh_away_comparison_graph_dpmjet.SetFillStyle(3144)
+            hh_away_comparison_graph_dpmjet.SetFillColor(rt.kViolet - 3)
+            hh_away_comparison_graph_dpmjet.SetFillStyle(dpmjet_fill_style)
 
             away_graph_final_syst.SetMarkerSize(0)
             away_graph_final_syst.SetLineWidth(2)
@@ -1280,7 +1299,7 @@ for PT_MODE in [0, 1, 2]:
             away_graph_final_syst.SetFillStyle(0)
 
             away_graph.SetMarkerStyle(21)
-            away_graph.SetMarkerSize(1)
+            away_graph.SetMarkerSize(1.5)
             away_graph.SetMarkerColor(rt.kBlue-2)
             away_graph.SetLineColor(rt.kBlue-2)
             away_graph.SetLineWidth(2)
@@ -1288,20 +1307,22 @@ for PT_MODE in [0, 1, 2]:
             away_graph.SetFillStyle(3144)
 
             away_graph_dpmjet.SetMarkerStyle(21)
-            away_graph_dpmjet.SetMarkerSize(1)
-            away_graph_dpmjet.SetMarkerColor(rt.kBlue-2)
-            away_graph_dpmjet.SetLineColor(rt.kBlue-2)
-            away_graph_dpmjet.SetLineWidth(2)
-            away_graph_dpmjet.SetFillColor(rt.kBlue - 2)
+            away_graph_dpmjet.SetMarkerSize(0)
+            away_graph_dpmjet.SetMarkerColor(rt.kBlue-1)
+            away_graph_dpmjet.SetLineColor(rt.kBlue-1)
+            away_graph_dpmjet.SetLineWidth(0)
+            away_graph_dpmjet.SetLineStyle(7)
+            away_graph_dpmjet.SetFillColor(rt.kBlue - 1)
+            away_graph_dpmjet.SetFillColorAlpha(rt.kBlue - 1, 0.5)
             away_graph_dpmjet.SetFillStyle(3144)
 
             away_comparison_graph_dpmjet.SetMarkerStyle(21)
             away_comparison_graph_dpmjet.SetMarkerSize(1)
-            away_comparison_graph_dpmjet.SetMarkerColor(rt.kBlue-2)
-            away_comparison_graph_dpmjet.SetLineColor(rt.kBlue-2)
+            away_comparison_graph_dpmjet.SetMarkerColor(rt.kBlue-1)
+            away_comparison_graph_dpmjet.SetLineColor(rt.kBlue-1)
             away_comparison_graph_dpmjet.SetLineWidth(2)
-            away_comparison_graph_dpmjet.SetFillColor(rt.kBlue - 2)
-            away_comparison_graph_dpmjet.SetFillStyle(3144)
+            away_comparison_graph_dpmjet.SetFillColor(rt.kBlue - 1)
+            away_comparison_graph_dpmjet.SetFillStyle(dpmjet_fill_style)
 
             if use_new_x_axis:
                 hh_near_graph_final_nch_dep_syst.SetMarkerSize(0)
@@ -1358,7 +1379,7 @@ for PT_MODE in [0, 1, 2]:
                 plotting_hist.GetXaxis().SetLabelSize(0.045)
                 plotting_hist.GetYaxis().SetLabelSize(0.045)
                 plotting_hist.GetXaxis().SetTitleOffset(1.35)
-                plotting_hist.GetXaxis().SetRangeUser(5, 55)
+                plotting_hist.GetXaxis().SetRangeUser(3, 53)
 
                 if lambda_phi_ratio:
                     plotting_hist.GetYaxis().SetTitle("Per-trigger pairwise yield")
@@ -1367,7 +1388,7 @@ for PT_MODE in [0, 1, 2]:
 
                 plotting_hist.GetYaxis().SetTitleSize(0.05)
                 plotting_hist.GetYaxis().SetTitleOffset(1.1)
-                plotting_hist.GetYaxis().SetRangeUser(-0.1, 1.5)
+                plotting_hist.GetYaxis().SetRangeUser(0.05, 1.2)
 
                 plotting_hist.Draw("PE")
 
@@ -1467,9 +1488,9 @@ for PT_MODE in [0, 1, 2]:
                     away_graph_dpmjet.SetPointError(i, away_graph_dpmjet.GetErrorX(i), away_graph_dpmjet.GetErrorY(i) * SCALE_FACTOR)
 
 
-            hh_near_graph_final_syst.Draw("E2")
+            hh_near_graph_final_syst.Draw("E2 SAME")
             hh_near_graph.Draw("PE SAME")
-            hh_away_graph_final_syst.Draw("E2")
+            hh_away_graph_final_syst.Draw("E2 SAME")
             hh_away_graph.Draw("PE SAME")
 
             hh_near_graph_dpmjet.Draw("E3 SAME")
@@ -1485,8 +1506,9 @@ for PT_MODE in [0, 1, 2]:
             away_graph_dpmjet.Draw("E3 SAME")
 
             tmp = dpmjet_near_ratio_graph.Clone("tmp")
-            tmp.SetFillColor(rt.kBlack)
-            tmp.SetLineColor(rt.kBlack)
+            tmp.SetFillStyle(3244)
+            tmp.SetFillColorAlpha(rt.kBlack, 0.5)
+            tmp.SetLineWidth(0)
             ratios_legend.AddEntry(tmp, "DPMJet", "f")
 
             ratios_legend.Draw()
@@ -1716,6 +1738,12 @@ for PT_MODE in [0, 1, 2]:
                 leg.Draw("SAME")
                 c.Draw()
 
+                print(f"------------------PT MODE {PT_MODE}------------------")
+                print(f"Lambda increase (near): {near_fit_slope} +/- {near_fit_slope_err}")
+                print(f"Lambda increase (away): {away_fit_slope} +/- {away_fit_slope_err}")
+                print(f"h-h increase (near): {hh_near_fit_slope} +/- {hh_near_fit_slope_err}")
+                print(f"h-h increase (away): {hh_away_fit_slope} +/- {hh_away_fit_slope_err}")
+
                 if PT_MODE == 1:
                     c.SaveAs("figures/pairwise_plot_increase_lowpt.eps")
                 elif PT_MODE == 2:
@@ -1780,8 +1808,8 @@ for PT_MODE in [0, 1, 2]:
                         left_pad.cd()
                         left_plotting_hist.GetYaxis().SetTitleOffset(TITLE_OFFSET - 0.3)
                         left_plotting_hist.DrawCopy("PE")
-                        label_x_start = 0.6
-                        label_y_start = 0.8
+                        label_x_start = 0.71
+                        label_y_start = 0.95
                         label_text_space = 0.07
                         alice_data_label = rt.TLatex()
                         alice_data_label.SetNDC()
@@ -1792,10 +1820,10 @@ for PT_MODE in [0, 1, 2]:
                         alice_data_label.DrawLatex(label_x_start, label_y_start - 2*label_text_space, "#bf{#sqrt{#it{s}_{NN}} = 5.02 TeV}")
                         pt_label_x_start = 0.28
                         pt_label_y_start = 0.93
-                        pt_label_text_space = 0.06
+                        pt_label_text_space = 0.08
                         pt_label = rt.TLatex()
                         pt_label.SetNDC()
-                        pt_label.SetTextSize(0.04)
+                        pt_label.SetTextSize(0.053)
                         pt_label.SetTextAlign(13)
                         pt_label.DrawLatex(pt_label_x_start, pt_label_y_start - 1*pt_label_text_space, "#bf{4.0 < #it{p}^{h}_{T,trig}    <  8.0 GeV/#it{c}}")
                         pt_label.DrawLatex(pt_label_x_start, pt_label_y_start - 2*pt_label_text_space, "#bf{|#Delta#it{#eta}| < 1.2}")
@@ -1804,7 +1832,7 @@ for PT_MODE in [0, 1, 2]:
                         assoc_pt_label_text_space = 0.06
                         assoc_pt_label = rt.TLatex()
                         assoc_pt_label.SetNDC()
-                        assoc_pt_label.SetTextSize(0.04)
+                        assoc_pt_label.SetTextSize(0.053)
                         assoc_pt_label.SetTextAlign(13)
                         assoc_pt_label.DrawLatex(assoc_pt_label_x_start, assoc_pt_label_y_start, "#bf{1.5 < #it{p}^{#Lambda, h}_{T,assoc} < 2.5 GeV/#it{c}}")
 
@@ -1847,20 +1875,12 @@ for PT_MODE in [0, 1, 2]:
                         assoc_pt_label_text_space = 0.06
                         assoc_pt_label = rt.TLatex()
                         assoc_pt_label.SetNDC()
-                        assoc_pt_label.SetTextSize(scale*0.035)
+                        assoc_pt_label.SetTextSize(scale*0.043)
                         assoc_pt_label.SetTextAlign(13)
                         assoc_pt_label.DrawLatex(assoc_pt_label_x_start, assoc_pt_label_y_start, "#bf{2.5 < #it{p}^{#Lambda, h}_{T,assoc} < 4.0 GeV/#it{c}}")
 
 
-                near_graph.Draw("PE SAME")
-                near_graph_final_syst.Draw("E2 SAME")
-                away_graph.Draw("PE SAME")
-                away_graph_final_syst.Draw("E2 SAME")
 
-                hh_near_graph.Draw("PE SAME")
-                hh_near_graph_final_syst.Draw("E2 SAME")
-                hh_away_graph.Draw("PE SAME")
-                hh_away_graph_final_syst.Draw("E2 SAME")
                 if use_new_x_axis:
                     near_fit.Draw("SAME")
                     away_fit.Draw("SAME")
@@ -1873,21 +1893,38 @@ for PT_MODE in [0, 1, 2]:
                 hh_near_graph_dpmjet.Draw("E3 SAME")
                 hh_away_graph_dpmjet.Draw("E3 SAME")
 
-                ratios_legend.Draw()
+                near_graph.Draw("PE SAME")
+                near_graph_final_syst.Draw("E2 SAME")
+                away_graph.Draw("PE SAME")
+                away_graph_final_syst.Draw("E2 SAME")
+                hh_near_graph.Draw("PE SAME")
+                hh_near_graph_final_syst.Draw("E2 SAME")
+                hh_away_graph.Draw("PE SAME")
+                hh_away_graph_final_syst.Draw("E2 SAME")
 
-                # new_legend = rt.TLegend(0.5, 0.7, 0.9, 0.9)
-                # new_legend.SetBorderSize(0)
-                # new_legend.SetFillStyle(0)
-                # new_legend.AddEntry(near_graph, "Near-side (jet)", "lp")
-                # new_legend.AddEntry(away_graph, "Away-side (jet)", "lp")
-                # new_legend.AddEntry(ue_ratio_graph, "Underlying Event", "lp")
-                # new_legend.Draw()
+                # ratios_legend.SetTextSize(0.05)
+                # ratios_legend.Draw()
 
-                # dpmjet_legend = rt.TLegend(0.3, 0.77, 0.6, 0.82)
-                # dpmjet_legend.SetBorderSize(0)
-                # dpmjet_legend.SetFillStyle(0)
-                # dpmjet_legend.AddEntry(tmp, "DPMJet", "f")
-                # dpmjet_legend.Draw()
+                new_legend = rt.TLegend(0.55, 0.57, 0.97, 0.85)
+                new_legend.SetBorderSize(0)
+                new_legend.SetFillStyle(0)
+                new_legend.AddEntry(near_graph, "h-#Lambda near-side (x20)", "lp")
+                new_legend.AddEntry(away_graph, "h-#Lambda away-side (x20)", "lp")
+                new_legend.AddEntry(hh_near_graph, "h-h near-side", "lp")
+                new_legend.AddEntry(hh_away_graph, "h-h away-side", "lp")
+                new_legend.Draw()
+
+                dpmjet_legend = rt.TLegend(0.24, 0.63, 0.52, 0.80)
+                dpmjet_legend.SetBorderSize(0)
+                dpmjet_legend.SetFillStyle(0)
+                dpmjet_legend.AddEntry(tmp, "DPMJet", "f")
+                tmp_line = rt.TLine(0.3, 0.8, 0.6, 0.8)
+                tmp_line.SetLineColor(rt.kBlack)
+                tmp_line.SetLineWidth(2)
+                tmp_line.SetLineStyle(2)
+                dpmjet_legend.AddEntry(tmp_line, "Fit (data)", "l")
+                dpmjet_legend.Draw()
+
 
                 if do_model_ratio:
                     if use_new_x_axis:
@@ -1920,10 +1957,14 @@ for PT_MODE in [0, 1, 2]:
                         test_plotting_hist.GetYaxis().SetRangeUser(0.22, 1.32)
                         test_plotting_hist.DrawCopy("PE")
 
+                        unity_line1.Draw()
+
                         near_comparison_graph_dpmjet.Draw("E3 SAME")
                         away_comparison_graph_dpmjet.Draw("E3 SAME")
                         hh_near_comparison_graph_dpmjet.Draw("E3 SAME")
                         hh_away_comparison_graph_dpmjet.Draw("E3 SAME")
+
+
 
                     else:
                         bottom_right_pad = rt.TPad("brpad", "", FIRST_PAD_WIDTH, 0, FIRST_PAD_WIDTH + PAD_WIDTH, FIRST_RATIO_PAD_HEIGHT)
@@ -1942,6 +1983,13 @@ for PT_MODE in [0, 1, 2]:
                         test_plotting_hist.GetXaxis().SetTitleOffset(0.93)
                         test_plotting_hist.GetYaxis().SetRangeUser(0.22, 1.32)
                         test_plotting_hist.DrawCopy("PE")
+
+
+                        unity_line = rt.TLine(3, 1, 53, 1)
+                        unity_line.SetLineColor(rt.kBlack)
+                        unity_line.SetLineWidth(1)
+                        unity_line.SetLineStyle(7)
+                        unity_line.Draw()
 
                         near_comparison_graph_dpmjet.Draw("E3 SAME")
                         away_comparison_graph_dpmjet.Draw("E3 SAME")
